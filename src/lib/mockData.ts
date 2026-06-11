@@ -33,6 +33,10 @@ export interface Magazine {
   coverImage: string;
   description: string;
   pages: string[];
+  accessLevel?: "Free" | "Premium" | "Patron";
+  status?: "Draft" | "Published" | "Archived";
+  year?: string;
+  pdfSourceUrl?: string;
 }
 
 export interface CareerItem {

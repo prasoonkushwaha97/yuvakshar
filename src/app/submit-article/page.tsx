@@ -31,7 +31,32 @@ import {
   Send,
   UserCheck,
   Lock,
-  X
+  X,
+  ArrowUp,
+  ArrowDown,
+  Settings,
+  BookOpen,
+  Award,
+  Flame,
+  Target,
+  HelpCircle,
+  Link as LinkIcon,
+  Calendar,
+  Hash,
+  Play,
+  Table as TableIcon,
+  List,
+  ListOrdered,
+  Type,
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  AlignJustify,
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  Paintbrush
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -39,6 +64,13 @@ import confetti from "canvas-confetti";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import { useCms } from "@/store/CmsContext";
 import { parseMarkdownToHtmlBlocks } from "@/lib/markdown";
+import { 
+  serializeBlocksToMarkdown, 
+  deserializeMarkdownToBlocks,
+  BlockItem,
+  ListBlockItem,
+  ImageItem
+} from "@/lib/editorSerializer";
 
 interface UploadedImage {
   id: string;

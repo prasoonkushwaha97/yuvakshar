@@ -21,9 +21,9 @@ export interface AiSettings {
 export interface UserMembership {
   id: string;
   userId: string;
-  membershipType: "Free" | "Premium" | "Patron";
+  membershipType: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime";
   status: "active" | "suspended" | "expired" | "cancelled";
-  billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly" | "Free";
+  billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly" | "Free" | "Lifetime" | "One-time";
   startDate: string;
   expiryDate: string;
   autoRenewal: boolean;
@@ -41,6 +41,13 @@ export interface PaymentRecord {
   paymentMethod: string;
   date: string;
   invoiceUrl?: string;
+  // GST details
+  baseAmount?: number;
+  cgst?: number;
+  sgst?: number;
+  igst?: number;
+  gstin?: string;
+  sacCode?: string;
 }
 
 export interface Coupon {
@@ -71,11 +78,21 @@ export interface AiNote {
   createdAt: string;
 }
 
+export interface DonationRecord {
+  id: string;
+  userId?: string | null;
+  name: string;
+  email: string;
+  amount: number;
+  message?: string;
+  date: string;
+}
+
 export interface Profile {
   id: string;
   name: string;
   role: "Owner" | "Admin" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Fact Check Reviewer" | "Author" | "Contributor" | null;
-  membership: "Free" | "Premium" | "Patron" | null;
+  membership: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime" | null;
   status: "active" | "suspended";
   bio?: string;
   avatar_url?: string;
@@ -85,6 +102,11 @@ export interface Profile {
   email?: string;
   mobile?: string;
   interests?: string[];
+  // Analytics and rewards
+  referralRewardsEarned?: number;
+  articlesReadCount?: number;
+  totalReadingTime?: number;
+  categoryStats?: Record<string, number>;
 }
 
 export interface Category {
@@ -310,7 +332,7 @@ interface CmsContextType {
   leaderboard: QuizLeaderboardEntry[];
   
   // Auth Operations
-  loginUser: (email: string, role: string) => Promise<boolean>;
+  loginUser: (email: string, role: string, customName?: string, customMobile?: string) => Promise<boolean>;
   logoutUser: () => void;
   updateUserRole: (userId: string, role: Profile["role"]) => Promise<void>;
   createUser: (user: Omit<Profile, "id">) => Promise<void>;
@@ -327,6 +349,10 @@ interface CmsContextType {
   deleteArticle: (id: string) => Promise<void>;
   incrementArticleView: (id: string) => Promise<void>;
   incrementArticleLike: (id: string) => Promise<void>;
+
+  // Magazines CRUD
+  saveMagazine: (magazine: Partial<Magazine>) => Promise<Magazine>;
+  deleteMagazine: (id: string) => Promise<void>;
 
   // Editorial Assignments
   saveAssignment: (assignment: Partial<EditorialAssignment>) => Promise<void>;
@@ -378,7 +404,7 @@ interface CmsContextType {
   becomeAuthor: (bio: string, avatarUrl: string, expertise: string) => Promise<void>;
   updateUserProfile: (data: Partial<Profile>) => Promise<void>;
   updateUserMembership: (userId: string, membership: Profile["membership"]) => Promise<void>;
-  canAccessContent: (user: Profile | null, content: { accessLevel?: "Free" | "Premium" | "Patron" }) => boolean;
+  canAccessContent: (user: Profile | null, content: { accessLevel?: "Free" | "Premium" | "Patron" | "Founding" }) => boolean;
   canComment: (user: Profile | null) => boolean;
   canBookmark: (user: Profile | null) => boolean;
   canVote: (user: Profile | null) => boolean;
@@ -400,7 +426,7 @@ interface CmsContextType {
   paymentRecords: PaymentRecord[];
   coupons: Coupon[];
   referrals: ReferralRecord[];
-  purchaseMembership: (userId: string, plan: "Premium" | "Patron", billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly", couponCode?: string) => Promise<boolean>;
+  purchaseMembership: (userId: string, plan: "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime", billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly" | "Lifetime" | "One-time", couponCode?: string) => Promise<boolean>;
   renewMembership: (userId: string) => Promise<void>;
   toggleAutoRenewal: (userId: string) => Promise<void>;
   cancelSubscription: (userId: string) => Promise<void>;
@@ -408,19 +434,27 @@ interface CmsContextType {
   createCoupon: (coupon: Coupon) => void;
   deleteCoupon: (code: string) => void;
   addReferral: (referrerId: string, email: string) => void;
-  assignMembershipManually: (userId: string, type: "Free" | "Premium" | "Patron", billingCycle: string, durationDays: number) => Promise<void>;
+  assignMembershipManually: (userId: string, type: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime", billingCycle: string, durationDays: number) => Promise<void>;
   getMembershipAnalytics: () => {
     totalMembers: number;
     activeMembers: number;
     expiredMembers: number;
     premiumMembers: number;
     patronMembers: number;
+    foundingMembers: number;
+    institutionalMembers: number;
+    lifetimeMembers: number;
     membershipRevenue: number;
     conversionRate: number;
     churnRate: number;
     renewalRate: number;
     upgradeRate: number;
   };
+  // Donation States & Operations
+  donationHistory: DonationRecord[];
+  submitDonation: (name: string, email: string, amount: number, message?: string) => Promise<boolean>;
+  foundingSeatsRemaining: number;
+  setFoundingSeatsRemaining: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const CmsContext = createContext<CmsContextType | undefined>(undefined);
@@ -506,6 +540,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [referrals, setReferrals] = useState<ReferralRecord[]>([]);
+  const [donationHistory, setDonationHistory] = useState<DonationRecord[]>([]);
+  const [foundingSeatsRemaining, setFoundingSeatsRemaining] = useState(42);
 
   const [settings, setSettings] = useState({
     general: {
@@ -840,6 +876,28 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       setReferrals(initial);
       localStorage.setItem("yuvakshar_referrals", JSON.stringify(initial));
     }
+
+    // Load Donations
+    const localDonations = localStorage.getItem("yuvakshar_donations");
+    if (localDonations) {
+      setDonationHistory(JSON.parse(localDonations));
+    } else {
+      const initial: DonationRecord[] = [
+        { id: "don_1", name: "अमित कुमार", email: "amit@gmail.com", amount: 500, message: "स्वतंत्र पत्रकारिता को बढ़ावा दें।", date: "2026-06-05" },
+        { id: "don_2", name: "सुचित्रा सेन", email: "suchitra@yahoo.com", amount: 1000, message: "उत्कृष्ट कार्य!", date: "2026-06-08" }
+      ];
+      setDonationHistory(initial);
+      localStorage.setItem("yuvakshar_donations", JSON.stringify(initial));
+    }
+
+    // Load Founding Seats
+    const localSeats = localStorage.getItem("yuvakshar_founding_seats");
+    if (localSeats) {
+      setFoundingSeatsRemaining(parseInt(localSeats));
+    } else {
+      setFoundingSeatsRemaining(42);
+      localStorage.setItem("yuvakshar_founding_seats", "42");
+    }
   };
 
   const loadDataFromSupabase = async () => {
@@ -932,7 +990,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   };
 
   // 2. Auth Operations
-  const loginUser = async (email: string, role: string): Promise<boolean> => {
+  const loginUser = async (email: string, role: string, customName?: string, customMobile?: string): Promise<boolean> => {
     // Trigger login
     if (supabaseConfigured) {
       // Attempt auth magic links or oauth
@@ -949,15 +1007,18 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       const finalRole = isPrimaryOwner 
         ? "Owner" 
         : (role === "Subscriber" || role === "Free Member" || role === "Premium Member" || role === "Patron Member" ? null : role);
-      const finalName = isPrimaryOwner ? "Owner" : email.split("@")[0].toUpperCase();
+      const finalName = customName || (isPrimaryOwner ? "Owner" : email.split("@")[0].toUpperCase());
+      const finalMobile = customMobile || "";
       const finalMembership = isPrimaryOwner 
         ? "Patron" 
         : (role === "Patron Member" ? "Patron" : role === "Premium Member" ? "Premium" : "Free");
 
-      const mockProfile: Profile = {
+      const existingUser = users.find(u => u.email === email);
+      const mockProfile: Profile = existingUser || {
         id: isPrimaryOwner ? "u-1" : "mock-uid-" + Math.floor(Math.random() * 1000),
         name: finalName,
         email: email,
+        mobile: finalMobile,
         role: finalRole as Profile["role"],
         membership: finalMembership as Profile["membership"],
         status: "active",
@@ -966,11 +1027,57 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       };
 
       // Ensure this user is added to the dynamic users list if not already there
-      const userExists = users.some(u => u.email === email);
-      if (!userExists) {
+      if (!existingUser) {
         const updatedUsers = [...users, mockProfile];
         setUsers(updatedUsers);
         localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+
+        // Referral reward check: credit 15 days if they register from a referral
+        setTimeout(() => {
+          setReferrals(prevRefs => {
+            const matchIndex = prevRefs.findIndex(r => r.referredEmail.toLowerCase() === email.toLowerCase() && r.status === "pending");
+            if (matchIndex !== -1) {
+              const matchedRef = prevRefs[matchIndex];
+              // Credit 15 days to referrer
+              setUsers(prevUsers => {
+                const newU = prevUsers.map(u => {
+                  if (u.id === matchedRef.referrerId) {
+                    return {
+                      ...u,
+                      referralRewardsEarned: (u.referralRewardsEarned || 0) + 15
+                    };
+                  }
+                  return u;
+                });
+                localStorage.setItem("yuvakshar_users", JSON.stringify(newU));
+                return newU;
+              });
+
+              // Extend referrer membership expiry
+              setUserMemberships(prevMems => {
+                const newM = prevMems.map(m => {
+                  if (m.userId === matchedRef.referrerId && m.status === "active") {
+                    const exp = new Date(m.expiryDate);
+                    exp.setDate(exp.getDate() + 15);
+                    return {
+                      ...m,
+                      expiryDate: exp.toISOString().split("T")[0]
+                    };
+                  }
+                  return m;
+                });
+                localStorage.setItem("yuvakshar_memberships", JSON.stringify(newM));
+                return newM;
+              });
+
+              const updatedRefs = [...prevRefs];
+              updatedRefs[matchIndex] = { ...matchedRef, status: "registered" as const };
+              localStorage.setItem("yuvakshar_referrals", JSON.stringify(updatedRefs));
+              return updatedRefs;
+            }
+            return prevRefs;
+          });
+        }, 100);
       }
 
       setCurrentUser(mockProfile);
@@ -1269,6 +1376,53 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     logActivity(`Deleted Article: ${id}`);
   };
 
+  const saveMagazine = async (mag: Partial<Magazine>): Promise<Magazine> => {
+    let saved: Magazine;
+    if (supabaseConfigured) {
+      const { data, error } = await supabase.from("magazines").upsert({
+        ...mag,
+        updated_at: new Date().toISOString()
+      }).select().single();
+      if (error) throw error;
+      saved = data;
+    } else {
+      const targetId = mag.id || `mag-${Date.now()}`;
+      const existing = magazines.find(m => m.id === targetId);
+      
+      saved = {
+        id: targetId,
+        issue: mag.issue || "नया अंक",
+        month: mag.month || "मई २०२५",
+        coverImage: mag.coverImage || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
+        description: mag.description || "",
+        pages: mag.pages || ["पहला पृष्ठ...", "दूसरा पृष्ठ..."],
+        accessLevel: mag.accessLevel || "Free",
+        status: mag.status || "Draft",
+        year: mag.year || "२०२५",
+        pdfSourceUrl: mag.pdfSourceUrl || ""
+      } as any;
+
+      const updated = existing
+        ? magazines.map(m => m.id === targetId ? saved : m)
+        : [...magazines, saved];
+      setMagazines(updated);
+      localStorage.setItem("yuvakshar_magazines", JSON.stringify(updated));
+    }
+    logActivity(`Saved Magazine: ${saved.issue} (Status: ${saved.status})`);
+    return saved;
+  };
+
+  const deleteMagazine = async (id: string) => {
+    if (supabaseConfigured) {
+      await supabase.from("magazines").delete().eq("id", id);
+    } else {
+      const updated = magazines.filter(m => m.id !== id);
+      setMagazines(updated);
+      localStorage.setItem("yuvakshar_magazines", JSON.stringify(updated));
+    }
+    logActivity(`Deleted Magazine: ${id}`);
+  };
+
   const incrementArticleView = async (id: string) => {
     if (supabaseConfigured) {
       await supabase.rpc("increment_article_views", { article_id: id });
@@ -1276,6 +1430,35 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       const updated = articles.map(a => a.id === id ? { ...a, views: (a.views || 0) + 1 } : a);
       setArticles(updated);
       localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
+    }
+
+    if (currentUser) {
+      const targetArticle = articles.find(a => a.id === id);
+      if (targetArticle) {
+        const category = targetArticle.category || "विविध";
+        const readTimeStr = targetArticle.readTime || "5 मिनट";
+        const readTimeNum = parseInt(readTimeStr) || 5;
+
+        const currentStats = currentUser.categoryStats || {};
+        const updatedStats = {
+          ...currentStats,
+          [category]: (currentStats[category] || 0) + 1
+        };
+
+        const updatedProfile = {
+          ...currentUser,
+          articlesReadCount: (currentUser.articlesReadCount || 0) + 1,
+          totalReadingTime: (currentUser.totalReadingTime || 0) + readTimeNum,
+          categoryStats: updatedStats
+        };
+
+        setCurrentUser(updatedProfile);
+        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedProfile));
+
+        const updatedUsers = users.map(u => u.id === currentUser.id ? updatedProfile : u);
+        setUsers(updatedUsers);
+        localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+      }
     }
   };
 
@@ -1911,7 +2094,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     logActivity(`Updated user membership for ${targetUser.email} to ${membership}`);
   };
 
-  const canAccessContent = (user: Profile | null, content: { accessLevel?: "Free" | "Premium" | "Patron" }) => {
+  const canAccessContent = (user: Profile | null, content: { accessLevel?: "Free" | "Premium" | "Patron" | "Founding" }) => {
     const level = content.accessLevel || "Free";
     if (level === "Free") return true;
 
@@ -1924,12 +2107,22 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
     if (!user) return false;
 
+    const membership = user.membership || "Free";
+
+    if (membership === "Lifetime" || membership === "Founding") {
+      return true;
+    }
+
     if (level === "Premium") {
-      return user.membership === "Premium" || user.membership === "Patron";
+      return ["Premium", "Patron", "Institutional"].includes(membership);
     }
 
     if (level === "Patron") {
-      return user.membership === "Patron";
+      return ["Patron", "Institutional"].includes(membership);
+    }
+
+    if (level === "Founding") {
+      return ["Founding", "Lifetime"].includes(membership);
     }
 
     return false;
@@ -2137,16 +2330,20 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
   const purchaseMembership = async (
     userId: string,
-    plan: "Premium" | "Patron",
-    billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly",
+    plan: "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime",
+    billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly" | "Lifetime" | "One-time",
     couponCode?: string
   ): Promise<boolean> => {
     const prices = {
-      Premium: { Monthly: 49, Quarterly: 129, "Half-Yearly": 249, Yearly: 499 },
-      Patron: { Monthly: 199, Quarterly: 549, "Half-Yearly": 999, Yearly: 1999 }
+      Premium: { Monthly: 49, Quarterly: 129, "Half-Yearly": 249, Yearly: 499, "Lifetime": 499, "One-time": 499 },
+      Patron: { Monthly: 199, Quarterly: 549, "Half-Yearly": 999, Yearly: 1999, "Lifetime": 1999, "One-time": 1999 },
+      Founding: { Monthly: 250, Quarterly: 699, "Half-Yearly": 1299, Yearly: 2500, "Lifetime": 2500, "One-time": 2500 },
+      Institutional: { Monthly: 999, Quarterly: 2799, "Half-Yearly": 4999, Yearly: 9999, "Lifetime": 9999, "One-time": 9999 },
+      Lifetime: { Monthly: 15000, Quarterly: 15000, "Half-Yearly": 15000, Yearly: 15000, "Lifetime": 15000, "One-time": 15000 }
     };
     
-    let basePrice = prices[plan][billingCycle] || 0;
+    const planPrices = prices[plan] || prices.Premium;
+    let basePrice = (planPrices as any)[billingCycle] || (planPrices as any)["Yearly"] || 0;
     
     if (couponCode) {
       const coupon = validateCoupon(couponCode);
@@ -2169,6 +2366,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     if (billingCycle === "Quarterly") durationDays = 90;
     else if (billingCycle === "Half-Yearly") durationDays = 180;
     else if (billingCycle === "Yearly") durationDays = 365;
+    else if (billingCycle === "Lifetime" || billingCycle === "One-time") durationDays = 36500; // 100 years
     
     const expiry = new Date();
     expiry.setDate(now.getDate() + durationDays);
@@ -2179,10 +2377,10 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       userId,
       membershipType: plan,
       status: "active",
-      billingCycle,
+      billingCycle: billingCycle as any,
       startDate: now.toISOString().split("T")[0],
       expiryDate: expiry.toISOString().split("T")[0],
-      autoRenewal: true,
+      autoRenewal: plan !== "Lifetime",
       razorpaySubscriptionId: "sub_" + Math.random().toString(36).substring(2, 12)
     };
 
@@ -2194,7 +2392,22 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
     await updateUserMembership(userId, plan);
 
+    // Decrement founding seats remaining if plan is Founding
+    if (plan === "Founding") {
+      setFoundingSeatsRemaining(prev => {
+        const nextSeats = Math.max(0, prev - 1);
+        localStorage.setItem("yuvakshar_founding_seats", nextSeats.toString());
+        return nextSeats;
+      });
+    }
+
     const paymentId = "pay_" + Math.random().toString(36).substring(2, 10);
+    
+    // Calculate GST Details (18% GST inclusive)
+    const baseAmount = parseFloat((basePrice / 1.18).toFixed(2));
+    const cgst = parseFloat((baseAmount * 0.09).toFixed(2));
+    const sgst = parseFloat((baseAmount * 0.09).toFixed(2));
+
     const newPayment: PaymentRecord = {
       id: paymentId,
       userId,
@@ -2205,7 +2418,12 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       membershipType: plan,
       paymentMethod: "UPI",
       date: now.toISOString().split("T")[0],
-      invoiceUrl: `/invoices/${paymentId}.pdf`
+      invoiceUrl: `/invoices/${paymentId}.pdf`,
+      baseAmount,
+      cgst,
+      sgst,
+      gstin: "09AABCY1234D1Z5",
+      sacCode: "998431"
     };
 
     setPaymentRecords(prev => {
@@ -2214,13 +2432,47 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       return updated;
     });
 
+    // Referral Rewards Engine: Credit 45 days if this purchase is referred by someone
     if (currentUser) {
-      setReferrals(prev => {
-        const updated = prev.map(ref => 
-          ref.referredEmail === currentUser.email && ref.status === "pending"
-            ? { ...ref, status: "purchased" as const }
-            : ref
-        );
+      setReferrals(prevRefs => {
+        const updated = prevRefs.map(ref => {
+          if (currentUser.email && ref.referredEmail.toLowerCase() === currentUser.email.toLowerCase() && (ref.status === "pending" || ref.status === "registered")) {
+            // Found reference. Credit 45 days extension to referrer!
+            setTimeout(() => {
+              setUsers(prevUsers => {
+                const newU = prevUsers.map(u => {
+                  if (u.id === ref.referrerId) {
+                    return {
+                      ...u,
+                      referralRewardsEarned: (u.referralRewardsEarned || 0) + 45
+                    };
+                  }
+                  return u;
+                });
+                localStorage.setItem("yuvakshar_users", JSON.stringify(newU));
+                return newU;
+              });
+
+              setUserMemberships(prevMems => {
+                const newM = prevMems.map(m => {
+                  if (m.userId === ref.referrerId && m.status === "active") {
+                    const exp = new Date(m.expiryDate);
+                    exp.setDate(exp.getDate() + 45);
+                    return {
+                      ...m,
+                      expiryDate: exp.toISOString().split("T")[0]
+                    };
+                  }
+                  return m;
+                });
+                localStorage.setItem("yuvakshar_memberships", JSON.stringify(newM));
+                return newM;
+              });
+            }, 50);
+            return { ...ref, status: "purchased" as const };
+          }
+          return ref;
+        });
         localStorage.setItem("yuvakshar_referrals", JSON.stringify(updated));
         return updated;
       });
@@ -2306,7 +2558,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     logActivity(`Cancelled subscription for user: ${userId}`);
   };
 
-  const assignMembershipManually = async (userId: string, type: "Free" | "Premium" | "Patron", billingCycle: string, durationDays: number) => {
+  const assignMembershipManually = async (userId: string, type: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime", billingCycle: string, durationDays: number) => {
     const now = new Date();
     const expiry = new Date();
     expiry.setDate(now.getDate() + durationDays);
@@ -2332,6 +2584,27 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     logActivity(`Manual membership assignment: ${type} for user: ${userId}`);
   };
 
+  const submitDonation = async (name: string, email: string, amount: number, message?: string): Promise<boolean> => {
+    const newDonation: DonationRecord = {
+      id: "don_" + Date.now(),
+      userId: currentUser?.id || null,
+      name,
+      email,
+      amount,
+      message: message || "",
+      date: new Date().toISOString().split("T")[0]
+    };
+    
+    setDonationHistory(prev => {
+      const updated = [newDonation, ...prev];
+      localStorage.setItem("yuvakshar_donations", JSON.stringify(updated));
+      return updated;
+    });
+
+    logActivity(`Donation submitted: ₹${amount} by ${name}`);
+    return true;
+  };
+
   const getMembershipAnalytics = () => {
     const active = userMemberships.filter(m => m.status === "active" && m.membershipType !== "Free");
     const totalRevenue = paymentRecords.filter(p => p.status === "success").reduce((acc, curr) => acc + curr.amount, 0);
@@ -2339,11 +2612,14 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     
     const premiumCount = active.filter(m => m.membershipType === "Premium").length;
     const patronCount = active.filter(m => m.membershipType === "Patron").length;
+    const foundingCount = active.filter(m => m.membershipType === "Founding").length;
+    const institutionalCount = active.filter(m => m.membershipType === "Institutional").length;
+    const lifetimeCount = active.filter(m => m.membershipType === "Lifetime").length;
     
     const conversionRate = Math.round((active.length / Math.max(1, users.length)) * 100);
     const churnRate = Math.round((expiredCount / Math.max(1, active.length + expiredCount)) * 100);
     const renewalRate = Math.round((active.filter(m => m.autoRenewal).length / Math.max(1, active.length)) * 100);
-    const upgradeRate = Math.round((patronCount / Math.max(1, active.length)) * 100);
+    const upgradeRate = Math.round(((patronCount + foundingCount) / Math.max(1, active.length)) * 100);
 
     return {
       totalMembers: users.length,
@@ -2351,6 +2627,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       expiredMembers: expiredCount,
       premiumMembers: premiumCount,
       patronMembers: patronCount,
+      foundingMembers: foundingCount,
+      institutionalMembers: institutionalCount,
+      lifetimeMembers: lifetimeCount,
       membershipRevenue: totalRevenue,
       conversionRate,
       churnRate,
@@ -2407,6 +2686,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         updateSettings,
         saveArticle,
         deleteArticle,
+        saveMagazine,
+        deleteMagazine,
         incrementArticleView,
         incrementArticleLike,
         saveAssignment,
@@ -2458,7 +2739,11 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         deleteCoupon,
         addReferral,
         assignMembershipManually,
-        getMembershipAnalytics
+        getMembershipAnalytics,
+        donationHistory,
+        submitDonation,
+        foundingSeatsRemaining,
+        setFoundingSeatsRemaining
       }}
     >
       {children}

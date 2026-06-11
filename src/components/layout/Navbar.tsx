@@ -19,6 +19,18 @@ import {
 import { useCms } from "@/store/CmsContext";
 
 
+const translateMembership = (mem?: string | null) => {
+  if (!mem || mem === "Free") return "निःशुल्क पाठक";
+  switch (mem) {
+    case "Premium": return "💎 प्रीमियम सदस्य";
+    case "Patron": return "👑 संरक्षक सदस्य";
+    case "Founding": return "🏛️ संस्थापक सदस्य";
+    case "Institutional": return "🏢 संस्थागत सदस्य";
+    case "Lifetime": return "♾️ आजीवन सदस्य";
+    default: return mem;
+  }
+};
+
 const translateRole = (role?: string | null) => {
   if (role === null) return "सदस्य";
   if (!role) return "अतिथि";
@@ -203,12 +215,12 @@ export default function Navbar() {
                 <Link href="/magazine" className="bg-primary hover:bg-primary/90 text-white px-3 py-1 rounded text-[10px] font-bold transition-all shadow-sm">
                   अंक पढ़ें
                 </Link>
-                <button 
-                  onClick={() => alert("PDF downloading initiated...")}
+                <Link 
+                  href="/magazine"
                   className="border border-slate-300 dark:border-slate-700 hover:border-primary text-[10px] font-bold px-2 py-1 rounded dark:text-slate-200 hover:text-primary transition-all bg-white dark:bg-slate-800"
                 >
-                  PDF डाउनलोड करें
-                </button>
+                  ऑनलाइन पढ़ें
+                </Link>
               </div>
             </div>
             <img 
@@ -223,8 +235,8 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 3. NAVIGATION MENU BAR (Black Background / Sticky) */}
-      <header className={`w-full bg-[#0F172A] text-white border-b border-slate-800 transition-all duration-300 z-40 ${
+      {/* 3. NAVIGATION MENU BAR (Milky White in light mode, Dark in dark mode) */}
+      <header className={`w-full bg-[#F8F6F2] dark:bg-[#0F172A] text-[#0F172A] dark:text-white border-b border-slate-250 dark:border-slate-800 transition-all duration-300 z-40 ${
         scrolled ? "fixed top-0 left-0 right-0 shadow-lg py-1.5" : "relative py-0"
       }`}>
         <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between">
@@ -240,8 +252,8 @@ export default function Navbar() {
                 <div key={link.href} className="relative group">
                   <Link 
                     href={link.href}
-                    className={`px-4 py-3.5 inline-flex items-center space-x-1 hover:text-primary hover:bg-slate-900/50 transition-all ${
-                      pathname === link.href ? "text-primary font-bold" : "text-slate-200"
+                    className={`px-4 py-3.5 inline-flex items-center space-x-1 hover:text-primary transition-all ${
+                      pathname === link.href ? "text-primary font-bold border-b-2 border-primary" : "text-slate-700 dark:text-slate-200"
                     }`}
                   >
                     <span>{link.name}</span>
@@ -250,11 +262,11 @@ export default function Navbar() {
 
                   {/* Lit Sub-Categories Dropdown items */}
                   {link.hasDropdown && (
-                    <div className="absolute top-full left-0 bg-[#0F172A] border border-slate-800 py-2 w-44 rounded-b-xl shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50">
-                      <Link href="/category/literature/poetry" className="block px-4 py-2 text-xs hover:text-primary hover:bg-slate-900 transition-colors">कविता</Link>
-                      <Link href="/category/literature/story" className="block px-4 py-2 text-xs hover:text-primary hover:bg-slate-900 transition-colors">कहानी</Link>
-                      <Link href="/category/literature/memoir" className="block px-4 py-2 text-xs hover:text-primary hover:bg-slate-900 transition-colors">संस्मरण</Link>
-                      <Link href="/category/literature/review" className="block px-4 py-2 text-xs hover:text-primary hover:bg-slate-900 transition-colors">पुस्तक समीक्षा</Link>
+                    <div className="absolute top-full left-0 bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 py-2 w-44 rounded-b-xl shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50">
+                      <Link href="/category/literature/poetry" className="block px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">कविता</Link>
+                      <Link href="/category/literature/story" className="block px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">कहानी</Link>
+                      <Link href="/category/literature/memoir" className="block px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">संस्मरण</Link>
+                      <Link href="/category/literature/review" className="block px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">पुस्तक समीक्षा</Link>
                     </div>
                   )}
                 </div>
@@ -275,7 +287,7 @@ export default function Navbar() {
                     window.location.href = `/search?q=${encodeURIComponent(searchVal)}`;
                   }
                 }}
-                className="bg-slate-900 border border-slate-800 text-xs px-4 py-1.5 rounded-full pr-8 w-40 focus:w-52 focus:outline-none focus:border-primary transition-all text-slate-200"
+                className="bg-white dark:bg-slate-900 border border-slate-350 dark:border-slate-850 text-xs px-4 py-1.5 rounded-full pr-8 w-40 focus:w-52 focus:outline-none focus:border-primary transition-all text-slate-800 dark:text-slate-200"
               />
               <Search className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-2 pointer-events-none" />
             </div>
@@ -283,7 +295,7 @@ export default function Navbar() {
             {/* Dark mode Toggle */}
             <button 
               onClick={toggleTheme}
-              className="p-2 text-slate-300 hover:text-primary hover:bg-slate-900 rounded-full transition-colors cursor-pointer"
+              className="p-2 text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-slate-200 dark:hover:bg-slate-900 rounded-full transition-colors cursor-pointer"
             >
               {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </button>
@@ -293,19 +305,26 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  className="flex items-center space-x-2 p-1.5 rounded-full border border-slate-800 bg-slate-900/60 text-slate-300 hover:border-primary transition-all cursor-pointer"
+                  className="flex items-center space-x-2.5 p-1.5 px-3.5 rounded-xl border border-slate-250 dark:border-slate-850 bg-white/70 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 hover:border-primary transition-all cursor-pointer"
                 >
-                  <div className="w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs uppercase overflow-hidden">
-                    {currentUser.avatar_url ? (
-                      <img src={currentUser.avatar_url} alt={currentUser.name} className="w-full h-full object-cover" />
-                    ) : (
-                      currentUser.name ? currentUser.name[0] : "U"
-                    )}
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FF5A1F] to-amber-400 p-[1.5px] overflow-hidden shrink-0 flex items-center justify-center">
+                    <div className="w-full h-full rounded-full bg-white dark:bg-[#0A0F1D] flex items-center justify-center text-xs font-bold uppercase overflow-hidden text-primary">
+                      {currentUser.avatar_url ? (
+                        <img src={currentUser.avatar_url} alt={currentUser.name} className="w-full h-full object-cover" />
+                      ) : (
+                        currentUser.name ? currentUser.name[0] : "U"
+                      )}
+                    </div>
                   </div>
-                  <span className="hidden sm:inline text-[10px] font-bold tracking-wider font-serif max-w-[80px] truncate">
-                    {currentUser.name || "पाठक"}
-                  </span>
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                  <div className="hidden sm:flex flex-col items-start text-left leading-tight">
+                    <span className="text-xs font-bold font-serif text-slate-850 dark:text-white">
+                      {currentUser.name || "पाठक"}
+                    </span>
+                    <span className="text-[9px] text-slate-500 dark:text-slate-400 font-sans tracking-wide mt-0.5">
+                      {translateMembership(currentUser.membership)}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                 </button>
 
                 {profileDropdownOpen && (
@@ -314,46 +333,53 @@ export default function Navbar() {
                       className="fixed inset-0 z-40" 
                       onClick={() => setProfileDropdownOpen(false)} 
                     />
-                    <div className="absolute right-0 mt-2 w-48 bg-[#0F172A] border border-slate-800 py-2 rounded-xl shadow-2xl z-50 text-xs font-serif leading-normal">
-                      <div className="px-4 py-2 border-b border-slate-800/80 mb-1">
-                        <p className="font-bold text-white truncate">{currentUser.name}</p>
-                        <p className="text-[10px] text-slate-400 truncate">{translateRole(currentUser.role)}</p>
+                    <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 py-2 rounded-2xl shadow-2xl z-50 text-xs font-serif leading-normal">
+                      <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 mb-1.5">
+                        <p className="font-bold text-slate-800 dark:text-white truncate">👤 {currentUser.name}</p>
+                        <p className="text-[10px] text-primary font-bold truncate mt-0.5">{translateMembership(currentUser.membership)}</p>
+                        <p className="text-[9px] text-slate-400 truncate">{translateRole(currentUser.role)}</p>
                       </div>
+                      
                       <Link 
                         href="/admin?tab=profile" 
                         onClick={() => { setProfileDropdownOpen(false); }}
-                        className="block px-4 py-2 text-slate-300 hover:text-primary hover:bg-slate-900 transition-all"
+                        className="block px-4 py-2 text-slate-700 dark:text-slate-350 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-900 transition-all"
                       >
                         मेरा प्रोफ़ाइल
                       </Link>
+                      
                       <Link 
-                        href="/admin?tab=study-progress" 
+                        href="/admin?tab=library" 
                         onClick={() => { setProfileDropdownOpen(false); }}
-                        className="block px-4 py-2 text-slate-300 hover:text-primary hover:bg-slate-900 transition-all"
+                        className="block px-4 py-2 text-slate-700 dark:text-slate-350 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-900 transition-all"
                       >
-                        मेरी अध्ययन प्रगति
+                        मेरी पुस्तकालय
                       </Link>
+                      
                       <Link 
-                        href="/admin?tab=articles" 
+                        href="/admin?tab=bookmarks" 
                         onClick={() => { setProfileDropdownOpen(false); }}
-                        className="block px-4 py-2 text-slate-300 hover:text-primary hover:bg-slate-900 transition-all"
+                        className="block px-4 py-2 text-slate-700 dark:text-slate-350 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-900 transition-all"
                       >
-                        मेरे लेख
+                        बुकमार्क
                       </Link>
+                      
                       <Link 
-                        href="/admin?tab=study-progress" 
+                        href="/admin?tab=certificates" 
                         onClick={() => { setProfileDropdownOpen(false); }}
-                        className="block px-4 py-2 text-slate-300 hover:text-primary hover:bg-slate-900 transition-all"
-                      >
-                        सहेजे गए लेख
-                      </Link>
-                      <Link 
-                        href="/admin?tab=study-progress" 
-                        onClick={() => { setProfileDropdownOpen(false); }}
-                        className="block px-4 py-2 text-slate-300 hover:text-primary hover:bg-slate-900 transition-all"
+                        className="block px-4 py-2 text-slate-700 dark:text-slate-350 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-900 transition-all"
                       >
                         प्रमाणपत्र
                       </Link>
+                      
+                      <Link 
+                        href="/admin?tab=study-progress" 
+                        onClick={() => { setProfileDropdownOpen(false); }}
+                        className="block px-4 py-2 text-slate-700 dark:text-slate-350 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-900 transition-all"
+                      >
+                        अध्ययन प्रगति
+                      </Link>
+                      
                       <Link 
                         href="/admin?tab=settings" 
                         onClick={() => { setProfileDropdownOpen(false); }}

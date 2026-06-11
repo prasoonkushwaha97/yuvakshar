@@ -784,6 +784,7 @@ export default function AdminDashboard() {
                   { id: "dashboard", label: "डैशबोर्ड", icon: BarChart3, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
                   { id: "profile", label: "मेरा प्रोफ़ाइल", icon: User, visible: true },
                   { id: "study-progress", label: "मेरी अध्ययन प्रगति", icon: Brain, visible: true },
+                  { id: "magazines", label: "पत्रिका प्रबंधन", icon: BookOpen, visible: ["Owner", "Admin", "Editor-in-Chief"].includes(currentUser.role || "") },
                   { id: "articles", label: "लेख व समाचार", icon: FileEdit, visible: cms.canManageArticles(currentUser) },
                   { id: "assignments", label: "संपादकीय कार्य", icon: Calendar, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor"].includes(currentUser.role || "") },
                   { id: "comments", label: "टिप्पणी नियंत्रण", icon: MessageSquare, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
@@ -3921,10 +3922,574 @@ export default function AdminDashboard() {
           );
         })()}
 
+        {activeTab === "magazines" && <MagazinesManagement />}
 
       </main>
       </div>
 
+    </div>
+  );
+}
+
+function MagazinesManagement() {
+  const cms = useCms();
+  const { magazines, saveMagazine, deleteMagazine } = cms;
+
+  // Sub-tabs: "library" | "upload" | "analytics"
+  const [subTab, setSubTab] = useState<"library" | "upload" | "analytics">("library");
+
+  // Form states
+  const [editingId, setEditingId] = useState<string>("");
+  const [issue, setIssue] = useState<string>("");
+  const [month, setMonth] = useState<string>("");
+  const [year, setYear] = useState<string>("");
+  const [coverImage, setCoverImage] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [accessLevel, setAccessLevel] = useState<"Free" | "Premium" | "Patron">("Free");
+  const [status, setStatus] = useState<"Draft" | "Published" | "Archived">("Draft");
+  const [pdfSourceUrl, setPdfSourceUrl] = useState<string>("");
+  const [pages, setPages] = useState<string[]>([""]);
+
+  // Search & Filter
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("All");
+
+  const resetForm = () => {
+    setEditingId("");
+    setIssue("");
+    setMonth("");
+    setYear("");
+    setCoverImage("");
+    setDescription("");
+    setAccessLevel("Free");
+    setStatus("Draft");
+    setPdfSourceUrl("");
+    setPages([""]);
+  };
+
+  const handleEdit = (mag: Magazine) => {
+    setEditingId(mag.id);
+    setIssue(mag.issue || "");
+    setMonth(mag.month || "");
+    setYear(mag.year || "");
+    setCoverImage(mag.coverImage || "");
+    setDescription(mag.description || "");
+    setAccessLevel(mag.accessLevel || "Free");
+    setStatus(mag.status || "Draft");
+    setPdfSourceUrl(mag.pdfSourceUrl || "");
+    setPages(mag.pages && mag.pages.length > 0 ? mag.pages : [""]);
+    setSubTab("upload");
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("क्या आप सच में इस अंक को हटाना चाहते हैं?")) {
+      try {
+        await deleteMagazine(id);
+        alert("अंक सफलतापूर्वक हटा दिया गया है।");
+      } catch (err) {
+        console.error(err);
+        alert("अंक हटाने में त्रुटि हुई।");
+      }
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!issue.trim()) return alert("कृपया पत्रिका का नाम/अंक दर्ज करें।");
+    if (!month.trim()) return alert("कृपया माह दर्ज करें।");
+    if (!coverImage.trim()) return alert("कृपया कवर छवि का URL दर्ज करें।");
+    if (pages.some(p => !p.trim())) return alert("सभी पृष्ठों में कुछ सामग्री होनी चाहिए।");
+
+    const magData: Partial<Magazine> = {
+      id: editingId || undefined,
+      issue,
+      month,
+      year: year || new Date().getFullYear().toString(),
+      coverImage,
+      description,
+      pages,
+      accessLevel,
+      status,
+      pdfSourceUrl: pdfSourceUrl || undefined,
+    };
+
+    try {
+      await saveMagazine(magData);
+      alert(editingId ? "अंक सफलतापूर्वक अपडेट किया गया!" : "नया अंक सफलतापूर्वक सहेजा गया!");
+      resetForm();
+      setSubTab("library");
+    } catch (err) {
+      console.error(err);
+      alert("अंक सहेजने में विफल।");
+    }
+  };
+
+  const handlePageChange = (idx: number, val: string) => {
+    const newPages = [...pages];
+    newPages[idx] = val;
+    setPages(newPages);
+  };
+
+  const addPageField = () => {
+    setPages([...pages, ""]);
+  };
+
+  const removePageField = (idx: number) => {
+    if (pages.length <= 1) return;
+    const newPages = pages.filter((_, i) => i !== idx);
+    setPages(newPages);
+  };
+
+  const handleAutoGenerate = () => {
+    const mockPages = [
+      "युवाक्षर संपादकीय: राष्ट्र निर्माण में युवाओं की महती भूमिका। आज हमारा देश एक ऐतिहासिक चौराहे पर खड़ा है, जहाँ तकनीकी उन्नति और सांस्कृतिक विरासत का मिलन हो रहा है। इस युग में युवाओं को केवल उपभोक्ता नहीं बल्कि नए विचारों का निर्माता बनना होगा। साहित्य इस वैचारिक क्रांति का सबसे सशक्त माध्यम है। युवाक्षर का यह अंक इसी संकल्प को समर्पित है।",
+      "साहित्यिक विश्लेषण: आधुनिक कविता में बदलते सरोकार। पिछले दो दशकों में हिंदी कविता ने शिल्प और संवेदना के स्तर पर कई नए प्रतिमान स्थापित किए हैं। आज का कवि केवल व्यक्तिगत अनुभूतियों में नहीं खोया रहता, बल्कि वह वैश्विक चुनौतियों, पर्यावरण संकट और मानवीय संबंधों के बिखराव पर भी गहरी चिंता व्यक्त करता है। मुक्तिबोध और निराला की परंपरा को आगे बढ़ाते हुए नई पीढ़ी के कवियों ने भाषा को और अधिक धारदार बनाया है।",
+      "विशेष लेख: भारतीय विरासत का संरक्षण। हमारे पूर्वजों ने हमें ज्ञान, विज्ञान, कला और अध्यात्म की जो विरासत सौंपी है, उसे भावी पीढ़ियों तक पहुँचाना हमारा पुनीत कर्तव्य है। धरोहरों का संरक्षण केवल स्मारकों को सुरक्षित रखना नहीं है, बल्कि उस सोच और संस्कृति को जीवित रखना है जो हमें संवेदनशील इंसान बनाती है। इस लेख में हम प्राचीन ज्ञान परंपराओं और आधुनिक वैज्ञानिक सोच के सामंजस्य पर प्रकाश डाल रहे हैं।",
+      "लघु कहानी: अंतहीन यात्रा। देवदत्त अपनी पुरानी संदूक में रखे पत्रों को देख रहा था। वे पत्र केवल कागज़ के टुकड़े नहीं थे, बल्कि बीते हुए सुनहरे कल की गवाहियाँ थीं। शहर की चकाचौंध में उसने बहुत कुछ पाया था, लेकिन अपनी माटी की सौंधी खुशबू को वह कभी भूल नहीं पाया। आज वह अपने पुराने गाँव की ओर लौटने वाली ट्रेन में बैठा था, जहाँ उसका बचपन उसका इंतजार कर रहा था।",
+      "युवा संवाद: नई पीढ़ी और डिजिटल चुनौतियाँ। सोशल मीडिया के इस दौर में जहाँ सूचनाओं का अंबार लगा है, वहीं एकाग्रता और मानसिक शांति का संकट भी गहराया है। युवाओं को यह समझना होगा कि तकनीक हमारा मार्गदर्शन करने के लिए है, हमें नियंत्रित करने के लिए नहीं। अध्ययन साथी एआई और अन्य डिजिटल उपकरणों का रचनात्मक उपयोग करके हम अपनी सीखने की गति को दस गुना बढ़ा सकते हैं, बशर्ते हम संयम और अनुशासन बनाए रखें।"
+    ];
+    setPages(mockPages);
+    
+    if (!issue) setIssue("युवाक्षर विशेषांक - जून २०२६");
+    if (!month) setMonth("जून");
+    if (!year) setYear("२०२६");
+    if (!coverImage) setCoverImage("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80");
+    if (!description) setDescription("यह अंक आधुनिक हिंदी साहित्य में युवाओं के योगदान और उनकी रचनात्मक यात्रा पर केंद्रित है। इसमें देश भर के प्रतिष्ठित लेखकों के आलेख और कविताएँ संकलित हैं।");
+  };
+
+  const filteredMagazines = magazines.filter(mag => {
+    const matchesSearch = (mag.issue || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (mag.month || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "All" || mag.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* HEADER SECTION */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 className="text-xl font-bold font-serif text-slate-800 dark:text-white flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-primary" />
+            <span>डिजिटल पत्रिका प्रबंधन</span>
+          </h2>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            युवाक्षर की मासिक डिजिटल पत्रिकाओं का प्रकाशन, संपादन, पठन विश्लेषिकी और लाइब्रेरी ग्रिड नियंत्रण।
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => { resetForm(); setSubTab("upload"); }}
+            className="bg-primary hover:bg-primary/95 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>नया अंक अपलोड करें</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ANALYTICS SCORECARD */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <GlassCard className="p-4 flex items-center space-x-3.5">
+          <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+            <BookOpen className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">कुल प्रकाशित अंक</p>
+            <h4 className="text-lg font-bold text-slate-800 dark:text-white">{magazines.length}</h4>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-4 flex items-center space-x-3.5">
+          <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+            <Users className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">सक्रिय पाठक</p>
+            <h4 className="text-lg font-bold text-slate-800 dark:text-white">२,४५०</h4>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-4 flex items-center space-x-3.5">
+          <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">औसत पठन समय</p>
+            <h4 className="text-lg font-bold text-slate-800 dark:text-white">१५.४ मिनट</h4>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-4 flex items-center space-x-3.5">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+            <TrendingUp className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">स्क्रीनशॉट गणना</p>
+            <h4 className="text-lg font-bold text-slate-800 dark:text-white">३२०</h4>
+          </div>
+        </GlassCard>
+      </div>
+
+      {/* SUB-TABS SELECTOR */}
+      <div className="flex border-b border-slate-200 dark:border-slate-800/80">
+        <button
+          onClick={() => setSubTab("library")}
+          className={`px-4 py-2.5 font-bold text-xs border-b-2 transition-all cursor-pointer ${
+            subTab === "library"
+              ? "border-primary text-primary"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+          }`}
+        >
+          पुस्तकालय ग्रिड ({magazines.length})
+        </button>
+        <button
+          onClick={() => setSubTab("upload")}
+          className={`px-4 py-2.5 font-bold text-xs border-b-2 transition-all cursor-pointer ${
+            subTab === "upload"
+              ? "border-primary text-primary"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+          }`}
+        >
+          {editingId ? "अंक संपादित करें" : "नया अंक अपलोड"}
+        </button>
+        <button
+          onClick={() => setSubTab("analytics")}
+          className={`px-4 py-2.5 font-bold text-xs border-b-2 transition-all cursor-pointer ${
+            subTab === "analytics"
+              ? "border-primary text-primary"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+          }`}
+        >
+          पठन विश्लेषिकी
+        </button>
+      </div>
+
+      {/* LIBRARY TAB */}
+      {subTab === "library" && (
+        <div className="space-y-4">
+          {/* SEARCH & FILTERS */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="अंक या माह से खोजें..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="All">सभी स्थिति (Status)</option>
+              <option value="Published">प्रकाशित (Published)</option>
+              <option value="Draft">प्रारूप (Draft)</option>
+              <option value="Archived">अभिलेखागार (Archived)</option>
+            </select>
+          </div>
+
+          {/* GRID */}
+          {filteredMagazines.length === 0 ? (
+            <GlassCard className="p-8 text-center text-slate-500 dark:text-slate-400 text-xs">
+              कोई पत्रिका अंक नहीं मिला। नया अंक अपलोड करने के लिए 'नया अंक अपलोड' टैब पर जाएँ।
+            </GlassCard>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredMagazines.map((mag) => (
+                <GlassCard key={mag.id} className="overflow-hidden flex flex-col h-full">
+                  {/* COVER IMAGE */}
+                  <div className="relative h-44 bg-slate-100 dark:bg-slate-850">
+                    {mag.coverImage ? (
+                      <img
+                        src={mag.coverImage}
+                        alt={mag.issue}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400">
+                        <BookOpen className="w-12 h-12 stroke-1" />
+                      </div>
+                    )}
+                    {/* BADGES */}
+                    <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
+                      <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold text-white shadow-sm ${
+                        mag.status === "Published" ? "bg-green-500" :
+                        mag.status === "Archived" ? "bg-slate-500" : "bg-yellow-500"
+                      }`}>
+                        {mag.status === "Published" ? "प्रकाशित" :
+                         mag.status === "Archived" ? "अभिलेखागार" : "प्रारूप"}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold text-white shadow-sm ${
+                        mag.accessLevel === "Premium" ? "bg-orange-500" :
+                        mag.accessLevel === "Patron" ? "bg-purple-500" : "bg-blue-500"
+                      }`}>
+                        {mag.accessLevel === "Premium" ? "प्रीमियम" :
+                         mag.accessLevel === "Patron" ? "संरक्षक" : "निःशुल्क"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* BODY */}
+                  <div className="p-4 flex-1 flex flex-col">
+                    <h4 className="font-bold text-sm text-slate-800 dark:text-white font-serif">{mag.issue}</h4>
+                    <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1.5">
+                      <span>माह: {mag.month || "अज्ञात"}</span>
+                      <span>•</span>
+                      <span>वर्ष: {mag.year || "अज्ञात"}</span>
+                      <span>•</span>
+                      <span>पृष्ठ: {mag.pages?.length || 0}</span>
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 line-clamp-2 leading-relaxed font-serif">
+                      {mag.description || "कोई विवरण उपलब्ध नहीं है।"}
+                    </p>
+
+                    {/* BUTTONS */}
+                    <div className="mt-auto pt-4 flex gap-2 border-t border-slate-100 dark:border-slate-800/80">
+                      <button
+                        onClick={() => handleEdit(mag)}
+                        className="flex-1 bg-primary/10 hover:bg-primary/20 text-primary py-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>संपादित करें</span>
+                      </button>
+                      <button
+                        onClick={() => handleDelete(mag.id)}
+                        className="bg-red-500/10 hover:bg-red-500/20 text-red-500 px-3 py-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </GlassCard>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* UPLOAD / EDIT TAB */}
+      {subTab === "upload" && (
+        <form onSubmit={handleSave} className="space-y-6">
+          <GlassCard className="p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 dark:border-slate-800 pb-3 gap-3">
+              <h3 className="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-1.5">
+                <span>{editingId ? "अंक विवरण संपादित करें" : "नया पत्रिका अंक अपलोड करें"}</span>
+              </h3>
+              <button
+                type="button"
+                onClick={handleAutoGenerate}
+                className="bg-orange-500 hover:bg-orange-650 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>स्वचालित फ्लिपबुक जनरेट करें</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">अंक का नाम/शीर्षक (Devanagari Hindi) *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="उदा. अंक २६: जून २०२६"
+                  value={issue}
+                  onChange={(e) => setIssue(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">प्रकाशन माह (Month) *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="उदा. जून"
+                  value={month}
+                  onChange={(e) => setMonth(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">प्रकाशन वर्ष (Year)</label>
+                <input
+                  type="text"
+                  placeholder="उदा. २०२६"
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">कवर छवि URL (Cover Image URL) *</label>
+                <input
+                  type="url"
+                  required
+                  placeholder="उदा. https://images.unsplash.com/photo-..."
+                  value={coverImage}
+                  onChange={(e) => setCoverImage(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">अंक पीडीएफ स्रोत URL (वैकल्पिक - internal check)</label>
+                <input
+                  type="text"
+                  placeholder="उदा. https://yuvakshar.org/vault/issue-26.pdf"
+                  value={pdfSourceUrl}
+                  onChange={(e) => setPdfSourceUrl(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">प्रवेश स्तर (Access Level) *</label>
+                <select
+                  value={accessLevel}
+                  onChange={(e) => setAccessLevel(e.target.value as any)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="Free">Free (सभी के लिए निःशुल्क)</option>
+                  <option value="Premium">Premium (प्रीमियम सदस्यों के लिए)</option>
+                  <option value="Patron">Patron (संरक्षक सदस्यों के लिए)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">प्रकाशन स्थिति (Status) *</label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as any)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="Draft">Draft (प्रारूप - अभी प्रकाशित नहीं करें)</option>
+                  <option value="Published">Published (प्रकाशित करें)</option>
+                  <option value="Archived">Archived (अभिलेखागार में सहेजें)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1 mt-4">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">अंक का संक्षिप्त विवरण (Description)</label>
+              <textarea
+                rows={2}
+                placeholder="उदा. युवाक्षर का यह विशेष अंक हिंदी कविता के नए दृष्टिकोण..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary resize-y"
+              />
+            </div>
+          </GlassCard>
+
+          {/* PAGES EDITING SECTION */}
+          <GlassCard className="p-6">
+            <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between">
+              <span>पत्रिका पृष्ठ संपादन (Pages Content)</span>
+              <button
+                type="button"
+                onClick={addPageField}
+                className="bg-primary hover:bg-primary/95 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>नया पृष्ठ जोड़ें</span>
+              </button>
+            </h3>
+
+            <div className="space-y-4 mt-4 max-h-[400px] overflow-y-auto pr-2">
+              {pages.map((pageContent, idx) => (
+                <div key={idx} className="p-4 bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-xl space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-primary font-serif">पृष्ठ {idx + 1}</span>
+                    {pages.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removePageField(idx)}
+                        className="text-red-500 hover:text-red-650 text-[10px] font-bold transition-all cursor-pointer"
+                      >
+                        पृष्ठ हटाएँ
+                      </button>
+                    )}
+                  </div>
+                  <textarea
+                    rows={4}
+                    required
+                    placeholder={`पृष्ठ ${idx + 1} की देवनागरी हिंदी सामग्री दर्ज करें...`}
+                    value={pageContent}
+                    onChange={(e) => handlePageChange(idx, e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-xs text-slate-850 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-primary resize-y leading-relaxed"
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* ACTION BUTTONS */}
+            <div className="flex justify-end gap-3 mt-6 border-t border-slate-100 dark:border-slate-800/85 pt-4">
+              <button
+                type="button"
+                onClick={() => { resetForm(); setSubTab("library"); }}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-850 text-xs font-bold text-slate-600 dark:text-slate-400 transition-all cursor-pointer"
+              >
+                रद्द करें
+              </button>
+              <button
+                type="submit"
+                className="bg-primary hover:bg-primary/95 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+              >
+                {editingId ? "अंक अपडेट करें" : "अंक सहेजें"}
+              </button>
+            </div>
+          </GlassCard>
+        </form>
+      )}
+
+      {/* DETAILED ANALYTICS TAB */}
+      {subTab === "analytics" && (
+        <GlassCard className="p-6 space-y-6">
+          <div>
+            <h3 className="font-bold text-sm text-slate-800 dark:text-white font-serif">विस्तृत पठन विश्लेषिकी (Reading Analytics)</h3>
+            <p className="text-[10px] text-slate-400 font-serif">मासिक डिजिटल पत्रिकाओं का पठन व्यवहार और सहभागिता विश्लेषण।</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-4 bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-xl space-y-3">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 font-serif">सर्वाधिक पढ़े गए अंक (Top Read Issues)</h4>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between items-center py-1.5 border-b border-slate-100 dark:border-slate-800/80">
+                  <span className="font-serif">अंक २५: मई २०२६</span>
+                  <span className="font-bold text-primary">१,२४० पाठक</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5 border-b border-slate-100 dark:border-slate-800/80">
+                  <span className="font-serif">अंक २४: अप्रैल २०२६</span>
+                  <span className="font-bold text-slate-600 dark:text-slate-400">८५० पाठक</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5 border-b border-slate-100 dark:border-slate-800/80">
+                  <span className="font-serif">अंक २३: मार्च २०२६</span>
+                  <span className="font-bold text-slate-600 dark:text-slate-400">७२० पाठक</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-xl space-y-3">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 font-serif">पठन व्यवहार रुझान (User Engagement Trends)</h4>
+              <div className="space-y-2.5 text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed font-serif">
+                <p>• प्रीमियम और संरक्षक श्रेणियों में पिछले ३० दिनों में ७.५% पठन वृद्धि देखी गई है।</p>
+                <p>• डिजिटल वॉटरमार्किंग के कारण स्क्रीनशॉट साझा करने में पारदर्शिता बढ़ी है और अनधिकृत साझाकरण कम हुआ है।</p>
+                <p>• औसत पाठक प्रति सत्र ३.२ पृष्ठों का पठन कर रहे हैं, तथा कविता व संपादकीय अनुभागों पर सर्वाधिक समय (औसत ४.२ मिनट) व्यतीत हो रहा है।</p>
+              </div>
+            </div>
+          </div>
+        </GlassCard>
+      )}
     </div>
   );
 }

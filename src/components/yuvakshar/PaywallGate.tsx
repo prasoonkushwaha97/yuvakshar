@@ -3,18 +3,18 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Lock, CheckCircle2, Sparkles, ArrowRight, Crown, Gem, LogIn } from "lucide-react";
+import { Lock, CheckCircle2, Sparkles, ArrowRight, Crown, Gem, LogIn, Award } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import GlassCard from "./GlassCard";
 
 interface PaywallGateProps {
-  accessLevel?: "Free" | "Premium" | "Patron";
+  accessLevel?: "Free" | "Premium" | "Patron" | "Founding";
   children: React.ReactNode;
 }
 
 export default function PaywallGate({ accessLevel = "Free", children }: PaywallGateProps) {
   const router = useRouter();
-  const { currentUser, openAuthModal } = useCms();
+  const { currentUser, openAuthModal, canAccessContent } = useCms();
 
   // 1. Free articles are accessible to all
   if (accessLevel === "Free") {
@@ -44,27 +44,24 @@ export default function PaywallGate({ accessLevel = "Free", children }: PaywallG
     );
   }
 
-  const userMembership = currentUser?.membership || "Free";
-
-  // 3. Check access
-  const hasAccess = 
-    (accessLevel === "Premium" && (userMembership === "Premium" || userMembership === "Patron")) ||
-    (accessLevel === "Patron" && userMembership === "Patron");
-
-  if (hasAccess) {
+  // 3. Check access using CmsContext's unified helper
+  if (canAccessContent(currentUser, { accessLevel })) {
     return <>{children}</>;
   }
 
   // 4. Render Lock Screen
   const isPremiumLocked = accessLevel === "Premium";
   const isPatronLocked = accessLevel === "Patron";
+  const isFoundingLocked = accessLevel === "Founding";
 
   const handleLoginClick = () => {
     openAuthModal(
       undefined,
       isPremiumLocked 
         ? "कृपया प्रीमियम लेख पढ़ने के लिए अपने युवाक्षर खाते में प्रवेश करें।" 
-        : "कृपया संरक्षक-विशिष्ट लेख पढ़ने के लिए अपने युवाक्षर खाते में प्रवेश करें।"
+        : isPatronLocked
+          ? "कृपया संरक्षक-विशिष्ट लेख पढ़ने के लिए अपने युवाक्षर खाते में प्रवेश करें।"
+          : "कृपया संस्थापक सदस्य लेख पढ़ने के लिए अपने युवाक्षर खाते में प्रवेश करें।"
     );
   };
 
@@ -90,7 +87,7 @@ export default function PaywallGate({ accessLevel = "Free", children }: PaywallG
 
       {/* Lock Overlay */}
       <div className="relative z-10 bg-slate-950/80 dark:bg-[#060913]/90 backdrop-blur-[2px] p-6 md:p-10 text-center flex flex-col items-center justify-center min-h-[450px]">
-        {isPremiumLocked ? (
+        {isPremiumLocked && (
           // Premium Lock Screen
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -148,7 +145,7 @@ export default function PaywallGate({ accessLevel = "Free", children }: PaywallG
               ) : (
                 <button
                   onClick={handleSubscribeClick}
-                  className="flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-8 py-3 rounded-xl font-medium text-base transition-all w-full sm:w-auto shadow-lg shadow-orange-500/15 cursor-pointer animate-bounce"
+                  className="flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-8 py-3 rounded-xl font-medium text-base transition-all w-full sm:w-auto shadow-lg shadow-orange-500/15 cursor-pointer"
                 >
                   <span>प्रीमियम में अपग्रेड करें (₹49 से शुरू)</span>
                   <ArrowRight className="w-4 h-4" />
@@ -156,7 +153,9 @@ export default function PaywallGate({ accessLevel = "Free", children }: PaywallG
               )}
             </div>
           </motion.div>
-        ) : (
+        )}
+
+        {isPatronLocked && (
           // Patron Lock Screen
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -223,7 +222,76 @@ export default function PaywallGate({ accessLevel = "Free", children }: PaywallG
             </div>
           </motion.div>
         )}
+
+        {isFoundingLocked && (
+          // Founding Member Lock Screen
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-2xl w-full"
+          >
+            <div className="inline-flex p-3 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 mb-4 animate-pulse">
+              <Award className="w-8 h-8" />
+            </div>
+
+            <h2 className="text-2xl md:text-3xl font-serif font-bold text-white mb-2">
+              युवाक्षर संस्थापक सदस्य विशेष लेख
+            </h2>
+            <p className="text-slate-300 text-sm md:text-base max-w-md mx-auto mb-6">
+              यह उच्च-स्तरीय शोध और रणनीतिक विमर्श केवल संस्थापक सदस्यों (Founding Members) के लिए उपलब्ध है।
+            </p>
+
+            {/* Benefits Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left max-w-lg mx-auto mb-8 bg-white/5 border border-white/10 p-4 rounded-xl">
+              {[
+                "सभी प्रीमियम व संरक्षक विशेषाधिकार",
+                "वार्षिक मुद्रित विशेषांक की मानद प्रतियां",
+                "युवाक्षर संस्थापक पट्टिका पर स्थायी नाम",
+                "विशेष संपादकीय गोलमेज बैठकों में आमंत्रण",
+                "भविष्य की गतिविधियों में VIP प्रवेश",
+                "आजीवन अकादमिक सहयोग एवं शोध संसाधन"
+              ].map((benefit, i) => (
+                <div key={i} className="flex items-start space-x-2 text-xs md:text-sm text-slate-200">
+                  <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                  <span>{benefit}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              {!currentUser ? (
+                <>
+                  <button
+                    onClick={handleLoginClick}
+                    className="flex items-center justify-center space-x-2 bg-white text-slate-950 hover:bg-slate-200 px-6 py-3 rounded-xl font-medium text-sm transition-all w-full sm:w-auto cursor-pointer"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>लॉगिन करें</span>
+                  </button>
+                  <button
+                    onClick={handleSubscribeClick}
+                    className="flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-750 text-white px-6 py-3 rounded-xl font-medium text-sm transition-all w-full sm:w-auto shadow-lg shadow-blue-500/10 cursor-pointer"
+                  >
+                    <span>संस्थापक सदस्य बनें (सीमित सीटें)</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={handleSubscribeClick}
+                  className="flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-750 text-white px-8 py-3 rounded-xl font-medium text-base transition-all w-full sm:w-auto shadow-lg shadow-blue-500/15 cursor-pointer"
+                >
+                  <span>संस्थापक सदस्यता में अपग्रेड करें</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
 }
+

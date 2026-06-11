@@ -31,11 +31,13 @@ export default function MembershipPage() {
     openAuthModal, 
     purchaseMembership, 
     validateCoupon,
-    userMemberships 
+    userMemberships,
+    foundingSeatsRemaining,
+    submitDonation
   } = useCms();
 
   const [billingCycle, setBillingCycle] = useState<"Monthly" | "Quarterly" | "Half-Yearly" | "Yearly">("Monthly");
-  const [selectedPlan, setSelectedPlan] = useState<"Premium" | "Patron" | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<"Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime" | null>(null);
   
   // Checkout Modal State
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -61,15 +63,28 @@ export default function MembershipPage() {
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "failed">("idle");
   const [paymentDetails, setPaymentDetails] = useState<{ transactionId: string; date: string; invoiceUrl: string } | null>(null);
 
+  // Donation Desk State
+  const [donationName, setDonationName] = useState("");
+  const [donationEmail, setDonationEmail] = useState("");
+  const [donationAmount, setDonationAmount] = useState("500");
+  const [donationMessage, setDonationMessage] = useState("");
+  const [donationStatus, setDonationStatus] = useState<"idle" | "processing" | "success" | "failed">("idle");
+
   // Prices configuration
   const prices = {
-    Premium: { Monthly: 49, Quarterly: 129, "Half-Yearly": 249, Yearly: 499 },
-    Patron: { Monthly: 199, Quarterly: 549, "Half-Yearly": 999, Yearly: 1999 }
+    Premium: { Monthly: 49, Quarterly: 129, "Half-Yearly": 249, Yearly: 499, "Lifetime": 499 },
+    Patron: { Monthly: 199, Quarterly: 549, "Half-Yearly": 999, Yearly: 1999, "Lifetime": 1999 },
+    Founding: { Monthly: 250, Quarterly: 699, "Half-Yearly": 1299, Yearly: 2500, "Lifetime": 2500 },
+    Institutional: { Monthly: 999, Quarterly: 2799, "Half-Yearly": 4999, Yearly: 9999, "Lifetime": 9999 },
+    Lifetime: { Monthly: 15000, Quarterly: 15000, "Half-Yearly": 15000, Yearly: 15000, "Lifetime": 15000 }
   };
 
   const currentPrices = {
-    Premium: prices.Premium[billingCycle],
-    Patron: prices.Patron[billingCycle]
+    Premium: prices.Premium[billingCycle] || prices.Premium.Yearly,
+    Patron: prices.Patron[billingCycle] || prices.Patron.Yearly,
+    Founding: prices.Founding[billingCycle] || prices.Founding.Yearly,
+    Institutional: prices.Institutional[billingCycle] || prices.Institutional.Yearly,
+    Lifetime: prices.Lifetime[billingCycle] || prices.Lifetime.Yearly
   };
 
   const getBasePrice = () => {
@@ -121,7 +136,7 @@ export default function MembershipPage() {
     setCouponError("");
   };
 
-  const handleStartCheckout = (plan: "Premium" | "Patron") => {
+  const handleStartCheckout = (plan: "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime") => {
     if (!currentUser) {
       openAuthModal(
         () => {
@@ -367,7 +382,7 @@ export default function MembershipPage() {
             <div className="pt-8 mt-auto">
               <button 
                 disabled
-                className="w-full py-3 px-4 rounded-xl text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-center"
+                className="w-full py-3 px-4 rounded-xl text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-center bg-slate-100 dark:bg-slate-900"
               >
                 डिफ़ॉल्ट रूप से शामिल
               </button>
@@ -401,7 +416,7 @@ export default function MembershipPage() {
               <ul className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300 pt-2">
                 {[
                   "सभी प्रीमियम लेखों तक असीमित पहुंच",
-                  "मासिक ई-पत्रिका का पीडीएफ डाउनलोड",
+                  "मासिक ई-पत्रिका का ऑनलाइन पाठ",
                   "पूरी तरह विज्ञापन-मुक्त अनुभव",
                   "AI अध्ययन सहायक (असीमित टोकन)",
                   "लेखकों के साथ सीधा बौद्धिक संवाद",
@@ -486,6 +501,156 @@ export default function MembershipPage() {
 
         </div>
 
+        {/* Pricing Cards Row 2 */}
+        <div className="pt-6">
+          <h3 className="text-center font-serif text-lg font-bold text-slate-700 dark:text-slate-350 mb-6">विशेष सदस्यता श्रेणियां (Special Tiers)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* Card 4: Founding Member */}
+            <GlassCard glow="blue" hoverEffect className="flex flex-col h-full border-blue-500/20 bg-gradient-to-b from-blue-500/5 to-transparent relative">
+              <div className="absolute top-4 right-4 bg-blue-500 text-white text-[9px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-md">
+                <span>केवल {foundingSeatsRemaining} सीटें शेष!</span>
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="text-xl font-serif font-bold text-blue-400 flex items-center space-x-1.5 font-hindi">
+                  <Shield className="w-5 h-5 text-blue-400" />
+                  <span>संस्थापक सदस्य (Founding)</span>
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-xs">स्वतंत्र वैचारिक विमर्श की स्थायी आधारशिला। संपादकीय मंडल में सर्वोच्च विशेषाधिकार।</p>
+                
+                <div className="py-4 border-y border-slate-200 dark:border-slate-800">
+                  <span className="text-3xl font-extrabold text-slate-900 dark:text-white">₹{currentPrices.Founding}</span>
+                  <span className="text-slate-500 text-xs ml-1 font-hindi">
+                    / {billingCycle === "Monthly" && "माह"}
+                    {billingCycle === "Quarterly" && "त्रैमासिक"}
+                    {billingCycle === "Half-Yearly" && "अर्धवार्षिक"}
+                    {billingCycle === "Yearly" && "वार्षिक"}
+                  </span>
+                </div>
+
+                <ul className="space-y-3.5 text-xs text-slate-700 dark:text-slate-350 pt-2 font-hindi">
+                  {[
+                    "प्रीमियम व संरक्षक की सभी सुविधाएं शामिल",
+                    "वेबसाइट पर संस्थापक पट्टिका में नाम का स्थायी उल्लेख",
+                    "वार्षिक मुद्रित विशेषांक की मानद वीआईपी प्रति",
+                    "संपादकीय गोलमेज चर्चा एवं विमर्श बैठकों में आमंत्रण",
+                    "भविष्य की गतिविधियों में मानद प्रवेश",
+                    "शोध आलेखों के लिए सर्वोच्च समीक्षा प्राथमिकता",
+                    "प्रोफ़ाइल पर स्वर्ण संस्थापक बैज"
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start space-x-2">
+                      <Check className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="pt-8 mt-auto">
+                <button 
+                  onClick={() => handleStartCheckout("Founding")}
+                  className="w-full py-3 px-4 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold transition-all shadow-md cursor-pointer hover:shadow-lg shadow-blue-500/15 text-center"
+                >
+                  {activeMembership?.membershipType === "Founding" ? "नवीनीकृत करें" : "संस्थापक सदस्य बनें"}
+                </button>
+              </div>
+            </GlassCard>
+
+            {/* Card 5: Institutional Member */}
+            <GlassCard glow="none" hoverEffect className="flex flex-col h-full border-indigo-500/25 bg-gradient-to-b from-indigo-500/5 to-transparent">
+              <div className="space-y-4">
+                <h3 className="text-xl font-serif font-bold text-indigo-400 flex items-center space-x-1.5 font-hindi">
+                  <Building2 className="w-5 h-5 text-indigo-400" />
+                  <span>संस्थागत सदस्य (Institutional)</span>
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-xs">विश्वविद्यालयों, पुस्तकालयों और ज्ञान-संगठनों के लिए बहु-उपयोगकर्ता पहुंच।</p>
+                
+                <div className="py-4 border-y border-slate-200 dark:border-slate-800">
+                  <span className="text-3xl font-extrabold text-slate-900 dark:text-white">₹{currentPrices.Institutional}</span>
+                  <span className="text-slate-500 text-xs ml-1 font-hindi">
+                    / {billingCycle === "Monthly" && "माह"}
+                    {billingCycle === "Quarterly" && "त्रैमासिक"}
+                    {billingCycle === "Half-Yearly" && "अर्धवार्षिक"}
+                    {billingCycle === "Yearly" && "वार्षिक"}
+                  </span>
+                </div>
+
+                <ul className="space-y-3.5 text-xs text-slate-700 dark:text-slate-350 pt-2 font-hindi">
+                  {[
+                    "एक साथ ५ उपयोगकर्ताओं के लिए पूर्ण असीमित पहुंच",
+                    "त्रैमासिक मुद्रित प्रतियों का बंडल (५ प्रतियां)",
+                    "अकादमिक संदर्भों और शोध के लिए विशेष डेटाबेस पहुंच",
+                    "संस्था के नाम व लोगो का मुख्य पोर्टल पर प्रदर्शन",
+                    "वार्षिक अकादमिक संगोष्ठियों में आमंत्रण",
+                    "संस्था के शोध आलेखों के लिए विशेष समीक्षा चैनल"
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start space-x-2">
+                      <Check className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="pt-8 mt-auto">
+                <button 
+                  onClick={() => handleStartCheckout("Institutional")}
+                  className="w-full py-3 px-4 rounded-xl text-xs font-semibold bg-gradient-to-r from-indigo-500 to-indigo-650 hover:from-indigo-600 hover:to-indigo-700 text-white font-bold transition-all shadow-md cursor-pointer hover:shadow-lg text-center"
+                >
+                  {activeMembership?.membershipType === "Institutional" ? "योजना नवीनीकृत करें" : "संस्थागत सदस्य बनें"}
+                </button>
+              </div>
+            </GlassCard>
+
+            {/* Card 6: Lifetime Member */}
+            <GlassCard glow="gold" hoverEffect className="flex flex-col h-full border-purple-500/20 bg-gradient-to-b from-purple-500/5 to-transparent relative">
+              <div className="absolute top-4 right-4 bg-purple-600 text-white text-[9px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-md">
+                <span>आजीवन (Lifetime)</span>
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="text-xl font-serif font-bold text-purple-400 flex items-center space-x-1.5 font-hindi">
+                  <Sparkles className="w-5 h-5 text-purple-400 animate-pulse" />
+                  <span>आजीवन सदस्य (Lifetime)</span>
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-xs">युवाक्षर के साथ जीवनभर का बौद्धिक जुड़ाव। कभी न समाप्त होने वाली बौद्धिक विरासत।</p>
+                
+                <div className="py-4 border-y border-slate-200 dark:border-slate-800">
+                  <span className="text-3xl font-extrabold text-slate-900 dark:text-white">₹15,000</span>
+                  <span className="text-slate-500 text-xs ml-1 font-hindi">/ एक बार भुगतान</span>
+                </div>
+
+                <ul className="space-y-3.5 text-xs text-slate-700 dark:text-slate-350 pt-2 font-hindi">
+                  {[
+                    "आजीवन सभी प्रीमियम एवं संरक्षक सुविधाएं मुफ़्त",
+                    "आगामी सभी मुद्रित अंकों की निःशुल्क आजीवन होम-डिलीवरी",
+                    "युवाक्षर साहित्यिक न्यास में मानद आजीवन सदस्यता",
+                    "लेखन सम्मेलनों और वार्षिकोत्सवों में मानद वीआईपी सीट",
+                    "आजीवन पदक और मानद स्मृति पट्टिका",
+                    "कभी भी नवीनीकरण की आवश्यकता नहीं"
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start space-x-2">
+                      <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="pt-8 mt-auto">
+                <button 
+                  onClick={() => handleStartCheckout("Lifetime")}
+                  className="w-full py-3 px-4 rounded-xl text-xs font-semibold bg-gradient-to-r from-purple-500 to-indigo-650 hover:from-purple-650 hover:to-indigo-700 text-white font-bold transition-all shadow-md cursor-pointer hover:shadow-lg shadow-purple-500/10 text-center"
+                >
+                  {activeMembership?.membershipType === "Lifetime" ? "सक्रिय आजीवन सदस्यता" : "आजीवन सदस्यता लें"}
+                </button>
+              </div>
+            </GlassCard>
+
+          </div>
+        </div>
+
         {/* Feature Comparison Table */}
         <div className="pt-12 space-y-6">
           <h2 className="text-2xl md:text-3xl font-serif font-bold text-center text-slate-900 dark:text-white">सदस्यता तुलना तालिका (Comparison Matrix)</h2>
@@ -505,7 +670,7 @@ export default function MembershipPage() {
                   { name: "वेबसाइट के बुनियादी लेख", free: true, prem: true, patron: true },
                   { name: "लेखों पर टिप्पणी और बुकमार्क", free: true, prem: true, patron: true },
                   { name: "प्रीमियम लेख एवं शोध पत्र", free: false, prem: true, patron: true },
-                  { name: "डिजिटल मासिक पत्रिका डाउनलोड (PDF)", free: false, prem: true, patron: true },
+                  { name: "मासिक डिजिटल पत्रिका पठन", free: false, prem: true, patron: true },
                   { name: "विज्ञापन-मुक्त पठन अनुभव", free: false, prem: true, patron: true },
                   { name: "AI अध्ययन सहायक (Notes/Summaries)", free: "सीमित (Limited)", prem: "असीमित (Unlimited)", patron: "असीमित (Unlimited)" },
                   { name: "त्रैमासिक मुद्रित पत्रिका (भौतिक प्रति)", free: false, free_desc: "खरीदना होगा", prem: false, prem_desc: "खरीदना होगा", patron: true, patron_desc: "मुफ़्त डिलीवरी" },
