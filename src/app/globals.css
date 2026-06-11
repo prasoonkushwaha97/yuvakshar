@@ -1,26 +1,150 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  
+  --font-serif: 'Noto Serif Devanagari', Georgia, serif;
+  --font-sans: 'Noto Sans Devanagari', 'Inter', sans-serif;
+  
+  --color-yuvakshar-saffron: #F57C00;
+  --color-yuvakshar-light-bg: #F8F5EE;
+  --color-yuvakshar-light-text: #111111;
+  --color-yuvakshar-light-border: #E6DED1;
+  --color-yuvakshar-dark-bg: #0A0A0A;
+  --color-yuvakshar-dark-text: #F5F5F5;
+  --color-yuvakshar-dark-border: #262626;
+  
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) * 0.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --background: #FAF8F3;
+  --foreground: #1E1E1E;
+  --card: #FFFFFF;
+  --card-foreground: #1E1E1E;
+  --popover: #FAF8F3;
+  --popover-foreground: #1E1E1E;
+  --primary: #EA580C;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1E1E1E;
+  --secondary-foreground: #FFFFFF;
+  --muted: #F4EFE6;
+  --muted-foreground: #6B7280;
+  --accent: rgba(234, 88, 12, 0.1);
+  --accent-foreground: #EA580C;
+  --border: #E7E2D8;
+  --input: #E7E2D8;
+  --ring: #EA580C;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: #0A0F1D;
+  --foreground: #F8FAFC;
+  --card: #0F172A;
+  --card-foreground: #F8FAFC;
+  --popover: #0A0F1D;
+  --popover-foreground: #F8FAFC;
+  --primary: #EA580C;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1E293B;
+  --secondary-foreground: #F8FAFC;
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
+  --accent: rgba(234, 88, 12, 0.15);
+  --accent-foreground: #EA580C;
+  --border: #1E293B;
+  --input: #1E293B;
+  --ring: #EA580C;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/30 transition-colors duration-300 ease-out;
+    box-sizing: border-box;
+  }
+  body {
+    @apply bg-background text-foreground overflow-x-hidden antialiased;
+    font-family: var(--font-sans);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background-color: rgba(245, 124, 0, 0.25);
+    color: inherit;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(245, 124, 0, 0.3);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(245, 124, 0, 0.6);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Premium card and text gradients */
+.premium-card {
+  @apply rounded-xl border border-border/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-card p-6 transition-all duration-300;
+}
+.dark .premium-card {
+  @apply shadow-[0_4px_25px_-6px_rgba(0,0,0,0.5)];
+}
+
+.premium-card-hover:hover {
+  @apply shadow-[0_12px_30px_-6px_rgba(245,124,0,0.12)] border-primary/45 -translate-y-1;
+}
+
+.text-gradient-saffron {
+  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animated pen line drawing keyframe */
+@keyframes drawStroke {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-draw {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawStroke 3s ease-out forwards;
 }

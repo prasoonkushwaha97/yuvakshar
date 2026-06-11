@@ -1,0 +1,212 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { 
+  Search, 
+  Filter, 
+  Calendar, 
+  Clock, 
+  Bookmark, 
+  BookmarkCheck, 
+  ArrowRight,
+  ChevronDown
+} from "lucide-react";
+
+import { useCms, Article } from "@/store/CmsContext";
+import GlassCard from "@/components/yuvakshar/GlassCard";
+import { stripMarkdown } from "@/lib/markdown";
+
+export default function CurrentAffairsPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("latest"); // latest, popular, time
+  const [bookmarks, setBookmarks] = useState<string[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const saved = localStorage.getItem("yuvakshar_bookmarks");
+    if (saved) {
+      setBookmarks(JSON.parse(saved));
+    }
+  }, []);
+
+  const toggleBookmark = (id: string) => {
+    let updated: string[];
+    if (bookmarks.includes(id)) {
+      updated = bookmarks.filter(b => b !== id);
+    } else {
+      updated = [...bookmarks, id];
+    }
+    setBookmarks(updated);
+    localStorage.setItem("yuvakshar_bookmarks", JSON.stringify(updated));
+  };
+
+  const { articles } = useCms();
+  const categories = ["All", "समाचार", "विशेष लेख", "विचार", "साहित्य", "साक्षात्कार", "शिक्षा", "पर्यावरण", "इतिहास", "वीडियो", "पत्रिका"];
+
+  const filteredArticles = articles.filter(art => {
+    const matchesCategory = selectedCategory === "All" || art.category === selectedCategory;
+    const matchesSearch = art.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          art.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          art.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesCategory && matchesSearch;
+  });
+
+  // Simple sorting logic
+  const sortedArticles = [...filteredArticles].sort((a, b) => {
+    if (sortBy === "latest") {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    }
+    if (sortBy === "time") {
+      const timeA = parseInt(a.readTime);
+      const timeB = parseInt(b.readTime);
+      return timeB - timeA;
+    }
+    return 0; // Default unchanged
+  });
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 min-h-screen space-y-10">
+      
+      {/* Title */}
+      <div className="border-b border-yuvakshar-gold/15 pb-6">
+        <h1 className="font-serif text-3xl md:text-5xl text-gradient-gold font-bold">Current Affairs Ledger</h1>
+        <p className="text-xs text-yuvakshar-gray uppercase tracking-wider mt-2">
+          Daily analytical records, political reports, and institutional assessments
+        </p>
+      </div>
+
+      {/* Advanced Filter and Search Bar row */}
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-yuvakshar-card/40 p-4 rounded-2xl border border-yuvakshar-gold/10">
+        
+        {/* Search */}
+        <div className="relative w-full md:max-w-md">
+          <input
+            type="text"
+            placeholder="Search debates, policies, or topics..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-yuvakshar-bg border border-yuvakshar-gold/20 hover:border-yuvakshar-gold/45 rounded-full px-4 py-2.5 text-xs text-yuvakshar-text pl-9 focus:outline-none focus:border-yuvakshar-gold"
+          />
+          <Search className="w-4 h-4 text-yuvakshar-gray absolute left-3 top-3.5" />
+        </div>
+
+        {/* Sorting controls */}
+        <div className="flex space-x-3 w-full md:w-auto shrink-0 justify-end">
+          <div className="flex items-center space-x-2 text-xs">
+            <span className="text-[#8E8A80]">क्रमबद्ध करें:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-yuvakshar-bg border border-yuvakshar-gold/20 hover:border-yuvakshar-gold rounded-lg px-3 py-1.5 text-xs text-yuvakshar-text focus:outline-none"
+            >
+              <option value="latest">Latest Updates</option>
+              <option value="time">Reading Time</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Category selector row */}
+      <div className="flex overflow-x-auto space-x-2 pb-2 select-none scrollbar-none border-b border-yuvakshar-gold/5">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-5 py-2 rounded-full text-xs font-medium tracking-wide whitespace-nowrap border transition-all cursor-pointer ${
+              selectedCategory === cat
+                ? "bg-yuvakshar-gold/15 border-yuvakshar-gold text-yuvakshar-gold font-semibold"
+                : "bg-yuvakshar-card/40 border-yuvakshar-gold/10 hover:border-yuvakshar-gold/30 text-yuvakshar-gray hover:text-yuvakshar-text"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Content grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {sortedArticles.length > 0 ? (
+          sortedArticles.map((art) => (
+            <GlassCard key={art.id} glow="none" className="p-0">
+              <div className="flex flex-col h-full justify-between">
+                <div>
+                  {/* Image cover */}
+                  <div className="relative h-[220px] w-full overflow-hidden">
+                    <img 
+                      src={art.coverImage} 
+                      alt={art.title}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 brightness-95"
+                    />
+                    <div className="absolute top-3 left-3 bg-yuvakshar-bg border border-yuvakshar-gold/25 px-2.5 py-0.5 rounded text-[9px] text-yuvakshar-gold font-bold tracking-wider uppercase">
+                      {art.category}
+                    </div>
+                  </div>
+
+                  {/* Body details */}
+                  <div className="p-6 space-y-3">
+                    <div className="flex items-center justify-between text-[10px] text-yuvakshar-gray font-mono">
+                      <span className="flex items-center space-x-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>{art.date}</span>
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{art.readTime}</span>
+                      </span>
+                    </div>
+
+                    <Link href={`/editorial?id=${art.id}`} className="block group">
+                      <h3 className="font-serif text-lg font-bold text-yuvakshar-text group-hover:text-yuvakshar-gold transition-colors leading-snug line-clamp-2">
+                        {stripMarkdown(art.title)}
+                      </h3>
+                    </Link>
+                    <p className="text-xs text-yuvakshar-gray font-light leading-relaxed line-clamp-3">
+                      {stripMarkdown(art.summary)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-6 pt-0 border-t border-yuvakshar-gold/5 mt-auto flex items-center justify-between">
+                  <div className="flex space-x-1 overflow-hidden max-w-[70%]">
+                    {art.tags.slice(0, 2).map((t, idx) => (
+                      <span key={idx} className="text-[9px] text-yuvakshar-gray font-mono bg-yuvakshar-card/85 px-2 py-0.5 rounded border border-yuvakshar-gold/5 shrink-0">
+                        #{t}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={() => toggleBookmark(art.id)}
+                      className="p-1.5 rounded bg-yuvakshar-card border border-yuvakshar-gold/10 hover:border-yuvakshar-gold/45 text-yuvakshar-gray hover:text-yuvakshar-gold transition-all"
+                    >
+                      {mounted && bookmarks.includes(art.id) ? (
+                        <BookmarkCheck className="w-3.5 h-3.5 text-yuvakshar-gold" />
+                      ) : (
+                        <Bookmark className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                    <Link 
+                      href={`/editorial?id=${art.id}`}
+                      className="p-1.5 rounded bg-yuvakshar-gold text-yuvakshar-bg hover:bg-white transition-all flex items-center justify-center cursor-pointer"
+                    >
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
+          ))
+        ) : (
+          <div className="col-span-full py-20 text-center text-yuvakshar-gray">
+            No analytical papers found matching your search.
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
+}

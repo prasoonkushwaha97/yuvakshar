@@ -1,0 +1,2475 @@
+"use client";
+
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
+import { mockArticles, mockMagazines, mockCareerItems, mockBroadcasts, mockSubscribers, mockComments, Article, Magazine } from "@/lib/mockData";
+export type { Article, Magazine };
+import { QuizQuestion, ArticleQuiz, preseededQuizzes, generateFallbackQuestions } from "@/lib/defaultQuizzes";
+import { callOpenAi, callGemini } from "@/lib/aiService";
+import { generateMockAiResponse } from "@/lib/mockAiResponse";
+
+export interface AiSettings {
+  enabledModules: Record<string, boolean>;
+  apiProvider: "OpenAI" | "Gemini";
+  apiKeys: { openai: string; gemini: string; };
+  tokenLimit: number;
+  tokensUsed: number;
+  usageAnalytics: Array<{ date: string; tokensUsed: number; cost: number; feature: string; }>;
+  accessRules: Record<string, "Free" | "Premium" | "Patron">;
+}
+
+export interface UserMembership {
+  id: string;
+  userId: string;
+  membershipType: "Free" | "Premium" | "Patron";
+  status: "active" | "suspended" | "expired" | "cancelled";
+  billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly" | "Free";
+  startDate: string;
+  expiryDate: string;
+  autoRenewal: boolean;
+  razorpaySubscriptionId?: string;
+}
+
+export interface PaymentRecord {
+  id: string;
+  userId: string;
+  amount: number;
+  currency: string;
+  status: "success" | "failed" | "refunded";
+  billingCycle: string;
+  membershipType: string;
+  paymentMethod: string;
+  date: string;
+  invoiceUrl?: string;
+}
+
+export interface Coupon {
+  code: string;
+  discountType: "percentage" | "flat";
+  value: number;
+  expiryDate: string;
+  usageLimit: number;
+  usageCount: number;
+  isActive: boolean;
+}
+
+export interface ReferralRecord {
+  id: string;
+  referrerId: string;
+  referredEmail: string;
+  status: "registered" | "purchased" | "pending";
+  date: string;
+}
+
+export interface AiNote {
+  id: string;
+  userId: string;
+  articleId: string;
+  articleTitle: string;
+  noteType: "अध्ययन नोट्स" | "Revision Notes" | "Quick Notes" | "परीक्षा नोट्स";
+  content: string;
+  createdAt: string;
+}
+
+export interface Profile {
+  id: string;
+  name: string;
+  role: "Owner" | "Admin" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Fact Check Reviewer" | "Author" | "Contributor" | null;
+  membership: "Free" | "Premium" | "Patron" | null;
+  status: "active" | "suspended";
+  bio?: string;
+  avatar_url?: string;
+  social_links?: Record<string, string>;
+  badges?: string[];
+  views_count?: number;
+  email?: string;
+  mobile?: string;
+  interests?: string[];
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  parent_id?: string | null;
+  language_code: string;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+  language_code: string;
+}
+
+export interface Comment {
+  id: string;
+  article_id: string;
+  parent_id: string | null;
+  name: string;
+  user_id?: string | null;
+  content: string;
+  likes: number;
+  status: "approved" | "pending" | "spam" | "deleted";
+  is_reported: boolean;
+  created_at: string;
+}
+
+export interface Submission {
+  id: string;
+  type: "contact" | "feedback" | "suggestion" | "report" | "article";
+  name: string;
+  email: string;
+  mobile?: string;
+  subject?: string;
+  content: string;
+  status: "New" | "Open" | "In Progress" | "Resolved" | "Archived";
+  replies?: any[];
+  category?: string;
+  title?: string;
+  image_url?: string;
+  pdf_url?: string;
+  doc_url?: string;
+  created_at: string;
+}
+
+export interface EditorialAssignment {
+  id: string;
+  article_id: string;
+  author_id?: string;
+  reviewer_id?: string;
+  section_editor_id?: string;
+  deadline?: string;
+  status: "Assigned" | "In Progress" | "Under Review" | "Completed";
+  created_at: string;
+}
+
+export interface Ad {
+  id: string;
+  name: string;
+  zone: "after_first_p" | "mid_content" | "before_related";
+  type: "adsense" | "custom_html" | "banner";
+  code?: string;
+  image_url?: string;
+  link_url?: string;
+  active: boolean;
+  impression_count: number;
+  click_count: number;
+}
+
+export interface SearchAnalytics {
+  id: string;
+  query: string;
+  search_count: number;
+  click_count: number;
+  zero_results: boolean;
+  updated_at: string;
+}
+
+export interface Membership {
+  id: string;
+  user_id: string;
+  type: "Free Reader" | "Registered Reader" | "Premium Member" | "Patron";
+  status: "active" | "expired" | "cancelled";
+  expires_at?: string;
+}
+
+export interface HomepageLayout {
+  id: string;
+  name: string;
+  layout_json: {
+    hero_story_id: string;
+    sections_order: string[];
+    visible_sections: Record<string, boolean>;
+  };
+  version: number;
+  is_published: boolean;
+}
+
+export interface ActivityLog {
+  id: string;
+  user_id?: string;
+  action: string;
+  details?: Record<string, any>;
+  created_at: string;
+}
+
+export interface QuizAttempt {
+  id: string;
+  userId: string;
+  userName: string;
+  articleId: string;
+  score: number;
+  totalQuestions: number;
+  percentage: number;
+  durationSeconds: number;
+  timestamp: string;
+  answers: Record<number, string>;
+}
+
+export interface QuizCertificate {
+  id: string;
+  userId: string;
+  userName: string;
+  articleTitle: string;
+  score: number;
+  percentage: number;
+  date: string;
+  certificateType: "सहभागिता प्रमाणपत्र" | "उत्कृष्टता प्रमाणपत्र" | "ज्ञानवीर प्रमाणपत्र";
+  badge: string;
+}
+
+export interface QuizSettings {
+  articleId: string;
+  isEnabled: boolean;
+  questionCount: number;
+  difficulty: "सरल" | "मध्यम" | "उन्नत";
+}
+
+export interface QuizLeaderboardEntry {
+  id: string;
+  userName: string;
+  score: number;
+  completedQuizzes: number;
+  certificatesCount: number;
+  interval: "weekly" | "monthly" | "alltime";
+}
+
+export interface TopicMastery {
+  userId: string;
+  category: string;
+  badges: string[];
+}
+
+export interface MonthlyReport {
+  id: string;
+  userId: string;
+  monthYear: string;
+  articlesRead: number;
+  quizzesAttempted: number;
+  averageScore: number;
+  bestCategory: string;
+  studyTimeSeconds: number;
+  certificatesCount: number;
+  growthPercentage: number;
+}
+
+export interface GeneralSettings {
+  site_name: string;
+  tagline: string;
+  primary_email: string;
+  editorial_email: string;
+  support_email: string;
+  newsletter_email: string;
+  notification_email: string;
+}
+
+export interface AppearanceSettings {
+  primary_color: string;
+  secondary_color: string;
+  background_color: string;
+  logo_url: string;
+  favicon_url: string;
+  font_headlines: string;
+  font_body: string;
+}
+
+export interface FooterSettings {
+  copyright_text: string;
+  links: Array<{ name: string; href: string }>;
+}
+
+interface CmsContextType {
+  supabaseConfigured: boolean;
+  currentUser: Profile | null;
+  settings: {
+    general: GeneralSettings;
+    appearance: AppearanceSettings;
+    footer: FooterSettings;
+  };
+  articles: Article[];
+  categories: Category[];
+  tags: Tag[];
+  magazines: Magazine[];
+  comments: Comment[];
+  submissions: Submission[];
+  assignments: EditorialAssignment[];
+  ads: Ad[];
+  subscribers: string[];
+  campaigns: any[];
+  searchLogs: SearchAnalytics[];
+  activityLogs: ActivityLog[];
+  layouts: HomepageLayout[];
+  memberships: Membership[];
+  users: Profile[];
+  quizzes: ArticleQuiz[];
+  quizAttempts: QuizAttempt[];
+  quizCertificates: QuizCertificate[];
+  quizSettings: Record<string, QuizSettings>;
+  leaderboard: QuizLeaderboardEntry[];
+  
+  // Auth Operations
+  loginUser: (email: string, role: string) => Promise<boolean>;
+  logoutUser: () => void;
+  updateUserRole: (userId: string, role: Profile["role"]) => Promise<void>;
+  createUser: (user: Omit<Profile, "id">) => Promise<void>;
+  updateUser: (userId: string, data: Partial<Profile>) => Promise<void>;
+  deleteUser: (userId: string) => Promise<void>;
+  transferOwnership: (targetUserId: string) => Promise<void>;
+  resetUserPassword: (userId: string) => Promise<void>;
+  
+  // Settings & Style Sync
+  updateSettings: (type: "general" | "appearance" | "footer", data: any) => Promise<void>;
+  
+  // Articles CRUD
+  saveArticle: (article: Partial<Article>) => Promise<Article>;
+  deleteArticle: (id: string) => Promise<void>;
+  incrementArticleView: (id: string) => Promise<void>;
+  incrementArticleLike: (id: string) => Promise<void>;
+
+  // Editorial Assignments
+  saveAssignment: (assignment: Partial<EditorialAssignment>) => Promise<void>;
+
+  // Submissions (Contributor Desk)
+  submitPublicArticle: (submission: Omit<Submission, "id" | "created_at" | "status">) => Promise<void>;
+  updateSubmissionStatus: (id: string, status: Submission["status"]) => Promise<void>;
+
+  // Comments Actions
+  addComment: (articleId: string, name: string, content: string, parentId?: string | null) => Promise<void>;
+  moderateComment: (id: string, status: Comment["status"]) => Promise<void>;
+  reportComment: (id: string) => Promise<void>;
+  
+  // Ads Actions
+  saveAd: (ad: Partial<Ad>) => Promise<void>;
+  trackAdClick: (id: string) => Promise<void>;
+
+  // Subscribers Actions
+  subscribeNewsletter: (email: string) => Promise<string>;
+  unsubscribeNewsletter: (email: string) => Promise<void>;
+  updateSubscriberStatus: (email: string, status: "Active" | "Blocked" | "Unsubscribed") => Promise<void>;
+  sendNewsletterCampaign: (subject: string, content: string) => Promise<void>;
+
+  // Layout Controls (Homepage Builder)
+  saveHomepageLayout: (layout: HomepageLayout["layout_json"]) => Promise<void>;
+  restoreHomepageLayoutVersion: (versionId: string) => Promise<void>;
+
+  // Backups
+  exportDatabaseJson: () => string;
+  importDatabaseJson: (json: string) => boolean;
+
+  // Search
+  logSearchQuery: (query: string, zeroResults?: boolean) => Promise<void>;
+
+  // Quiz Actions
+  saveQuiz: (quiz: ArticleQuiz) => Promise<void>;
+  addQuizAttempt: (attempt: Omit<QuizAttempt, "id" | "timestamp">) => Promise<QuizAttempt>;
+  regenerateQuiz: (articleId: string, questionCount: number, difficulty: "सरल" | "मध्यम" | "उन्नत") => Promise<void>;
+  toggleQuizStatus: (articleId: string, isEnabled: boolean) => Promise<void>;
+  editQuizQuestion: (articleId: string, questionId: string, updatedQuestion: Partial<QuizQuestion>) => Promise<void>;
+  deleteQuizQuestion: (articleId: string, questionId: string) => Promise<void>;
+  bulkImportQuestions: (articleId: string, questions: Omit<QuizQuestion, "id">[]) => Promise<void>;
+  approveDraftQuestion: (articleId: string, questionId: string) => Promise<void>;
+  authModalOpen: boolean;
+  setAuthModalOpen: (open: boolean) => void;
+  openAuthModal: (callback?: () => void, message?: string) => void;
+  closeAuthModal: () => void;
+  authModalMessage: string;
+  becomeAuthor: (bio: string, avatarUrl: string, expertise: string) => Promise<void>;
+  updateUserProfile: (data: Partial<Profile>) => Promise<void>;
+  updateUserMembership: (userId: string, membership: Profile["membership"]) => Promise<void>;
+  canAccessContent: (user: Profile | null, content: { accessLevel?: "Free" | "Premium" | "Patron" }) => boolean;
+  canComment: (user: Profile | null) => boolean;
+  canBookmark: (user: Profile | null) => boolean;
+  canVote: (user: Profile | null) => boolean;
+  canManageArticles: (user: Profile | null) => boolean;
+  canPublishArticles: (user: Profile | null, contentType: string) => boolean;
+  canAccessAdmin: (user: Profile | null) => boolean;
+  canAccessPremiumContent: (user: Profile | null) => boolean;
+
+  // AI Ecosystem States & Operations
+  aiSettings: AiSettings;
+  aiNotes: AiNote[];
+  updateAiSettings: (settings: Partial<AiSettings>) => Promise<void>;
+  saveAiNote: (note: Omit<AiNote, "id" | "createdAt">) => Promise<void>;
+  deleteAiNote: (id: string) => Promise<void>;
+  generateAiContent: (prompt: string, featureName: string, customSystemPrompt?: string) => Promise<string>;
+
+  // Membership States & Operations
+  userMemberships: UserMembership[];
+  paymentRecords: PaymentRecord[];
+  coupons: Coupon[];
+  referrals: ReferralRecord[];
+  purchaseMembership: (userId: string, plan: "Premium" | "Patron", billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly", couponCode?: string) => Promise<boolean>;
+  renewMembership: (userId: string) => Promise<void>;
+  toggleAutoRenewal: (userId: string) => Promise<void>;
+  cancelSubscription: (userId: string) => Promise<void>;
+  validateCoupon: (code: string) => Coupon | null;
+  createCoupon: (coupon: Coupon) => void;
+  deleteCoupon: (code: string) => void;
+  addReferral: (referrerId: string, email: string) => void;
+  assignMembershipManually: (userId: string, type: "Free" | "Premium" | "Patron", billingCycle: string, durationDays: number) => Promise<void>;
+  getMembershipAnalytics: () => {
+    totalMembers: number;
+    activeMembers: number;
+    expiredMembers: number;
+    premiumMembers: number;
+    patronMembers: number;
+    membershipRevenue: number;
+    conversionRate: number;
+    churnRate: number;
+    renewalRate: number;
+    upgradeRate: number;
+  };
+}
+
+const CmsContext = createContext<CmsContextType | undefined>(undefined);
+
+export function CmsProvider({ children }: { children: React.ReactNode }) {
+  const [supabaseConfigured, setSupabaseConfigured] = useState(false);
+  const [currentUser, setCurrentUser] = useState<Profile | null>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authCallback, setAuthCallback] = useState<(() => void) | null>(null);
+  const [authModalMessage, setAuthModalMessage] = useState("");
+  
+  // Database States
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [magazines, setMagazines] = useState<Magazine[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [assignments, setAssignments] = useState<EditorialAssignment[]>([]);
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [subscribers, setSubscribers] = useState<string[]>([]);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [searchLogs, setSearchLogs] = useState<SearchAnalytics[]>([]);
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [layouts, setLayouts] = useState<HomepageLayout[]>([]);
+  const [memberships, setMemberships] = useState<Membership[]>([]);
+  const [users, setUsers] = useState<Profile[]>([]);
+  const [quizzes, setQuizzes] = useState<ArticleQuiz[]>([]);
+  const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
+  const [quizCertificates, setQuizCertificates] = useState<QuizCertificate[]>([]);
+  const [quizSettings, setQuizSettings] = useState<Record<string, QuizSettings>>({});
+  const [leaderboard, setLeaderboard] = useState<QuizLeaderboardEntry[]>([]);
+
+  // AI Ecosystem States
+  const [aiSettings, setAiSettings] = useState<AiSettings>({
+    enabledModules: {
+      readerAssistant: true,
+      articleChat: true,
+      summarizationEngine: true,
+      noteGenerator: true,
+      quizGenerator: true,
+      writingGuru: true,
+      titleLaboratory: true,
+      grammarAssistant: true,
+      factCheckAssistant: true,
+      researchAssistant: true,
+      audioSystem: true,
+      authorReview: true,
+      communityIntelligence: true
+    },
+    apiProvider: "Gemini",
+    apiKeys: { openai: "", gemini: "" },
+    tokenLimit: 500000,
+    tokensUsed: 14200,
+    usageAnalytics: [
+      { date: "2026-06-05", tokensUsed: 1200, cost: 0.0024, feature: "Summarization" },
+      { date: "2026-06-06", tokensUsed: 2300, cost: 0.0046, feature: "Writing Guru" },
+      { date: "2026-06-07", tokensUsed: 1500, cost: 0.0030, feature: "Article Chat" },
+      { date: "2026-06-08", tokensUsed: 3200, cost: 0.0064, feature: "Quiz Generator" },
+      { date: "2026-06-09", tokensUsed: 2800, cost: 0.0056, feature: "Fact Check" },
+      { date: "2026-06-10", tokensUsed: 3200, cost: 0.0064, feature: "Grammar Assistant" }
+    ],
+    accessRules: {
+      readerAssistant: "Premium",
+      articleChat: "Premium",
+      summarizationEngine: "Premium",
+      noteGenerator: "Premium",
+      quizGenerator: "Free",
+      writingGuru: "Premium",
+      titleLaboratory: "Free",
+      grammarAssistant: "Premium",
+      factCheckAssistant: "Premium",
+      researchAssistant: "Free",
+      audioSystem: "Free",
+      authorReview: "Premium",
+      communityIntelligence: "Free"
+    }
+  });
+  const [aiNotes, setAiNotes] = useState<AiNote[]>([]);
+
+  // Membership States
+  const [userMemberships, setUserMemberships] = useState<UserMembership[]>([]);
+  const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [referrals, setReferrals] = useState<ReferralRecord[]>([]);
+
+  const [settings, setSettings] = useState({
+    general: {
+      site_name: "युवाक्षर",
+      tagline: "लेखन, चिंतन और परिवर्तन",
+      primary_email: "yuvakshar.editor@gmail.com",
+      editorial_email: "yuvakshar.editor@gmail.com",
+      support_email: "yuvakshar.editor@gmail.com",
+      newsletter_email: "yuvakshar.editor@gmail.com",
+      notification_email: "yuvakshar.editor@gmail.com",
+    },
+    appearance: {
+      primary_color: "#EA580C",
+      secondary_color: "#0F172A",
+      background_color: "#FFFFFF",
+      logo_url: "",
+      favicon_url: "",
+      font_headlines: "Noto Serif Devanagari",
+      font_body: "Noto Sans Devanagari",
+    },
+    footer: {
+      copyright_text: "© 2026 Yuvakshar. Designed for India's youth vanguard.",
+      links: [
+        { name: "हमारे बारे में", href: "/about" },
+        { name: "संपर्क", href: "/contact" },
+        { name: "गोपनीयता नीति", href: "/privacy-policy" },
+        { name: "नियम और शर्तें", href: "/terms-and-conditions" },
+        { name: "संपादकीय नीति", href: "/editorial-policy" }
+      ],
+    },
+  });
+
+  // 1. Initial State Loading & Dynamic Colors
+  useEffect(() => {
+    const configured = isSupabaseConfigured();
+    setSupabaseConfigured(configured);
+
+    if (configured) {
+      // Fetch data from Supabase
+      loadDataFromSupabase();
+    } else {
+      // LocalStorage / Demo Mode Fallback
+      loadDataFromLocalStorage();
+    }
+  }, []);
+
+  // Update Dynamic CSS Variables in Document header on appearance setting changes
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      const root = document.documentElement;
+      root.style.setProperty("--primary", settings.appearance.primary_color);
+      root.style.setProperty("--secondary", settings.appearance.secondary_color);
+      root.style.setProperty("--background", settings.appearance.background_color);
+    }
+  }, [settings.appearance]);
+
+  const loadDataFromLocalStorage = () => {
+    // General Settings
+    const localSettings = localStorage.getItem("yuvakshar_settings");
+    if (localSettings) setSettings(JSON.parse(localSettings));
+
+    // Articles
+    const localArticles = localStorage.getItem("yuvakshar_articles");
+    if (localArticles && JSON.parse(localArticles).length >= 40) {
+      setArticles(JSON.parse(localArticles));
+    } else {
+      setArticles(mockArticles);
+      localStorage.setItem("yuvakshar_articles", JSON.stringify(mockArticles));
+    }
+
+    // Magazines
+    const localMagazines = localStorage.getItem("yuvakshar_magazines");
+    if (localMagazines && JSON.parse(localMagazines).length >= 3) {
+      setMagazines(JSON.parse(localMagazines));
+    } else {
+      setMagazines(mockMagazines);
+      localStorage.setItem("yuvakshar_magazines", JSON.stringify(mockMagazines));
+    }
+
+    // Submissions
+    const localSubmissions = localStorage.getItem("yuvakshar_submissions") || "[]";
+    setSubmissions(JSON.parse(localSubmissions));
+
+    // Comments
+    const localComments = localStorage.getItem("yuvakshar_comments");
+    if (localComments && JSON.parse(localComments).length >= 8) {
+      setComments(JSON.parse(localComments));
+    } else {
+      setComments(mockComments as Comment[]);
+      localStorage.setItem("yuvakshar_comments", JSON.stringify(mockComments));
+    }
+
+    // Subscribers
+    const localSubscribers = localStorage.getItem("yuvakshar_subscribers");
+    if (localSubscribers && JSON.parse(localSubscribers).length >= 15) {
+      setSubscribers(JSON.parse(localSubscribers));
+    } else {
+      setSubscribers(mockSubscribers);
+      localStorage.setItem("yuvakshar_subscribers", JSON.stringify(mockSubscribers));
+    }
+
+    // Newsletter Campaigns
+    const localCampaigns = localStorage.getItem("yuvakshar_campaigns") || "[]";
+    setCampaigns(JSON.parse(localCampaigns));
+
+    // Ads Settings
+    const localAds = localStorage.getItem("yuvakshar_ads");
+    if (localAds) {
+      setAds(JSON.parse(localAds));
+    } else {
+      const initial: Ad[] = [
+        { id: "ad-1", name: "Sidebar Banner Ad", zone: "after_first_p", type: "banner", image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80", link_url: "https://yuvakshar.org/magazine", active: true, click_count: 0, impression_count: 0 },
+        { id: "ad-2", name: "Google AdSense Placeholder", zone: "mid_content", type: "adsense", code: "<div style='background:#f3ece0;padding:20px;text-align:center;font-size:11px;color:#EA580C;font-weight:bold;border:1px dashed #EA580C'>[Google AdSense Mid Content Banner]</div>", active: true, click_count: 0, impression_count: 0 }
+      ];
+      setAds(initial);
+      localStorage.setItem("yuvakshar_ads", JSON.stringify(initial));
+    }
+
+    // Assignments
+    const localAssignments = localStorage.getItem("yuvakshar_assignments") || "[]";
+    setAssignments(JSON.parse(localAssignments));
+
+    // Search Logs
+    const localSearchLogs = localStorage.getItem("yuvakshar_search_logs") || "[]";
+    setSearchLogs(JSON.parse(localSearchLogs));
+
+    // Layouts
+    const localLayouts = localStorage.getItem("yuvakshar_layouts");
+    if (localLayouts) {
+      setLayouts(JSON.parse(localLayouts));
+    } else {
+      const initial: HomepageLayout = {
+        id: "layout-1",
+        name: "Default Approved Layout",
+        layout_json: {
+          hero_story_id: "art-1",
+          sections_order: ["hero", "latest", "opinion", "literature", "interviews", "magazine"],
+          visible_sections: { hero: true, latest: true, opinion: true, literature: true, interviews: true, magazine: true }
+        },
+        version: 1,
+        is_published: true
+      };
+      setLayouts([initial]);
+      localStorage.setItem("yuvakshar_layouts", JSON.stringify([initial]));
+    }
+
+    // Activity Logs
+    const localActivityLogs = localStorage.getItem("yuvakshar_activity_logs") || "[]";
+    setActivityLogs(JSON.parse(localActivityLogs));
+
+    // Categories
+    const localCategories = localStorage.getItem("yuvakshar_categories");
+    if (localCategories && JSON.parse(localCategories).length >= 8) {
+      setCategories(JSON.parse(localCategories));
+    } else {
+      const initial: Category[] = [
+        { id: "cat-1", name: "समाचार", slug: "samachar", language_code: "hi" },
+        { id: "cat-2", name: "विशेष लेख", slug: "vishesh-lekh", language_code: "hi" },
+        { id: "cat-3", name: "विचार", slug: "vichar", language_code: "hi" },
+        { id: "cat-4", name: "साहित्य", slug: "sahitya", language_code: "hi" },
+        { id: "cat-5", name: "साक्षात्कार", slug: "sakshatkar", language_code: "hi" },
+        { id: "cat-6", name: "शिक्षा", slug: "shiksha", language_code: "hi" },
+        { id: "cat-7", name: "पर्यावरण", slug: "paryavaran", language_code: "hi" },
+        { id: "cat-8", name: "इतिहास", slug: "itihas", language_code: "hi" },
+        { id: "cat-9", name: "वीडियो", slug: "video", language_code: "hi" },
+        { id: "cat-10", name: "पत्रिका", slug: "patrika", language_code: "hi" }
+      ];
+      setCategories(initial);
+      localStorage.setItem("yuvakshar_categories", JSON.stringify(initial));
+    }
+
+    // Users
+    const localUsers = localStorage.getItem("yuvakshar_users");
+    if (localUsers) {
+      setUsers(JSON.parse(localUsers));
+    } else {
+      const initialUsers: Profile[] = [
+        { id: "u-1", name: "Owner", email: "yuvakshar.editor@gmail.com", role: "Owner", membership: "Patron", status: "active", badges: ["Primary Owner"] },
+        { id: "u-2", name: "प्रसून कुशवाहा", email: "prasoon.kushwaha@yuvakshar.org", role: "Editor-in-Chief", membership: "Patron", status: "active", badges: ["Verified Author"] },
+        { id: "u-3", name: "Guest Author", email: "m.tripathi@gmail.com", role: "Author", membership: "Premium", status: "active", badges: ["Contributor"] },
+        { id: "u-4", name: "Featured Author", email: "reader.demo@yuvakshar.org", role: null, membership: "Free", status: "active", badges: ["Reader"] }
+      ];
+      setUsers(initialUsers);
+      localStorage.setItem("yuvakshar_users", JSON.stringify(initialUsers));
+    }
+
+    // Active Mock Auth session load
+    const savedUser = localStorage.getItem("yuvakshar_session_user");
+    if (savedUser) {
+      const parsedUser = JSON.parse(savedUser);
+      // Migrate role from Super Admin to Owner
+      if (parsedUser.role === "Super Admin") {
+        parsedUser.role = "Owner";
+      }
+      if (parsedUser.membership === undefined) {
+        parsedUser.membership = parsedUser.role ? "Patron" : "Free";
+      }
+      localStorage.setItem("yuvakshar_session_user", JSON.stringify(parsedUser));
+      setCurrentUser(parsedUser);
+    }
+
+    // Load Quizzes
+    const localQuizzes = localStorage.getItem("yuvakshar_quizzes");
+    let initialQuizzes: ArticleQuiz[] = [];
+    if (localQuizzes) {
+      initialQuizzes = JSON.parse(localQuizzes);
+    } else {
+      const allArticles = mockArticles;
+      initialQuizzes = allArticles.map(art => {
+        const preseeded = preseededQuizzes[art.id];
+        if (preseeded) {
+          return { articleId: art.id, questions: preseeded };
+        } else {
+          return { articleId: art.id, questions: generateFallbackQuestions(art.id, art.title, art.content) };
+        }
+      });
+      localStorage.setItem("yuvakshar_quizzes", JSON.stringify(initialQuizzes));
+    }
+    setQuizzes(initialQuizzes);
+
+    // Load Quiz Attempts
+    const localAttempts = localStorage.getItem("yuvakshar_quiz_attempts") || "[]";
+    setQuizAttempts(JSON.parse(localAttempts));
+
+    // Load Quiz Certificates
+    const localCertificates = localStorage.getItem("yuvakshar_quiz_certificates") || "[]";
+    setQuizCertificates(JSON.parse(localCertificates));
+
+    // Load Quiz Settings
+    const localSettingsData = localStorage.getItem("yuvakshar_quiz_settings");
+    if (localSettingsData) {
+      setQuizSettings(JSON.parse(localSettingsData));
+    } else {
+      const initial: Record<string, QuizSettings> = {};
+      mockArticles.forEach(art => {
+        initial[art.id] = {
+          articleId: art.id,
+          isEnabled: true,
+          questionCount: art.content.split(/\s+/).length < 500 ? 5 : art.content.split(/\s+/).length < 1000 ? 7 : 10,
+          difficulty: "मध्यम"
+        };
+      });
+      setQuizSettings(initial);
+      localStorage.setItem("yuvakshar_quiz_settings", JSON.stringify(initial));
+    }
+
+    // Load Leaderboard
+    const localLeaderboard = localStorage.getItem("yuvakshar_quiz_leaderboard");
+    if (localLeaderboard) {
+      setLeaderboard(JSON.parse(localLeaderboard));
+    } else {
+      const initial: QuizLeaderboardEntry[] = [
+        { id: "lead-1", userName: "प्रसून K.", score: 980, completedQuizzes: 15, certificatesCount: 5, interval: "weekly" },
+        { id: "lead-2", userName: "A. Dwivedi", score: 940, completedQuizzes: 14, certificatesCount: 4, interval: "weekly" },
+        { id: "lead-3", userName: "P. Sharma", score: 880, completedQuizzes: 12, certificatesCount: 3, interval: "weekly" },
+        { id: "lead-4", userName: "R. Singh", score: 1850, completedQuizzes: 28, certificatesCount: 9, interval: "monthly" },
+        { id: "lead-5", userName: "नीलेश T.", score: 1720, completedQuizzes: 25, certificatesCount: 8, interval: "monthly" },
+        { id: "lead-6", userName: "S. Patel", score: 4500, completedQuizzes: 62, certificatesCount: 22, interval: "alltime" }
+      ];
+      setLeaderboard(initial);
+      localStorage.setItem("yuvakshar_quiz_leaderboard", JSON.stringify(initial));
+    }
+
+    // Load AI Settings & Notes
+    const localAiSettings = localStorage.getItem("yuvakshar_ai_settings");
+    if (localAiSettings) {
+      setAiSettings(JSON.parse(localAiSettings));
+    } else {
+      localStorage.setItem("yuvakshar_ai_settings", JSON.stringify(aiSettings));
+    }
+
+    const localAiNotes = localStorage.getItem("yuvakshar_ai_notes");
+    if (localAiNotes) {
+      setAiNotes(JSON.parse(localAiNotes));
+    } else {
+      localStorage.setItem("yuvakshar_ai_notes", JSON.stringify([]));
+    }
+
+    // Load Memberships
+    const localMemberships = localStorage.getItem("yuvakshar_memberships");
+    if (localMemberships) {
+      setUserMemberships(JSON.parse(localMemberships));
+    } else {
+      const initial: UserMembership[] = [
+        { id: "mem-1", userId: "u-1", membershipType: "Patron", status: "active", billingCycle: "Yearly", startDate: "2026-01-01", expiryDate: "2027-01-01", autoRenewal: true },
+        { id: "mem-2", userId: "u-2", membershipType: "Patron", status: "active", billingCycle: "Yearly", startDate: "2026-01-01", expiryDate: "2027-01-01", autoRenewal: true },
+        { id: "mem-3", userId: "u-3", membershipType: "Premium", status: "active", billingCycle: "Monthly", startDate: "2026-06-01", expiryDate: "2026-07-01", autoRenewal: true }
+      ];
+      setUserMemberships(initial);
+      localStorage.setItem("yuvakshar_memberships", JSON.stringify(initial));
+    }
+
+    // Load Payments
+    const localPayments = localStorage.getItem("yuvakshar_payments");
+    if (localPayments) {
+      setPaymentRecords(JSON.parse(localPayments));
+    } else {
+      const initial: PaymentRecord[] = [
+        { id: "pay_109283120", userId: "u-3", amount: 49, currency: "INR", status: "success", billingCycle: "Monthly", membershipType: "Premium", paymentMethod: "UPI", date: "2026-06-01", invoiceUrl: "/invoices/pay_109283120.pdf" },
+        { id: "pay_109283121", userId: "u-1", amount: 1999, currency: "INR", status: "success", billingCycle: "Yearly", membershipType: "Patron", paymentMethod: "Credit Card", date: "2026-01-01", invoiceUrl: "/invoices/pay_109283121.pdf" },
+        { id: "pay_109283122", userId: "u-2", amount: 1999, currency: "INR", status: "success", billingCycle: "Yearly", membershipType: "Patron", paymentMethod: "Net Banking", date: "2026-01-01", invoiceUrl: "/invoices/pay_109283122.pdf" }
+      ];
+      setPaymentRecords(initial);
+      localStorage.setItem("yuvakshar_payments", JSON.stringify(initial));
+    }
+
+    // Load Coupons
+    const localCoupons = localStorage.getItem("yuvakshar_coupons");
+    if (localCoupons) {
+      setCoupons(JSON.parse(localCoupons));
+    } else {
+      const initial: Coupon[] = [
+        { code: "YUVAKSHAR10", discountType: "percentage", value: 10, expiryDate: "2027-12-31", usageLimit: 1000, usageCount: 142, isActive: true },
+        { code: "FESTIVAL50", discountType: "percentage", value: 50, expiryDate: "2026-12-31", usageLimit: 500, usageCount: 89, isActive: true },
+        { code: "PATRONFREE", discountType: "percentage", value: 100, expiryDate: "2026-12-31", usageLimit: 100, usageCount: 4, isActive: true },
+        { code: "FLAT100", discountType: "flat", value: 100, expiryDate: "2026-12-31", usageLimit: 200, usageCount: 12, isActive: true }
+      ];
+      setCoupons(initial);
+      localStorage.setItem("yuvakshar_coupons", JSON.stringify(initial));
+    }
+
+    // Load Referrals
+    const localReferrals = localStorage.getItem("yuvakshar_referrals");
+    if (localReferrals) {
+      setReferrals(JSON.parse(localReferrals));
+    } else {
+      const initial: ReferralRecord[] = [
+        { id: "ref-1", referrerId: "u-1", referredEmail: "test1@gmail.com", status: "purchased", date: "2026-06-02" },
+        { id: "ref-2", referrerId: "u-1", referredEmail: "test2@gmail.com", status: "registered", date: "2026-06-05" },
+        { id: "ref-3", referrerId: "u-3", referredEmail: "friend@yahoo.com", status: "pending", date: "2026-06-10" }
+      ];
+      setReferrals(initial);
+      localStorage.setItem("yuvakshar_referrals", JSON.stringify(initial));
+    }
+  };
+
+  const loadDataFromSupabase = async () => {
+    try {
+      // load auth profile
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+        if (profile) setCurrentUser(profile);
+      }
+
+      // Load site settings
+      const { data: dbSettings } = await supabase.from("site_settings").select("*");
+      if (dbSettings) {
+        const parsed: any = {};
+        dbSettings.forEach(s => { parsed[s.key] = s.value; });
+        setSettings(prev => ({
+          general: parsed.general_settings || prev.general,
+          appearance: parsed.appearance_settings || prev.appearance,
+          footer: parsed.footer_settings || prev.footer
+        }));
+      }
+
+      // Load Articles
+      const { data: dbArticles } = await supabase.from("articles").select("*").order("created_at", { ascending: false });
+      if (dbArticles) setArticles(dbArticles);
+
+      // Load Categories
+      const { data: dbCategories } = await supabase.from("categories").select("*");
+      if (dbCategories) setCategories(dbCategories);
+
+      // Load Tags
+      const { data: dbTags } = await supabase.from("tags").select("*");
+      if (dbTags) setTags(dbTags);
+
+      // Load Magazines
+      const { data: dbMagazines } = await supabase.from("magazines").select("*").order("created_at", { ascending: false });
+      if (dbMagazines) setMagazines(dbMagazines);
+
+      // Load Comments
+      const { data: dbComments } = await supabase.from("comments").select("*").order("created_at", { ascending: false });
+      if (dbComments) setComments(dbComments);
+
+      // Load submissions
+      const { data: dbSubmissions } = await supabase.from("contact_messages").select("*").order("created_at", { ascending: false });
+      if (dbSubmissions) {
+        const mapped: Submission[] = dbSubmissions.map(s => ({
+          id: s.id,
+          type: s.type,
+          name: s.name,
+          email: s.email,
+          mobile: s.mobile,
+          subject: s.subject,
+          content: s.content,
+          status: s.status,
+          replies: s.replies,
+          created_at: s.created_at
+        }));
+        setSubmissions(mapped);
+      }
+
+      // Load newsletter subscribers
+      const { data: dbSubscribers } = await supabase.from("subscribers").select("email");
+      if (dbSubscribers) setSubscribers(dbSubscribers.map(s => s.email));
+
+      // Load campaigns
+      const { data: dbCampaigns } = await supabase.from("newsletter_campaigns").select("*").order("created_at", { ascending: false });
+      if (dbCampaigns) setCampaigns(dbCampaigns);
+
+      // Load Ads
+      const { data: dbAds } = await supabase.from("ads").select("*");
+      if (dbAds) setAds(dbAds);
+
+      // Load layout
+      const { data: dbLayouts } = await supabase.from("homepage_layouts").select("*").order("version", { ascending: false });
+      if (dbLayouts) setLayouts(dbLayouts);
+
+      // Load search analytics
+      const { data: dbSearch } = await supabase.from("search_analytics").select("*").order("search_count", { ascending: false });
+      if (dbSearch) setSearchLogs(dbSearch);
+
+      // Load assignments
+      const { data: dbAssign } = await supabase.from("editorial_assignments").select("*");
+      if (dbAssign) setAssignments(dbAssign);
+      
+    } catch (err) {
+      console.error("Supabase load failed, falling back to local DB settings", err);
+      loadDataFromLocalStorage();
+    }
+  };
+
+  // 2. Auth Operations
+  const loginUser = async (email: string, role: string): Promise<boolean> => {
+    // Trigger login
+    if (supabaseConfigured) {
+      // Attempt auth magic links or oauth
+      const { error } = await supabase.auth.signInWithOtp({ email });
+      if (error) {
+        alert("Auth signup OTP error: " + error.message);
+        return false;
+      }
+      return true;
+    } else {
+      // Mock Sign In
+      // If email matches primary owner email, force role to Owner
+      const isPrimaryOwner = email === "yuvakshar.editor@gmail.com";
+      const finalRole = isPrimaryOwner 
+        ? "Owner" 
+        : (role === "Subscriber" || role === "Free Member" || role === "Premium Member" || role === "Patron Member" ? null : role);
+      const finalName = isPrimaryOwner ? "Owner" : email.split("@")[0].toUpperCase();
+      const finalMembership = isPrimaryOwner 
+        ? "Patron" 
+        : (role === "Patron Member" ? "Patron" : role === "Premium Member" ? "Premium" : "Free");
+
+      const mockProfile: Profile = {
+        id: isPrimaryOwner ? "u-1" : "mock-uid-" + Math.floor(Math.random() * 1000),
+        name: finalName,
+        email: email,
+        role: finalRole as Profile["role"],
+        membership: finalMembership as Profile["membership"],
+        status: "active",
+        social_links: {},
+        badges: isPrimaryOwner ? ["Primary Owner"] : ["Verified User"]
+      };
+
+      // Ensure this user is added to the dynamic users list if not already there
+      const userExists = users.some(u => u.email === email);
+      if (!userExists) {
+        const updatedUsers = [...users, mockProfile];
+        setUsers(updatedUsers);
+        localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+      }
+
+      setCurrentUser(mockProfile);
+      localStorage.setItem("yuvakshar_session_user", JSON.stringify(mockProfile));
+      
+      if (authCallback) {
+        authCallback();
+      }
+      setAuthCallback(null);
+      setAuthModalOpen(false);
+      
+      // log action
+      logActivity(`Logged in as Mock User (${finalRole})`, {
+        performer: finalName,
+        performerRole: finalRole,
+        actionType: "Login",
+        dateTime: new Date().toISOString()
+      });
+      return true;
+    }
+  };
+
+  const logoutUser = () => {
+    if (supabaseConfigured) {
+      supabase.auth.signOut();
+    }
+    setCurrentUser(null);
+    localStorage.removeItem("yuvakshar_session_user");
+    logActivity("Logged out of session");
+  };
+
+  const createUser = async (user: Omit<Profile, "id">) => {
+    const performerRole = currentUser?.role;
+    
+    // Authorization check
+    if (!performerRole || !["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(performerRole)) {
+      alert("त्रुटि: आपके पास नया उपयोगकर्ता बनाने की अनुमति नहीं है!");
+      return;
+    }
+    
+    if (user.role === "Owner" && performerRole !== "Owner") {
+      alert("त्रुटि: केवल Owner ही नया Owner बना सकता है!");
+      return;
+    }
+    
+    if (user.role === "Admin" && performerRole !== "Owner" && performerRole !== "Admin") {
+      alert("त्रुटि: आपके पास Admin बनाने की अनुमति नहीं है!");
+      return;
+    }
+
+    if ((user.role === "Editor-in-Chief" || user.role === "Managing Editor" || user.role === "Editor" || user.role === null) && (performerRole !== "Owner" && performerRole !== "Admin")) {
+      alert("त्रुटि: केवल Owner या Admin ही संपादकीय नेतृत्व या पाठक खाते बना सकते हैं!");
+      return;
+    }
+
+    const newId = `u-${Date.now()}`;
+    const newProfile: Profile = {
+      id: newId,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      membership: user.membership,
+      status: user.status || "active",
+      badges: user.role ? [user.role] : ["Reader"]
+    };
+
+    const updatedUsers = [...users, newProfile];
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+
+    logActivity(`Created user: ${user.email} (${user.role || "Subscriber"})`, {
+      performer: currentUser?.name || "System",
+      performerRole: performerRole || "Subscriber",
+      targetUser: user.email,
+      actionType: "Create User",
+      dateTime: new Date().toISOString()
+    });
+  };
+
+  const updateUser = async (userId: string, data: Partial<Profile>) => {
+    const performerRole = currentUser?.role;
+    const targetUser = users.find(u => u.id === userId);
+    if (!targetUser) return;
+
+    if (!performerRole || !["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(performerRole)) {
+      alert("त्रुटि: आपके पास उपयोगकर्ता संशोधित करने की अनुमति नहीं है!");
+      return;
+    }
+
+    if (targetUser.role === "Owner" && performerRole !== "Owner") {
+      alert("त्रुटि: आप Owner का विवरण संशोधित नहीं कर सकते!");
+      return;
+    }
+
+    if (data.role && data.role !== targetUser.role) {
+      if (data.role === "Owner" && performerRole !== "Owner") {
+        alert("त्रुटि: केवल Owner ही Owner पदोन्नति कर सकता है!");
+        return;
+      }
+      if (data.role === "Admin" && performerRole !== "Owner" && performerRole !== "Admin") {
+        alert("त्रुटि: आपके पास Admin भूमिका प्रदान करने की अनुमति नहीं है!");
+        return;
+      }
+    }
+
+    const updatedUsers = users.map(u => u.id === userId ? { ...u, ...data } : u);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+
+    if (currentUser && currentUser.id === userId) {
+      const updatedSelf = { ...currentUser, ...data };
+      setCurrentUser(updatedSelf);
+      localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+    }
+
+    logActivity(`Updated user details for ${targetUser.email}`, {
+      performer: currentUser?.name || "System",
+      performerRole: performerRole || "Subscriber",
+      targetUser: targetUser.email,
+      actionType: "Update User",
+      dateTime: new Date().toISOString()
+    });
+  };
+
+  const deleteUser = async (userId: string) => {
+    const performerRole = currentUser?.role;
+    const targetUser = users.find(u => u.id === userId);
+    if (!targetUser) return;
+
+    if (!performerRole || !["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(performerRole)) {
+      alert("त्रुटि: आपके पास उपयोगकर्ता हटाने की अनुमति नहीं है!");
+      return;
+    }
+
+    if (targetUser.role === "Owner") {
+      alert("त्रुटि: Owner को हटाया नहीं जा सकता!");
+      return;
+    }
+
+    if (targetUser.role === "Admin" && performerRole !== "Owner") {
+      alert("त्रुटि: केवल Owner ही Admin को हटा सकता है!");
+      return;
+    }
+
+    const updatedUsers = users.filter(u => u.id !== userId);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+
+    logActivity(`Deleted user account: ${targetUser.email}`, {
+      performer: currentUser?.name || "System",
+      performerRole: performerRole || "Subscriber",
+      targetUser: targetUser.email,
+      actionType: "Delete User",
+      dateTime: new Date().toISOString()
+    });
+  };
+
+  const transferOwnership = async (targetUserId: string) => {
+    const performerRole = currentUser?.role;
+    if (performerRole !== "Owner") {
+      alert("त्रुटि: केवल Owner ही स्वामित्व स्थानांतरित कर सकता है!");
+      return;
+    }
+
+    const targetUser = users.find(u => u.id === targetUserId);
+    if (!targetUser) return;
+
+    const updatedUsers = users.map(u => {
+      if (u.id === currentUser?.id) {
+        return { ...u, role: "Admin" as const, badges: ["Admin"] };
+      }
+      if (u.id === targetUserId) {
+        return { ...u, role: "Owner" as const, badges: ["Primary Owner"] };
+      }
+      return u;
+    });
+
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+
+    if (currentUser) {
+      const updatedSelf = { ...currentUser, role: "Admin" as const, badges: ["Admin"] };
+      setCurrentUser(updatedSelf);
+      localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+    }
+
+    logActivity(`Transferred ownership to ${targetUser.email}`, {
+      performer: currentUser?.name || "System",
+      performerRole: performerRole || "Subscriber",
+      targetUser: targetUser.email,
+      actionType: "Transfer Ownership",
+      dateTime: new Date().toISOString()
+    });
+  };
+
+  const resetUserPassword = async (userId: string) => {
+    const performerRole = currentUser?.role;
+    const targetUser = users.find(u => u.id === userId);
+    if (!targetUser) return;
+
+    if (!performerRole || !["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(performerRole)) {
+      alert("त्रुटि: आपके पास पासवर्ड रीसेट करने की अनुमति नहीं है!");
+      return;
+    }
+
+    if (targetUser.role === "Owner" && performerRole !== "Owner") {
+      alert("त्रुटि: आप Owner का पासवर्ड रीसेट नहीं कर सकते!");
+      return;
+    }
+
+    logActivity(`Password reset initiated for ${targetUser.email}`, {
+      performer: currentUser?.name || "System",
+      performerRole: performerRole || "Subscriber",
+      targetUser: targetUser.email,
+      actionType: "Password Reset",
+      dateTime: new Date().toISOString()
+    });
+    alert(`पाठक ${targetUser.name} का पासवर्ड रीसेट लिंक भेज दिया गया है!`);
+  };
+
+  const updateUserRole = async (userId: string, role: Profile["role"]) => {
+    await updateUser(userId, { role });
+  };
+
+  // 3. Settings updates
+  const updateSettings = async (type: "general" | "appearance" | "footer", data: any) => {
+    const updatedSettings = { ...settings, [type]: data };
+    setSettings(updatedSettings);
+
+    if (supabaseConfigured) {
+      const dbKey = type === "general" ? "general_settings" : type === "appearance" ? "appearance_settings" : "footer_settings";
+      await supabase.from("site_settings").upsert({ key: dbKey, value: data, updated_at: new Date().toISOString() });
+    } else {
+      localStorage.setItem("yuvakshar_settings", JSON.stringify(updatedSettings));
+    }
+    logActivity(`Site Settings update: ${type}`);
+  };
+
+  // 4. Articles Operations
+  const saveArticle = async (article: Partial<Article>): Promise<Article> => {
+    let saved: Article;
+    const now = new Date().toLocaleDateString("hi-IN", { day: "numeric", month: "short", year: "numeric" });
+    
+    if (supabaseConfigured) {
+      const { data, error } = await supabase.from("articles").upsert({
+        ...article,
+        updated_at: new Date().toISOString()
+      }).select().single();
+      if (error) throw error;
+      saved = data;
+    } else {
+      // Mock Save
+      const targetId = article.id || `art-${Date.now()}`;
+      const existing = articles.find(a => a.id === targetId);
+      
+      saved = {
+        id: targetId,
+        title: article.title || "बिना शीर्षक का लेख",
+        englishTitle: article.englishTitle || "",
+        slug: article.slug || `article-${Date.now()}`,
+        summary: article.summary || "इस लेख का कोई सारांश उपलब्ध नहीं है।",
+        content: article.content || "",
+        category: article.category || "विविध",
+        section: article.section || "article",
+        author: article.author || currentUser?.name || "युवाक्षर संपादक",
+        authorRole: currentUser?.role || "लेखक",
+        coverImage: article.coverImage || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
+        date: article.date || now,
+        readTime: article.readTime || `${Math.max(1, Math.ceil((article.content?.split(" ").length || 100) / 150))} मिनट`,
+        tags: article.tags || [],
+        isFeatured: article.isFeatured || false,
+        status: article.status || "Draft",
+        views: article.views || 0,
+        likes: article.likes || 0
+      };
+
+      const updated = existing 
+        ? articles.map(a => a.id === targetId ? saved : a)
+        : [saved, ...articles];
+      
+      setArticles(updated);
+      localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
+    }
+    logActivity(`Saved Article: ${saved.title} (Status: ${saved.status})`);
+    return saved;
+  };
+
+  const deleteArticle = async (id: string) => {
+    if (supabaseConfigured) {
+      await supabase.from("articles").delete().eq("id", id);
+    } else {
+      const updated = articles.filter(a => a.id !== id);
+      setArticles(updated);
+      localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
+    }
+    logActivity(`Deleted Article: ${id}`);
+  };
+
+  const incrementArticleView = async (id: string) => {
+    if (supabaseConfigured) {
+      await supabase.rpc("increment_article_views", { article_id: id });
+    } else {
+      const updated = articles.map(a => a.id === id ? { ...a, views: (a.views || 0) + 1 } : a);
+      setArticles(updated);
+      localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
+    }
+  };
+
+  const incrementArticleLike = async (id: string) => {
+    if (supabaseConfigured) {
+      await supabase.rpc("increment_article_likes", { article_id: id });
+    } else {
+      const updated = articles.map(a => a.id === id ? { ...a, likes: (a.likes || 0) + 1 } : a);
+      setArticles(updated);
+      localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
+    }
+  };
+
+  // 5. Editorial Assignments
+  const saveAssignment = async (assignment: Partial<EditorialAssignment>) => {
+    if (supabaseConfigured) {
+      await supabase.from("editorial_assignments").upsert(assignment);
+    } else {
+      const id = assignment.id || `assign-${Date.now()}`;
+      const newAssign: EditorialAssignment = {
+        id,
+        article_id: assignment.article_id || "",
+        author_id: assignment.author_id,
+        reviewer_id: assignment.reviewer_id,
+        section_editor_id: assignment.section_editor_id,
+        deadline: assignment.deadline,
+        status: assignment.status || "Assigned",
+        created_at: new Date().toISOString()
+      };
+      const updated = assignments.some(a => a.id === id)
+        ? assignments.map(a => a.id === id ? newAssign : a)
+        : [...assignments, newAssign];
+      setAssignments(updated);
+      localStorage.setItem("yuvakshar_assignments", JSON.stringify(updated));
+    }
+  };
+
+  // 6. Submissions
+  const submitPublicArticle = async (sub: Omit<Submission, "id" | "created_at" | "status">) => {
+    const newSub: Submission = {
+      ...sub,
+      id: `sub-${Date.now()}`,
+      status: "New",
+      created_at: new Date().toISOString(),
+      replies: []
+    };
+
+    if (supabaseConfigured) {
+      await supabase.from("contact_messages").insert({
+        type: sub.type,
+        name: sub.name,
+        email: sub.email,
+        mobile: sub.mobile,
+        subject: sub.subject || sub.title,
+        content: sub.content,
+        status: "New",
+        replies: []
+      });
+    } else {
+      const updated = [newSub, ...submissions];
+      setSubmissions(updated);
+      localStorage.setItem("yuvakshar_submissions", JSON.stringify(updated));
+    }
+    
+    // Dynamic routing to primary mail configured
+    console.log(`Email Trigger: Submitting form details to dynamic editorial email [${settings.general.primary_email}] and sending acknowledgement to visitor [${sub.email}]`);
+    logActivity(`Submitted Public Inquiry/Article from ${sub.name}`);
+  };
+
+  const updateSubmissionStatus = async (id: string, status: Submission["status"]) => {
+    if (supabaseConfigured) {
+      await supabase.from("contact_messages").update({ status }).eq("id", id);
+    } else {
+      const updated = submissions.map(s => s.id === id ? { ...s, status } : s);
+      setSubmissions(updated);
+      localStorage.setItem("yuvakshar_submissions", JSON.stringify(updated));
+    }
+    logActivity(`Submission status updated for ${id} to ${status}`);
+  };
+
+  // 7. Comment Operations
+  const addComment = async (articleId: string, name: string, content: string, parentId?: string | null) => {
+    const newComment: Comment = {
+      id: `comm-${Date.now()}`,
+      article_id: articleId,
+      parent_id: parentId || null,
+      name,
+      content,
+      likes: 0,
+      status: "approved", // default auto-approve in demo
+      is_reported: false,
+      created_at: new Date().toISOString()
+    };
+
+    if (supabaseConfigured) {
+      await supabase.from("comments").insert({
+        article_id: articleId,
+        parent_id: parentId || null,
+        name,
+        content,
+        status: "approved"
+      });
+    } else {
+      const updated = [newComment, ...comments];
+      setComments(updated);
+      localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+    }
+    logActivity(`Comment added to article ${articleId} by ${name}`);
+  };
+
+  const moderateComment = async (id: string, status: Comment["status"]) => {
+    if (supabaseConfigured) {
+      await supabase.from("comments").update({ status }).eq("id", id);
+    } else {
+      const updated = comments.map(c => c.id === id ? { ...c, status } : c);
+      setComments(updated);
+      localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+    }
+    logActivity(`Comment moderated: ${id} status updated to ${status}`);
+  };
+
+  const reportComment = async (id: string) => {
+    if (supabaseConfigured) {
+      await supabase.from("comments").update({ is_reported: true }).eq("id", id);
+    } else {
+      const updated = comments.map(c => c.id === id ? { ...c, is_reported: true } : c);
+      setComments(updated);
+      localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+    }
+  };
+
+  // 8. Ads Operations
+  const saveAd = async (ad: Partial<Ad>) => {
+    if (supabaseConfigured) {
+      await supabase.from("ads").upsert(ad);
+    } else {
+      const updated = ads.map(a => a.id === ad.id ? { ...a, ...ad } : a);
+      setAds(updated);
+      localStorage.setItem("yuvakshar_ads", JSON.stringify(updated));
+    }
+    logActivity(`Ad settings saved: ${ad.name}`);
+  };
+
+  const trackAdClick = async (id: string) => {
+    if (supabaseConfigured) {
+      await supabase.rpc("increment_ad_clicks", { ad_id: id });
+    } else {
+      const updated = ads.map(a => a.id === id ? { ...a, click_count: a.click_count + 1 } : a);
+      setAds(updated);
+      localStorage.setItem("yuvakshar_ads", JSON.stringify(updated));
+    }
+  };
+
+  // 9. Subscribers & Campaigns
+  const subscribeNewsletter = async (email: string): Promise<string> => {
+    if (supabaseConfigured) {
+      const token = Math.random().toString(36).substring(2, 15);
+      await supabase.from("subscribers").insert({ email, status: "Pending Verification", verification_token: token });
+      return "Pending Verification: कृपया सत्यापन के लिए अपना ईमेल जांचें।";
+    } else {
+      if (subscribers.includes(email)) return "Already Subscribed.";
+      const updated = [email, ...subscribers];
+      setSubscribers(updated);
+      localStorage.setItem("yuvakshar_subscribers", JSON.stringify(updated));
+      return "Subscribed Successfully (Demo Auto-Opt-In).";
+    }
+  };
+
+  const unsubscribeNewsletter = async (email: string) => {
+    if (supabaseConfigured) {
+      await supabase.from("subscribers").update({ status: "Unsubscribed" }).eq("email", email);
+    } else {
+      const updated = subscribers.filter(s => s !== email);
+      setSubscribers(updated);
+      localStorage.setItem("yuvakshar_subscribers", JSON.stringify(updated));
+    }
+  };
+
+  const updateSubscriberStatus = async (email: string, status: "Active" | "Blocked" | "Unsubscribed") => {
+    if (supabaseConfigured) {
+      await supabase.from("subscribers").update({ status }).eq("email", email);
+    } else {
+      // mock update
+      logActivity(`Subscriber ${email} status updated to ${status}`);
+    }
+  };
+
+  const sendNewsletterCampaign = async (subject: string, content: string) => {
+    const newCamp = {
+      id: `camp-${Date.now()}`,
+      subject,
+      content,
+      sent_at: new Date().toISOString(),
+      stats: { open_count: 0, click_count: 0 }
+    };
+
+    if (supabaseConfigured) {
+      await supabase.from("newsletter_campaigns").insert({
+        subject,
+        content,
+        sent_at: new Date().toISOString()
+      });
+    } else {
+      const updated = [newCamp, ...campaigns];
+      setCampaigns(updated);
+      localStorage.setItem("yuvakshar_campaigns", JSON.stringify(updated));
+    }
+    
+    // Telemetry output report to official address
+    console.log(`Campaign dispatched. Report summary triggered and delivered to dynamic notifications email [${settings.general.newsletter_email}]`);
+    logActivity(`Newsletter Campaign Dispatched: "${subject}"`);
+  };
+
+  // 10. Layout Customizer
+  const saveHomepageLayout = async (layoutJson: HomepageLayout["layout_json"]) => {
+    const newLayout: HomepageLayout = {
+      id: `layout-${Date.now()}`,
+      name: `Layout config v${layouts.length + 1}`,
+      layout_json: layoutJson,
+      version: layouts.length + 1,
+      is_published: true
+    };
+
+    if (supabaseConfigured) {
+      await supabase.from("homepage_layouts").update({ is_published: false }).eq("is_published", true);
+      await supabase.from("homepage_layouts").insert({
+        name: newLayout.name,
+        layout_json: layoutJson,
+        version: newLayout.version,
+        is_published: true
+      });
+    } else {
+      const resetLayouts = layouts.map(l => ({ ...l, is_published: false }));
+      const updated = [newLayout, ...resetLayouts];
+      setLayouts(updated);
+      localStorage.setItem("yuvakshar_layouts", JSON.stringify(updated));
+    }
+    logActivity(`Homepage layout updated to version ${newLayout.version}`);
+  };
+
+  const restoreHomepageLayoutVersion = async (versionId: string) => {
+    if (supabaseConfigured) {
+      // Database level override
+    } else {
+      const target = layouts.find(l => l.id === versionId);
+      if (target) {
+        const updated = layouts.map(l => ({
+          ...l,
+          is_published: l.id === versionId
+        }));
+        setLayouts(updated);
+        localStorage.setItem("yuvakshar_layouts", JSON.stringify(updated));
+        logActivity(`Restored Homepage layout to version: ${target.version}`);
+      }
+    }
+  };
+
+  // 11. JSON backup utility
+  const exportDatabaseJson = (): string => {
+    const db = {
+      articles,
+      categories,
+      tags,
+      magazines,
+      comments,
+      submissions,
+      assignments,
+      subscribers,
+      campaigns,
+      ads,
+      layouts,
+      activityLogs,
+      settings
+    };
+    logActivity("Exported JSON Database Snapshot");
+    return JSON.stringify(db, null, 2);
+  };
+
+  const importDatabaseJson = (json: string): boolean => {
+    try {
+      const parsed = JSON.parse(json);
+      if (parsed.articles) setArticles(parsed.articles);
+      if (parsed.magazines) setMagazines(parsed.magazines);
+      if (parsed.submissions) setSubmissions(parsed.submissions);
+      if (parsed.comments) setComments(parsed.comments);
+      if (parsed.subscribers) setSubscribers(parsed.subscribers);
+      if (parsed.campaigns) setCampaigns(parsed.campaigns);
+      if (parsed.settings) setSettings(parsed.settings);
+      
+      if (!supabaseConfigured) {
+        if (parsed.articles) localStorage.setItem("yuvakshar_articles", JSON.stringify(parsed.articles));
+        if (parsed.magazines) localStorage.setItem("yuvakshar_magazines", JSON.stringify(parsed.magazines));
+        if (parsed.submissions) localStorage.setItem("yuvakshar_submissions", JSON.stringify(parsed.submissions));
+        if (parsed.comments) localStorage.setItem("yuvakshar_comments", JSON.stringify(parsed.comments));
+        if (parsed.subscribers) localStorage.setItem("yuvakshar_subscribers", JSON.stringify(parsed.subscribers));
+        if (parsed.campaigns) localStorage.setItem("yuvakshar_campaigns", JSON.stringify(parsed.campaigns));
+        if (parsed.settings) localStorage.setItem("yuvakshar_settings", JSON.stringify(parsed.settings));
+      }
+      
+      logActivity("Restored Database from JSON import");
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  };
+
+  // 12. Search analytics
+  const logSearchQuery = async (query: string, zeroResults = false) => {
+    if (supabaseConfigured) {
+      await supabase.rpc("log_search_telemetry", { search_query: query, is_zero: zeroResults });
+    } else {
+      const existing = searchLogs.find(s => s.query.toLowerCase() === query.toLowerCase());
+      let updated: SearchAnalytics[];
+      if (existing) {
+        updated = searchLogs.map(s => s.id === existing.id 
+          ? { ...s, search_count: s.search_count + 1, zero_results: zeroResults, updated_at: new Date().toISOString() } 
+          : s
+        );
+      } else {
+        updated = [...searchLogs, {
+          id: `sch-${Date.now()}`,
+          query,
+          search_count: 1,
+          click_count: 0,
+          zero_results: zeroResults,
+          updated_at: new Date().toISOString()
+        }];
+      }
+      setSearchLogs(updated);
+      localStorage.setItem("yuvakshar_search_logs", JSON.stringify(updated));
+    }
+  };
+
+  // 13. Audit logs internal helper
+  const logActivity = (action: string, details = {}) => {
+    const newLog: ActivityLog = {
+      id: `log-${Date.now()}`,
+      user_id: currentUser?.id,
+      action,
+      details,
+      created_at: new Date().toISOString()
+    };
+    
+    // Keep logs updated
+    const updated = [newLog, ...activityLogs].slice(0, 100);
+    setActivityLogs(updated);
+    if (!supabaseConfigured) {
+      localStorage.setItem("yuvakshar_activity_logs", JSON.stringify(updated));
+    }
+  };
+
+  // Quiz Context Operations implementation
+  const saveQuiz = async (quiz: ArticleQuiz) => {
+    const updated = quizzes.some(q => q.articleId === quiz.articleId)
+      ? quizzes.map(q => q.articleId === quiz.articleId ? quiz : q)
+      : [...quizzes, quiz];
+    setQuizzes(updated);
+    localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updated));
+    logActivity(`Quiz saved/updated for article: ${quiz.articleId}`);
+  };
+
+  const addQuizAttempt = async (attempt: Omit<QuizAttempt, "id" | "timestamp">): Promise<QuizAttempt> => {
+    const newAttempt: QuizAttempt = {
+      ...attempt,
+      id: `att-${Date.now()}`,
+      timestamp: new Date().toISOString()
+    };
+
+    const updatedAttempts = [...quizAttempts, newAttempt];
+    setQuizAttempts(updatedAttempts);
+    localStorage.setItem("yuvakshar_quiz_attempts", JSON.stringify(updatedAttempts));
+
+    // Handle Certificate Generation
+    if (newAttempt.percentage >= 60) {
+      const type = newAttempt.percentage >= 90
+        ? ("ज्ञानवीर प्रमाणपत्र" as const)
+        : newAttempt.percentage >= 80
+          ? ("उत्कृष्टता प्रमाणपत्र" as const)
+          : ("सहभागिता प्रमाणपत्र" as const);
+      
+      const badge = newAttempt.percentage >= 90
+        ? "🏆 ज्ञानवीर"
+        : newAttempt.percentage >= 80
+          ? "🌟 विचारक"
+          : "📚 अध्ययनशील पाठक";
+
+      const targetArticle = articles.find(a => a.id === newAttempt.articleId);
+      const articleTitle = targetArticle ? targetArticle.title.replace(/[#*`>]/g, "").trim() : "युवाक्षर लेख";
+
+      const newCert: QuizCertificate = {
+        id: `cert-${Date.now()}`,
+        userId: newAttempt.userId,
+        userName: newAttempt.userName,
+        articleTitle,
+        score: newAttempt.score,
+        percentage: newAttempt.percentage,
+        date: new Date().toLocaleDateString("hi-IN", { day: "numeric", month: "short", year: "numeric" }),
+        certificateType: type,
+        badge
+      };
+
+      const updatedCerts = [...quizCertificates, newCert];
+      setQuizCertificates(updatedCerts);
+      localStorage.setItem("yuvakshar_quiz_certificates", JSON.stringify(updatedCerts));
+      logActivity(`Certificate earned: ${type} for user: ${newAttempt.userName}`);
+    }
+
+    // Anti-Cheat: Leaderboard registers FIRST completed attempt only.
+    const alreadyCompleted = quizAttempts.some(att => att.userId === newAttempt.userId && att.articleId === newAttempt.articleId);
+    if (!alreadyCompleted) {
+      const earnedPoints = newAttempt.score * 10;
+      const certEarned = newAttempt.percentage >= 60 ? 1 : 0;
+      
+      const existingEntry = leaderboard.find(entry => entry.userName === newAttempt.userName);
+      let updatedLeaderboard: QuizLeaderboardEntry[];
+      if (existingEntry) {
+        updatedLeaderboard = leaderboard.map(entry => {
+          if (entry.userName === newAttempt.userName) {
+            return {
+              ...entry,
+              score: entry.score + earnedPoints,
+              completedQuizzes: entry.completedQuizzes + 1,
+              certificatesCount: entry.certificatesCount + certEarned
+            };
+          }
+          return entry;
+        });
+      } else {
+        const newEntry: QuizLeaderboardEntry = {
+          id: `lead-${Date.now()}`,
+          userName: newAttempt.userName,
+          score: earnedPoints,
+          completedQuizzes: 1,
+          certificatesCount: certEarned,
+          interval: "weekly"
+        };
+        updatedLeaderboard = [...leaderboard, newEntry];
+      }
+      setLeaderboard(updatedLeaderboard);
+      localStorage.setItem("yuvakshar_quiz_leaderboard", JSON.stringify(updatedLeaderboard));
+    }
+
+    logActivity(`Quiz attempt submitted by user: ${newAttempt.userName} (Score: ${newAttempt.score}/${newAttempt.totalQuestions})`);
+    return newAttempt;
+  };
+
+  const regenerateQuiz = async (articleId: string, questionCount: number, difficulty: "सरल" | "मध्यम" | "उन्नत") => {
+    const targetArticle = articles.find(a => a.id === articleId);
+    if (!targetArticle) return;
+
+    const fullQuestionPool = generateFallbackQuestions(articleId, targetArticle.title, targetArticle.content);
+    const activeQuestions = fullQuestionPool.slice(0, questionCount).map((q, idx) => ({
+      ...q,
+      difficultyLevel: difficulty,
+      id: `q-${articleId}-${Date.now()}-${idx}`
+    }));
+
+    const updatedSettings = {
+      ...quizSettings,
+      [articleId]: {
+        articleId,
+        isEnabled: true,
+        questionCount,
+        difficulty
+      }
+    };
+    setQuizSettings(updatedSettings);
+    localStorage.setItem("yuvakshar_quiz_settings", JSON.stringify(updatedSettings));
+
+    const updatedQuizzes = quizzes.map(q => {
+      if (q.articleId === articleId) {
+        return { articleId, questions: activeQuestions };
+      }
+      return q;
+    });
+    setQuizzes(updatedQuizzes);
+    localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+
+    logActivity(`Quiz regenerated for article: ${articleId} (Count: ${questionCount}, Diff: ${difficulty})`);
+  };
+
+  const toggleQuizStatus = async (articleId: string, isEnabled: boolean) => {
+    const current = quizSettings[articleId] || {
+      articleId,
+      isEnabled: true,
+      questionCount: 10,
+      difficulty: "मध्यम"
+    };
+
+    const updatedSettings = {
+      ...quizSettings,
+      [articleId]: {
+        ...current,
+        isEnabled
+      }
+    };
+    setQuizSettings(updatedSettings);
+    localStorage.setItem("yuvakshar_quiz_settings", JSON.stringify(updatedSettings));
+    logActivity(`Quiz status toggled for article: ${articleId} (Enabled: ${isEnabled})`);
+  };
+
+  const editQuizQuestion = async (articleId: string, questionId: string, updatedQuestion: Partial<QuizQuestion>) => {
+    const updatedQuizzes = quizzes.map(q => {
+      if (q.articleId === articleId) {
+        return {
+          ...q,
+          questions: q.questions.map(question => {
+            if (question.id === questionId) {
+              return { ...question, ...updatedQuestion } as QuizQuestion;
+            }
+            return question;
+          })
+        };
+      }
+      return q;
+    });
+    setQuizzes(updatedQuizzes);
+    localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+    logActivity(`Quiz question edited in article: ${articleId} (ID: ${questionId})`);
+  };
+
+  const deleteQuizQuestion = async (articleId: string, questionId: string) => {
+    const updatedQuizzes = quizzes.map(q => {
+      if (q.articleId === articleId) {
+        return {
+          ...q,
+          questions: q.questions.filter(question => question.id !== questionId)
+        };
+      }
+      return q;
+    });
+    setQuizzes(updatedQuizzes);
+    localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+    logActivity(`Quiz question deleted from article: ${articleId} (ID: ${questionId})`);
+  };
+
+  const bulkImportQuestions = async (articleId: string, importQuestions: Omit<QuizQuestion, "id">[]) => {
+    const formatted = importQuestions.map((q, idx) => ({
+      ...q,
+      id: `q-${articleId}-bulk-${Date.now()}-${idx}`
+    })) as QuizQuestion[];
+
+    const updatedQuizzes = quizzes.map(q => {
+      if (q.articleId === articleId) {
+        return {
+          ...q,
+          questions: [...q.questions, ...formatted]
+        };
+      }
+      return q;
+    });
+    setQuizzes(updatedQuizzes);
+    localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+    logActivity(`Bulk imported ${importQuestions.length} questions to article: ${articleId}`);
+  };
+
+  const approveDraftQuestion = async (articleId: string, questionId: string) => {
+    const updatedQuizzes = quizzes.map(q => {
+      if (q.articleId === articleId) {
+        return {
+          ...q,
+          questions: q.questions.map(question => {
+            if (question.id === questionId) {
+              return { ...question, isDraft: false };
+            }
+            return question;
+          })
+        };
+      }
+      return q;
+    });
+    setQuizzes(updatedQuizzes);
+    localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+    logActivity(`Draft question approved for article: ${articleId} (ID: ${questionId})`);
+  };
+
+  const openAuthModal = (callback?: () => void, message?: string) => {
+    setAuthModalOpen(true);
+    setAuthModalMessage(message || "");
+    if (callback) {
+      setAuthCallback(() => callback);
+    } else {
+      setAuthCallback(null);
+    }
+  };
+
+  const closeAuthModal = () => {
+    setAuthModalOpen(false);
+    setAuthCallback(null);
+    setAuthModalMessage("");
+  };
+
+  const becomeAuthor = async (bio: string, avatarUrl: string, expertise: string) => {
+    if (!currentUser) return;
+    const updatedUser = { 
+      ...currentUser, 
+      role: "Author" as const, 
+      bio, 
+      avatar_url: avatarUrl || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80", 
+      badges: Array.from(new Set([...(currentUser.badges || []), "Author", expertise])).filter(Boolean) as string[],
+      interests: [expertise]
+    };
+    setCurrentUser(updatedUser);
+    localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+    const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  };
+
+  const updateUserProfile = async (data: Partial<Profile>) => {
+    if (!currentUser) return;
+    const updatedUser = { ...currentUser, ...data };
+    setCurrentUser(updatedUser);
+    localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+    const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  };
+
+  const updateUserMembership = async (userId: string, membership: Profile["membership"]) => {
+    const targetUser = users.find(u => u.id === userId);
+    if (!targetUser) return;
+    const updatedUsers = users.map(u => u.id === userId ? { ...u, membership } : u);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    
+    if (currentUser && currentUser.id === userId) {
+      const updatedSelf = { ...currentUser, membership };
+      setCurrentUser(updatedSelf);
+      localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+    }
+    logActivity(`Updated user membership for ${targetUser.email} to ${membership}`);
+  };
+
+  const canAccessContent = (user: Profile | null, content: { accessLevel?: "Free" | "Premium" | "Patron" }) => {
+    const level = content.accessLevel || "Free";
+    if (level === "Free") return true;
+
+    // Team members bypass all paywalls
+    if (user && user.role && [
+      "Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Fact Check Reviewer", "Author", "Contributor"
+    ].includes(user.role)) {
+      return true;
+    }
+
+    if (!user) return false;
+
+    if (level === "Premium") {
+      return user.membership === "Premium" || user.membership === "Patron";
+    }
+
+    if (level === "Patron") {
+      return user.membership === "Patron";
+    }
+
+    return false;
+  };
+
+  const canComment = (user: Profile | null) => {
+    return user !== null;
+  };
+
+  const canBookmark = (user: Profile | null) => {
+    return user !== null;
+  };
+
+  const canVote = (user: Profile | null) => {
+    return user !== null;
+  };
+
+  const canManageArticles = (user: Profile | null) => {
+    if (!user || !user.role) return false;
+    return ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Author"].includes(user.role);
+  };
+
+  const canPublishArticles = (user: Profile | null, contentType: string) => {
+    if (!user || !user.role) return false;
+    
+    // Check if they are part of the publishing roles
+    const hasPublishingRole = ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor"].includes(user.role);
+    if (!hasPublishingRole) return false;
+
+    // Special Content Workflow: Editorials, Investigative Reports, and Special Reports require Editor-in-Chief or Owner approval
+    const isSpecialContent = ["Editorial", "Special Report", "Research Report"].includes(contentType);
+    if (isSpecialContent) {
+      return ["Owner", "Editor-in-Chief"].includes(user.role);
+    }
+
+    return true;
+  };
+
+  const canAccessAdmin = (user: Profile | null) => {
+    if (!user || !user.role) return false;
+    return [
+      "Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Fact Check Reviewer", "Author"
+    ].includes(user.role);
+  };
+
+  const canAccessPremiumContent = (user: Profile | null) => {
+    return canAccessContent(user, { accessLevel: "Premium" });
+  };
+
+  function mapFeatureToModule(feature: string): string {
+    if (feature.startsWith("notes_")) return "noteGenerator";
+    switch (feature) {
+      case "30s_summary":
+      case "2m_summary":
+      case "detailed_summary":
+      case "bullet_summary":
+      case "vocabulary":
+      case "dates":
+      case "personalities":
+      case "history":
+      case "further_reading":
+        return "readerAssistant";
+      case "chat":
+        return "articleChat";
+      case "quiz":
+        return "quizGenerator";
+      case "writing_guru":
+        return "writingGuru";
+      case "title_lab":
+        return "titleLaboratory";
+      case "grammar":
+        return "grammarAssistant";
+      case "fact_check":
+        return "factCheckAssistant";
+      case "research":
+        return "researchAssistant";
+      default:
+        return "readerAssistant";
+    }
+  }
+
+  const updateAiSettings = async (newSettings: Partial<AiSettings>) => {
+    setAiSettings(prev => {
+      const updated = { ...prev, ...newSettings };
+      localStorage.setItem("yuvakshar_ai_settings", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const saveAiNote = async (note: Omit<AiNote, "id" | "createdAt">) => {
+    const newNote: AiNote = {
+      ...note,
+      id: "note-" + Math.floor(Math.random() * 100000),
+      createdAt: new Date().toISOString()
+    };
+    setAiNotes(prev => {
+      const updated = [newNote, ...prev];
+      localStorage.setItem("yuvakshar_ai_notes", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const deleteAiNote = async (id: string) => {
+    setAiNotes(prev => {
+      const updated = prev.filter(n => n.id !== id);
+      localStorage.setItem("yuvakshar_ai_notes", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const generateAiContent = async (prompt: string, featureName: string, customSystemPrompt?: string): Promise<string> => {
+    const moduleKey = mapFeatureToModule(featureName);
+    if (!aiSettings.enabledModules[moduleKey]) {
+      throw new Error("यह एआई मॉड्यूल वर्तमान में प्रशासक द्वारा अक्षम किया गया है।");
+    }
+
+    const provider = aiSettings.apiProvider;
+    const apiKey = provider === "OpenAI" ? aiSettings.apiKeys.openai : aiSettings.apiKeys.gemini;
+
+    const tokens = Math.floor(Math.random() * 300) + 150;
+    const estimatedCost = provider === "OpenAI" ? (tokens * 0.000015) : (tokens * 0.000002);
+    
+    setAiSettings(prev => {
+      const updated = {
+        ...prev,
+        tokensUsed: prev.tokensUsed + tokens,
+        usageAnalytics: [
+          ...prev.usageAnalytics,
+          { date: new Date().toISOString().split("T")[0], tokensUsed: tokens, cost: estimatedCost, feature: featureName }
+        ]
+      };
+      localStorage.setItem("yuvakshar_ai_settings", JSON.stringify(updated));
+      return updated;
+    });
+
+    if (!apiKey) {
+      const activeArticle = articles.find(art => prompt.includes(art.title) || prompt.includes(art.id));
+      const title = activeArticle?.title || "सक्रिय विमर्श";
+      const category = activeArticle?.category || "विशेष लेख";
+      const content = activeArticle?.content || "";
+      await new Promise(resolve => setTimeout(resolve, 800));
+      return generateMockAiResponse(featureName, title, category, content, prompt);
+    }
+
+    try {
+      if (provider === "OpenAI") {
+        return await callOpenAi(apiKey, prompt, customSystemPrompt);
+      } else {
+        return await callGemini(apiKey, prompt, customSystemPrompt);
+      }
+    } catch (error: any) {
+      console.warn("AI Service Call failed. Falling back to dynamic mock.", error);
+      const activeArticle = articles.find(art => prompt.includes(art.title) || prompt.includes(art.id));
+      const title = activeArticle?.title || "सक्रिय विमर्श";
+      const category = activeArticle?.category || "विशेष लेख";
+      const content = activeArticle?.content || "";
+      return generateMockAiResponse(featureName, title, category, content, prompt);
+    }
+  };
+
+  // Membership Operations
+  const validateCoupon = (code: string): Coupon | null => {
+    const coupon = coupons.find(c => c.code.toUpperCase() === code.toUpperCase() && c.isActive);
+    if (!coupon) return null;
+    const now = new Date();
+    const expiry = new Date(coupon.expiryDate);
+    if (now > expiry) return null;
+    if (coupon.usageCount >= coupon.usageLimit) return null;
+    return coupon;
+  };
+
+  const createCoupon = (newCoupon: Coupon) => {
+    setCoupons(prev => {
+      const updated = [...prev.filter(c => c.code !== newCoupon.code), newCoupon];
+      localStorage.setItem("yuvakshar_coupons", JSON.stringify(updated));
+      return updated;
+    });
+    logActivity(`Created new coupon: ${newCoupon.code}`);
+  };
+
+  const deleteCoupon = (code: string) => {
+    setCoupons(prev => {
+      const updated = prev.filter(c => c.code !== code);
+      localStorage.setItem("yuvakshar_coupons", JSON.stringify(updated));
+      return updated;
+    });
+    logActivity(`Deleted coupon: ${code}`);
+  };
+
+  const addReferral = (referrerId: string, email: string) => {
+    const newRef: ReferralRecord = {
+      id: "ref-" + Date.now(),
+      referrerId,
+      referredEmail: email,
+      status: "pending",
+      date: new Date().toISOString().split("T")[0]
+    };
+    setReferrals(prev => {
+      const updated = [newRef, ...prev];
+      localStorage.setItem("yuvakshar_referrals", JSON.stringify(updated));
+      return updated;
+    });
+    logActivity(`Referral invitation sent to ${email}`);
+  };
+
+  const purchaseMembership = async (
+    userId: string,
+    plan: "Premium" | "Patron",
+    billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly",
+    couponCode?: string
+  ): Promise<boolean> => {
+    const prices = {
+      Premium: { Monthly: 49, Quarterly: 129, "Half-Yearly": 249, Yearly: 499 },
+      Patron: { Monthly: 199, Quarterly: 549, "Half-Yearly": 999, Yearly: 1999 }
+    };
+    
+    let basePrice = prices[plan][billingCycle] || 0;
+    
+    if (couponCode) {
+      const coupon = validateCoupon(couponCode);
+      if (coupon) {
+        if (coupon.discountType === "percentage") {
+          basePrice = Math.max(0, basePrice - (basePrice * coupon.value) / 100);
+        } else {
+          basePrice = Math.max(0, basePrice - coupon.value);
+        }
+        setCoupons(prev => {
+          const updated = prev.map(c => c.code === coupon.code ? { ...c, usageCount: c.usageCount + 1 } : c);
+          localStorage.setItem("yuvakshar_coupons", JSON.stringify(updated));
+          return updated;
+        });
+      }
+    }
+
+    const now = new Date();
+    let durationDays = 30;
+    if (billingCycle === "Quarterly") durationDays = 90;
+    else if (billingCycle === "Half-Yearly") durationDays = 180;
+    else if (billingCycle === "Yearly") durationDays = 365;
+    
+    const expiry = new Date();
+    expiry.setDate(now.getDate() + durationDays);
+
+    const membershipId = "mem-" + Date.now();
+    const newMembership: UserMembership = {
+      id: membershipId,
+      userId,
+      membershipType: plan,
+      status: "active",
+      billingCycle,
+      startDate: now.toISOString().split("T")[0],
+      expiryDate: expiry.toISOString().split("T")[0],
+      autoRenewal: true,
+      razorpaySubscriptionId: "sub_" + Math.random().toString(36).substring(2, 12)
+    };
+
+    setUserMemberships(prev => {
+      const updated = [newMembership, ...prev.filter(m => m.userId !== userId)];
+      localStorage.setItem("yuvakshar_memberships", JSON.stringify(updated));
+      return updated;
+    });
+
+    await updateUserMembership(userId, plan);
+
+    const paymentId = "pay_" + Math.random().toString(36).substring(2, 10);
+    const newPayment: PaymentRecord = {
+      id: paymentId,
+      userId,
+      amount: basePrice,
+      currency: "INR",
+      status: "success",
+      billingCycle,
+      membershipType: plan,
+      paymentMethod: "UPI",
+      date: now.toISOString().split("T")[0],
+      invoiceUrl: `/invoices/${paymentId}.pdf`
+    };
+
+    setPaymentRecords(prev => {
+      const updated = [newPayment, ...prev];
+      localStorage.setItem("yuvakshar_payments", JSON.stringify(updated));
+      return updated;
+    });
+
+    if (currentUser) {
+      setReferrals(prev => {
+        const updated = prev.map(ref => 
+          ref.referredEmail === currentUser.email && ref.status === "pending"
+            ? { ...ref, status: "purchased" as const }
+            : ref
+        );
+        localStorage.setItem("yuvakshar_referrals", JSON.stringify(updated));
+        return updated;
+      });
+    }
+
+    logActivity(`Membership purchased: ${plan} (${billingCycle}) by user ${userId}`);
+    return true;
+  };
+
+  const renewMembership = async (userId: string) => {
+    const existing = userMemberships.find(m => m.userId === userId);
+    if (!existing) return;
+
+    const prices = {
+      Premium: { Monthly: 49, Quarterly: 129, "Half-Yearly": 249, Yearly: 499 },
+      Patron: { Monthly: 199, Quarterly: 549, "Half-Yearly": 999, Yearly: 1999 }
+    };
+    const price = existing.membershipType === "Free" 
+      ? 0 
+      : (prices[existing.membershipType as "Premium" | "Patron"]?.[existing.billingCycle as "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly"] || 0);
+
+    const now = new Date();
+    const currentExpiry = new Date(existing.expiryDate);
+    const baseDate = currentExpiry > now ? currentExpiry : now;
+    
+    let durationDays = 30;
+    if (existing.billingCycle === "Quarterly") durationDays = 90;
+    else if (existing.billingCycle === "Half-Yearly") durationDays = 180;
+    else if (existing.billingCycle === "Yearly") durationDays = 365;
+
+    baseDate.setDate(baseDate.getDate() + durationDays);
+
+    const updated = userMemberships.map(m => m.userId === userId ? {
+      ...m,
+      status: "active" as const,
+      expiryDate: baseDate.toISOString().split("T")[0]
+    } : m);
+    setUserMemberships(updated);
+    localStorage.setItem("yuvakshar_memberships", JSON.stringify(updated));
+
+    const paymentId = "pay_" + Math.random().toString(36).substring(2, 10);
+    const newPayment: PaymentRecord = {
+      id: paymentId,
+      userId,
+      amount: price,
+      currency: "INR",
+      status: "success",
+      billingCycle: existing.billingCycle,
+      membershipType: existing.membershipType,
+      paymentMethod: "UPI",
+      date: now.toISOString().split("T")[0],
+      invoiceUrl: `/invoices/${paymentId}.pdf`
+    };
+
+    setPaymentRecords(prev => {
+      const updated = [newPayment, ...prev];
+      localStorage.setItem("yuvakshar_payments", JSON.stringify(updated));
+      return updated;
+    });
+
+    logActivity(`Membership renewed for user: ${userId}`);
+  };
+
+  const toggleAutoRenewal = async (userId: string) => {
+    const updated = userMemberships.map(m => m.userId === userId ? {
+      ...m,
+      autoRenewal: !m.autoRenewal
+    } : m);
+    setUserMemberships(updated);
+    localStorage.setItem("yuvakshar_memberships", JSON.stringify(updated));
+    logActivity(`Toggled auto-renewal for user: ${userId}`);
+  };
+
+  const cancelSubscription = async (userId: string) => {
+    const updated = userMemberships.map(m => m.userId === userId ? {
+      ...m,
+      status: "cancelled" as const,
+      autoRenewal: false
+    } : m);
+    setUserMemberships(updated);
+    localStorage.setItem("yuvakshar_memberships", JSON.stringify(updated));
+    await updateUserMembership(userId, "Free");
+    logActivity(`Cancelled subscription for user: ${userId}`);
+  };
+
+  const assignMembershipManually = async (userId: string, type: "Free" | "Premium" | "Patron", billingCycle: string, durationDays: number) => {
+    const now = new Date();
+    const expiry = new Date();
+    expiry.setDate(now.getDate() + durationDays);
+
+    const newMembership: UserMembership = {
+      id: "mem-manual-" + Date.now(),
+      userId,
+      membershipType: type,
+      status: type === "Free" ? ("cancelled" as const) : ("active" as const),
+      billingCycle: type === "Free" ? ("Free" as const) : (billingCycle as any),
+      startDate: now.toISOString().split("T")[0],
+      expiryDate: type === "Free" ? now.toISOString().split("T")[0] : expiry.toISOString().split("T")[0],
+      autoRenewal: false
+    };
+
+    setUserMemberships(prev => {
+      const updated = [newMembership, ...prev.filter(m => m.userId !== userId)];
+      localStorage.setItem("yuvakshar_memberships", JSON.stringify(updated));
+      return updated;
+    });
+
+    await updateUserMembership(userId, type);
+    logActivity(`Manual membership assignment: ${type} for user: ${userId}`);
+  };
+
+  const getMembershipAnalytics = () => {
+    const active = userMemberships.filter(m => m.status === "active" && m.membershipType !== "Free");
+    const totalRevenue = paymentRecords.filter(p => p.status === "success").reduce((acc, curr) => acc + curr.amount, 0);
+    const expiredCount = userMemberships.filter(m => m.status === "expired" || m.status === "cancelled").length;
+    
+    const premiumCount = active.filter(m => m.membershipType === "Premium").length;
+    const patronCount = active.filter(m => m.membershipType === "Patron").length;
+    
+    const conversionRate = Math.round((active.length / Math.max(1, users.length)) * 100);
+    const churnRate = Math.round((expiredCount / Math.max(1, active.length + expiredCount)) * 100);
+    const renewalRate = Math.round((active.filter(m => m.autoRenewal).length / Math.max(1, active.length)) * 100);
+    const upgradeRate = Math.round((patronCount / Math.max(1, active.length)) * 100);
+
+    return {
+      totalMembers: users.length,
+      activeMembers: active.length,
+      expiredMembers: expiredCount,
+      premiumMembers: premiumCount,
+      patronMembers: patronCount,
+      membershipRevenue: totalRevenue,
+      conversionRate,
+      churnRate,
+      renewalRate,
+      upgradeRate
+    };
+  };
+
+  return (
+    <CmsContext.Provider
+      value={{
+        authModalOpen,
+        setAuthModalOpen,
+        openAuthModal,
+        closeAuthModal,
+        authModalMessage,
+        becomeAuthor,
+        updateUserProfile,
+        updateUserMembership,
+        canAccessContent,
+        canComment,
+        canBookmark,
+        canVote,
+        canManageArticles,
+        canPublishArticles,
+        canAccessAdmin,
+        canAccessPremiumContent,
+        supabaseConfigured,
+        currentUser,
+        settings,
+        articles,
+        categories,
+        tags,
+        magazines,
+        comments,
+        submissions,
+        assignments,
+        ads,
+        subscribers,
+        campaigns,
+        searchLogs,
+        activityLogs,
+        layouts,
+        memberships,
+        users,
+        loginUser,
+        logoutUser,
+        updateUserRole,
+        createUser,
+        updateUser,
+        deleteUser,
+        transferOwnership,
+        resetUserPassword,
+        updateSettings,
+        saveArticle,
+        deleteArticle,
+        incrementArticleView,
+        incrementArticleLike,
+        saveAssignment,
+        submitPublicArticle,
+        updateSubmissionStatus,
+        addComment,
+        moderateComment,
+        reportComment,
+        saveAd,
+        trackAdClick,
+        subscribeNewsletter,
+        unsubscribeNewsletter,
+        updateSubscriberStatus,
+        sendNewsletterCampaign,
+        saveHomepageLayout,
+        restoreHomepageLayoutVersion,
+        exportDatabaseJson,
+        importDatabaseJson,
+        logSearchQuery,
+        quizzes,
+        quizAttempts,
+        quizCertificates,
+        quizSettings,
+        leaderboard,
+        saveQuiz,
+        addQuizAttempt,
+        regenerateQuiz,
+        toggleQuizStatus,
+        editQuizQuestion,
+        deleteQuizQuestion,
+        bulkImportQuestions,
+        approveDraftQuestion,
+        aiSettings,
+        aiNotes,
+        updateAiSettings,
+        saveAiNote,
+        deleteAiNote,
+        generateAiContent,
+        userMemberships,
+        paymentRecords,
+        coupons,
+        referrals,
+        purchaseMembership,
+        renewMembership,
+        toggleAutoRenewal,
+        cancelSubscription,
+        validateCoupon,
+        createCoupon,
+        deleteCoupon,
+        addReferral,
+        assignMembershipManually,
+        getMembershipAnalytics
+      }}
+    >
+      {children}
+    </CmsContext.Provider>
+  );
+}
+
+export function useCms() {
+  const context = useContext(CmsContext);
+  if (!context) {
+    throw new Error("useCms must be used within a CmsProvider");
+  }
+  return context;
+}
