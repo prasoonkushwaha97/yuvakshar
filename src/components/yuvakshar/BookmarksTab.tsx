@@ -46,7 +46,7 @@ export default function BookmarksTab({ currentUser }: BookmarksTabProps) {
             <GlassCard key={art.id} glow="none" className="p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between border border-slate-200/60 dark:border-slate-800">
               <div className="flex gap-4 items-center">
                 <img 
-                  src={art.image || "/yuvakshar_logo.jpg"} 
+                  src={art.coverImage || "/yuvakshar_logo.jpg"}
                   alt={art.title} 
                   className="w-24 h-16 object-cover rounded-lg shadow-sm shrink-0 border border-slate-200 dark:border-slate-800"
                   onError={(e) => {
@@ -57,7 +57,7 @@ export default function BookmarksTab({ currentUser }: BookmarksTabProps) {
                   <span className="text-[9px] text-primary uppercase font-bold tracking-wide">{art.category}</span>
                   <h4 className="font-bold text-slate-800 dark:text-white leading-snug line-clamp-1">{art.title}</h4>
                   <div className="flex items-center gap-3 text-[10px] text-slate-400">
-                    <span>जारी: {art.publishDate || art.created_at?.split("T")[0]}</span>
+                    <span>जारी: {art.date}</span>
                     <span>•</span>
                     <span>लेखक: {art.author || "युवाक्षर डेस्क"}</span>
                   </div>
