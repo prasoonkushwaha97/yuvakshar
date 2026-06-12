@@ -146,7 +146,7 @@ export default function Navbar() {
           MOBILE HEADER — Compact 60px single row (lg:hidden)
           Shows: Logo | Search | Theme | Profile/Login | Menu
       ═══════════════════════════════════════════════════ */}
-      <div className="lg:hidden sticky top-0 z-50 w-full h-[60px] bg-white dark:bg-[#0A0F1D] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 shadow-sm">
+      <div className="lg:hidden sticky top-0 z-50 w-full h-[60px] bg-white dark:bg-[#1E1E1E] border-b border-slate-200 dark:border-[#3A3A3A] flex items-center justify-between px-4 shadow-sm">
         {/* Left: Hamburger + Logo */}
         <div className="flex items-center gap-3">
           <button
