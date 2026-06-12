@@ -28,7 +28,7 @@ import {
 import { useCms } from "@/store/CmsContext";
 import { Profile } from "@/store/types";
 import GlassCard from "@/components/yuvakshar/GlassCard";
-
+import { getLiteraryIdentities } from "@/lib/repositoryService";
 export default function AuthorProfile() {
   const params = useParams();
   const router = useRouter();
@@ -148,19 +148,7 @@ export default function AuthorProfile() {
   const totalArticleViews = authorArticles.reduce((sum, a) => sum + (a.views || 0), 0);
   const totalArticleLikes = authorArticles.reduce((sum, a) => sum + (a.likes || 0), 0);
 
-  // Reputation badge style mapping
-  const getReputationGaugeColor = (tier?: string) => {
-    switch (tier) {
-      case "Platinum":
-        return "from-indigo-500 to-blue-600";
-      case "Gold":
-        return "from-amber-400 to-orange-500";
-      case "Silver":
-        return "from-slate-400 to-slate-500";
-      default:
-        return "from-orange-500 to-amber-600";
-    }
-  };
+
 
   // Check if leadership
   const isLeadership = ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(author.role || "");
@@ -249,10 +237,10 @@ export default function AuthorProfile() {
                         )}
                       </h1>
 
-                      {/* Reputation badge pill */}
-                      <span className={`inline-flex items-center gap-1 text-[10px] font-bold font-serif rounded-full px-3 py-1 bg-gradient-to-r text-white ${getReputationGaugeColor(author.reputation_tier)}`}>
-                        <Award className="w-3.5 h-3.5" />
-                        <span>{author.reputation_tier} श्रेणी ({author.reputation_score || 100} अंक)</span>
+                      {/* Literary Identity badge pill */}
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold font-serif rounded-full px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+                        <Award className="w-3.5 h-3.5 text-primary" />
+                        <span>{getLiteraryIdentities(author, []).slice(0, 2).join(" • ")}</span>
                       </span>
                     </div>
 

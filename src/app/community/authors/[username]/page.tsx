@@ -14,13 +14,16 @@ import {
   UserPlus,
   Briefcase,
   CheckCircle,
-  Clock
+  Clock,
+  Heart
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
-import { fetchPosts, CommunityPost } from "@/lib/communityService";
+import { fetchPosts, toggleLikePost, CommunityPost } from "@/lib/communityService";
+import type { Profile } from "@/store/types";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { getLiteraryIdentities } from "@/lib/repositoryService";
 
 interface CollaborationRequest {
   id: string;
@@ -35,7 +38,7 @@ interface CollaborationRequest {
 export default function AuthorPortfolioPage() {
   const params = useParams();
   const username = params.username as string;
-  const { users, currentUser } = useCms();
+  const { users, currentUser, followAuthor } = useCms();
 
   // States
   const [author, setAuthor] = useState<any>(null);
@@ -56,7 +59,7 @@ export default function AuthorPortfolioPage() {
     setLoading(true);
     try {
       // Find author matching slug/id
-      const match = users.find(u => u.slug === username || u.id === username);
+      const match = users.find((u: Profile) => u.slug === username || u.id === username);
       setAuthor(match || null);
 
       if (match) {
@@ -74,6 +77,39 @@ export default function AuthorPortfolioPage() {
   useEffect(() => {
     loadAuthorDetails();
   }, [username, users]);
+
+  const isFollowing = currentUser && author ? (author.followers || []).includes(currentUser.id) : false;
+
+  const toggleFollow = async () => {
+    if (!currentUser || !author) {
+      alert("फॉलो करने के लिए कृपया पहले लॉगिन करें।");
+      return;
+    }
+    try {
+      await followAuthor(author.id, currentUser.id);
+      // Refetch author to update follower status
+      const match = users.find((u: Profile) => u.slug === username || u.id === username);
+      if (match) setAuthor(match);
+    } catch (err) {
+      console.error("Error following author:", err);
+    }
+  };
+
+  const handleLike = async (postId: string) => {
+    if (!currentUser) {
+      alert("पसंद करने के लिए कृपया पहले लॉगिन करें।");
+      return;
+    }
+    try {
+      const newCount = await toggleLikePost(postId, currentUser.id);
+      setAuthorPosts(prevPosts => prevPosts.map(p => {
+        if (p.id === postId) return { ...p, likesCount: newCount };
+        return p;
+      }));
+    } catch (err) {
+      console.error("Error liking post:", err);
+    }
+  };
 
   const handleCollabSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,6 +180,25 @@ export default function AuthorPortfolioPage() {
                   {author.verification_badge}
                 </span>
               )}
+              {currentUser && author.id !== currentUser.id && (
+                <button
+                  onClick={toggleFollow}
+                  className={`text-[9px] px-2.5 py-0.5 rounded font-bold transition-all cursor-pointer font-hindi flex items-center gap-1 ${
+                    isFollowing
+                      ? "bg-green-650 text-white bg-green-600"
+                      : "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
+                  }`}
+                >
+                  {isFollowing ? (
+                    <>
+                      <CheckCircle className="w-3 h-3" />
+                      <span>फॉलो किया</span>
+                    </>
+                  ) : (
+                    <span>फॉलो करें</span>
+                  )}
+                </button>
+              )}
             </div>
             
             <p className="text-xs text-slate-500 dark:text-slate-400 font-serif leading-relaxed font-hindi">
@@ -162,11 +217,13 @@ export default function AuthorPortfolioPage() {
         {/* Stats details */}
         <div className="grid grid-cols-3 gap-4 text-center border-t border-slate-100 dark:border-slate-800/60 pt-4 mt-6 text-xs">
           <div>
-            <span className="block font-black text-primary font-mono">{author.reputation_score || 0}</span>
-            <span className="text-[10px] text-slate-400 font-serif">प्रतिष्ठा अंक</span>
+            <span className="block font-black text-primary font-hindi text-ellipsis overflow-hidden whitespace-nowrap px-1">
+              {getLiteraryIdentities(author, []).slice(0, 1)[0] || "लेखक"}
+            </span>
+            <span className="text-[10px] text-slate-400 font-serif">साहित्यिक पहचान</span>
           </div>
           <div>
-            <span className="block font-black text-slate-700 dark:text-slate-300 font-mono">{(author.followers?.length || 0) + 12}</span>
+            <span className="block font-black text-slate-700 dark:text-slate-300 font-mono">{author.followers?.length || 0}</span>
             <span className="text-[10px] text-slate-400 font-serif">फॉलोवर्स</span>
           </div>
           <div>
@@ -208,11 +265,15 @@ export default function AuthorPortfolioPage() {
                   <span className="font-mono">{new Date(p.created_at).toLocaleDateString("hi-IN")}</span>
                 </div>
                 <p className="text-slate-650 dark:text-slate-350 leading-relaxed font-hindi">{p.content}</p>
-                <div className="flex items-center space-x-4 pt-1">
-                 <button className="flex items-center space-x-1 text-slate-400 font-mono text-[10px]">
+                 <div className="flex items-center space-x-4 pt-1">
+                  <button 
+                    onClick={() => handleLike(p.id)}
+                    className="flex items-center space-x-1 text-slate-400 hover:text-red-500 font-mono text-[10px] cursor-pointer"
+                  >
+                    <Heart className="w-3.5 h-3.5" />
                     <span>{p.likesCount}</span>
                   </button>
-                </div>
+                 </div>
               </GlassCard>
             ))
           ) : (

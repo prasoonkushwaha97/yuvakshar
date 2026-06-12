@@ -311,6 +311,26 @@ export const initializeCommunityData = () => {
   if (!localStorage.getItem("yuvakshar_c_conversations")) setLocalStorageItem("yuvakshar_c_conversations", mockConversations);
   if (!localStorage.getItem("yuvakshar_c_messages")) setLocalStorageItem("yuvakshar_c_messages", mockMessages);
   if (!localStorage.getItem("yuvakshar_c_notifications")) setLocalStorageItem("yuvakshar_c_notifications", mockNotifications);
+  
+  if (!localStorage.getItem("yuvakshar_c_group_members")) {
+    const defaultMembers: CommunityGroupMember[] = [
+      { id: "mem-1", group_id: "poetry-circle", user_id: "usr-author-1", role: "Mentor", joined_at: "2026-05-01T12:00:00Z" },
+      { id: "mem-2", group_id: "poetry-circle", user_id: "usr-author-2", role: "Member", joined_at: "2026-05-12T12:00:00Z" },
+      { id: "mem-3", group_id: "story-hub", user_id: "usr-author-2", role: "Moderator", joined_at: "2026-05-02T12:00:00Z" },
+      { id: "mem-4", group_id: "read-club-1", user_id: "usr-author-3", role: "Owner", joined_at: "2026-05-05T12:00:00Z" },
+      { id: "mem-5", group_id: "read-club-1", user_id: "usr-author-2", role: "Member", joined_at: "2026-05-06T12:00:00Z" }
+    ];
+    setLocalStorageItem("yuvakshar_c_group_members", defaultMembers);
+  }
+
+  if (!localStorage.getItem("yuvakshar_c_reading_progress")) {
+    const defaultProgress: CommunityReadingProgress[] = [
+      { id: "log-1", group_id: "read-club-1", user_id: "usr-author-3", book_title: "गोदान - प्रेमचंद", current_page: 120, total_pages: 450, notes: "गोबर और झुनिया के संबंधों का विश्लेषण पढ़ रही हूँ। प्रेमचंद का ग्रामीण चित्रण अद्भुत है।", updated_at: new Date().toISOString() },
+      { id: "log-2", group_id: "read-club-1", user_id: "usr-author-2", book_title: "गोदान - प्रेमचंद", current_page: 85, total_pages: 450, notes: "होरी की गाय खरीदने की लालसा पर पहला अध्याय समाप्त किया।", updated_at: new Date().toISOString() },
+      { id: "log-3", group_id: "read-club-1", user_id: "usr-author-1", book_title: "गोदान - प्रेमचंद", current_page: 340, total_pages: 450, notes: "उपन्यास अपने अंतिम चरण में है। होरी की त्रासदी हृदयविदारक है।", updated_at: new Date().toISOString() }
+    ];
+    setLocalStorageItem("yuvakshar_c_reading_progress", defaultProgress);
+  }
 };
 
 // ─── API & DATABASE INTERACTION METHODS ─────────────────────────────────────
@@ -328,20 +348,111 @@ export const fetchGroups = async (): Promise<CommunityGroup[]> => {
 };
 
 /**
+ * Fetch all members of a Group
+ */
+export const fetchGroupMembers = async (groupId: string): Promise<CommunityGroupMember[]> => {
+  initializeCommunityData();
+  return getLocalStorageItem<CommunityGroupMember[]>("yuvakshar_c_group_members", []);
+};
+
+/**
+ * Check if user is a member of a Group
+ */
+export const isUserGroupMember = async (groupId: string, userId: string): Promise<boolean> => {
+  initializeCommunityData();
+  const members = getLocalStorageItem<CommunityGroupMember[]>("yuvakshar_c_group_members", []);
+  return members.some(m => m.group_id === groupId && m.user_id === userId);
+};
+
+/**
  * Join or leave a Group
  */
 export const toggleGroupMembership = async (groupId: string, userId: string): Promise<boolean> => {
   initializeCommunityData();
-  const groups = getLocalStorageItem("yuvakshar_c_groups", mockGroups);
-  const updated = groups.map(g => {
+  const members = getLocalStorageItem<CommunityGroupMember[]>("yuvakshar_c_group_members", []);
+  const existingIdx = members.findIndex(m => m.group_id === groupId && m.user_id === userId);
+  const isMember = existingIdx > -1;
+
+  if (isMember) {
+    // Leave group
+    members.splice(existingIdx, 1);
+  } else {
+    // Join group
+    members.push({
+      id: `mem-${Date.now()}`,
+      group_id: groupId,
+      user_id: userId,
+      role: "Member",
+      joined_at: new Date().toISOString()
+    });
+  }
+  setLocalStorageItem("yuvakshar_c_group_members", members);
+
+  // Update membersCount on group
+  const groups = getLocalStorageItem<CommunityGroup[]>("yuvakshar_c_groups", mockGroups);
+  const updatedGroups = groups.map(g => {
     if (g.id === groupId) {
-      const isMember = g.owner_id === userId || (g.membersCount && g.membersCount > 50); // mock logic
-      return { ...g, membersCount: (g.membersCount || 0) + (isMember ? -1 : 1) };
+      const count = g.membersCount || 0;
+      return {
+        ...g,
+        membersCount: Math.max(0, count + (isMember ? -1 : 1))
+      };
     }
     return g;
   });
-  setLocalStorageItem("yuvakshar_c_groups", updated);
-  return true;
+  setLocalStorageItem("yuvakshar_c_groups", updatedGroups);
+  return !isMember; // returns true if joined, false if left
+};
+
+/**
+ * Fetch reading progress logs for a group
+ */
+export const fetchReadingProgress = async (groupId: string): Promise<CommunityReadingProgress[]> => {
+  initializeCommunityData();
+  const logs = getLocalStorageItem<CommunityReadingProgress[]>("yuvakshar_c_reading_progress", []);
+  return logs.filter(l => l.group_id === groupId);
+};
+
+/**
+ * Save reading progress log
+ */
+export const saveReadingProgress = async (
+  groupId: string,
+  userId: string,
+  bookTitle: string,
+  currentPage: number,
+  totalPages: number,
+  notes?: string
+): Promise<CommunityReadingProgress> => {
+  initializeCommunityData();
+  const logs = getLocalStorageItem<CommunityReadingProgress[]>("yuvakshar_c_reading_progress", []);
+  
+  // Find if user already has a log in this group
+  const existingIdx = logs.findIndex(l => l.group_id === groupId && l.user_id === userId);
+  
+  const newLog: CommunityReadingProgress = {
+    id: existingIdx > -1 ? logs[existingIdx].id : `progress-${Date.now()}`,
+    group_id: groupId,
+    user_id: userId,
+    book_title: bookTitle,
+    current_page: currentPage,
+    total_pages: totalPages,
+    notes,
+    updated_at: new Date().toISOString()
+  };
+
+  if (existingIdx > -1) {
+    logs[existingIdx] = newLog;
+  } else {
+    logs.push(newLog);
+  }
+
+  setLocalStorageItem("yuvakshar_c_reading_progress", logs);
+  
+  // Award +5 reputation for updating reading log
+  await creditReputationPoints(userId, 5, "Comment"); // Engagement
+  
+  return newLog;
 };
 
 /**
@@ -529,6 +640,42 @@ export const addComment = async (
 };
 
 /**
+ * Like / Unlike a Comment
+ */
+export const toggleLikeComment = async (commentId: string, userId: string): Promise<number> => {
+  initializeCommunityData();
+  const comments = getLocalStorageItem<CommunityComment[]>("yuvakshar_c_comments", mockComments);
+  let updatedCount = 0;
+  let targetAuthorId = "";
+
+  const toggleLikesHelper = (list: CommunityComment[]): CommunityComment[] => {
+    return list.map(c => {
+      if (c.id === commentId) {
+        // Toggles count (simple toggle simulation)
+        const wasLiked = c.likesCount > 0 && c.likesCount % 2 === 0; // simple condition
+        updatedCount = c.likesCount + (wasLiked ? -1 : 1);
+        targetAuthorId = c.user_id;
+        return { ...c, likesCount: updatedCount };
+      }
+      if (c.replies && c.replies.length > 0) {
+        return { ...c, replies: toggleLikesHelper(c.replies) };
+      }
+      return c;
+    });
+  };
+
+  const updated = toggleLikesHelper(comments);
+  setLocalStorageItem("yuvakshar_c_comments", updated);
+
+  // Credit reputation point to comment author (+1 point)
+  if (targetAuthorId && targetAuthorId !== userId) {
+    await creditReputationPoints(targetAuthorId, 1, "Like Received");
+  }
+
+  return updatedCount;
+};
+
+/**
  * Credit reputation points and log in history
  */
 export const creditReputationPoints = async (
@@ -547,20 +694,55 @@ export const creditReputationPoints = async (
   });
   setLocalStorageItem("yuvakshar_c_reputation_hist", history);
 
+  const getReputationTier = (score: number): "Bronze" | "Silver" | "Gold" | "Platinum" => {
+    if (score >= 1200) return "Platinum";
+    if (score >= 600) return "Gold";
+    if (score >= 300) return "Silver";
+    return "Bronze";
+  };
+
   // Sync user profile local cache reputation
   const userStr = localStorage.getItem("yuvakshar_session_user");
   if (userStr) {
-    const user = JSON.parse(userStr);
-    if (user.id === userId) {
-      user.reputation_score = (user.reputation_score || 0) + points;
-      // Recalculate rank tier
-      if (user.reputation_score >= 500) user.reputation_tier = "Platinum";
-      else if (user.reputation_score >= 200) user.reputation_tier = "Gold";
-      else if (user.reputation_score >= 100) user.reputation_tier = "Silver";
-      else user.reputation_tier = "Bronze";
-      localStorage.setItem("yuvakshar_session_user", JSON.stringify(user));
+    try {
+      const user = JSON.parse(userStr);
+      if (user.id === userId) {
+        const nextScore = (user.reputation_score || 0) + points;
+        user.reputation_score = nextScore;
+        user.reputation_tier = getReputationTier(nextScore);
+        localStorage.setItem("yuvakshar_session_user", JSON.stringify(user));
+      }
+    } catch (e) {
+      console.error(e);
     }
   }
+
+  // Sync target user in yuvakshar_users array
+  const usersStr = localStorage.getItem("yuvakshar_users");
+  if (usersStr) {
+    try {
+      const usersList = JSON.parse(usersStr);
+      const updatedList = usersList.map((u: any) => {
+        if (u.id === userId) {
+          const nextScore = (u.reputation_score || 0) + points;
+          return {
+            ...u,
+            reputation_score: nextScore,
+            reputation_tier: getReputationTier(nextScore)
+          };
+        }
+        return u;
+      });
+      localStorage.setItem("yuvakshar_users", JSON.stringify(updatedList));
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  // Dispatch custom sync event
+  window.dispatchEvent(new CustomEvent("yuvakshar_reputation_updated", {
+    detail: { userId, points }
+  }));
 };
 
 /**

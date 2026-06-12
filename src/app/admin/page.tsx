@@ -559,7 +559,7 @@ export default function AdminDashboard() {
       setPhoneticResult("");
       return;
     }
-    let converted = phoneticInput.toLowerCase()
+    const converted = phoneticInput.toLowerCase()
       .replace(/namaste/g, "नमस्ते")
       .replace(/vichar/g, "विचार")
       .replace(/lekh/g, "लेख")
@@ -2838,7 +2838,7 @@ export default function AdminDashboard() {
                     <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4">
                       <h3 className="font-serif font-bold text-sm text-primary flex items-center space-x-1.5">
                         <Award className="w-5 h-5" />
-                        <span>अध्ययन प्रतिष्ठा (Reader Reputation Badge)</span>
+                        <span>स्वाध्याय स्तर (Study Achievement Level)</span>
                       </h3>
                       <div className="flex items-center space-x-4 bg-white dark:bg-slate-900/60 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                         <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary text-2xl">
@@ -2956,19 +2956,19 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* Privacy-First Leaderboard */}
+                  {/* Privacy-First Leaderboard / Active Readers Circle */}
                   <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4">
                     <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
-                      <h3 className="font-serif font-bold text-sm text-primary flex items-center space-x-1.5">
+                      <h3 className="font-serif font-bold text-sm text-primary flex items-center space-x-1.5 font-hindi">
                         <Trophy className="w-5 h-5" />
-                        <span>ज्ञानवीर लीडरबोर्ड (Privacy-First Leaderboard)</span>
+                        <span>सक्रिय स्वाध्याय मण्डल (Active Readers Circle)</span>
                       </h3>
                       <div className="flex space-x-1 bg-white dark:bg-slate-900/60 p-0.5 rounded-lg border border-slate-200 dark:border-slate-800">
                         {["weekly", "monthly", "alltime"].map((type) => (
                           <button
                             key={type}
                             onClick={() => setTimeFilter(type as any)}
-                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
+                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer font-hindi ${
                               timeFilter === type 
                                 ? "bg-primary text-white" 
                                 : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
@@ -2981,41 +2981,46 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="overflow-x-auto">
-                      <table className="w-full text-xs font-serif text-left border-collapse">
+                      <table className="w-full text-xs font-serif text-left border-collapse font-hindi">
                         <thead>
                           <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 text-[10px] uppercase font-mono">
-                            <th className="py-2.5 font-semibold">रैंक</th>
-                            <th className="py-2.5 font-semibold">पाठक</th>
-                            <th className="py-2.5 font-semibold text-center">कुल हल क्विज</th>
+                            <th className="py-2.5 font-semibold">पाठक (Reader)</th>
+                            <th className="py-2.5 font-semibold text-center">पूर्ण क्विज</th>
                             <th className="py-2.5 font-semibold text-center">प्रमाणपत्र</th>
-                            <th className="py-2.5 font-semibold text-right">स्कोर</th>
+                            <th className="py-2.5 font-semibold text-right">स्वाध्याय स्तर</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40">
                           {leaderboard
                             .filter(entry => entry.interval === timeFilter)
-                            .sort((a, b) => b.score - a.score)
+                            .sort((a, b) => b.completedQuizzes - a.completedQuizzes)
                             .slice(0, 5)
                             .map((entry, idx) => (
                               <tr key={entry.id} className="text-slate-700 dark:text-slate-300">
-                                <td className="py-3 font-mono font-bold text-slate-400 flex items-center space-x-1">
-                                  <span>#{idx + 1}</span>
-                                  {idx === 0 && <span>🥇</span>}
-                                  {idx === 1 && <span>🥈</span>}
-                                  {idx === 2 && <span>🥉</span>}
-                                </td>
-                                <td className="py-3 font-serif font-bold text-slate-800 dark:text-white">
-                                  {(() => {
-                                    const parts = entry.userName.split(" ");
-                                    if (parts.length > 1) {
-                                      return `${parts[0]} ${parts[1][0]}.`;
-                                    }
-                                    return entry.userName.length > 5 ? `${entry.userName.slice(0, 4)}...` : entry.userName;
-                                  })()}
+                                <td className="py-3 font-serif font-bold text-slate-800 dark:text-white flex items-center space-x-2">
+                                  <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] text-slate-500">
+                                    📖
+                                  </span>
+                                  <span>
+                                    {(() => {
+                                      const parts = entry.userName.split(" ");
+                                      if (parts.length > 1) {
+                                        return `${parts[0]} ${parts[1][0]}.`;
+                                      }
+                                      return entry.userName.length > 5 ? `${entry.userName.slice(0, 4)}...` : entry.userName;
+                                    })()}
+                                  </span>
                                 </td>
                                 <td className="py-3 text-center font-mono">{entry.completedQuizzes}</td>
                                 <td className="py-3 text-center font-mono">{entry.certificatesCount}</td>
-                                <td className="py-3 text-right font-mono font-bold text-primary">{entry.score}</td>
+                                <td className="py-3 text-right font-serif font-bold text-primary">
+                                  {(() => {
+                                    if (entry.completedQuizzes >= 25) return "ज्ञान साधक";
+                                    if (entry.completedQuizzes >= 15) return "स्वाध्यायी";
+                                    if (entry.completedQuizzes >= 8) return "जिज्ञासु पाठक";
+                                    return "नवपाठक";
+                                  })()}
+                                </td>
                               </tr>
                             ))}
                         </tbody>

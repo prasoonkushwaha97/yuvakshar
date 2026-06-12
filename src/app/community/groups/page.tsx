@@ -11,13 +11,14 @@ import {
   Shield 
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
-import { fetchGroups, toggleGroupMembership, CommunityGroup } from "@/lib/communityService";
+import { fetchGroups, toggleGroupMembership, isUserGroupMember, CommunityGroup } from "@/lib/communityService";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
 
 export default function GroupsListPage() {
   const { currentUser } = useCms();
   const [groups, setGroups] = useState<CommunityGroup[]>([]);
+  const [joinedGroupIds, setJoinedGroupIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -27,6 +28,14 @@ export default function GroupsListPage() {
     try {
       const data = await fetchGroups();
       setGroups(data);
+      if (currentUser) {
+        const joined = [];
+        for (const g of data) {
+          const isMember = await isUserGroupMember(g.id, currentUser.id);
+          if (isMember) joined.push(g.id);
+        }
+        setJoinedGroupIds(joined);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -36,7 +45,7 @@ export default function GroupsListPage() {
 
   useEffect(() => {
     loadGroups();
-  }, []);
+  }, [currentUser]);
 
   const handleJoinLeave = async (groupId: string) => {
     if (!currentUser) {
@@ -44,9 +53,9 @@ export default function GroupsListPage() {
       return;
     }
     try {
-      await toggleGroupMembership(groupId, currentUser.id);
+      const joined = await toggleGroupMembership(groupId, currentUser.id);
       loadGroups(); // reload
-      alert("आपकी सदस्यता स्थिति सफलतापूर्वक अपडेट हो गई है!");
+      alert(joined ? "आप समूह में सफलतापूर्वक शामिल हो गए हैं!" : "आपने समूह छोड़ दिया है।");
     } catch (err) {
       console.error(err);
     }
@@ -155,10 +164,14 @@ export default function GroupsListPage() {
                 <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/60 mt-4">
                   <button
                     onClick={() => handleJoinLeave(group.id)}
-                    className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-3.5 py-1.8 rounded-lg text-[10px] font-bold transition-all cursor-pointer font-hindi flex items-center space-x-1"
+                    className={`px-3.5 py-1.8 rounded-lg text-[10px] font-bold transition-all cursor-pointer font-hindi flex items-center space-x-1 ${
+                      joinedGroupIds.includes(group.id)
+                        ? "bg-green-600 hover:bg-green-700 text-white"
+                        : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                    }`}
                   >
                     <Check className="w-3.5 h-3.5" />
-                    <span>शामिल हों</span>
+                    <span>{joinedGroupIds.includes(group.id) ? "सदस्य हैं" : "शामिल हों"}</span>
                   </button>
 
                   <Link

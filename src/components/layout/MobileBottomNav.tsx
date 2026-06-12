@@ -10,7 +10,7 @@ const navItems = [
   { href: "/", icon: Home, label: "होम", exact: true },
   { href: "/categories", icon: Newspaper, label: "समाचार", exact: false },
   { href: "/magazine", icon: BookOpen, label: "पत्रिका", exact: false },
-  { href: "/category/community", icon: Users, label: "कम्युनिटी", exact: false },
+  { href: "/community", icon: Users, label: "कम्युनिटी", exact: false },
   { href: "/admin", icon: User, label: "प्रोफ़ाइल", exact: false },
 ];
 
@@ -24,7 +24,7 @@ export default function MobileBottomNav() {
     { href: "/", icon: Home, label: "होम", exact: true },
     { href: "/categories", icon: Newspaper, label: "समाचार", exact: false },
     { href: "/magazine", icon: BookOpen, label: "पत्रिका", exact: false },
-    { href: "/category/community", icon: Users, label: "कम्युनिटी", exact: false },
+    { href: "/community", icon: Users, label: "कम्युनिटी", exact: false },
     { href: profileHref, icon: User, label: "प्रोफ़ाइल", exact: false, activePrefix: currentUser ? (isEditorial ? "/admin" : "/dashboard") : "/dashboard" },
   ];
 
@@ -34,8 +34,7 @@ export default function MobileBottomNav() {
   const visibleRef = React.useRef(true);
   const lastScrollYRef = React.useRef(0);
 
-  // Hide on admin pages
-  if (pathname?.startsWith("/admin")) return null;
+
 
   // Listen to window scroll to show/hide navigation (high-performance once-bound passive listener)
   useEffect(() => {
@@ -102,6 +101,8 @@ export default function MobileBottomNav() {
   }, []);
 
   const isNavVisible = visible && !sidebarOpen;
+
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <nav 

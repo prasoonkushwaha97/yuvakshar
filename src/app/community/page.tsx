@@ -127,7 +127,7 @@ export default function CommunityFeedPage() {
       setAttachedFile(null);
       setPostType("text");
       
-      alert("आपकी पोस्ट सफलतापूर्वक साझा कर दी गई है और आपको +5 प्रतिष्ठा अंक मिले हैं!");
+      alert("आपकी पोस्ट सफलतापूर्वक साझा कर दी गई है!");
     } catch (err) {
       console.error("Error submitting post:", err);
     }
@@ -523,7 +523,7 @@ export default function CommunityFeedPage() {
 
                     {/* Comments */}
                     <Link
-                      href={`/community/discussions/thread/${post.id}`}
+                      href={`/community/discussion/thread/${post.id}`}
                       className="flex items-center space-x-1.5 text-xs text-slate-400 hover:text-primary transition-all"
                     >
                       <MessageSquare className="w-4 h-4" />

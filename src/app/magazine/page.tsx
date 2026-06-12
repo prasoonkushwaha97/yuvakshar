@@ -227,9 +227,9 @@ export default function MagazinePage() {
         const words = p.split(" ");
         let line = "";
         for (let n = 0; n < words.length; n++) {
-          let testLine = line + words[n] + " ";
-          let metrics = ctx.measureText(testLine);
-          let testWidth = metrics.width;
+          const testLine = line + words[n] + " ";
+          const metrics = ctx.measureText(testLine);
+          const testWidth = metrics.width;
           if (testWidth > maxWidth && n > 0) {
             ctx.fillText(line, x, currentY);
             line = words[n] + " ";

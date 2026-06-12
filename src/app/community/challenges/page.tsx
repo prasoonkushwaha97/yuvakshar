@@ -86,7 +86,7 @@ export default function ChallengesPage() {
       setSubTitle("");
       setSubContent("");
       setShowForm(false);
-      alert("आपकी साहित्यिक प्रविष्टि सफलतापूर्वक जमा हो गई है! आपको +10 प्रतिष्ठा अंक मिले हैं।");
+      alert("आपकी साहित्यिक प्रविष्टि सफलतापूर्वक जमा हो गई है! मूल्यांकन के उपरांत श्रेष्ठ प्रविष्टियों को प्रकाशित किया जाएगा।");
     } catch (err) {
       console.error(err);
     }
@@ -124,7 +124,7 @@ export default function ChallengesPage() {
               </div>
               <div className="flex justify-between items-center text-[9px] text-slate-400 font-serif w-full">
                 <span>अंतिम तिथि: {new Date(chal.end_date).toLocaleDateString("hi-IN")}</span>
-                <span className="font-bold text-primary">+{chal.reward_points} अंक</span>
+                <span className="font-bold text-primary font-hindi">पत्रिका आमंत्रण</span>
               </div>
             </button>
           );

@@ -19,6 +19,7 @@ import {
   fetchComments, 
   addComment, 
   toggleLikePost, 
+  toggleLikeComment,
   creditReputationPoints,
   CommunityPost, 
   CommunityComment 
@@ -113,12 +114,24 @@ export default function DiscussionThreadPage() {
   };
 
   // Like comment
-  const handleLikeComment = (commentId: string) => {
-    if (!currentUser) return;
-    setComments(comments.map(c => {
-      if (c.id === commentId) return { ...c, likesCount: c.likesCount + 1 };
-      return c;
-    }));
+  const handleLikeComment = async (commentId: string) => {
+    if (!currentUser) {
+      alert("पसंद करने के लिए कृपया पहले लॉगिन करें।");
+      return;
+    }
+    try {
+      const newCount = await toggleLikeComment(commentId, currentUser.id);
+      setComments(prevComments => prevComments.map(c => {
+        if (c.id === commentId) return { ...c, likesCount: newCount };
+        if (c.replies && c.replies.length > 0) {
+          const updatedReplies = c.replies.map(r => r.id === commentId ? { ...r, likesCount: newCount } : r);
+          return { ...c, replies: updatedReplies };
+        }
+        return c;
+      }));
+    } catch (err) {
+      console.error("Error liking comment:", err);
+    }
   };
 
   // Mark Best Answer Workflow
@@ -147,7 +160,7 @@ export default function DiscussionThreadPage() {
         best_answer_id: comment.id
       });
 
-      alert(`बधाई! आपने इस उत्तर को सर्वश्रेष्ठ घोषित किया है। लेखक ${comment.user_name} को +10 प्रतिष्ठा अंक दिए गए हैं।`);
+      alert(`बधाई! आपने इस उत्तर को सर्वश्रेष्ठ घोषित किया है। लेखक ${comment.user_name} के इस योगदान को सर्वश्रेष्ठ उत्तर के रूप में चिह्नित किया गया है।`);
     } catch (err) {
       console.error(err);
     }
@@ -177,7 +190,7 @@ export default function DiscussionThreadPage() {
       
       {/* Navigation header */}
       <div className="flex items-center justify-between text-xs font-serif text-slate-500 border-b border-slate-200 dark:border-slate-800 pb-3">
-        <Link href="/community/discussions" className="inline-flex items-center space-x-1 hover:text-primary transition-colors font-medium">
+        <Link href="/community/discussion" className="inline-flex items-center space-x-1 hover:text-primary transition-colors font-medium">
           <ArrowLeft className="w-3.5 h-3.5" />
           <span className="font-hindi">चर्चा मंच पर वापस जाएं</span>
         </Link>

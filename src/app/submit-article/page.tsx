@@ -165,6 +165,43 @@ export default function SubmitArticlePage() {
   ]);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
 
+  // statistics calculation
+  const calculateStats = () => {
+    // Total characters
+    const charCount = blocks.reduce((acc, b) => acc + (b.text || "").replace(/<[^>]*>/g, "").length, 0);
+    
+    // Total words
+    const cleanText = blocks.reduce((acc, b) => acc + " " + (b.text || "").replace(/<[^>]*>/g, "").trim(), "");
+    const wordList = cleanText.trim() ? cleanText.trim().split(/\s+/) : [];
+    const wordCount = wordList.length;
+
+    // Hindi reading speed ~130wpm
+    const readTime = Math.max(1, Math.ceil(wordCount / 130));
+
+    // Paras and headings
+    const paraCount = blocks.filter(b => b.type === "paragraph").length;
+    const headerCount = blocks.filter(b => b.type === "heading").length;
+
+    // Images count
+    const imageCount = blocks.reduce((acc, b) => acc + (b.images?.length || 0), 0);
+
+    // Links count inside blocks HTML
+    const linkCount = blocks.reduce((acc, b) => {
+      const match = (b.text || "").match(/href=/g);
+      return acc + (match ? match.length : 0);
+    }, 0);
+
+    return {
+      words: wordCount,
+      chars: charCount,
+      time: readTime,
+      paragraphs: paraCount,
+      headers: headerCount,
+      images: imageCount,
+      links: linkCount
+    };
+  };
+
   // Sync Content Markdown State whenever blocks list changes
   useEffect(() => {
     const md = serializeBlocksToMarkdown(blocks);
@@ -933,43 +970,6 @@ export default function SubmitArticlePage() {
     }
 
     setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, videoUrl: embedUrl, videoType: type } : b));
-  };
-
-  // statistics calculation
-  const calculateStats = () => {
-    // Total characters
-    const charCount = blocks.reduce((acc, b) => acc + (b.text || "").replace(/<[^>]*>/g, "").length, 0);
-    
-    // Total words
-    const cleanText = blocks.reduce((acc, b) => acc + " " + (b.text || "").replace(/<[^>]*>/g, "").trim(), "");
-    const wordList = cleanText.trim() ? cleanText.trim().split(/\s+/) : [];
-    const wordCount = wordList.length;
-
-    // Hindi reading speed ~130wpm
-    const readTime = Math.max(1, Math.ceil(wordCount / 130));
-
-    // Paras and headings
-    const paraCount = blocks.filter(b => b.type === "paragraph").length;
-    const headerCount = blocks.filter(b => b.type === "heading").length;
-
-    // Images count
-    const imageCount = blocks.reduce((acc, b) => acc + (b.images?.length || 0), 0);
-
-    // Links count inside blocks HTML
-    const linkCount = blocks.reduce((acc, b) => {
-      const match = (b.text || "").match(/href=/g);
-      return acc + (match ? match.length : 0);
-    }, 0);
-
-    return {
-      words: wordCount,
-      chars: charCount,
-      time: readTime,
-      paragraphs: paraCount,
-      headers: headerCount,
-      images: imageCount,
-      links: linkCount
-    };
   };
 
   const stats = calculateStats();

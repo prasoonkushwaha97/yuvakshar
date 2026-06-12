@@ -20,11 +20,12 @@ import {
 import { useCms } from "@/store/CmsContext";
 import { initializeCommunityData } from "@/lib/communityService";
 import GlassCard from "@/components/yuvakshar/GlassCard";
+import { getLiteraryIdentities } from "@/lib/repositoryService";
 
 const sidebarLinks = [
   { name: "कम्युनिटी फीड", href: "/community", icon: Home },
   { name: "समूह और क्लब", href: "/community/groups", icon: Users },
-  { name: "चर्चा मंच", href: "/community/discussions", icon: MessageSquare },
+  { name: "चर्चा मंच", href: "/community/discussion", icon: MessageSquare },
   { name: "साहित्यिक चुनौतियां", href: "/community/challenges", icon: Trophy },
   { name: "ज्ञान केंद्र", href: "/community/knowledge-hub", icon: BookOpen },
   { name: "साहित्यिक कार्यक्रम", href: "/community/events", icon: Calendar },
@@ -122,16 +123,18 @@ export default function CommunityLayout({
                     <span className="text-[10px] text-slate-400 font-mono">@{currentUser.slug || "user"}</span>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-center border-t border-slate-100 dark:border-slate-800/60 pt-3">
-                  <div>
-                    <span className="block text-xs font-black text-primary">0</span>
-                    <span className="text-[9px] text-slate-400 font-serif">प्रतिष्ठा अंक</span>
-                  </div>
-                  <div>
-                    <span className="block text-xs font-black text-slate-700 dark:text-slate-300 font-mono">
-                      Bronze
+                <div className="border-t border-slate-100 dark:border-slate-800/60 pt-3 space-y-2 text-[11px] font-serif">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400">साहित्यिक पहचान:</span>
+                    <span className="font-bold text-primary font-hindi">
+                      {getLiteraryIdentities(currentUser, []).slice(0, 1)[0] || "लेखक"}
                     </span>
-                    <span className="text-[9px] text-slate-400 font-serif">रैंक टियर</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400">योगदान क्षेत्र:</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-300 font-hindi truncate max-w-[100px]">
+                      {currentUser.interests && currentUser.interests.length > 0 ? currentUser.interests[0] : "साहित्य"}
+                    </span>
                   </div>
                 </div>
               </GlassCard>
@@ -160,7 +163,7 @@ export default function CommunityLayout({
                   { tag: "कहानी_चुनौती", count: "19 पोस्ट" }
                 ].map((t) => (
                   <div key={t.tag} className="flex justify-between items-center text-xs">
-                    <Link href={`/community/discussions?q=${t.tag}`} className="text-primary hover:underline font-bold font-mono">
+                    <Link href={`/community/discussion?q=${t.tag}`} className="text-primary hover:underline font-bold font-mono">
                       #{t.tag}
                     </Link>
                     <span className="text-[10px] text-slate-400 font-mono">{t.count}</span>

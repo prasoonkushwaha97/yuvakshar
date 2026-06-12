@@ -160,7 +160,7 @@ export default function StudyProgressTab({ currentUser, getUserReputation }: Stu
                 <span className="text-3xl font-black font-mono text-primary">5</span>
                 <span className="text-xs font-bold text-slate-400">दिवस</span>
               </div>
-              <p className="text-[9px] text-slate-405 font-sans">Streak Level: Silver Swadhyayi</p>
+              <p className="text-[9px] text-slate-400 font-sans font-hindi">स्वाध्याय स्तर: नियमित स्वाध्यायी</p>
             </div>
           </div>
         </div>
@@ -182,7 +182,7 @@ export default function StudyProgressTab({ currentUser, getUserReputation }: Stu
         <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4">
           <h3 className="font-serif font-bold text-sm text-primary flex items-center space-x-1.5">
             <Award className="w-5 h-5" />
-            <span>अध्ययन प्रतिष्ठा (Reader Reputation Badge)</span>
+            <span>स्वाध्याय स्तर (Study Achievement Level)</span>
           </h3>
           <div className="flex items-center space-x-4 bg-white dark:bg-slate-900/60 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
             <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary text-2xl">

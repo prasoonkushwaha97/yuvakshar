@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
+import { getLiteraryIdentities } from "@/lib/repositoryService";
 
 export default function AuthorDirectory() {
   const { users } = useCms();
@@ -26,7 +27,7 @@ export default function AuthorDirectory() {
   const [selectedExpertise, setSelectedExpertise] = useState("all");
   const [selectedVerification, setSelectedVerification] = useState("all");
   const [selectedLocation, setSelectedLocation] = useState("all");
-  const [sortBy, setSortBy] = useState("reputation"); // reputation | name | followers | newest
+  const [sortBy, setSortBy] = useState("name"); // name | followers | newest
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // Filter out non-authors or users without public visibility if configured (we'll show all staff/authors in public directory)
@@ -110,26 +111,14 @@ export default function AuthorDirectory() {
       if (sortBy === "newest") {
         return (b.joinDate || "").localeCompare(a.joinDate || "");
       }
-      // default: reputation score
-      return (b.reputation_score || 0) - (a.reputation_score || 0);
+      // default: name
+      return a.name.localeCompare(b.name, "hi-IN");
     });
 
     return result;
   }, [authorProfiles, searchQuery, selectedRole, selectedExpertise, selectedVerification, selectedLocation, sortBy]);
 
-  // Reputation tier colors helper
-  const getReputationBadgeStyles = (tier?: string) => {
-    switch (tier) {
-      case "Platinum":
-        return "bg-gradient-to-r from-blue-500/10 to-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-900/30";
-      case "Gold":
-        return "bg-gradient-to-r from-amber-500/10 to-yellow-500/10 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-900/30";
-      case "Silver":
-        return "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-350 border border-slate-200 dark:border-slate-700/50";
-      default: // Bronze
-        return "bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 border border-orange-200/50 dark:border-orange-900/30";
-    }
-  };
+
 
   // Helper for role translation
   const translateRole = (role?: string | null) => {
@@ -300,9 +289,8 @@ export default function AuthorDirectory() {
                     onChange={(e) => setSortBy(e.target.value)}
                     className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs font-serif text-slate-755 dark:text-slate-200 focus:outline-none cursor-pointer"
                   >
-                    <option value="reputation">सक्रियता (Reputation)</option>
-                    <option value="followers">सर्वाधिक फॉलोवर्स</option>
                     <option value="name">वर्णानुक्रम (Name A-Z)</option>
+                    <option value="followers">सर्वाधिक फॉलोवर्स</option>
                     <option value="newest">नवीनतम सदस्यता</option>
                   </select>
                 </div>
@@ -445,9 +433,9 @@ export default function AuthorDirectory() {
                         ) : (
                           <div className="w-full h-full bg-gradient-to-tr from-slate-200 to-slate-100 dark:from-[#111827] dark:to-[#1F2937]" />
                         )}
-                        {/* Reputation Tier Ribbon */}
-                        <span className={`absolute bottom-2 left-3 text-[9px] font-bold font-serif rounded-full px-2.5 py-0.5 shadow-sm select-none ${getReputationBadgeStyles(author.reputation_tier)}`}>
-                          {author.reputation_tier} • {author.reputation_score || 100} PTS
+                        {/* Literary Identity Ribbon */}
+                        <span className="absolute bottom-2 left-3 text-[9px] font-bold font-serif rounded-full px-2.5 py-0.5 shadow-sm select-none bg-slate-900/60 text-white backdrop-blur-xs border border-white/10">
+                          {getLiteraryIdentities(author, []).slice(0, 2).join(" • ")}
                         </span>
                       </div>
 

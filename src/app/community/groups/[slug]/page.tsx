@@ -21,6 +21,10 @@ import {
   fetchPosts, 
   createPost, 
   toggleLikePost,
+  toggleGroupMembership,
+  isUserGroupMember,
+  fetchReadingProgress,
+  saveReadingProgress,
   CommunityGroup, 
   CommunityPost,
   CommunityReadingProgress
@@ -32,11 +36,12 @@ import { useParams } from "next/navigation";
 export default function GroupDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
-  const { currentUser } = useCms();
+  const { currentUser, users } = useCms();
 
   // States
   const [group, setGroup] = useState<CommunityGroup | null>(null);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [isMember, setIsMember] = useState(false);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState("");
   
@@ -44,11 +49,7 @@ export default function GroupDetailPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(450); // Default book page length
   const [notes, setNotes] = useState("");
-  const [progressLogs, setProgressLogs] = useState<CommunityReadingProgress[]>([
-    { id: "log-1", group_id: "read-club-1", user_id: "usr-author-3", book_title: "गोदान - प्रेमचंद", current_page: 120, total_pages: 450, notes: "गोबर और झुनिया के संबंधों का विश्लेषण पढ़ रही हूँ। प्रेमचंद का ग्रामीण चित्रण अद्भुत है।", updated_at: new Date().toISOString() },
-    { id: "log-2", group_id: "read-club-1", user_id: "usr-author-2", book_title: "गोदान - प्रेमचंद", current_page: 85, total_pages: 450, notes: "होरी की गाय खरीदने की लालसा पर पहला अध्याय समाप्त किया।", updated_at: new Date().toISOString() },
-    { id: "log-3", group_id: "read-club-1", user_id: "usr-author-1", book_title: "गोदान - प्रेमचंद", current_page: 340, total_pages: 450, notes: "उपन्यास अपने अंतिम चरण में है। होरी की त्रासदी हृदयविदारक है।", updated_at: new Date().toISOString() }
-  ]);
+  const [progressLogs, setProgressLogs] = useState<CommunityReadingProgress[]>([]);
 
   const loadGroupData = async () => {
     setLoading(true);
@@ -57,7 +58,17 @@ export default function GroupDetailPage() {
       const match = allGroups.find(g => g.id === slug);
       setGroup(match || null);
       
-      const groupPosts = await fetchPosts(slug);
+      if (match && currentUser) {
+        const memberStatus = await isUserGroupMember(match.id, currentUser.id);
+        setIsMember(memberStatus);
+      }
+
+      if (match && match.category === "Reading Club") {
+        const logs = await fetchReadingProgress(match.id);
+        setProgressLogs(logs);
+      }
+
+      const groupPosts = await fetchPosts(match ? match.id : slug);
       setPosts(groupPosts);
     } catch (err) {
       console.error(err);
@@ -68,7 +79,21 @@ export default function GroupDetailPage() {
 
   useEffect(() => {
     loadGroupData();
-  }, [slug]);
+  }, [slug, currentUser]);
+
+  const handleJoinLeave = async () => {
+    if (!currentUser || !group) return;
+    try {
+      const joined = await toggleGroupMembership(group.id, currentUser.id);
+      setIsMember(joined);
+      const allGroups = await fetchGroups();
+      const match = allGroups.find(g => g.id === slug);
+      if (match) setGroup(match);
+      alert(joined ? "आप समूह में सफलतापूर्वक शामिल हो गए हैं!" : "आपने समूह छोड़ दिया है।");
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   // Handle post submit
   const handlePostSubmit = async (e: React.FormEvent) => {
@@ -110,7 +135,7 @@ export default function GroupDetailPage() {
   };
 
   // Handle Reading Progress Log Submit
-  const handleProgressLogSubmit = (e: React.FormEvent) => {
+  const handleProgressLogSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser || !group) return;
     if (currentPage > totalPages) {
@@ -118,20 +143,22 @@ export default function GroupDetailPage() {
       return;
     }
 
-    const newLog: CommunityReadingProgress = {
-      id: `progress-${Date.now()}`,
-      group_id: group.id,
-      user_id: currentUser.id,
-      book_title: group.current_book || "पुस्तक",
-      current_page: currentPage,
-      total_pages: totalPages,
-      notes: notes,
-      updated_at: new Date().toISOString()
-    };
-
-    setProgressLogs([newLog, ...progressLogs.filter(p => p.user_id !== currentUser.id)]);
-    alert("आपका पठन विवरण सफलतापूर्वक दर्ज कर लिया गया है!");
-    setNotes("");
+    try {
+      await saveReadingProgress(
+        group.id,
+        currentUser.id,
+        group.current_book || "पुस्तक",
+        currentPage,
+        totalPages,
+        notes
+      );
+      const logs = await fetchReadingProgress(group.id);
+      setProgressLogs(logs);
+      alert("आपका पठन विवरण सफलतापूर्वक दर्ज कर लिया गया है!");
+      setNotes("");
+    } catch (err) {
+      console.error("Error saving reading progress:", err);
+    }
   };
 
   if (loading) {
@@ -178,9 +205,24 @@ export default function GroupDetailPage() {
             </p>
           </div>
 
-          <div className="flex items-center space-x-2 shrink-0">
-            <Users className="w-4 h-4 text-slate-400" />
-            <span className="text-xs font-bold font-mono text-slate-500">{group.membersCount || 0} सदस्य</span>
+          <div className="flex items-center space-x-4 shrink-0">
+            <div className="flex items-center space-x-2">
+              <Users className="w-4 h-4 text-slate-400" />
+              <span className="text-xs font-bold font-mono text-slate-500">{group.membersCount || 0} सदस्य</span>
+            </div>
+            
+            {currentUser && (
+              <button
+                onClick={handleJoinLeave}
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer font-hindi ${
+                  isMember
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-primary text-white hover:bg-primary/95"
+                }`}
+              >
+                {isMember ? "सदस्य हैं" : "समूह में शामिल हों"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -268,7 +310,7 @@ export default function GroupDetailPage() {
                   <div key={log.id} className="space-y-1 text-xs">
                     <div className="flex justify-between items-center text-[10px] font-bold">
                       <span className="text-slate-800 dark:text-slate-200 font-hindi">
-                        {log.user_id === "usr-author-1" ? "डॉ. विकास शर्मा" : log.user_id === "usr-author-2" ? "अमित कुमार" : "सरिता वर्मा"}
+                        {users.find(u => u.id === log.user_id)?.name || "समुदाय सदस्य"}
                       </span>
                       <span className="text-slate-400 font-mono">{log.current_page}/{log.total_pages} पृष्ठ ({percent}%)</span>
                     </div>

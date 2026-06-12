@@ -149,6 +149,7 @@ export default function Navbar() {
     { name: "वीडियो", href: "/category/video" },
     { name: "पत्रिका", href: "/magazine" },
     { name: "लेखक", href: "/authors" },
+    { name: "कम्युनिटी", href: "/community" },
   ];
 
   return (

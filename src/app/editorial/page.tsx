@@ -278,6 +278,14 @@ function EditorialPageContent() {
     loadStudyStats();
   }, []);
 
+  const handleReset = () => {
+    setIsTimerRunning(false);
+    const lastTime = localStorage.getItem("yuvakshar_last_timer_minutes") || "25";
+    const secs = parseInt(lastTime, 10) * 60;
+    setPomodoroTime(secs);
+    setTotalDurationSeconds(secs);
+  };
+
   // Keyboard accessibility hook
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -302,14 +310,6 @@ function EditorialPageContent() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
-
-  const handleReset = () => {
-    setIsTimerRunning(false);
-    const lastTime = localStorage.getItem("yuvakshar_last_timer_minutes") || "25";
-    const secs = parseInt(lastTime, 10) * 60;
-    setPomodoroTime(secs);
-    setTotalDurationSeconds(secs);
-  };
 
   const handleSetTime = (val: string) => {
     setCustomMinutesInput(val);

@@ -847,6 +847,59 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [settings.appearance]);
 
+  // Sync reputation events across community components and directory profiles in real-time
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleReputationUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (!customEvent.detail) return;
+      const { userId, points } = customEvent.detail;
+      
+      const getTier = (score: number): "Bronze" | "Silver" | "Gold" | "Platinum" => {
+        if (score >= 1200) return "Platinum";
+        if (score >= 600) return "Gold";
+        if (score >= 300) return "Silver";
+        return "Bronze";
+      };
+
+      setUsers(prevUsers => {
+        const nextUsers = prevUsers.map(u => {
+          if (u.id === userId) {
+            const nextScore = (u.reputation_score || 0) + points;
+            return {
+              ...u,
+              reputation_score: nextScore,
+              reputation_tier: getTier(nextScore)
+            };
+          }
+          return u;
+        });
+        localStorage.setItem("yuvakshar_users", JSON.stringify(nextUsers));
+        return nextUsers;
+      });
+
+      if (currentUser && currentUser.id === userId) {
+        setCurrentUser(prevUser => {
+          if (!prevUser) return null;
+          const nextScore = (prevUser.reputation_score || 0) + points;
+          const updatedSelf = {
+            ...prevUser,
+            reputation_score: nextScore,
+            reputation_tier: getTier(nextScore)
+          };
+          localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+          return updatedSelf;
+        });
+      }
+    };
+
+    window.addEventListener("yuvakshar_reputation_updated", handleReputationUpdate);
+    return () => {
+      window.removeEventListener("yuvakshar_reputation_updated", handleReputationUpdate);
+    };
+  }, [currentUser]);
+
   const enrichUsersList = (rawUsers: Profile[], currentArticlesList: Article[]): Profile[] => {
     return rawUsers.map(user => {
       const slug = user.slug || generateAuthorSlug(user.name);
@@ -952,7 +1005,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const loadDataFromLocalStorage = () => {
+  function loadDataFromLocalStorage() {
     // General Settings
     const localSettings = localStorage.getItem("yuvakshar_settings");
     if (localSettings) setSettings(JSON.parse(localSettings));
@@ -1309,7 +1362,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loadDataFromSupabase = async () => {
+  async function loadDataFromSupabase() {
     try {
       // load auth profile
       const { data: { user } } = await supabase.auth.getUser();

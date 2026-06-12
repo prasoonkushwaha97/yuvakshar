@@ -42,67 +42,75 @@ const setLocalItem = (key: string, value: string): void => {
   }
 };
 
-// ─── AUTHOR REPUTATION ENGINE (From authorService.ts) ───────────────────────
+// ─── AUTHOR LITERARY IDENTITY ENGINE ───────────────────────────────────────
 
+/**
+ * Get dynamic literary identity tags for a profile based on roles, interests, and publications
+ */
+export const getLiteraryIdentities = (
+  profile: Profile,
+  authorArticles: Article[] = []
+): string[] => {
+  const identities: string[] = [];
+
+  // 1. Role-based identities
+  if (profile.role === "Owner" || profile.role === "Editor-in-Chief") {
+    identities.push("संपादकीय सहयोगी");
+  } else if (profile.role === "Reviewer" || profile.role === "Fact Checker" || profile.role === "Fact Check Reviewer") {
+    identities.push("समीक्षक");
+  }
+
+  // 2. Verification badge-based identities
+  if (profile.verification_badge === "Verified Researcher") {
+    identities.push("शोधार्थी");
+  }
+
+  // 3. Interest-based identities
+  if (profile.interests && profile.interests.length > 0) {
+    const ints = profile.interests.map(i => i.toLowerCase());
+    if (ints.some(i => i.includes("कविता") || i.includes("काव्य") || i.includes("कवि") || i.includes("poetry"))) {
+      identities.push("कवि");
+    }
+    if (ints.some(i => i.includes("कहानी") || i.includes("कथा") || i.includes("उपन्यास") || i.includes("story"))) {
+      identities.push("कथाकार");
+    }
+    if (ints.some(i => i.includes("निबंध") || i.includes("आलेख") || i.includes("essay") || i.includes("article"))) {
+      identities.push("निबंधकार");
+    }
+  }
+
+  // 4. Activity-based seniority
+  const articlesCount = authorArticles.length;
+  if (articlesCount >= 10) {
+    identities.push("वरिष्ठ लेखक");
+  } else if (articlesCount >= 3) {
+    identities.push("सक्रिय लेखक");
+  } else if (profile.role === "Author" || profile.role === "Contributor" || articlesCount > 0) {
+    identities.push("लेखक");
+  }
+
+  // 5. Achievement/Contribution fallback
+  if (profile.achievements && profile.achievements.length > 0) {
+    identities.push("विशेष योगदानकर्ता");
+  }
+
+  // Fallback
+  if (identities.length === 0) {
+    identities.push("योगदानकर्ता");
+  }
+
+  return Array.from(new Set(identities)); // Deduplicate
+};
+
+/**
+ * @deprecated The points-based reputation engine is deprecated.
+ * Kept for internal compatibility only.
+ */
 export const calculateAuthorReputation = (
   profile: Profile,
   authorArticles: Article[] = []
 ): { score: number; tier: "Bronze" | "Silver" | "Gold" | "Platinum" } => {
-  let score = 100; // Base starting reputation
-
-  // 1. Role-based base points
-  if (profile.role === "Owner" || profile.role === "Editor-in-Chief") {
-    score += 500;
-  } else if (profile.role === "Managing Editor" || profile.role === "Admin") {
-    score += 350;
-  } else if (profile.role === "Editor" || profile.role === "Fact Checker") {
-    score += 200;
-  } else if (profile.role === "Author") {
-    score += 100;
-  }
-
-  // 2. Verification badge bonus
-  if (profile.verification_badge) {
-    const badgesMap: Record<string, number> = {
-      "Founder": 300,
-      "Editor-in-Chief": 250,
-      "Managing Editor": 200,
-      "Editor": 150,
-      "Editorial Team": 120,
-      "Verified Researcher": 100,
-      "Verified Author": 80,
-    };
-    score += badgesMap[profile.verification_badge] || 50;
-  }
-
-  // 3. Articles & Engagement
-  score += authorArticles.length * 25;
-  const totalViews = authorArticles.reduce((sum, a) => sum + (a.views || 0), 0);
-  const totalLikes = authorArticles.reduce((sum, a) => sum + (a.likes || 0), 0);
-  score += Math.floor(totalViews / 10);
-  score += totalLikes * 5;
-
-  // 4. Followers
-  const followerCount = profile.followers?.length || 0;
-  score += followerCount * 10;
-
-  // 5. Portfolio & Achievements
-  const achievementsCount = profile.achievements?.length || 0;
-  const portfolioCount = profile.portfolio?.length || 0;
-  score += achievementsCount * 100;
-  score += portfolioCount * 30;
-
-  // Tier Determination
-  let tier: "Bronze" | "Silver" | "Gold" | "Platinum" = "Bronze";
-  if (score >= 1200) {
-    tier = "Platinum";
-  } else if (score >= 600) {
-    tier = "Gold";
-  } else if (score >= 300) {
-    tier = "Silver";
-  }
-
-  return { score, tier };
+  return { score: 100, tier: "Bronze" };
 };
 
 export const generateAuthorSlug = (name: string): string => {

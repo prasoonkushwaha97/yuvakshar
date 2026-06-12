@@ -95,6 +95,16 @@ export default function ArticleQuiz({ articleId }: ArticleQuizProps) {
     }
   }, [quiz, articleId]);
 
+  const handleSelectOption = (option: string) => {
+    // Lock answer
+    if (selectedAnswers[currentQuestionIndex] !== undefined) return;
+    
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [currentQuestionIndex]: option
+    }));
+  };
+
   // Keyboard navigation support: '1', '2', '3', '4' to answer
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -175,16 +185,6 @@ export default function ArticleQuiz({ articleId }: ArticleQuizProps) {
     setSelectedAnswers({});
     setCurrentQuestionIndex(0);
     setIsQuizCompleted(false);
-  };
-
-  const handleSelectOption = (option: string) => {
-    // Lock answer
-    if (selectedAnswers[currentQuestionIndex] !== undefined) return;
-    
-    setSelectedAnswers(prev => ({
-      ...prev,
-      [currentQuestionIndex]: option
-    }));
   };
 
   const handleNextQuestion = () => {

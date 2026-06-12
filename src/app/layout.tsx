@@ -38,6 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const manifestUrl = `/api/branding/manifest?v=${version}`;
 
   return {
+    metadataBase: new URL("https://yuvakshar.org"),
     title: "युवाक्षर | लेखन, चिंतन और परिवर्तन - Premium Devanagari Editorial & Magazine Platform",
     description: "युवाक्षर is a modern, premium Hindi digital platform focused on News, Magazine Publishing, Articles, Expression, Career and Scholarships, and AI-powered learning assistance. विचारों को आवाज़ दीजिए।",
     keywords: "युवाक्षर, युवाक्षर, Hindi Digital Magazine, Youth Expression Hub, Hindi Articles, Career Hub, Career guidance, AI learning, Indian current affairs, Nation building",

@@ -12,23 +12,27 @@ import {
 import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
+import { getLiteraryIdentities } from "@/lib/repositoryService";
 
 export default function AuthorDirectoryPage() {
-  const { users } = useCms();
+  const { users, currentUser, followAuthor } = useCms();
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState<"reputation" | "followers">("reputation");
-  const [followedAuthors, setFollowedAuthors] = useState<string[]>([]);
+  const [filterType, setFilterType] = useState<"name" | "followers">("name");
 
   // Filter to authors and contributors
   const authorsList = users.filter(u => 
     ["Admin", "Owner", "Editor", "Author", "Contributor"].includes(u.role || "")
   );
 
-  const toggleFollow = (authorId: string) => {
-    if (followedAuthors.includes(authorId)) {
-      setFollowedAuthors(followedAuthors.filter(id => id !== authorId));
-    } else {
-      setFollowedAuthors([...followedAuthors, authorId]);
+  const toggleFollow = async (authorId: string) => {
+    if (!currentUser) {
+      alert("फॉलो करने के लिए कृपया पहले लॉगिन करें।");
+      return;
+    }
+    try {
+      await followAuthor(authorId, currentUser.id);
+    } catch (err) {
+      console.error("Error following author:", err);
     }
   };
 
@@ -39,8 +43,8 @@ export default function AuthorDirectoryPage() {
   );
 
   const sortedAuthors = [...filteredAuthors].sort((a, b) => {
-    if (filterType === "reputation") {
-      return (b.reputation_score || 0) - (a.reputation_score || 0);
+    if (filterType === "name") {
+      return a.name.localeCompare(b.name, "hi");
     } else {
       return (b.followers?.length || 0) - (a.followers?.length || 0);
     }
@@ -67,15 +71,15 @@ export default function AuthorDirectoryPage() {
         {/* Filter sorting */}
         <div className="flex space-x-2 shrink-0">
           <button
-            onClick={() => setFilterType("reputation")}
+            onClick={() => setFilterType("name")}
             className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer font-hindi flex items-center space-x-1 ${
-              filterType === "reputation"
+              filterType === "name"
                 ? "bg-primary text-white shadow-sm"
                 : "bg-slate-100 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-200/30"
             }`}
           >
             <Star className="w-3.5 h-3.5" />
-            <span>प्रतिष्ठा क्रम (Reputation)</span>
+            <span>वर्णानुक्रम (Name A-Z)</span>
           </button>
           <button
             onClick={() => setFilterType("followers")}
@@ -95,7 +99,7 @@ export default function AuthorDirectoryPage() {
       {/* Authors list grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {sortedAuthors.map((author, index) => {
-          const isFollowing = followedAuthors.includes(author.id);
+          const isFollowing = currentUser ? (author.followers || []).includes(currentUser.id) : false;
           
           return (
             <GlassCard key={author.id} className="p-5 border-slate-200/60 dark:border-slate-800/40 flex flex-col justify-between h-[220px]">
@@ -103,8 +107,10 @@ export default function AuthorDirectoryPage() {
               <div className="space-y-3">
                 <div className="flex justify-between items-start">
                   
-                  {/* Leaderboard Rank tag */}
-                  <span className="text-[10px] text-slate-400 font-mono font-bold">रैंक #{index + 1}</span>
+                  {/* Literary Identity tag */}
+                  <span className="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/40 dark:border-slate-700/40 px-2 py-0.5 rounded-full font-serif font-bold font-hindi">
+                    {getLiteraryIdentities(author, []).slice(0, 1)[0] || "लेखक"}
+                  </span>
                   
                   {/* Verification Badge */}
                   {author.verification_badge && (
@@ -147,12 +153,14 @@ export default function AuthorDirectoryPage() {
               <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/60 mt-4">
                 <div className="grid grid-cols-2 gap-4 text-center text-[10px]">
                   <div>
-                    <span className="block font-black text-primary font-mono">{author.reputation_score || 0}</span>
-                    <span className="text-[9px] text-slate-400 font-serif">प्रतिष्ठा</span>
+                    <span className="block font-black text-primary font-hindi">
+                      {getLiteraryIdentities(author, []).slice(0, 1)[0] || "लेखक"}
+                    </span>
+                    <span className="text-[9px] text-slate-400 font-serif">साहित्यिक पहचान</span>
                   </div>
                   <div>
                     <span className="block font-black text-slate-700 dark:text-slate-350 font-mono">
-                      {(author.followers?.length || 0) + (isFollowing ? 1 : 0)}
+                      {author.followers?.length || 0}
                     </span>
                     <span className="text-[9px] text-slate-400 font-serif">फॉलोवर्स</span>
                   </div>
