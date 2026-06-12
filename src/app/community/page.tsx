@@ -414,7 +414,7 @@ export default function CommunityFeedPage() {
                     </div>
                     <div>
                       <div className="flex items-center space-x-2">
-                        <Link href={`/community/profile/${post.user_id}`} className="text-xs font-bold text-slate-800 dark:text-white hover:text-primary font-hindi">
+                        <Link href={`/community/authors/${post.user_id}`} className="text-xs font-bold text-slate-800 dark:text-white hover:text-primary font-hindi">
                           {post.user_name}
                         </Link>
                         {post.user_rank && (
@@ -428,7 +428,7 @@ export default function CommunityFeedPage() {
                         {post.group_name && (
                           <>
                             <span>•</span>
-                            <Link href={`/community/group/${post.group_id}`} className="text-primary hover:underline font-hindi font-semibold">
+                            <Link href={`/community/groups/${post.group_id}`} className="text-primary hover:underline font-hindi font-semibold">
                               {post.group_name}
                             </Link>
                           </>

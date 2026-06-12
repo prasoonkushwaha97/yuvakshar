@@ -6,7 +6,7 @@ import {
   X, Phone, Mail, Lock, Key, ShieldCheck, User, 
   Eye, EyeOff, BookOpen, UserCheck, Sparkles, 
   TrendingUp, Award, Bookmark, ShieldAlert, ArrowLeft,
-  RotateCw
+  RotateCw, ChevronDown
 } from "lucide-react";
 import { useCms, Profile } from "@/store/CmsContext";
 import GlassCard from "./GlassCard";
@@ -361,7 +361,7 @@ export default function AuthModal() {
           animate={shakeKey > 0 ? "shake" : "visible"}
           exit="hidden"
           key={shakeKey}
-          className="w-full max-w-4xl bg-white/70 dark:bg-slate-950/70 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl grid grid-cols-1 lg:grid-cols-12 min-h-[550px] relative mt-10 mb-10 text-slate-800 dark:text-slate-200"
+          className="w-full max-w-4xl bg-white/70 dark:bg-slate-950/70 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl grid grid-cols-1 lg:grid-cols-12 min-h-0 lg:min-h-[550px] relative my-auto text-slate-800 dark:text-slate-200"
         >
           {/* Close Button */}
           <button
@@ -372,8 +372,8 @@ export default function AuthModal() {
             <X className="w-4 h-4" />
           </button>
 
-          {/* LEFT PANEL: Community branding, Benefits & Social Proof */}
-          <div className="lg:col-span-5 bg-gradient-to-br from-primary/10 via-amber-500/5 to-slate-900/5 dark:from-primary/15 dark:via-amber-500/5 dark:to-[#0A0F1D]/10 p-6 md:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-200/60 dark:border-slate-800/60 text-slate-800 dark:text-slate-100 space-y-6">
+          {/* LEFT PANEL: Community branding, Benefits & Social Proof (Hidden on Mobile) */}
+          <div className="hidden lg:flex lg:col-span-5 bg-gradient-to-br from-primary/10 via-amber-500/5 to-slate-900/5 dark:from-primary/15 dark:via-amber-500/5 dark:to-[#0A0F1D]/10 p-6 md:p-8 flex flex-col justify-between border-r border-slate-200/60 dark:border-slate-800/60 text-slate-800 dark:text-slate-100 space-y-6">
             <div className="space-y-6">
               {/* Logo */}
               <div className="flex justify-center lg:justify-start">
@@ -454,7 +454,17 @@ export default function AuthModal() {
           </div>
 
           {/* RIGHT PANEL: Interactive Authentication Forms */}
-          <div className="lg:col-span-7 p-6 md:p-8 flex flex-col justify-between space-y-6">
+          <div className="lg:col-span-7 p-4 sm:p-6 md:p-8 flex flex-col justify-between space-y-4 lg:space-y-6">
+            
+            {/* Mobile-only Header */}
+            <div className="lg:hidden text-center space-y-1 mt-1">
+              <h2 className="font-serif text-lg font-bold text-slate-900 dark:text-white">
+                युवाक्षर में आपका स्वागत है
+              </h2>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-sans uppercase tracking-widest font-bold">
+                ज्ञान • विचार • लेखन • परिवर्तन
+              </p>
+            </div>
             
             {/* Warning Message block if present */}
             {authModalMessage && (
@@ -514,7 +524,7 @@ export default function AuthModal() {
             </AnimatePresence>
 
             {/* FORM CONTAINER */}
-            <div className="flex-grow flex flex-col justify-center min-h-[320px]">
+            <div className="flex-grow flex flex-col justify-center min-h-0 lg:min-h-[320px]">
               
               {/* 1. LOGIN MODE FLOW */}
               {authMode === "login" && (
@@ -922,6 +932,78 @@ export default function AuthModal() {
                 </form>
               )}
 
+            </div>
+
+            {/* Mobile-only Collapsible Promotional Section */}
+            <div className="lg:hidden border-t border-slate-200/60 dark:border-slate-800/60 pt-4 mt-2">
+              <details className="group">
+                <summary className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 cursor-pointer list-none select-none hover:text-primary transition-colors">
+                  <span>सदस्यता के लाभ एवं सांख्यिकी</span>
+                  <span className="transition-transform group-open:rotate-180">
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  </span>
+                </summary>
+                <div className="mt-3 space-y-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200/40 dark:border-slate-800/40 rounded-2xl p-4">
+                  {/* Logo/Header */}
+                  <div className="flex items-center space-x-2 pb-2.5 border-b border-slate-200/40 dark:border-slate-800/40">
+                    <img 
+                      src="/yuvakshar_logo_official.png" 
+                      alt="युवाक्षर" 
+                      className="h-6 object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/yuvakshar_logo.jpg";
+                      }}
+                    />
+                    <span className="text-[10px] text-primary font-bold uppercase tracking-widest">ज्ञान • विचार • लेखन • परिवर्तन</span>
+                  </div>
+                  {/* Benefits Grid */}
+                  <div className="grid grid-cols-1 gap-2 text-[11px] leading-relaxed font-serif text-slate-650 dark:text-slate-300">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <BookOpen className="w-2.5 h-2.5" />
+                      </div>
+                      <span>सम्पूर्ण पत्रिका और आलेख नि:शुल्क पढ़ें</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <UserCheck className="w-2.5 h-2.5" />
+                      </div>
+                      <span>पसंदीदा लेखकों को फ़ॉलो करें</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <Sparkles className="w-2.5 h-2.5" />
+                      </div>
+                      <span>AI स्वाध्याय उपकरण और क्विज़ का उपयोग करें</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <Bookmark className="w-2.5 h-2.5" />
+                      </div>
+                      <span>टिप्पणी विमर्श में भाग लें</span>
+                    </div>
+                  </div>
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-4 gap-1 pt-3 border-t border-slate-200/40 dark:border-slate-800/40 text-center">
+                    <div>
+                      <p className="text-[11px] font-black text-primary font-sans leading-none">15,000+</p>
+                      <span className="text-[7.5px] text-slate-400 font-serif leading-none block mt-1">पाठक</span>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-black text-primary font-sans leading-none">250+</p>
+                      <span className="text-[7.5px] text-slate-400 font-serif leading-none block mt-1">लेख</span>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-black text-primary font-sans leading-none">35+</p>
+                      <span className="text-[7.5px] text-slate-400 font-serif leading-none block mt-1">लेखक</span>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-black text-primary font-sans leading-none">25+</p>
+                      <span className="text-[7.5px] text-slate-400 font-serif leading-none block mt-1">पत्रिका</span>
+                    </div>
+                  </div>
+                </div>
+              </details>
             </div>
 
             {/* Footer Notice */}

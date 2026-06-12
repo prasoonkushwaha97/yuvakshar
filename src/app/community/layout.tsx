@@ -189,7 +189,7 @@ export default function CommunityLayout({
                         {writer.name[0]}
                       </div>
                       <div className="min-w-0">
-                        <Link href={`/community/profile/${writer.slug}`} className="block text-[11px] font-bold text-slate-800 dark:text-white truncate font-hindi hover:text-primary">
+                        <Link href={`/community/authors/${writer.slug}`} className="block text-[11px] font-bold text-slate-800 dark:text-white truncate font-hindi hover:text-primary">
                           {writer.name}
                         </Link>
                         <span className="block text-[9px] text-slate-400 truncate font-serif">{writer.role}</span>

@@ -8,9 +8,19 @@ import { CmsProvider } from "@/store/CmsContext";
 import AuthModal from "@/components/yuvakshar/AuthModal";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
+import fs from "fs";
+import path from "path";
 
 async function getBrandingVersion(): Promise<string> {
-  if (!isSupabaseConfigured()) return "default";
+  if (!isSupabaseConfigured()) {
+    try {
+      const defaultPath = path.join(process.cwd(), "public", "yuvakshar_logo_official.png");
+      const stat = fs.statSync(defaultPath);
+      return stat.mtimeMs.toString();
+    } catch {
+      return "default";
+    }
+  }
   try {
     const { data } = await supabase
       .from("site_settings")

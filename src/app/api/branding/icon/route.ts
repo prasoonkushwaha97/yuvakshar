@@ -36,8 +36,14 @@ export async function GET(request: Request) {
 
   // Fallback: Serve default logo from public directory based on size
   try {
-    const fallbackFilename = "yuvakshar_logo_official.png";
-    const defaultPath = path.join(process.cwd(), "public", fallbackFilename);
+    let fallbackFilename = `favicon-${size}x${size}.png`;
+    let defaultPath = path.join(process.cwd(), "public", fallbackFilename);
+    
+    if (!fs.existsSync(defaultPath)) {
+      fallbackFilename = "yuvakshar_logo_official.png";
+      defaultPath = path.join(process.cwd(), "public", fallbackFilename);
+    }
+    
     const buffer = fs.readFileSync(defaultPath);
     
     return new Response(buffer, {

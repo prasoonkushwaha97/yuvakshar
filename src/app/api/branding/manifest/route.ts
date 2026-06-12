@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
+import fs from "fs";
+import path from "path";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +10,15 @@ export async function GET() {
   let primaryColor = "#EA580C";
   let backgroundColor = "#FFFFFF";
   
-  if (isSupabaseConfigured()) {
+  if (!isSupabaseConfigured()) {
+    try {
+      const defaultPath = path.join(process.cwd(), "public", "yuvakshar_logo_official.png");
+      const stat = fs.statSync(defaultPath);
+      version = stat.mtimeMs.toString();
+    } catch {
+      version = "default";
+    }
+  } else {
     try {
       // Fetch branding icons timestamp for cache-busting
       const { data: iconsData } = await supabase
