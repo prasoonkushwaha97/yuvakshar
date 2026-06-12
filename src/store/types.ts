@@ -34,6 +34,33 @@ export interface Profile {
   articlesReadCount?: number;
   totalReadingTime?: number;
   categoryStats?: Record<string, number>;
+  
+  // Author Ecosystem 2.0 extensions
+  slug?: string;
+  cover_banner?: string;
+  designation?: string;
+  current_role?: string;
+  verification_badge?: "Verified Author" | "Verified Researcher" | "Editorial Team" | "Editor" | "Managing Editor" | "Editor-in-Chief" | "Founder" | null;
+  institution?: string;
+  expertise_tags?: string[];
+  orcid_id?: string;
+  google_scholar_url?: string;
+  academic_credentials?: string[];
+  professional_memberships?: string[];
+  education?: string;
+  academic_background?: string;
+  research_interests?: string;
+  professional_experience?: string;
+  social_contributions?: string;
+  publications_list?: string;
+  reputation_score?: number;
+  reputation_tier?: "Bronze" | "Silver" | "Gold" | "Platinum";
+  timeline?: Array<{ id: string; title: string; description: string; date: string; type?: string }>;
+  portfolio?: Array<{ id: string; name: string; url: string; type: "book" | "research_paper" | "report" | "white_paper" | "resume" | "other"; is_public: boolean }>;
+  achievements?: Array<{ id: string; title: string; description?: string; year?: string; image_url?: string }>;
+  followers?: string[];
+  featured?: boolean;
+  publicVisibility?: boolean;
 }
 
 // ─── Video ─────────────────────────────────────────────────────────────────

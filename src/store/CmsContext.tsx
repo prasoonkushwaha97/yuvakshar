@@ -7,6 +7,17 @@ export type { Article, Magazine };
 import { QuizQuestion, ArticleQuiz, preseededQuizzes, generateFallbackQuestions } from "@/lib/defaultQuizzes";
 import { callOpenAi, callGemini } from "@/lib/aiService";
 import { generateMockAiResponse } from "@/lib/mockAiResponse";
+import {
+  calculateAuthorReputation,
+  generateAuthorSlug,
+  toggleFollowAuthorInDb,
+  addTimelineEventInDb,
+  deleteTimelineEventInDb,
+  addPortfolioItemInDb,
+  deletePortfolioItemInDb,
+  addAchievementInDb,
+  deleteAchievementInDb
+} from "@/lib/authorService";
 
 export interface AiSettings {
   enabledModules: Record<string, boolean>;
@@ -88,31 +99,8 @@ export interface DonationRecord {
   date: string;
 }
 
-export interface Profile {
-  id: string;
-  name: string;
-  role: "Owner" | "Admin" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Sub Editor" | "Fact Checker" | "Reviewer" | "Author" | "Contributor" | "Fact Check Reviewer" | null;
-  membership: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime" | null;
-  status: "active" | "suspended" | "pending";
-  password?: string;
-  bio?: string;
-  avatar_url?: string;
-  social_links?: Record<string, string>;
-  badges?: string[];
-  views_count?: number;
-  email?: string;
-  mobile?: string;
-  interests?: string[];
-  dob?: string;
-  gender?: string;
-  location?: string;
-  joinDate?: string;
-  // Analytics and rewards
-  referralRewardsEarned?: number;
-  articlesReadCount?: number;
-  totalReadingTime?: number;
-  categoryStats?: Record<string, number>;
-}
+import { Profile } from "./types";
+export type { Profile };
 
 export interface Video {
   id: string;
@@ -430,6 +418,14 @@ interface CmsContextType {
   becomeAuthor: (bio: string, avatarUrl: string, expertise: string) => Promise<void>;
   updateUserProfile: (data: Partial<Profile>) => Promise<void>;
   updateUserMembership: (userId: string, membership: Profile["membership"]) => Promise<void>;
+  // Author Ecosystem 2.0 Actions
+  followAuthor: (authorId: string, followerId: string) => Promise<void>;
+  addTimelineEvent: (userId: string, event: { title: string; description: string; date: string; type?: string }) => Promise<void>;
+  deleteTimelineEvent: (userId: string, eventId: string) => Promise<void>;
+  addPortfolioItem: (userId: string, item: { name: string; url: string; type: "book" | "research_paper" | "report" | "white_paper" | "resume" | "other"; is_public: boolean }) => Promise<void>;
+  deletePortfolioItem: (userId: string, itemId: string) => Promise<void>;
+  addAchievement: (userId: string, achievement: { title: string; description?: string; year?: string; image_url?: string }) => Promise<void>;
+  deleteAchievement: (userId: string, achievementId: string) => Promise<void>;
   canAccessContent: (user: Profile | null, content: { accessLevel?: "Free" | "Premium" | "Patron" | "Founding" }) => boolean;
   canComment: (user: Profile | null) => boolean;
   canBookmark: (user: Profile | null) => boolean;
@@ -698,6 +694,111 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [settings.appearance]);
 
+  const enrichUsersList = (rawUsers: Profile[], currentArticlesList: Article[]): Profile[] => {
+    return rawUsers.map(user => {
+      const slug = user.slug || generateAuthorSlug(user.name);
+      const authorArticles = currentArticlesList.filter(a => a.author === user.name);
+
+      if (user.id === "u-2" || user.id === "staff-chief") {
+        const defaultFollowers = ["u-1", "u-3", "staff-admin", "staff-editor"];
+        const defaultTimeline = [
+          { id: "t1", title: "युवाक्षर की स्थापना", description: "हिंदी में स्वतंत्र वैचारिक मंच युवाक्षर की नींव रखी।", date: "२०२१", type: "milestone" },
+          { id: "t2", title: "डिजिटल मीडिया पुरस्कार", description: "भाषाई पत्रकारिता में उत्कृष्ट योगदान हेतु सम्मानित।", date: "२०२३", type: "award" },
+          { id: "t3", title: "राष्ट्रीय संगोष्ठी का आयोजन", description: "भारतीय लोकतंत्र और मीडिया पर राष्ट्रीय संगोष्ठी का सफल नेतृत्व।", date: "२०२५", type: "event" }
+        ];
+        const defaultPortfolio = [
+          { id: "p1", name: "डिजिटल युग में हिंदी पत्रकारिता.pdf", url: "#", type: "book" as const, is_public: true },
+          { id: "p2", name: "स्वतंत्र मीडिया और लोकतंत्र - शोध पत्र.pdf", url: "#", type: "research_paper" as const, is_public: true }
+        ];
+        const defaultAchievements = [
+          { id: "a1", title: "भाषाई पत्रकारिता गौरव सम्मान", description: "भारतीय भाषा संवर्धन परिषद द्वारा प्रदान किया गया।", year: "२०२३" },
+          { id: "a2", title: "यूथ मीडिया लीडरशिप अवार्ड", description: "डिजिटल समाचार महासंघ द्वारा सम्मानित।", year: "२०२५" }
+        ];
+
+        const enrichedFields = {
+          ...user,
+          slug,
+          cover_banner: user.cover_banner || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+          bio: user.bio || "युवाक्षर के सह-संस्थापक एवं संपादक। हिंदी पत्रकारिता, समाजशास्त्र और सामयिक विषयों पर सतत लेखन।",
+          designation: user.designation || "सह-संस्थापक एवं प्रधान संपादक",
+          current_role: user.current_role || "युवाक्षर संपादकीय बोर्ड",
+          verification_badge: user.verification_badge || "Editor-in-Chief",
+          institution: user.institution || "युवाक्षर मीडिया संस्थान",
+          expertise_tags: user.expertise_tags || ["संपादकीय", "राजनीति", "हिंदी साहित्य", "समाजशास्त्र"],
+          orcid_id: user.orcid_id || "0000-0002-1825-0097",
+          google_scholar_url: user.google_scholar_url || "https://scholar.google.com/citations?user=prasoon-yuvakshar",
+          academic_credentials: user.academic_credentials || ["एम.ए. जनसंचार (माखनलाल चतुर्वेदी विश्वविद्यालय)", "पीएच.डी. हिंदी पत्रकारिता"],
+          professional_memberships: user.professional_memberships || ["भारतीय संपादक गिल्ड", "अखिल भारतीय लेखक संघ"],
+          education: user.education || "एम.ए. एवं पीएच.डी. - जनसंचार एवं हिंदी साहित्य",
+          academic_background: user.academic_background || "पत्रकारिता और जनसंचार के क्षेत्र में १० से अधिक वर्षों का शैक्षणिक एवं व्यावहारिक अनुभव।",
+          research_interests: user.research_interests || "भारतीय लोकतंत्र में स्वतंत्र मीडिया की भूमिका, हिंदी भाषा का डिजिटलीकरण और भाषाई पत्रकारिता का भविष्य।",
+          professional_experience: user.professional_experience || "विभिन्न राष्ट्रीय समाचार पत्रों और डिजिटल पोर्टलों में संपादकीय भूमिकाओं का अनुभव। २०१६ से युवाक्षर के विकास में योगदान।",
+          social_contributions: user.social_contributions || "ग्रामीण क्षेत्रों में साक्षरता अभियान और युवाओं के लिए स्वतंत्र अभिव्यक्ति कार्यशालाओं का आयोजन।",
+          publications_list: user.publications_list || "१. डिजिटल युग में हिंदी पत्रकारिता (पुस्तक, २०२३)\n२. स्वतंत्र मीडिया और लोकतंत्र (शोध पत्र, २०२४)",
+          followers: user.followers || defaultFollowers,
+          timeline: user.timeline || defaultTimeline,
+          portfolio: user.portfolio || defaultPortfolio,
+          achievements: user.achievements || defaultAchievements
+        };
+
+        const { score, tier } = calculateAuthorReputation(enrichedFields, authorArticles);
+        return {
+          ...enrichedFields,
+          reputation_score: score,
+          reputation_tier: tier
+        };
+      }
+
+      if (user.id === "u-1" || user.id === "staff-owner") {
+        const enrichedFields = {
+          ...user,
+          slug,
+          cover_banner: user.cover_banner || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
+          designation: user.designation || "संस्थापक एवं स्वामी",
+          current_role: user.current_role || "युवाक्षर मीडिया नेटवर्क",
+          verification_badge: user.verification_badge || "Founder",
+          institution: user.institution || "युवाक्षर मीडिया नेटवर्क",
+          expertise_tags: user.expertise_tags || ["प्रबंधन", "उद्यमिता", "डिजिटल मीडिया"],
+          followers: user.followers || ["u-2", "staff-admin"]
+        };
+        const { score, tier } = calculateAuthorReputation(enrichedFields, authorArticles);
+        return {
+          ...enrichedFields,
+          reputation_score: score,
+          reputation_tier: tier
+        };
+      }
+
+      if (user.id === "staff-admin") {
+        const enrichedFields = {
+          ...user,
+          slug,
+          cover_banner: user.cover_banner || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80",
+          designation: user.designation || "तकनीकी प्रमुख एवं प्रबंधक",
+          current_role: user.current_role || "यूटिलिटी और एडमिनिस्ट्रेशन",
+          verification_badge: user.verification_badge || "Editorial Team",
+          institution: user.institution || "युवाक्षर नेटवर्क",
+          expertise_tags: user.expertise_tags || ["तकनीक", "वेब डेवलपमेंट", "सुरक्षा"],
+          followers: user.followers || ["u-2"]
+        };
+        const { score, tier } = calculateAuthorReputation(enrichedFields, authorArticles);
+        return {
+          ...enrichedFields,
+          reputation_score: score,
+          reputation_tier: tier
+        };
+      }
+
+      const { score, tier } = calculateAuthorReputation(user, authorArticles);
+      return {
+        ...user,
+        slug,
+        reputation_score: score,
+        reputation_tier: tier
+      };
+    });
+  };
+
   const loadDataFromLocalStorage = () => {
     // General Settings
     const localSettings = localStorage.getItem("yuvakshar_settings");
@@ -705,10 +806,14 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
     // Articles
     const localArticles = localStorage.getItem("yuvakshar_articles");
+    let loadedArticles: Article[] = [];
     if (localArticles && JSON.parse(localArticles).length >= 40) {
-      setArticles(JSON.parse(localArticles));
+      loadedArticles = JSON.parse(localArticles);
     } else {
-      setArticles(mockArticles);
+      loadedArticles = mockArticles;
+    }
+    setArticles(loadedArticles);
+    if (!localArticles) {
       localStorage.setItem("yuvakshar_articles", JSON.stringify(mockArticles));
     }
 
@@ -827,6 +932,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "Author", membership: "Premium", status: "active", password: "password123", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
       { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "Contributor", membership: "Free", status: "active", password: "password123", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
     ];
+    let finalUsers: Profile[] = [];
     if (localUsers) {
       const parsedUsers: Profile[] = JSON.parse(localUsers);
       let merged = false;
@@ -847,8 +953,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           if (!u.location) u.location = matching.location;
         }
       });
-      localStorage.setItem("yuvakshar_users", JSON.stringify(parsedUsers));
-      setUsers(parsedUsers);
+      finalUsers = enrichUsersList(parsedUsers, loadedArticles);
+      localStorage.setItem("yuvakshar_users", JSON.stringify(finalUsers));
+      setUsers(finalUsers);
     } else {
       const initialUsers: Profile[] = [
         { id: "u-1", name: "Owner", email: "yuvakshar.editor@gmail.com", role: "Owner", membership: "Patron", status: "active", password: "password123", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
@@ -857,8 +964,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         { id: "u-4", name: "Featured Author", email: "reader.demo@yuvakshar.org", role: null, membership: "Free", status: "active", password: "password123", badges: ["Reader"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "नई दिल्ली, भारत" },
         ...defaultStaff
       ];
-      setUsers(initialUsers);
-      localStorage.setItem("yuvakshar_users", JSON.stringify(initialUsers));
+      finalUsers = enrichUsersList(initialUsers, loadedArticles);
+      setUsers(finalUsers);
+      localStorage.setItem("yuvakshar_users", JSON.stringify(finalUsers));
     }
 
     // Active Mock Auth session load
@@ -872,8 +980,11 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       if (parsedUser.membership === undefined) {
         parsedUser.membership = parsedUser.role ? "Patron" : "Free";
       }
-      localStorage.setItem("yuvakshar_session_user", JSON.stringify(parsedUser));
-      setCurrentUser(parsedUser);
+      // Try to find the fully enriched profile from enriched list
+      const matchingEnriched = finalUsers.find(u => u.id === parsedUser.id || (u.email && u.email === parsedUser.email));
+      const enrichedSelf = matchingEnriched || enrichUsersList([parsedUser], loadedArticles)[0];
+      localStorage.setItem("yuvakshar_session_user", JSON.stringify(enrichedSelf));
+      setCurrentUser(enrichedSelf);
     }
 
     // Load Quizzes
@@ -2339,6 +2450,101 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
   };
 
+  // Author Ecosystem 2.0 Actions
+  const followAuthor = async (authorId: string, followerId: string) => {
+    const updatedUsers = toggleFollowAuthorInDb(users, authorId, followerId);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    
+    if (currentUser) {
+      if (currentUser.id === authorId || currentUser.id === followerId) {
+        const updatedSelf = updatedUsers.find(u => u.id === currentUser.id) || null;
+        if (updatedSelf) {
+          setCurrentUser(updatedSelf);
+          localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+        }
+      }
+    }
+  };
+
+  const addTimelineEvent = async (userId: string, event: { title: string; description: string; date: string; type?: string }) => {
+    const updatedUsers = addTimelineEventInDb(users, userId, event);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    if (currentUser && currentUser.id === userId) {
+      const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
+      if (updatedSelf) {
+        setCurrentUser(updatedSelf);
+        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+      }
+    }
+  };
+
+  const deleteTimelineEvent = async (userId: string, eventId: string) => {
+    const updatedUsers = deleteTimelineEventInDb(users, userId, eventId);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    if (currentUser && currentUser.id === userId) {
+      const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
+      if (updatedSelf) {
+        setCurrentUser(updatedSelf);
+        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+      }
+    }
+  };
+
+  const addPortfolioItem = async (userId: string, item: { name: string; url: string; type: "book" | "research_paper" | "report" | "white_paper" | "resume" | "other"; is_public: boolean }) => {
+    const updatedUsers = addPortfolioItemInDb(users, userId, item);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    if (currentUser && currentUser.id === userId) {
+      const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
+      if (updatedSelf) {
+        setCurrentUser(updatedSelf);
+        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+      }
+    }
+  };
+
+  const deletePortfolioItem = async (userId: string, itemId: string) => {
+    const updatedUsers = deletePortfolioItemInDb(users, userId, itemId);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    if (currentUser && currentUser.id === userId) {
+      const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
+      if (updatedSelf) {
+        setCurrentUser(updatedSelf);
+        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+      }
+    }
+  };
+
+  const addAchievement = async (userId: string, achievement: { title: string; description?: string; year?: string; image_url?: string }) => {
+    const updatedUsers = addAchievementInDb(users, userId, achievement);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    if (currentUser && currentUser.id === userId) {
+      const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
+      if (updatedSelf) {
+        setCurrentUser(updatedSelf);
+        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+      }
+    }
+  };
+
+  const deleteAchievement = async (userId: string, achievementId: string) => {
+    const updatedUsers = deleteAchievementInDb(users, userId, achievementId);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    if (currentUser && currentUser.id === userId) {
+      const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
+      if (updatedSelf) {
+        setCurrentUser(updatedSelf);
+        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+      }
+    }
+  };
+
   const updateUserMembership = async (userId: string, membership: Profile["membership"]) => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
@@ -2909,6 +3115,13 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         becomeAuthor,
         updateUserProfile,
         updateUserMembership,
+        followAuthor,
+        addTimelineEvent,
+        deleteTimelineEvent,
+        addPortfolioItem,
+        deletePortfolioItem,
+        addAchievement,
+        deleteAchievement,
         canAccessContent,
         canComment,
         canBookmark,

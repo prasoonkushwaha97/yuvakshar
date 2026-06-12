@@ -147,6 +147,7 @@ export default function Navbar() {
     { name: "इतिहास", href: "/category/history" },
     { name: "वीडियो", href: "/category/video" },
     { name: "पत्रिका", href: "/magazine" },
+    { name: "लेखक", href: "/authors" },
   ];
 
   return (
