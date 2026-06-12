@@ -103,7 +103,9 @@ export default function SearchPage() {
                     <span className="text-[9px] uppercase font-bold tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
                       {art.category}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-mono">{art.readTime}</span>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      {art.readTime} • लेखक: <Link href={`/authors/${slugifyAuthor(art.author)}`} className="text-primary hover:underline font-bold">{art.author}</Link>
+                    </span>
                   </div>
 
                   <Link href={`/editorial?id=${art.id}`} className="block">

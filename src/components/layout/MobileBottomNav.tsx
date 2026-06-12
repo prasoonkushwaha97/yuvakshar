@@ -17,6 +17,17 @@ const navItems = [
 export default function MobileBottomNav() {
   const pathname = usePathname();
   const { currentUser } = useCms();
+  const isEditorial = currentUser && ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Author", "Contributor", "Fact Check Reviewer"].includes(currentUser.role || "");
+  const profileHref = currentUser ? (isEditorial ? "/admin" : "/dashboard") : "/dashboard";
+
+  const dynamicNavItems = [
+    { href: "/", icon: Home, label: "होम", exact: true },
+    { href: "/categories", icon: Newspaper, label: "समाचार", exact: false },
+    { href: "/magazine", icon: BookOpen, label: "पत्रिका", exact: false },
+    { href: "/category/community", icon: Users, label: "कम्युनिटी", exact: false },
+    { href: profileHref, icon: User, label: "प्रोफ़ाइल", exact: false, activePrefix: currentUser ? (isEditorial ? "/admin" : "/dashboard") : "/dashboard" },
+  ];
+
   const [visible, setVisible] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -98,8 +109,9 @@ export default function MobileBottomNav() {
       className="lg:hidden fixed bottom-0 left-0 right-0 z-[30] bg-background border-t border-border safe-area-pb transition-transform duration-300 ease-in-out will-change-transform"
     >
       <div className="flex items-stretch justify-around h-16">
-        {navItems.map(({ href, icon: Icon, label, exact }) => {
-          const isActive = exact ? pathname === href : pathname?.startsWith(href) && href !== "/";
+        {dynamicNavItems.map(({ href, icon: Icon, label, exact, activePrefix }) => {
+          const checkPrefix = activePrefix || href;
+          const isActive = exact ? pathname === href : pathname?.startsWith(checkPrefix) && checkPrefix !== "/";
           const finalActive = href === "/" ? pathname === "/" : isActive;
 
           return (
@@ -143,7 +155,7 @@ export default function MobileBottomNav() {
               </span>
 
               {/* Profile indicator dot when logged in */}
-              {href === "/admin" && currentUser && (
+              {href === profileHref && currentUser && (
                 <span className="absolute top-2.5 right-[calc(50%-14px)] w-2 h-2 bg-green-500 rounded-full border-2 border-white dark:border-background" />
               )}
             </Link>

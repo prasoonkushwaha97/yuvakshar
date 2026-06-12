@@ -57,6 +57,7 @@ import type { Article, Magazine, Profile, Comment, Submission, EditorialAssignme
 
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
+import { generateBrandingIcons } from "@/lib/iconGenerator";
 
 
 const translateRole = (role?: string | null) => {
@@ -199,6 +200,9 @@ export default function AdminDashboard() {
   const [siteName, setSiteName] = useState(cms.settings.general.site_name);
   const [tagline, setTagline] = useState(cms.settings.general.tagline);
 
+  const [uploadingIcon, setUploadingIcon] = useState(false);
+  const [tempGeneratedIcons, setTempGeneratedIcons] = useState<Record<string, string> | null>(null);
+
   // Communication States
   const [primaryContactEmail, setPrimaryContactEmail] = useState(cms.settings.general.primary_email || "yuvakshar.editor@gmail.com");
   const [editorialEmail, setEditorialEmail] = useState(cms.settings.general.editorial_email || "yuvakshar.editor@gmail.com");
@@ -315,10 +319,10 @@ export default function AdminDashboard() {
         if (tab) {
           setActiveTab(tab);
         } else {
-          if (!currentUser.role) {
-            setActiveTab("study-progress");
-          } else {
+          if (currentUser.role && ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role)) {
             setActiveTab("dashboard");
+          } else {
+            setActiveTab("profile");
           }
         }
       }
@@ -735,6 +739,55 @@ export default function AdminDashboard() {
     alert("स्वरूप और सेटिंग्स अपडेट कर दी गई हैं!");
   };
 
+  const handleIconChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validation: format
+    const validTypes = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      alert("कृपया एक वैध छवि फ़ाइल अपलोड करें (PNG, JPG, SVG, WEBP)।");
+      return;
+    }
+
+    // Validation: size max 5MB
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      alert("फ़ाइल का आकार 5MB से अधिक नहीं होना चाहिए।");
+      return;
+    }
+
+    try {
+      setUploadingIcon(true);
+      const sizes = [16, 32, 48, 64, 72, 96, 128, 144, 152, 180, 192, 256, 384, 512];
+      const iconsMap = await generateBrandingIcons(file, sizes);
+      setTempGeneratedIcons(iconsMap);
+    } catch (err) {
+      console.error("Error generating icons:", err);
+      alert("आइकन उत्पन्न करने में त्रुटि हुई।");
+    } finally {
+      setUploadingIcon(false);
+    }
+  };
+
+  const handleSaveBrandingIcons = async () => {
+    if (!tempGeneratedIcons) {
+      alert("कृपया पहले एक नया आइकन फ़ाइल चुनें।");
+      return;
+    }
+    await cms.updateSiteIcons(tempGeneratedIcons);
+    setTempGeneratedIcons(null);
+    alert("वेबसाइट और ऐप आइकन सफलतापूर्वक अपडेट कर दिए गए हैं!");
+  };
+
+  const handleRestoreDefaultBranding = async () => {
+    if (confirm("क्या आप डिफ़ॉल्ट ब्रांडिंग आइकन पर वापस जाना चाहते हैं?")) {
+      await cms.restoreDefaultIcon();
+      setTempGeneratedIcons(null);
+      alert("डिफ़ॉल्ट ब्रांडिंग आइकन सफलतापूर्वक पुनर्स्थापित हो गया है!");
+    }
+  };
+
   const handleBackupExport = () => {
     const json = exportDatabaseJson();
     setBackupJson(json);
@@ -784,6 +837,19 @@ export default function AdminDashboard() {
 
   const { checks: launchChecks, score: launchScore } = getReadinessChecks();
 
+  if (cms.authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1D] flex items-center justify-center p-4">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 font-serif">
+            प्रमाणीकरण की जाँच की जा रही है...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1D] flex items-center justify-center p-4">
@@ -806,15 +872,22 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!cms.canAccessAdmin(currentUser)) {
+  const canAccessTab = (tab: string) => {
+    if (["profile", "study-progress", "library", "bookmarks", "certificates", "settings"].includes(tab)) {
+      return true; // Personal reader tabs are accessible to all authenticated users
+    }
+    return cms.canAccessAdmin(currentUser); // Administrative tabs require editor/admin roles
+  };
+
+  if (!canAccessTab(activeTab)) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1D] flex items-center justify-center p-4">
         <GlassCard glow="saffron" className="max-w-md w-full p-8 text-center space-y-6">
           <AlertTriangle className="w-12 h-12 text-red-500 mx-auto animate-pulse" />
           <div className="space-y-2">
             <h2 className="font-serif text-2xl font-bold text-slate-800 dark:text-white">पहुंच अस्वीकृत (Access Denied)</h2>
-            <p className="text-xs text-slate-505 dark:text-slate-400 font-serif leading-relaxed">
-              आपके पास युवाक्षर व्यवस्थापकीय नियंत्रण कक्ष तक पहुँचने की आवश्यक अनुमति नहीं है।
+            <p className="text-xs text-slate-550 dark:text-slate-400 font-serif leading-relaxed">
+              आपके पास युवाक्षर व्यवस्थापकीय नियंत्रण कक्ष के इस खंड तक पहुँचने की आवश्यक अनुमति नहीं है।
             </p>
           </div>
           <Link
@@ -2428,6 +2501,85 @@ export default function AdminDashboard() {
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Site Branding & Favicon Management */}
+              <div className="border border-slate-200 dark:border-slate-800 p-4 rounded-xl space-y-4">
+                <h4 className="font-serif font-bold text-xs text-primary">साइट ब्रांडिंग और वेब ऐप आइकन (Site Branding & Favicon Management)</h4>
+                
+                {/* Current Favicon Preview */}
+                <div className="flex items-center space-x-4 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-800/40">
+                  <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-800 shadow-sm shrink-0">
+                    <img 
+                      src={cms.siteIcons ? "/api/branding/icon?size=96&v=" + (cms.siteIcons.updated_at ? new Date(cms.siteIcons.updated_at).getTime() : Date.now()) : "/yuvakshar_logo_official.png"} 
+                      alt="Active Favicon" 
+                      className="w-8 h-8 object-contain"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold font-serif text-slate-800 dark:text-white">सक्रिय ब्रांड आइकन (Active Brand Icon)</p>
+                    <span className="text-[10px] text-slate-400">यह आपके ब्राउज़र टैब, बुकमार्क और वेब ऐप (PWA) के लिए उपयोग हो रहा है।</span>
+                  </div>
+                  {cms.siteIcons && (
+                    <button
+                      type="button"
+                      onClick={handleRestoreDefaultBranding}
+                      className="ml-auto text-[10px] text-red-500 hover:text-red-600 font-bold border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg px-2.5 py-1.5 transition-all cursor-pointer"
+                    >
+                      डिफ़ॉल्ट पर रीसेट करें
+                    </button>
+                  )}
+                </div>
+
+                {/* Upload Field */}
+                <div className="space-y-2">
+                  <label className="text-slate-500 font-medium block text-xs">नया आइकन अपलोड करें (Upload Website/App Icon)</label>
+                  <input 
+                    type="file" 
+                    accept=".png, .jpg, .jpeg, .svg, .webp"
+                    onChange={handleIconChange}
+                    className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                  />
+                  <p className="text-[10px] text-slate-400">समर्थित फ़ॉर्मेट: PNG, JPG, JPEG, SVG, WEBP (अधिकतम 5MB)</p>
+                </div>
+
+                {/* Previews and Save Button */}
+                {uploadingIcon && (
+                  <div className="text-xs text-slate-500 font-serif animate-pulse flex items-center space-x-2">
+                    <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+                    <span>आइकन उत्पन्न किया जा रहा है... कृपया प्रतीक्षा करें।</span>
+                  </div>
+                )}
+
+                {tempGeneratedIcons && (
+                  <div className="space-y-4 pt-2">
+                    <div className="space-y-1.5">
+                      <h5 className="text-[11px] font-bold text-slate-500 font-serif">उत्पन्न किए गए आइकन का आकार (Preview Sizes):</h5>
+                      <div className="flex flex-wrap gap-3 p-3 bg-slate-100/50 dark:bg-slate-900/30 rounded-xl">
+                        {["16", "32", "48", "96", "180", "192", "512"].map((size) => {
+                          const iconData = tempGeneratedIcons[size];
+                          if (!iconData) return null;
+                          return (
+                            <div key={size} className="flex flex-col items-center space-y-1.5 bg-white dark:bg-slate-950 p-2 rounded-lg border border-slate-200/60 dark:border-slate-800/40">
+                              <span className="text-[8px] font-bold text-slate-400">{size}x{size}</span>
+                              <div className="w-10 h-10 flex items-center justify-center bg-slate-50 dark:bg-slate-900 rounded border border-slate-100 dark:border-slate-800">
+                                <img src={iconData} alt={`${size}px preview`} className="max-w-full max-h-full object-contain" />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={handleSaveBrandingIcons}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-[11px] font-bold transition-all shadow-md cursor-pointer flex items-center space-x-1"
+                    >
+                      <span>नया आइकन सुरक्षित करें (Apply Icon)</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="h-px bg-slate-200 dark:bg-slate-800 my-4" />

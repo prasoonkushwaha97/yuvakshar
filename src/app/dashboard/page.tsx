@@ -34,6 +34,25 @@ import {
 
 import { useCms, Article } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
+import ProfileTab from "@/components/yuvakshar/ProfileTab";
+import SettingsTab from "@/components/yuvakshar/SettingsTab";
+import { User, Settings, Bookmark, Bell, FileEdit } from "lucide-react";
+
+const translateRole = (role?: string | null) => {
+  if (role === null) return "सदस्य";
+  if (!role) return "अतिथि";
+  switch (role) {
+    case "Owner": return "स्वामी";
+    case "Admin": return "प्रशासक";
+    case "Editor-in-Chief": return "प्रधान संपादक";
+    case "Managing Editor": return "प्रबंध संपादक";
+    case "Editor": return "संपादक";
+    case "Fact Check Reviewer": return "सत्यता समीक्षक";
+    case "Author": return "लेखक";
+    case "Contributor": return "योगदानकर्ता";
+    default: return role;
+  }
+};
 
 export default function DashboardPage() {
   const { 
@@ -51,10 +70,13 @@ export default function DashboardPage() {
     referrals,
     addReferral,
     toggleAutoRenewal,
-    cancelSubscription
+    cancelSubscription,
+    submissions,
+    authLoading
   } = useCms();
 
-  const [activeTab, setActiveTab] = useState<"study" | "notes" | "author" | "membership">("study");
+  const [activeTab, setActiveTab] = useState<"study" | "notes" | "author" | "membership" | "profile" | "submissions" | "bookmarks" | "notifications">("study");
+  const [profileSubTab, setProfileSubTab] = useState<"edit" | "settings">("edit");
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const [bookmarkedArticles, setBookmarkedArticles] = useState<Article[]>([]);
   const [streak, setStreak] = useState(5); // Default study streak
@@ -62,9 +84,25 @@ export default function DashboardPage() {
   const [refSuccessMsg, setRefSuccessMsg] = useState("");
   const [refErrorMsg, setRefErrorMsg] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
     setMounted(true);
+    
+    // Parse query params to set active tab and sub tab
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+      const sub = params.get("sub");
+      if (tab) {
+        setActiveTab(tab as any);
+      }
+      if (sub === "settings") {
+        setProfileSubTab("settings");
+      } else {
+        setProfileSubTab("edit");
+      }
+    }
     
     // Load Bookmarks
     const saved = localStorage.getItem("yuvakshar_bookmarks");
@@ -81,7 +119,32 @@ export default function DashboardPage() {
 
     const filtered = articles.filter(art => bookmarkIds.includes(art.id));
     setBookmarkedArticles(filtered);
+
+    // Load Notifications
+    const localNotifs = localStorage.getItem("yuvakshar_notifications");
+    if (localNotifs) {
+      setNotifications(JSON.parse(localNotifs));
+    } else {
+      const initialNotifs = [
+        { id: "n1", title: "युवाक्षर में आपका स्वागत है!", message: "युवाक्षर विचारों और चिंतन का एक उत्कृष्ट भाषाई मंच है।", date: new Date().toISOString(), read: false },
+        { id: "n2", title: "स्वाध्याय निरंतरता सक्रिय", message: "बधाई हो! आपका लगातार 5 दिनों का स्वाध्याय रिकॉर्ड सक्रिय है। इसे बनाए रखें।", date: new Date().toISOString(), read: false }
+      ];
+      setNotifications(initialNotifs);
+      localStorage.setItem("yuvakshar_notifications", JSON.stringify(initialNotifs));
+    }
   }, [articles]);
+
+  const markNotificationRead = (id: string) => {
+    const updated = notifications.map(n => n.id === id ? { ...n, read: true } : n);
+    setNotifications(updated);
+    localStorage.setItem("yuvakshar_notifications", JSON.stringify(updated));
+  };
+
+  const deleteNotification = (id: string) => {
+    const updated = notifications.filter(n => n.id !== id);
+    setNotifications(updated);
+    localStorage.setItem("yuvakshar_notifications", JSON.stringify(updated));
+  };
 
   const removeBookmark = (id: string) => {
     const updated = bookmarks.filter(b => b !== id);
@@ -159,12 +222,12 @@ export default function DashboardPage() {
         id: "eval-1",
         title: "डिजिटल भारत: भविष्य की नई राहें",
         category: "विशेष लेख",
-        date: "2026-06-05",
+        date: "2026-06-10",
         score: 92,
-        reviewer: "प्रसून कुशवाहा (प्रधान संपादक)",
-        remarks: "भाषा शैली अत्यंत सारगर्भित है। डिजिटल समावेशन के तर्कों को बहुत अच्छे से रखा गया है। व्याकरण त्रुटिहीन है।",
-        strengths: "उच्च स्तरीय तार्किकता, स्पष्ट संरचना, तथ्यात्मक प्रामाणिकता",
-        improvements: "द्वितीय पैराग्राफ में नीति आयोग के अद्यतन वित्तीय आंकड़ों को भी शामिल कर सकते थे।"
+        reviewer: "प्रधान संपादक",
+        remarks: "विषय की प्रस्तुति सराहनीय है। लेखन शैली उत्कृष्ट है।",
+        strengths: "सरल भाषा, नवीन दृष्टिकोण",
+        improvements: "तथ्यों के सत्यापन के साथ कुछ और संदर्भ जोड़ने की आवश्यकता है।"
       },
       {
         id: "eval-2",
@@ -181,6 +244,19 @@ export default function DashboardPage() {
   };
 
   const authorEvaluations = getAuthorEvaluations();
+
+  if (mounted && authLoading) {
+    return (
+      <div className="min-h-screen bg-[#FAF8F3] dark:bg-[#0A0F1D] flex items-center justify-center p-4">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 font-serif">
+            प्रमाणीकरण की जाँच की जा रही है...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (mounted && !currentUser) {
     return (
@@ -220,14 +296,23 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Streak Counter Visual Badge */}
-        <div className="flex items-center space-x-3 bg-white dark:bg-slate-900 border border-amber-500/30 rounded-2xl px-5 py-2.5 shadow-[0_0_15px_rgba(234,88,12,0.08)]">
-          <div className="p-1.5 rounded-full bg-primary/10 text-primary animate-pulse">
-            <Flame className="w-6 h-6 fill-current" />
-          </div>
-          <div>
-            <div className="text-[10px] text-slate-400 font-bold font-sans uppercase">अध्ययन निरंतरता</div>
-            <div className="text-sm font-serif font-bold text-primary">{streak} दिन सक्रिय</div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link 
+            href="/dashboard/profile"
+            className="flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-800 rounded-2xl px-4 py-2.5 font-serif text-xs font-bold transition-all shadow-sm"
+          >
+            <span>प्रोफ़ाइल सेटिंग्स (Settings)</span>
+          </Link>
+
+          {/* Streak Counter Visual Badge */}
+          <div className="flex items-center space-x-3 bg-white dark:bg-slate-900 border border-amber-500/30 rounded-2xl px-5 py-2.5 shadow-[0_0_15px_rgba(234,88,12,0.08)]">
+            <div className="p-1.5 rounded-full bg-primary/10 text-primary animate-pulse">
+              <Flame className="w-6 h-6 fill-current" />
+            </div>
+            <div>
+              <div className="text-[10px] text-slate-400 font-bold font-sans uppercase">अध्ययन निरंतरता</div>
+              <div className="text-sm font-serif font-bold text-primary">{streak} दिन सक्रिय</div>
+            </div>
           </div>
         </div>
       </div>
@@ -258,6 +343,61 @@ export default function DashboardPage() {
           <FileText className="w-4 h-4" />
           <span>२. अध्ययन सामग्री</span>
         </button>
+        <button
+          onClick={() => setActiveTab("profile")}
+          className={`pb-3 px-4 transition-all border-b-2 cursor-pointer flex items-center space-x-1.5 shrink-0 ${
+            activeTab === "profile"
+              ? "border-primary text-primary"
+              : "border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+          }`}
+        >
+          <User className="w-4 h-4" />
+          <span>३. मेरा प्रोफ़ाइल</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("submissions")}
+          className={`pb-3 px-4 transition-all border-b-2 cursor-pointer flex items-center space-x-1.5 shrink-0 ${
+            activeTab === "submissions"
+              ? "border-primary text-primary"
+              : "border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+          }`}
+        >
+          <FileEdit className="w-4 h-4" />
+          <span>४. सबमिशन व लेख</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("bookmarks")}
+          className={`pb-3 px-4 transition-all border-b-2 cursor-pointer flex items-center space-x-1.5 shrink-0 ${
+            activeTab === "bookmarks"
+              ? "border-primary text-primary"
+              : "border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+          }`}
+        >
+          <Bookmark className="w-4 h-4" />
+          <span>५. बुकमार्क</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("notifications")}
+          className={`pb-3 px-4 transition-all border-b-2 cursor-pointer flex items-center space-x-1.5 shrink-0 ${
+            activeTab === "notifications"
+              ? "border-primary text-primary"
+              : "border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+          }`}
+        >
+          <Bell className="w-4 h-4" />
+          <span>६. सूचनाएं</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("membership")}
+          className={`pb-3 px-4 transition-all border-b-2 cursor-pointer flex items-center space-x-1.5 shrink-0 ${
+            activeTab === "membership"
+              ? "border-primary text-primary"
+              : "border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+          }`}
+        >
+          <Crown className="w-4 h-4" />
+          <span>७. सदस्यता व रेफ़रल</span>
+        </button>
         {isAuthorOrEditor && (
           <button
             onClick={() => setActiveTab("author")}
@@ -268,21 +408,9 @@ export default function DashboardPage() {
             }`}
           >
             <UserCheck className="w-4 h-4" />
-            <span>३. लेखक समीक्षा</span>
+            <span>लेखक समीक्षा</span>
           </button>
         )}
-        {/* MEMBERSHIP ARCHIVED: Membership tab button hidden for membership system archival */}
-        {false && (<button
-          onClick={() => setActiveTab("membership")}
-          className={`pb-3 px-4 transition-all border-b-2 cursor-pointer flex items-center space-x-1.5 shrink-0 ${
-            activeTab === "membership"
-              ? "border-primary text-primary"
-              : "border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-          }`}
-        >
-          <Crown className="w-4 h-4" />
-          <span>४. सदस्यता एवं रेफ़रल</span>
-        </button>)}
       </div>
 
       {/* Main Grid Layout */}
@@ -539,6 +667,252 @@ export default function DashboardPage() {
                       लेख ब्राउज़ करें
                     </Link>
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: PROFILE & SETTINGS (मेरा प्रोफ़ाइल) */}
+          {activeTab === "profile" && currentUser && (
+            <div className="space-y-6">
+              <div className="flex border-b border-slate-200 dark:border-slate-800 pb-px text-xs font-bold font-serif mb-6 space-x-4">
+                <button
+                  onClick={() => setProfileSubTab("edit")}
+                  className={`pb-2 transition-all border-b-2 cursor-pointer flex items-center space-x-1 ${
+                    profileSubTab === "edit" ? "border-primary text-primary" : "border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  }`}
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>प्रोफ़ाइल संपादित करें</span>
+                </button>
+                <button
+                  onClick={() => setProfileSubTab("settings")}
+                  className={`pb-2 transition-all border-b-2 cursor-pointer flex items-center space-x-1 ${
+                    profileSubTab === "settings" ? "border-primary text-primary" : "border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  }`}
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  <span>सुलभता एवं ऐप सेटिंग्स</span>
+                </button>
+              </div>
+
+              {profileSubTab === "edit" ? (
+                <ProfileTab currentUser={currentUser} translateRole={translateRole} />
+              ) : (
+                <SettingsTab />
+              )}
+            </div>
+          )}
+
+          {/* TAB 4: SUBMISSIONS & ARTICLES (सबमिशन व लेख) */}
+          {activeTab === "submissions" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
+                <h2 className="text-sm font-serif text-primary uppercase tracking-wider font-bold">
+                  मेरे सबमिशन व लेख
+                </h2>
+                <Link
+                  href="/submit-article"
+                  className="bg-primary hover:bg-primary/95 text-white font-bold py-2 px-4 rounded-xl text-xs transition-all flex items-center space-x-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>रचना सबमिट करें</span>
+                </Link>
+              </div>
+
+              {/* User Submissions List */}
+              <div className="space-y-4">
+                <h3 className="font-serif text-xs font-bold text-slate-700 dark:text-slate-300">
+                  लेखन ड्राफ्ट व सबमिशन स्थिति
+                </h3>
+                {(() => {
+                  const userSubmissions = submissions.filter(s => s.email === currentUser?.email);
+                  if (userSubmissions.length > 0) {
+                    return (
+                      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-[#0f172a]/20">
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead>
+                            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 font-serif">
+                              <th className="p-3 text-slate-700 dark:text-slate-300">विषय / शीर्षक</th>
+                              <th className="p-3 text-slate-700 dark:text-slate-300">प्रकार</th>
+                              <th className="p-3 text-slate-700 dark:text-slate-300">दिनांक</th>
+                              <th className="p-3 text-slate-700 dark:text-slate-300">स्थिति</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                            {userSubmissions.map((sub) => (
+                              <tr key={sub.id} className="hover:bg-slate-100/30 dark:hover:bg-slate-900/20">
+                                <td className="p-3 font-serif font-bold text-slate-800 dark:text-white max-w-[200px] truncate">{sub.subject || sub.title || "बिना शीर्षक"}</td>
+                                <td className="p-3 capitalize">{sub.type}</td>
+                                <td className="p-3 font-mono">{new Date(sub.created_at).toLocaleDateString("hi-IN")}</td>
+                                <td className="p-3">
+                                  <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold border ${
+                                    sub.status === "Resolved" || sub.status === "Archived"
+                                      ? "bg-green-500/10 border-green-500/30 text-green-500"
+                                      : sub.status === "In Progress"
+                                        ? "bg-blue-500/10 border-blue-500/30 text-blue-500"
+                                        : "bg-amber-500/10 border-amber-500/30 text-amber-500"
+                                  }`}>
+                                    {sub.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  }
+                  return <p className="text-xs text-slate-500 font-serif">कोई सबमिशन ड्राफ्ट नहीं मिले।</p>;
+                })()}
+
+                {/* Published Articles */}
+                {(() => {
+                  const userArticles = articles.filter(a => a.author === currentUser?.name);
+                  return (
+                    <>
+                      <h3 className="font-serif text-xs font-bold text-slate-700 dark:text-slate-300 pt-4">
+                        मेरे प्रकाशित लेख ({userArticles.length})
+                      </h3>
+                      {userArticles.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {userArticles.map((art) => (
+                            <GlassCard key={art.id} className="p-4 flex justify-between items-center gap-3">
+                              <div className="space-y-1 min-w-0 flex-1">
+                                <span className="text-[8px] uppercase tracking-wider text-primary font-bold">{art.category}</span>
+                                <Link href={`/editorial?id=${art.id}`} className="block text-xs font-bold text-slate-800 dark:text-white hover:text-primary truncate">
+                                  {art.title}
+                                </Link>
+                                <span className="text-[9px] text-slate-400 font-mono block">पठित संख्या: {art.views || 0}</span>
+                              </div>
+                              <Link href={`/editorial?id=${art.id}`} className="text-xs text-primary font-bold hover:underline shrink-0">
+                                पढ़ें
+                              </Link>
+                            </GlassCard>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-500 font-serif">कोई प्रकाशित लेख नहीं है।</p>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: BOOKMARKS (बुकमार्क) */}
+          {activeTab === "bookmarks" && (
+            <div className="space-y-4">
+              <h2 className="text-sm font-serif text-primary uppercase tracking-wider font-bold mb-4">
+                बुकमार्क व सहेजे गए लेख
+              </h2>
+              {bookmarkedArticles.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {bookmarkedArticles.map((art) => (
+                    <GlassCard key={art.id} className="p-5 flex flex-col justify-between h-full space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-start">
+                          <span className="text-[9px] uppercase font-bold tracking-wider text-primary px-2 py-0.5 bg-primary/10 rounded">
+                            {art.category}
+                          </span>
+                          <button
+                            onClick={() => removeBookmark(art.id)}
+                            className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-white font-serif leading-snug">
+                          {art.title}
+                        </h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-serif line-clamp-3 leading-relaxed">
+                          {art.summary}
+                        </p>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-100 dark:border-slate-800/80 pt-3">
+                        <span className="font-mono">समय: {art.readTime || "5 मिनट"}</span>
+                        <Link
+                          href={`/editorial?id=${art.id}`}
+                          className="text-primary hover:underline font-bold font-serif flex items-center space-x-1"
+                        >
+                          <span>लेख पढ़ें</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                    </GlassCard>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 border border-slate-200 dark:border-slate-800 rounded-3xl bg-slate-50/30">
+                  <Bookmark className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-xs text-slate-500 font-serif">आपने अभी तक कोई बुकमार्क नहीं सहेजा है।</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 6: NOTIFICATIONS (सूचनाएं) */}
+          {activeTab === "notifications" && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
+                <h2 className="text-sm font-serif text-primary uppercase tracking-wider font-bold">
+                  सूचनाएं (Notifications)
+                </h2>
+                {notifications.length > 0 && (
+                  <button
+                    onClick={() => {
+                      const updated = notifications.map(n => ({ ...n, read: true }));
+                      setNotifications(updated);
+                      localStorage.setItem("yuvakshar_notifications", JSON.stringify(updated));
+                    }}
+                    className="text-xs text-primary font-bold hover:underline"
+                  >
+                    सभी को पढ़ा हुआ चिह्नित करें
+                  </button>
+                )}
+              </div>
+
+              {notifications.length > 0 ? (
+                <div className="space-y-3">
+                  {notifications.map((notif) => (
+                    <GlassCard key={notif.id} glow={!notif.read ? "saffron" : "none"} className="p-4 relative">
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="space-y-1">
+                          <h4 className={`text-xs font-bold font-serif ${!notif.read ? "text-primary" : "text-slate-700 dark:text-slate-300"}`}>
+                            {notif.title}
+                          </h4>
+                          <p className="text-[11px] text-slate-650 dark:text-slate-400 font-serif leading-relaxed">
+                            {notif.message}
+                          </p>
+                          <span className="text-[8px] text-slate-400 font-mono block mt-1">
+                            {new Date(notif.date).toLocaleDateString("hi-IN")} {new Date(notif.date).toLocaleTimeString("hi-IN")}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2 shrink-0">
+                          {!notif.read && (
+                            <button
+                              onClick={() => markNotificationRead(notif.id)}
+                              className="text-[9px] bg-primary/10 border border-primary/20 text-primary font-bold px-2 py-0.5 rounded cursor-pointer"
+                            >
+                              पढ़ा
+                            </button>
+                          )}
+                          <button
+                            onClick={() => deleteNotification(notif.id)}
+                            className="text-slate-400 hover:text-red-500 transition-colors p-1 cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 border border-slate-200 dark:border-slate-800 rounded-3xl bg-slate-50/30">
+                  <Bell className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-xs text-slate-500 font-serif">कोई नई सूचना नहीं है।</p>
                 </div>
               )}
             </div>

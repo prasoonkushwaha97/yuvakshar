@@ -313,6 +313,7 @@ export interface FooterSettings {
 interface CmsContextType {
   supabaseConfigured: boolean;
   currentUser: Profile | null;
+  authLoading: boolean;
   settings: {
     general: GeneralSettings;
     appearance: AppearanceSettings;
@@ -352,6 +353,9 @@ interface CmsContextType {
   
   // Settings & Style Sync
   updateSettings: (type: "general" | "appearance" | "footer", data: any) => Promise<void>;
+  siteIcons: Record<string, string> | null;
+  updateSiteIcons: (iconsMap: Record<string, string>) => Promise<void>;
+  restoreDefaultIcon: () => Promise<void>;
   
   // Articles CRUD
   saveArticle: (article: Partial<Article>) => Promise<Article>;
@@ -418,6 +422,9 @@ interface CmsContextType {
   becomeAuthor: (bio: string, avatarUrl: string, expertise: string) => Promise<void>;
   updateUserProfile: (data: Partial<Profile>) => Promise<void>;
   updateUserMembership: (userId: string, membership: Profile["membership"]) => Promise<void>;
+  sendOtpCode: (email: string) => Promise<boolean>;
+  verifyOtpCode: (email: string, token: string) => Promise<boolean>;
+  sendPasswordReset: (email: string) => Promise<boolean>;
   // Author Ecosystem 2.0 Actions
   followAuthor: (authorId: string, followerId: string) => Promise<void>;
   addTimelineEvent: (userId: string, event: { title: string; description: string; date: string; type?: string }) => Promise<void>;
@@ -570,6 +577,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   const [videos, setVideos] = useState<Video[]>([]);
   const [supabaseConfigured, setSupabaseConfigured] = useState(false);
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authCallback, setAuthCallback] = useState<(() => void) | null>(null);
   const [authModalMessage, setAuthModalMessage] = useState("");
@@ -694,6 +702,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const [siteIcons, setSiteIcons] = useState<Record<string, string> | null>(null);
+
   // 1. Initial State Loading & Dynamic Colors
   useEffect(() => {
     const configured = isSupabaseConfigured();
@@ -745,14 +755,87 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (configured && db) {
-        loadDataFromSupabase();
+        await loadDataFromSupabase();
       } else {
         loadDataFromLocalStorage();
       }
+      setAuthLoading(false);
     };
 
     runChecks();
   }, []);
+
+  // Supabase Auth State Change Listener & User Sync
+  useEffect(() => {
+    if (!supabaseConfigured) return;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setAuthLoading(true);
+      if (session?.user) {
+        try {
+          // Fetch user profile from Supabase profiles table
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
+            
+          if (profile) {
+            setCurrentUser(profile);
+            localStorage.setItem("yuvakshar_session_user", JSON.stringify(profile));
+          } else {
+            // Profile does not exist yet - create it dynamically!
+            const newProfile: Profile = {
+              id: session.user.id,
+              name: session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "NEW USER",
+              email: session.user.email || "",
+              role: session.user.user_metadata?.role || null, // Free reader
+              membership: "Free",
+              status: "active",
+              joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
+              slug: generateAuthorSlug(session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "user")
+            };
+            
+            // Write to database
+            const { error: insertError } = await supabase
+              .from("profiles")
+              .insert({
+                id: newProfile.id,
+                email: newProfile.email,
+                name: newProfile.name,
+                role: newProfile.role || 'Subscriber',
+                membership: newProfile.membership,
+                status: newProfile.status,
+                slug: newProfile.slug
+              });
+              
+            if (!insertError) {
+              setCurrentUser(newProfile);
+              localStorage.setItem("yuvakshar_session_user", JSON.stringify(newProfile));
+            } else {
+              console.error("Error inserting profile on auth state change:", insertError.message);
+              // Fallback
+              setCurrentUser(newProfile);
+              localStorage.setItem("yuvakshar_session_user", JSON.stringify(newProfile));
+            }
+          }
+        } catch (err) {
+          console.error("onAuthStateChange profile sync error:", err);
+        } finally {
+          setAuthLoading(false);
+        }
+      } else {
+        // No session
+        setCurrentUser(null);
+        localStorage.removeItem("yuvakshar_session_user");
+        setAuthLoading(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabaseConfigured]);
 
   // Update Dynamic CSS Variables in Document header on appearance setting changes
   useEffect(() => {
@@ -874,18 +957,21 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     const localSettings = localStorage.getItem("yuvakshar_settings");
     if (localSettings) setSettings(JSON.parse(localSettings));
 
+    const localIcons = localStorage.getItem("yuvakshar_site_icons");
+    if (localIcons) setSiteIcons(JSON.parse(localIcons));
+
     // Articles
     const localArticles = localStorage.getItem("yuvakshar_articles");
     let loadedArticles: Article[] = [];
-    if (localArticles && JSON.parse(localArticles).length >= 40) {
-      loadedArticles = JSON.parse(localArticles);
+    if (localArticles) {
+      const parsed = JSON.parse(localArticles);
+      // Use saved articles if they exist (even 1), otherwise fall back to mock data
+      loadedArticles = parsed.length > 0 ? parsed : mockArticles;
     } else {
       loadedArticles = mockArticles;
-    }
-    setArticles(loadedArticles);
-    if (!localArticles) {
       localStorage.setItem("yuvakshar_articles", JSON.stringify(mockArticles));
     }
+    setArticles(loadedArticles);
 
     // Magazines
     const localMagazines = localStorage.getItem("yuvakshar_magazines");
@@ -1229,12 +1315,47 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-        if (profile) setCurrentUser(profile);
+        if (profile) {
+          setCurrentUser(profile);
+        } else {
+          // Profile does not exist yet in profiles table - create it dynamically!
+          const newProfile: Profile = {
+            id: user.id,
+            name: user.user_metadata?.name || user.email?.split("@")[0].toUpperCase() || "NEW USER",
+            email: user.email || "",
+            role: user.user_metadata?.role || null,
+            membership: "Free",
+            status: "active",
+            joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
+            slug: generateAuthorSlug(user.user_metadata?.name || user.email?.split("@")[0].toUpperCase() || "user")
+          };
+          
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .insert({
+              id: newProfile.id,
+              email: newProfile.email,
+              name: newProfile.name,
+              role: newProfile.role || 'Subscriber',
+              membership: newProfile.membership,
+              status: newProfile.status,
+              slug: newProfile.slug
+            });
+            
+          if (!insertError) {
+            setCurrentUser(newProfile);
+            localStorage.setItem("yuvakshar_session_user", JSON.stringify(newProfile));
+          } else {
+            console.error("Error inserting profile in loadDataFromSupabase:", insertError.message);
+            setCurrentUser(newProfile);
+            localStorage.setItem("yuvakshar_session_user", JSON.stringify(newProfile));
+          }
+        }
       }
 
       // Load site settings
       const { data: dbSettings } = await supabase.from("site_settings").select("*");
-      if (dbSettings) {
+      if (dbSettings && dbSettings.length > 0) {
         const parsed: any = {};
         dbSettings.forEach(s => { parsed[s.key] = s.value; });
         setSettings(prev => ({
@@ -1242,70 +1363,177 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           appearance: parsed.appearance_settings || prev.appearance,
           footer: parsed.footer_settings || prev.footer
         }));
+        if (parsed.site_icons) {
+          setSiteIcons(parsed.site_icons);
+        }
       }
 
-      // Load Articles
+      // Load Articles — fall back to mockArticles if DB table is empty
       const { data: dbArticles } = await supabase.from("articles").select("*").order("created_at", { ascending: false });
-      if (dbArticles) setArticles(dbArticles);
+      const loadedArticles = dbArticles && dbArticles.length > 0 ? dbArticles : mockArticles;
+      setArticles(loadedArticles);
 
       // Load Categories
       const { data: dbCategories } = await supabase.from("categories").select("*");
-      if (dbCategories) setCategories(dbCategories);
+      if (dbCategories && dbCategories.length > 0) {
+        setCategories(dbCategories);
+      } else {
+        const initialCategories: Category[] = [
+          { id: "cat-1", name: "समाचार", slug: "samachar", language_code: "hi" },
+          { id: "cat-2", name: "विशेष लेख", slug: "vishesh-lekh", language_code: "hi" },
+          { id: "cat-3", name: "विचार", slug: "vichar", language_code: "hi" },
+          { id: "cat-4", name: "साहित्य", slug: "sahitya", language_code: "hi" },
+          { id: "cat-5", name: "साक्षात्कार", slug: "sakshatkar", language_code: "hi" },
+          { id: "cat-6", name: "शिक्षा", slug: "shiksha", language_code: "hi" },
+          { id: "cat-7", name: "पर्यावरण", slug: "paryavaran", language_code: "hi" },
+          { id: "cat-8", name: "इतिहास", slug: "itihas", language_code: "hi" },
+          { id: "cat-9", name: "वीडियो", slug: "video", language_code: "hi" },
+          { id: "cat-10", name: "पत्रिका", slug: "patrika", language_code: "hi" }
+        ];
+        setCategories(initialCategories);
+      }
 
       // Load Tags
       const { data: dbTags } = await supabase.from("tags").select("*");
-      if (dbTags) setTags(dbTags);
+      if (dbTags && dbTags.length > 0) {
+        setTags(dbTags);
+      } else {
+        const initialTags: Tag[] = [
+          { id: "tag-1", name: "स्वतंत्रता", slug: "swatantrata", language_code: "hi" },
+          { id: "tag-2", name: "संस्कृति", slug: "sanskriti", language_code: "hi" },
+          { id: "tag-3", name: "संविधान", slug: "samvidhan", language_code: "hi" },
+          { id: "tag-4", name: "अधिकार", slug: "adhikar", language_code: "hi" }
+        ];
+        setTags(initialTags);
+      }
 
       // Load Magazines
       const { data: dbMagazines } = await supabase.from("magazines").select("*").order("created_at", { ascending: false });
-      if (dbMagazines) setMagazines(dbMagazines);
+      if (dbMagazines && dbMagazines.length > 0) {
+        setMagazines(dbMagazines);
+      } else {
+        setMagazines(mockMagazines);
+      }
 
       // Load Comments
       const { data: dbComments } = await supabase.from("comments").select("*").order("created_at", { ascending: false });
-      if (dbComments) setComments(dbComments);
+      if (dbComments && dbComments.length > 0) {
+        setComments(dbComments);
+      } else {
+        setComments(mockComments as Comment[]);
+      }
 
       // Load submissions
       const { data: dbSubmissions } = await supabase.from("contact_messages").select("*").order("created_at", { ascending: false });
-      if (dbSubmissions) {
+      if (dbSubmissions && dbSubmissions.length > 0) {
         const mapped: Submission[] = dbSubmissions.map(s => ({
           id: s.id,
           type: s.type,
           name: s.name,
           email: s.email,
           mobile: s.mobile,
-          subject: s.subject,
+          subject: s.subject || s.title,
           content: s.content,
           status: s.status,
-          replies: s.replies,
+          replies: s.replies || [],
           created_at: s.created_at
         }));
         setSubmissions(mapped);
+      } else {
+        setSubmissions([]);
       }
 
       // Load newsletter subscribers
       const { data: dbSubscribers } = await supabase.from("subscribers").select("email");
-      if (dbSubscribers) setSubscribers(dbSubscribers.map(s => s.email));
+      if (dbSubscribers && dbSubscribers.length > 0) {
+        setSubscribers(dbSubscribers.map(s => s.email));
+      } else {
+        setSubscribers(mockSubscribers);
+      }
 
       // Load campaigns
       const { data: dbCampaigns } = await supabase.from("newsletter_campaigns").select("*").order("created_at", { ascending: false });
-      if (dbCampaigns) setCampaigns(dbCampaigns);
+      if (dbCampaigns && dbCampaigns.length > 0) {
+        setCampaigns(dbCampaigns);
+      } else {
+        setCampaigns([]);
+      }
 
       // Load Ads
       const { data: dbAds } = await supabase.from("ads").select("*");
-      if (dbAds) setAds(dbAds);
+      if (dbAds && dbAds.length > 0) {
+        setAds(dbAds);
+      } else {
+        const initialAds: Ad[] = [
+          { id: "ad-1", name: "Sidebar Banner Ad", zone: "after_first_p", type: "banner", image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80", link_url: "https://yuvakshar.org/magazine", active: true, click_count: 0, impression_count: 0 },
+          { id: "ad-2", name: "Google AdSense Placeholder", zone: "mid_content", type: "adsense", code: "<div style='background:#f3ece0;padding:20px;text-align:center;font-size:11px;color:#EA580C;font-weight:bold;border:1px dashed #EA580C'>[Google AdSense Mid Content Banner]</div>", active: true, click_count: 0, impression_count: 0 }
+        ];
+        setAds(initialAds);
+      }
 
       // Load layout
       const { data: dbLayouts } = await supabase.from("homepage_layouts").select("*").order("version", { ascending: false });
-      if (dbLayouts) setLayouts(dbLayouts);
+      if (dbLayouts && dbLayouts.length > 0) {
+        setLayouts(dbLayouts);
+      } else {
+        const initialLayout: HomepageLayout = {
+          id: "layout-1",
+          name: "Default Approved Layout",
+          layout_json: {
+            hero_story_id: "art-1",
+            sections_order: ["hero", "latest", "opinion", "literature", "interviews", "magazine"],
+            visible_sections: { hero: true, latest: true, opinion: true, literature: true, interviews: true, magazine: true }
+          },
+          version: 1,
+          is_published: true
+        };
+        setLayouts([initialLayout]);
+      }
 
       // Load search analytics
       const { data: dbSearch } = await supabase.from("search_analytics").select("*").order("search_count", { ascending: false });
-      if (dbSearch) setSearchLogs(dbSearch);
+      if (dbSearch && dbSearch.length > 0) {
+        setSearchLogs(dbSearch);
+      } else {
+        setSearchLogs([]);
+      }
 
       // Load assignments
       const { data: dbAssign } = await supabase.from("editorial_assignments").select("*");
-      if (dbAssign) setAssignments(dbAssign);
-      
+      if (dbAssign && dbAssign.length > 0) {
+        setAssignments(dbAssign);
+      } else {
+        setAssignments([]);
+      }
+
+      // Load Users Profiles
+      const { data: dbUsers } = await supabase.from("profiles").select("*");
+      if (dbUsers && dbUsers.length > 0) {
+        const enriched = enrichUsersList(dbUsers, loadedArticles);
+        setUsers(enriched);
+      } else {
+        const defaultStaff: Profile[] = [
+          { id: "staff-owner", name: "Ravi Owner", email: "owner@yuvakshar.in", role: "Owner", membership: "Patron", status: "active", password: "password123", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
+          { id: "staff-admin", name: "Amit Admin", email: "admin@yuvakshar.in", role: "Admin", membership: "Patron", status: "active", password: "password123", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
+          { id: "staff-chief", name: "Prasoon Chief", email: "chief@yuvakshar.in", role: "Editor-in-Chief", membership: "Patron", status: "active", password: "password123", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
+          { id: "staff-managing", name: "Sumit Managing", email: "managing@yuvakshar.in", role: "Managing Editor", membership: "Premium", status: "active", password: "password123", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
+          { id: "staff-editor", name: "Ravi Sharma", email: "editor@yuvakshar.in", role: "Editor", membership: "Premium", status: "active", password: "password123", badges: ["Editor"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
+          { id: "staff-subeditor", name: "Alok SubEditor", email: "subeditor@yuvakshar.in", role: "Sub Editor", membership: "Premium", status: "active", password: "password123", badges: ["Sub Editor"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
+          { id: "staff-factchecker", name: "Nitin Checker", email: "factchecker@yuvakshar.in", role: "Fact Checker", membership: "Premium", status: "active", password: "password123", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
+          { id: "staff-reviewer", name: "Varun Reviewer", email: "reviewer@yuvakshar.in", role: "Reviewer", membership: "Premium", status: "active", password: "password123", badges: ["Reviewer"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
+          { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "Author", membership: "Premium", status: "active", password: "password123", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
+          { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "Contributor", membership: "Free", status: "active", password: "password123", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
+        ];
+        const initialUsers: Profile[] = [
+          { id: "u-1", name: "Owner", email: "yuvakshar.editor@gmail.com", role: "Owner", membership: "Patron", status: "active", password: "password123", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
+          { id: "u-2", name: "प्रसून कुशवाहा", email: "prasoon.kushwaha@yuvakshar.org", role: "Editor-in-Chief", membership: "Patron", status: "active", password: "password123", badges: ["Verified Author"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
+          { id: "u-3", name: "Guest Author", email: "m.tripathi@gmail.com", role: "Author", membership: "Premium", status: "active", password: "password123", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
+          { id: "u-4", name: "Featured Author", email: "reader.demo@yuvakshar.org", role: null, membership: "Free", status: "active", password: "password123", badges: ["Reader"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "नई दिल्ली, भारत" },
+          ...defaultStaff
+        ];
+        const enriched = enrichUsersList(initialUsers, loadedArticles);
+        setUsers(enriched);
+      }
     } catch (err) {
       console.error("Supabase load failed, falling back to local DB settings", err);
       loadDataFromLocalStorage();
@@ -1314,15 +1542,68 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
   // 2. Auth Operations
   const loginUser = async (email: string, role: string, customName?: string, customMobile?: string, passwordInput?: string): Promise<boolean> => {
-    // Trigger login
     if (supabaseConfigured) {
-      // Attempt auth magic links or oauth
-      const { error } = await supabase.auth.signInWithOtp({ email });
-      if (error) {
-        alert("Auth signup OTP error: " + error.message);
+      try {
+        if (email === "google.reader@gmail.com") {
+          // Google OAuth
+          const { error } = await supabase.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+              redirectTo: window.location.origin
+            }
+          });
+          if (error) {
+            alert("Google OAuth त्रुटि: " + error.message);
+            return false;
+          }
+          return true;
+        }
+
+        if (passwordInput) {
+          if (customName) {
+            // Sign Up (Register)
+            const { data, error } = await supabase.auth.signUp({
+              email,
+              password: passwordInput,
+              options: {
+                data: {
+                  name: customName,
+                  mobile: customMobile || "",
+                  role: role || "Subscriber"
+                }
+              }
+            });
+            if (error) {
+              alert("पंजीकरण त्रुटि: " + error.message);
+              return false;
+            }
+            alert("पंजीकरण सफल! कृपया अपने ईमेल में पुष्टिकरण लिंक की जांच करें (यदि ईमेल सत्यापन सक्षम है)।");
+            return true;
+          } else {
+            // Sign In
+            const { data, error } = await supabase.auth.signInWithPassword({
+              email,
+              password: passwordInput,
+            });
+            if (error) {
+              alert("लॉगिन त्रुटि: " + error.message);
+              return false;
+            }
+            return true;
+          }
+        }
+
+        // Default: Passwordless Email OTP
+        const { error } = await supabase.auth.signInWithOtp({ email });
+        if (error) {
+          alert("OTP भेजने में त्रुटि: " + error.message);
+          return false;
+        }
+        return true;
+      } catch (err: any) {
+        alert("Auth error: " + err.message);
         return false;
       }
-      return true;
     } else {
       // Mock Sign In
       const existingUser = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
@@ -1451,6 +1732,60 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         actionType: "Login",
         dateTime: new Date().toISOString()
       });
+      return true;
+    }
+  };
+
+  const sendOtpCode = async (email: string): Promise<boolean> => {
+    if (supabaseConfigured) {
+      const { error } = await supabase.auth.signInWithOtp({ email });
+      if (error) {
+        alert("OTP भेजने में त्रुटि: " + error.message);
+        return false;
+      }
+      return true;
+    } else {
+      alert(`परीक्षण मोड: OTP कोड ईमेल '${email}' पर भेजा गया (लॉगिन के लिए '123456' दर्ज करें)`);
+      return true;
+    }
+  };
+
+  const verifyOtpCode = async (email: string, token: string): Promise<boolean> => {
+    if (supabaseConfigured) {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: "email"
+      });
+      if (error) {
+        alert("OTP सत्यापन त्रुटि: " + error.message);
+        return false;
+      }
+      setAuthModalOpen(false);
+      return true;
+    } else {
+      if (token === "123456") {
+        return await loginUser(email, "Subscriber");
+      } else {
+        alert("अमान्य OTP कोड! कृपया '123456' दर्ज करें।");
+        return false;
+      }
+    }
+  };
+
+  const sendPasswordReset = async (email: string): Promise<boolean> => {
+    if (supabaseConfigured) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+      if (error) {
+        alert("पासवर्ड रीसेट लिंक भेजने में त्रुटि: " + error.message);
+        return false;
+      }
+      alert("पासवर्ड रीसेट लिंक आपके ईमेल पर भेज दिया गया है!");
+      return true;
+    } else {
+      alert("परीक्षण मोड: पासवर्ड रीसेट लिंक भेज दिया गया है!");
       return true;
     }
   };
@@ -1677,6 +2012,48 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("yuvakshar_settings", JSON.stringify(updatedSettings));
     }
     logActivity(`Site Settings update: ${type}`);
+  };
+
+  const updateSiteIcons = async (iconsMap: Record<string, string>) => {
+    const updatedValue = {
+      ...iconsMap,
+      updated_at: new Date().toISOString()
+    };
+    setSiteIcons(updatedValue);
+
+    if (supabaseConfigured) {
+      await supabase.from("site_settings").upsert({
+        key: "site_icons",
+        value: updatedValue,
+        updated_at: new Date().toISOString()
+      });
+    } else {
+      localStorage.setItem("yuvakshar_site_icons", JSON.stringify(updatedValue));
+    }
+
+    // Set custom favicon_url in appearance settings so other pages reflect the change
+    const customFaviconUrl = `/api/branding/icon?size=32&v=${Date.now()}`;
+    await updateSettings("appearance", {
+      ...settings.appearance,
+      favicon_url: customFaviconUrl
+    });
+    logActivity("Site Branding Icons update");
+  };
+
+  const restoreDefaultIcon = async () => {
+    setSiteIcons(null);
+    if (supabaseConfigured) {
+      await supabase.from("site_settings").delete().eq("key", "site_icons");
+    } else {
+      localStorage.removeItem("yuvakshar_site_icons");
+    }
+
+    // Reset favicon_url in appearance settings
+    await updateSettings("appearance", {
+      ...settings.appearance,
+      favicon_url: ""
+    });
+    logActivity("Site Branding Icons restore default");
   };
 
   // 4. Articles Operations
@@ -2512,6 +2889,44 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
   const updateUserProfile = async (data: Partial<Profile>) => {
     if (!currentUser) return;
+    
+    if (isSupabaseConfigured()) {
+      try {
+        const supabaseData: any = {};
+        const dbFields = [
+          "email", "name", "mobile", "display_name", "bio", "avatar_url", 
+          "role", "membership", "status", "social_links", "badges", 
+          "slug", "cover_banner", "designation", "current_role", 
+          "verification_badge", "institution", "expertise_tags", 
+          "orcid_id", "google_scholar_url", "academic_credentials", 
+          "professional_memberships", "education", "academic_background", 
+          "research_interests", "professional_experience", "social_contributions", 
+          "publications_list", "reputation_score", "reputation_tier"
+        ];
+        
+        dbFields.forEach(field => {
+          if (field in data) {
+            supabaseData[field] = (data as any)[field];
+          }
+        });
+        
+        if (data.publicVisibility !== undefined) {
+          supabaseData.public_visibility = data.publicVisibility;
+        }
+
+        const { error } = await supabase
+          .from("profiles")
+          .update(supabaseData)
+          .eq("id", currentUser.id);
+          
+        if (error) {
+          console.error("Failed to update profile in Supabase:", error.message);
+        }
+      } catch (err) {
+        console.error("updateUserProfile Supabase error:", err);
+      }
+    }
+
     const updatedUser = { ...currentUser, ...data };
     setCurrentUser(updatedUser);
     localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
@@ -2631,37 +3046,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const canAccessContent = (user: Profile | null, content: { accessLevel?: "Free" | "Premium" | "Patron" | "Founding" }) => {
-    const level = content.accessLevel || "Free";
-    if (level === "Free") return true;
-
-    // Team members bypass all paywalls
-    if (user && user.role && [
-      "Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Fact Check Reviewer", "Author", "Contributor"
-    ].includes(user.role)) {
-      return true;
-    }
-
-    if (!user) return false;
-
-    const membership = user.membership || "Free";
-
-    if (membership === "Lifetime" || membership === "Founding") {
-      return true;
-    }
-
-    if (level === "Premium") {
-      return ["Premium", "Patron", "Institutional"].includes(membership);
-    }
-
-    if (level === "Patron") {
-      return ["Patron", "Institutional"].includes(membership);
-    }
-
-    if (level === "Founding") {
-      return ["Founding", "Lifetime"].includes(membership);
-    }
-
-    return false;
+    return true;
   };
 
   const canComment = (user: Profile | null) => {
@@ -3185,6 +3570,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         becomeAuthor,
         updateUserProfile,
         updateUserMembership,
+        sendOtpCode,
+        verifyOtpCode,
+        sendPasswordReset,
         followAuthor,
         addTimelineEvent,
         deleteTimelineEvent,
@@ -3202,6 +3590,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         canAccessPremiumContent,
         supabaseConfigured,
         currentUser,
+        authLoading,
         settings,
         articles,
         categories,
@@ -3227,6 +3616,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         transferOwnership,
         resetUserPassword,
         updateSettings,
+        siteIcons,
+        updateSiteIcons,
+        restoreDefaultIcon,
         saveArticle,
         deleteArticle,
         saveVideo,

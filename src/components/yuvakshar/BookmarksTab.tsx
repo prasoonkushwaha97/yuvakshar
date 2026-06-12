@@ -5,6 +5,7 @@ import { Bookmark, Trash2, BookOpen } from "lucide-react";
 import { useCms, Profile } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
+import { generateAuthorSlug } from "@/lib/authorService";
 
 interface BookmarksTabProps {
   currentUser: Profile;
@@ -59,7 +60,15 @@ export default function BookmarksTab({ currentUser }: BookmarksTabProps) {
                   <div className="flex items-center gap-3 text-[10px] text-slate-400">
                     <span>जारी: {art.date}</span>
                     <span>•</span>
-                    <span>लेखक: {art.author || "युवाक्षर डेस्क"}</span>
+                    <span>
+                      लेखक:{" "}
+                      <Link 
+                        href={`/authors/${generateAuthorSlug(art.author || "युवाक्षर डेस्क")}`}
+                        className="hover:text-primary hover:underline transition-colors font-bold"
+                      >
+                        {art.author || "युवाक्षर डेस्क"}
+                      </Link>
+                    </span>
                   </div>
                 </div>
               </div>

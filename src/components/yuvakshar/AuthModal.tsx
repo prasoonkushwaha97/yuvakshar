@@ -13,11 +13,20 @@ import GlassCard from "./GlassCard";
 import confetti from "canvas-confetti";
 
 export default function AuthModal() {
-  const { authModalOpen, closeAuthModal, loginUser, authModalMessage, users } = useCms();
+  const { 
+    authModalOpen, 
+    closeAuthModal, 
+    loginUser, 
+    authModalMessage, 
+    users,
+    sendOtpCode,
+    verifyOtpCode,
+    sendPasswordReset
+  } = useCms();
   
   // Tab states: 'login' | 'register'
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
-  const [activeTab, setActiveTab] = useState<"google" | "otp" | "email">("google");
+  const [activeTab, setActiveTab] = useState<"google" | "otp" | "email">("otp");
 
   // Loading & Success States
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +42,7 @@ export default function AuthModal() {
   const [rememberMe, setRememberMe] = useState(true);
 
   // OTP Login States
-  const [mobileNum, setMobileNum] = useState("");
+  const [emailOtp, setEmailOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpArray, setOtpArray] = useState<string[]>(Array(6).fill(""));
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -92,52 +101,61 @@ export default function AuthModal() {
   if (!authModalOpen) return null;
 
   // Google Login Action
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
-    setTimeout(async () => {
-      const success = await loginUser("google.reader@gmail.com", "Subscriber");
-      setIsLoading(false);
-      if (success) {
-        confetti({
-          particleCount: 100,
-          spread: 60,
-          origin: { y: 0.7 }
-        });
-        setSuccessMessage("Google से सफलतापूर्वक लॉगिन हुआ!");
-        setTimeout(() => {
-          setSuccessMessage("");
-          closeAuthModal();
-        }, 1500);
-      } else {
-        triggerShake();
-      }
-    }, 1000);
+    const success = await loginUser("google.reader@gmail.com", "Subscriber");
+    setIsLoading(false);
+    if (success) {
+      confetti({
+        particleCount: 100,
+        spread: 60,
+        origin: { y: 0.7 }
+      });
+      setSuccessMessage("Google से सफलतापूर्वक लॉगिन हुआ!");
+      setTimeout(() => {
+        setSuccessMessage("");
+        closeAuthModal();
+      }, 1500);
+    } else {
+      triggerShake();
+    }
   };
 
   // OTP Login Action step 1: Send OTP code
-  const handleSendOtp = (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mobileNum.trim() || mobileNum.length < 10) {
-      setOtpError("कृपया मान्य 10-अंकों का मोबाइल नंबर दर्ज करें।");
+    if (!emailOtp.trim() || !emailOtp.includes("@")) {
+      setOtpError("कृपया एक मान्य ईमेल पता दर्ज करें।");
       triggerShake();
       return;
     }
     setOtpError("");
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
+    const success = await sendOtpCode(emailOtp.trim());
+    setIsLoading(false);
+    if (success) {
       setOtpSent(true);
-      setCountdown(30);
+      setCountdown(60);
       setOtpArray(Array(6).fill(""));
-    }, 1200);
+    } else {
+      triggerShake();
+    }
   };
 
   // OTP Resend trigger
-  const handleResendOtp = () => {
-    setCountdown(30);
-    setOtpArray(Array(6).fill(""));
-    alert("OTP पुनः भेजा गया! (परीक्षण के लिए '123456' का उपयोग करें)");
+  const handleResendOtp = async () => {
+    setOtpError("");
+    setIsLoading(true);
+    const success = await sendOtpCode(emailOtp.trim());
+    setIsLoading(false);
+    if (success) {
+      setCountdown(60);
+      setOtpArray(Array(6).fill(""));
+      alert("OTP पुनः भेजा गया!");
+    } else {
+      triggerShake();
+    }
   };
 
   // OTP Input event handlers
@@ -179,35 +197,33 @@ export default function AuthModal() {
   };
 
   // OTP Login Action step 2: Verify OTP
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const joinedCode = otpArray.join("");
-    if (joinedCode === "123456" || (joinedCode.length === 6 && joinedCode === "123456")) {
-      setOtpError("");
-      setIsLoading(true);
+    if (joinedCode.length < 6) {
+      setOtpError("कृपया 6-अंकीय OTP कोड दर्ज करें।");
+      triggerShake();
+      return;
+    }
+    setOtpError("");
+    setIsLoading(true);
 
-      setTimeout(async () => {
-        const success = await loginUser(`${mobileNum}@yuvakshar-otp.com`, "Subscriber");
-        setIsLoading(false);
-        if (success) {
-          confetti({
-            particleCount: 120,
-            spread: 70,
-            origin: { y: 0.7 }
-          });
-          setSuccessMessage("OTP सत्यापन सफल! लॉगिन पूर्ण हुआ।");
-          setTimeout(() => {
-            setSuccessMessage("");
-            setOtpSent(false);
-            setMobileNum("");
-            closeAuthModal();
-          }, 1500);
-        } else {
-          triggerShake();
-        }
-      }, 1000);
+    const success = await verifyOtpCode(emailOtp.trim(), joinedCode);
+    setIsLoading(false);
+    if (success) {
+      confetti({
+        particleCount: 120,
+        spread: 70,
+        origin: { y: 0.7 }
+      });
+      setSuccessMessage("OTP सत्यापन सफल! लॉगिन पूर्ण हुआ।");
+      setTimeout(() => {
+        setSuccessMessage("");
+        setOtpSent(false);
+        setEmailOtp("");
+        closeAuthModal();
+      }, 1500);
     } else {
-      setOtpError("अमान्य OTP कोड! कृपया '123456' दर्ज करें।");
       triggerShake();
     }
   };
@@ -358,7 +374,7 @@ export default function AuthModal() {
 
           {/* LEFT PANEL: Community branding, Benefits & Social Proof */}
           <div className="lg:col-span-5 bg-gradient-to-br from-primary/10 via-amber-500/5 to-slate-900/5 dark:from-primary/15 dark:via-amber-500/5 dark:to-[#0A0F1D]/10 p-6 md:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-200/60 dark:border-slate-800/60 text-slate-800 dark:text-slate-100 space-y-6">
-            <div className="space-y-4">
+            <div className="space-y-6">
               {/* Logo */}
               <div className="flex justify-center lg:justify-start">
                 <img 
@@ -372,116 +388,67 @@ export default function AuthModal() {
               </div>
 
               {/* Title Section */}
-              <div className="space-y-1 text-center lg:text-left">
+              <div className="space-y-2 text-center lg:text-left">
                 <h2 className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                   युवाक्षर में आपका स्वागत है
                 </h2>
                 <h3 className="font-sans text-xs text-primary font-bold tracking-widest uppercase">
                   ज्ञान • विचार • लेखन • परिवर्तन
                 </h3>
-                <p className="text-xs text-slate-550 dark:text-slate-400 font-serif leading-relaxed pt-2.5">
-                  "भारत के उभरते लेखकों, पाठकों, शोधकर्ताओं और विचारकों के समुदाय से जुड़ें।"
+                <p className="text-xs text-slate-550 dark:text-slate-400 font-serif leading-relaxed pt-1">
+                  भारत के उभरते लेखकों, पाठकों, शोधकर्ताओं और विचारकों के समुदाय से जुड़ें।
                 </p>
               </div>
 
               {/* Benefits Section */}
               <div className="space-y-3 pt-2">
-                <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 font-sans">सदस्यता के लाभ</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 text-xs leading-relaxed font-serif">
+                <p className="text-[10px] uppercase font-bold tracking-wider text-slate-405 dark:text-slate-400 font-sans">सदस्यता के लाभ</p>
+                <div className="grid grid-cols-1 gap-2.5 text-xs leading-relaxed font-serif">
                   <div className="flex items-center space-x-2.5">
-                    <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <BookOpen className="w-3.5 h-3.5" />
+                    <div className="w-5 h-5 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <BookOpen className="w-3 h-3" />
                     </div>
-                    <span className="text-slate-650 dark:text-slate-300 font-medium">सम्पूर्ण पत्रिका पढ़ें</span>
+                    <span className="text-slate-650 dark:text-slate-300">सम्पूर्ण पत्रिका और आलेख नि:शुल्क पढ़ें</span>
                   </div>
                   <div className="flex items-center space-x-2.5">
-                    <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <UserCheck className="w-3.5 h-3.5" />
+                    <div className="w-5 h-5 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <UserCheck className="w-3 h-3" />
                     </div>
-                    <span className="text-slate-650 dark:text-slate-300 font-medium">लेखकों को फ़ॉलो करें</span>
+                    <span className="text-slate-650 dark:text-slate-300">पसंदीदा लेखकों को फ़ॉलो करें</span>
                   </div>
                   <div className="flex items-center space-x-2.5">
-                    <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <Sparkles className="w-3.5 h-3.5" />
+                    <div className="w-5 h-5 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Sparkles className="w-3 h-3" />
                     </div>
-                    <span className="text-slate-650 dark:text-slate-300 font-medium">AI अध्ययन साथी का उपयोग करें</span>
+                    <span className="text-slate-650 dark:text-slate-300">AI स्वाध्याय उपकरण और क्विज़ का उपयोग करें</span>
                   </div>
                   <div className="flex items-center space-x-2.5">
-                    <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <TrendingUp className="w-3.5 h-3.5" />
+                    <div className="w-5 h-5 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Bookmark className="w-3 h-3" />
                     </div>
-                    <span className="text-slate-650 dark:text-slate-300 font-medium">अपनी अध्ययन प्रगति देखें</span>
-                  </div>
-                  <div className="flex items-center space-x-2.5">
-                    <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <Award className="w-3.5 h-3.5" />
-                    </div>
-                    <span className="text-slate-650 dark:text-slate-300 font-medium">प्रमाणपत्र अर्जित करें</span>
-                  </div>
-                  <div className="flex items-center space-x-2.5">
-                    <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <Bookmark className="w-3.5 h-3.5" />
-                    </div>
-                    <span className="text-slate-650 dark:text-slate-300 font-medium">पसंदीदा लेख सहेजें</span>
+                    <span className="text-slate-650 dark:text-slate-300">टिप्पणी विमर्श में भाग लें</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Premium Previews Area */}
-            <div className="space-y-4 pt-4 border-t border-slate-200/40 dark:border-slate-800/40">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {/* 1. Premium Membership Preview */}
-                <div className="p-3 bg-white/45 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-850/80 rounded-2xl flex flex-col justify-between space-y-2 relative overflow-hidden shadow-sm">
-                  <div className="absolute top-0 right-0 w-8 h-8 bg-primary/5 rounded-bl-full pointer-events-none" />
-                  <div className="space-y-1">
-                    <h4 className="font-serif text-xs font-bold text-slate-850 dark:text-white flex items-center space-x-1">
-                      <span>💎 प्रीमियम सदस्यता</span>
-                    </h4>
-                    <p className="text-[9px] text-slate-400 leading-tight font-serif">
-                      सम्पूर्ण पत्रिका, AI साथी, AI लेखन समीक्षा, AI अध्ययन रिपोर्ट, विशेष अभिलेखागार
-                    </p>
-                  </div>
-                  <p className="text-[10px] font-bold text-primary tracking-wide pt-1">
-                    ₹29 प्रति माह से प्रारंभ
-                  </p>
-                </div>
-
-                {/* 2. Founding Member Preview */}
-                <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-2xl flex flex-col justify-between space-y-2 relative overflow-hidden shadow-sm">
-                  <div className="absolute top-0 right-0 w-8 h-8 bg-amber-500/10 rounded-bl-full pointer-events-none" />
-                  <div className="space-y-1">
-                    <h4 className="font-serif text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center space-x-1">
-                      <span>🏛️ संस्थापक सदस्य</span>
-                    </h4>
-                    <p className="text-[9px] text-slate-400 leading-tight font-serif">
-                      "प्रारम्भिक सदस्यों के लिए विशेष सदस्यता"
-                    </p>
-                  </div>
-                  <p className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400 tracking-wider font-sans uppercase animate-pulse">
-                    केवल {slotsLeft} स्थान शेष
-                  </p>
-                </div>
+            {/* Social Proof */}
+            <div className="grid grid-cols-4 gap-2 pt-4 border-t border-slate-200/40 dark:border-slate-800/40 text-center">
+              <div>
+                <p className="text-xs font-black text-primary font-sans leading-none">15,000+</p>
+                <span className="text-[8px] text-slate-400 font-serif leading-none block mt-1">पाठक</span>
               </div>
-
-              {/* Social Proof */}
-              <div className="grid grid-cols-4 gap-2 pt-2 text-center border-t border-slate-200/30 dark:border-slate-800/30">
-                <div>
-                  <p className="text-sm font-black text-primary font-sans leading-none">15,000+</p>
-                  <span className="text-[8px] text-slate-400 font-serif leading-none block mt-1">पाठक</span>
-                </div>
-                <div>
-                  <p className="text-sm font-black text-primary font-sans leading-none">250+</p>
-                  <span className="text-[8px] text-slate-400 font-serif leading-none block mt-1">लेख</span>
-                </div>
-                <div>
-                  <p className="text-sm font-black text-primary font-sans leading-none">35+</p>
-                  <span className="text-[8px] text-slate-400 font-serif leading-none block mt-1">लेखक</span>
-                </div>
-                <div>
-                  <p className="text-sm font-black text-primary font-sans leading-none">25+</p>
-                  <span className="text-[8px] text-slate-400 font-serif leading-none block mt-1">पत्रिका</span>
-                </div>
+              <div>
+                <p className="text-xs font-black text-primary font-sans leading-none">250+</p>
+                <span className="text-[8px] text-slate-400 font-serif leading-none block mt-1">लेख</span>
+              </div>
+              <div>
+                <p className="text-xs font-black text-primary font-sans leading-none">35+</p>
+                <span className="text-[8px] text-slate-400 font-serif leading-none block mt-1">लेखक</span>
+              </div>
+              <div>
+                <p className="text-xs font-black text-primary font-sans leading-none">25+</p>
+                <span className="text-[8px] text-slate-400 font-serif leading-none block mt-1">पत्रिका</span>
               </div>
             </div>
           </div>
@@ -589,7 +556,7 @@ export default function AuthModal() {
                             : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
                         }`}
                       >
-                        मोबाइल OTP
+                        Email OTP (लॉगिन)
                       </button>
                       <button
                         onClick={() => {
@@ -615,16 +582,16 @@ export default function AuthModal() {
                             <form onSubmit={handleSendOtp} className="space-y-4">
                               <div className="space-y-1.5">
                                 <label className="text-slate-550 dark:text-slate-400 font-medium flex items-center space-x-1.5">
-                                  <Phone className="w-3.5 h-3.5 text-slate-400" />
-                                  <span>अपना मोबाइल नंबर दर्ज करें</span>
+                                  <Mail className="w-3.5 h-3.5 text-slate-400" />
+                                  <span>अपना ईमेल पता दर्ज करें</span>
                                 </label>
                                 <input
-                                  type="tel"
-                                  placeholder="उदा. 9876543210"
-                                  value={mobileNum}
-                                  onChange={(e) => setMobileNum(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                                  type="email"
+                                  placeholder="उदा. reader@gmail.com"
+                                  value={emailOtp}
+                                  onChange={(e) => setEmailOtp(e.target.value)}
                                   disabled={isLoading}
-                                  className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-primary text-slate-700 dark:text-slate-200 font-mono text-sm disabled:opacity-50"
+                                  className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-primary text-slate-700 dark:text-slate-200 text-sm disabled:opacity-50"
                                   required
                                 />
                                 {otpError && (
@@ -632,93 +599,93 @@ export default function AuthModal() {
                                 )}
                               </div>
                               <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full bg-primary hover:bg-primary/95 text-white py-3 rounded-xl font-bold transition-all shadow-md cursor-pointer flex items-center justify-center space-x-1.5 disabled:opacity-50"
-                              >
-                                {isLoading ? (
-                                  <RotateCw className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <ShieldCheck className="w-4 h-4" />
-                                )}
-                                <span>{isLoading ? "प्रक्रिया जारी है..." : "OTP प्राप्त करें"}</span>
-                              </button>
-                            </form>
-                          ) : (
-                            <form onSubmit={handleVerifyOtp} className="space-y-4">
-                              <div className="space-y-3">
-                                <div className="flex justify-between items-center select-none">
-                                  <label className="text-slate-550 dark:text-slate-400 font-medium flex items-center space-x-1.5">
-                                    <Key className="w-3.5 h-3.5 text-slate-400" />
-                                    <span>6-अंकीय OTP कोड दर्ज करें</span>
-                                  </label>
-                                  <button
-                                    type="button"
-                                    onClick={() => setOtpSent(false)}
-                                    className="text-[10px] text-primary hover:underline flex items-center space-x-1 cursor-pointer font-bold"
-                                  >
-                                    <ArrowLeft className="w-3 h-3" />
-                                    <span>नंबर बदलें</span>
-                                  </button>
-                                </div>
+                                  type="submit"
+                                  disabled={isLoading}
+                                  className="w-full bg-primary hover:bg-primary/95 text-white py-3 rounded-xl font-bold transition-all shadow-md cursor-pointer flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                                >
+                                  {isLoading ? (
+                                    <RotateCw className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <ShieldCheck className="w-4 h-4" />
+                                  )}
+                                  <span>{isLoading ? "प्रक्रिया जारी है..." : "OTP प्राप्त करें"}</span>
+                                </button>
+                              </form>
+                            ) : (
+                              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                                <div className="space-y-3">
+                                  <div className="flex justify-between items-center select-none">
+                                    <label className="text-slate-550 dark:text-slate-400 font-medium flex items-center space-x-1.5">
+                                      <Key className="w-3.5 h-3.5 text-slate-400" />
+                                      <span>6-अंकीय OTP कोड दर्ज करें</span>
+                                    </label>
+                                    <button
+                                      type="button"
+                                      onClick={() => setOtpSent(false)}
+                                      className="text-[10px] text-primary hover:underline flex items-center space-x-1 cursor-pointer font-bold"
+                                    >
+                                      <ArrowLeft className="w-3 h-3" />
+                                      <span>ईमेल बदलें</span>
+                                    </button>
+                                  </div>
 
-                                {/* 6 Individual OTP Boxes */}
-                                <div className="flex justify-between gap-2 max-w-[320px] mx-auto py-2">
-                                  {otpArray.map((digit, index) => (
-                                    <input
-                                      key={index}
-                                      type="tel"
-                                      maxLength={1}
-                                      value={digit}
-                                      ref={(el) => { otpRefs.current[index] = el; }}
-                                      onChange={(e) => handleOtpChange(e.target, index)}
-                                      onKeyDown={(e) => handleOtpKeyDown(e, index)}
-                                      onPaste={handleOtpPaste}
-                                      disabled={isLoading}
-                                      className="w-10 h-12 sm:w-12 sm:h-12 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-xl text-center text-xl font-bold text-slate-800 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-mono disabled:opacity-50"
-                                      required
-                                    />
-                                  ))}
-                                </div>
+                                  {/* 6 Individual OTP Boxes */}
+                                  <div className="flex justify-between gap-2 max-w-[320px] mx-auto py-2">
+                                    {otpArray.map((digit, index) => (
+                                      <input
+                                        key={index}
+                                        type="tel"
+                                        maxLength={1}
+                                        value={digit}
+                                        ref={(el) => { otpRefs.current[index] = el; }}
+                                        onChange={(e) => handleOtpChange(e.target, index)}
+                                        onKeyDown={(e) => handleOtpKeyDown(e, index)}
+                                        onPaste={handleOtpPaste}
+                                        disabled={isLoading}
+                                        className="w-10 h-12 sm:w-12 sm:h-12 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-xl text-center text-xl font-bold text-slate-800 dark:text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-mono disabled:opacity-50"
+                                        required
+                                      />
+                                    ))}
+                                  </div>
 
-                                <p className="text-[10px] text-slate-400 text-center font-sans mt-1">
-                                  परीक्षण के लिए कोड <strong>123456</strong> का उपयोग करें।
-                                </p>
-                                
-                                {countdown > 0 ? (
-                                  <p className="text-[10px] text-slate-400 text-center font-mono select-none">
-                                    {countdown} सेकंड बाद पुनः भेजें
+                                  <p className="text-[10px] text-slate-400 text-center font-sans mt-1">
+                                    परीक्षण के लिए कोड <strong>123456</strong> का उपयोग करें।
                                   </p>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={handleResendOtp}
-                                    className="w-full text-center text-xs text-primary font-bold hover:underline cursor-pointer"
-                                  >
-                                    OTP पुनः भेजें
-                                  </button>
-                                )}
+                                  
+                                  {countdown > 0 ? (
+                                    <p className="text-[10px] text-slate-400 text-center font-mono select-none">
+                                      {countdown} सेकंड बाद पुनः भेजें
+                                    </p>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={handleResendOtp}
+                                      className="w-full text-center text-xs text-primary font-bold hover:underline cursor-pointer"
+                                    >
+                                      OTP पुनः भेजें
+                                    </button>
+                                  )}
 
-                                {otpError && (
-                                  <p className="text-[10px] text-red-500 font-bold font-sans text-center">{otpError}</p>
-                                )}
-                              </div>
-                              <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full bg-primary hover:bg-primary/95 text-white py-3 rounded-xl font-bold transition-all shadow-md cursor-pointer flex items-center justify-center space-x-1.5 disabled:opacity-50"
-                              >
-                                {isLoading ? (
-                                  <RotateCw className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <User className="w-4 h-4" />
-                                )}
-                                <span>{isLoading ? "सत्यापन हो रहा है..." : "सत्यापन करें"}</span>
-                              </button>
-                            </form>
-                          )}
-                        </div>
-                      )}
+                                  {otpError && (
+                                    <p className="text-[10px] text-red-500 font-bold font-sans text-center">{otpError}</p>
+                                  )}
+                                </div>
+                                <button
+                                  type="submit"
+                                  disabled={isLoading}
+                                  className="w-full bg-primary hover:bg-primary/95 text-white py-3 rounded-xl font-bold transition-all shadow-md cursor-pointer flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                                >
+                                  {isLoading ? (
+                                    <RotateCw className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <User className="w-4 h-4" />
+                                  )}
+                                  <span>{isLoading ? "सत्यापन हो रहा है..." : "सत्यापन करें"}</span>
+                                </button>
+                              </form>
+                            )}
+                          </div>
+                        )}
 
                       {/* Email Login Form */}
                       {activeTab === "email" && (
@@ -778,7 +745,13 @@ export default function AuthModal() {
                               </label>
                               <button
                                 type="button"
-                                onClick={() => alert("पासवर्ड रीसेट लिंक आपके ईमेल पर भेजा गया है!")}
+                                onClick={async () => {
+                                  if (!email.trim() || !email.includes("@")) {
+                                    alert("कृपया पासवर्ड रीसेट करने के लिए पहले अपना ईमेल दर्ज करें।");
+                                    return;
+                                  }
+                                  await sendPasswordReset(email.trim());
+                                }}
                                 className="text-primary hover:underline cursor-pointer font-bold"
                               >
                                 पासवर्ड भूल गए?

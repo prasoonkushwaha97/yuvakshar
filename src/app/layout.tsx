@@ -7,27 +7,79 @@ import { LanguageProvider } from "@/store/LanguageContext";
 import { CmsProvider } from "@/store/CmsContext";
 import AuthModal from "@/components/yuvakshar/AuthModal";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
+import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
 
-export const metadata: Metadata = {
-  title: "युवाक्षर | लेखन, चिंतन और परिवर्तन - Premium Devanagari Editorial & Magazine Platform",
-  description: "युवाक्षर is a modern, premium Hindi digital platform focused on News, Magazine Publishing, Articles, Expression, Career and Scholarships, and AI-powered learning assistance. विचारों को आवाज़ दीजिए।",
-  keywords: "युवाक्षर, युवाक्षर, Hindi Digital Magazine, Youth Expression Hub, Hindi Articles, Career Hub, Career guidance, AI learning, Indian current affairs, Nation building",
-  authors: [{ name: "युवाक्षर संपादकीय कक्ष" }],
-  openGraph: {
-    title: "युवाक्षर - विचारों को आवाज़ दीजिए",
-    description: "युवाओं, लेखकों और विचारकों का हिन्दी डिजिटल मंच - युवाक्षर",
-    url: "https://yuvakshar.org",
-    siteName: "युवाक्षर",
-    locale: "hi_IN",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "युवाक्षर - हिन्दी डिजिटल मंच",
-    description: "Modern Hindi Digital Magazine & Youth Expression Hub",
-  },
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
+async function getBrandingVersion(): Promise<string> {
+  if (!isSupabaseConfigured()) return "default";
+  try {
+    const { data } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "site_icons")
+      .single();
+    if (data?.value?.updated_at) {
+      return new Date(data.value.updated_at).getTime().toString();
+    }
+  } catch (err) {
+    console.error("Error fetching branding version in layout:", err);
+  }
+  return "default";
+}
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const version = await getBrandingVersion();
+  const iconBaseUrl = `/api/branding/icon`;
+  const manifestUrl = `/api/branding/manifest?v=${version}`;
+
+  return {
+    title: "युवाक्षर | लेखन, चिंतन और परिवर्तन - Premium Devanagari Editorial & Magazine Platform",
+    description: "युवाक्षर is a modern, premium Hindi digital platform focused on News, Magazine Publishing, Articles, Expression, Career and Scholarships, and AI-powered learning assistance. विचारों को आवाज़ दीजिए।",
+    keywords: "युवाक्षर, युवाक्षर, Hindi Digital Magazine, Youth Expression Hub, Hindi Articles, Career Hub, Career guidance, AI learning, Indian current affairs, Nation building",
+    authors: [{ name: "युवाक्षर संपादकीय कक्ष" }],
+    manifest: manifestUrl,
+    icons: {
+      icon: [
+        { url: `${iconBaseUrl}?size=16&v=${version}`, sizes: "16x16", type: "image/png" },
+        { url: `${iconBaseUrl}?size=32&v=${version}`, sizes: "32x32", type: "image/png" },
+        { url: `${iconBaseUrl}?size=48&v=${version}`, sizes: "48x48", type: "image/png" },
+        { url: `${iconBaseUrl}?size=96&v=${version}`, sizes: "96x96", type: "image/png" },
+      ],
+      shortcut: `${iconBaseUrl}?size=32&v=${version}`,
+      apple: [
+        { url: `${iconBaseUrl}?size=180&v=${version}`, sizes: "180x180", type: "image/png" },
+        { url: `${iconBaseUrl}?size=152&v=${version}`, sizes: "152x152", type: "image/png" },
+      ],
+    },
+    openGraph: {
+      title: "युवाक्षर - विचारों को आवाज़ दीजिए",
+      description: "युवाओं, लेखकों और विचारकों का हिन्दी डिजिटल मंच - युवाक्षर",
+      url: "https://yuvakshar.org",
+      siteName: "युवाक्षर",
+      locale: "hi_IN",
+      type: "website",
+      images: [
+        {
+          url: `${iconBaseUrl}?size=512&v=${version}`,
+          width: 512,
+          height: 512,
+          alt: "युवाक्षर",
+        }
+      ]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "युवाक्षर - हिन्दी डिजिटल मंच",
+      description: "Modern Hindi Digital Magazine & Youth Expression Hub",
+      images: [`${iconBaseUrl}?size=512&v=${version}`],
+    },
+  };
+}
 
 export default function RootLayout({
   children,

@@ -83,6 +83,7 @@ const getMembershipBadge = (mem?: string | null) => {
 export default function Navbar() {
   const pathname = usePathname();
   const { settings, logoutUser, currentUser, magazines, articles, openAuthModal } = useCms();
+  const isEditorial = currentUser && ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Author", "Contributor", "Fact Check Reviewer"].includes(currentUser.role || "");
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
@@ -405,13 +406,13 @@ export default function Navbar() {
 
                         <div className="space-y-0.5 px-1">
                           {[
-                            { href: "/admin?tab=profile", icon: User, label: "मेरा प्रोफ़ाइल" },
-                            { href: "/admin?tab=library", icon: BookOpen, label: "मेरी पुस्तकालय" },
-                            { href: "/admin?tab=bookmarks", icon: Bookmark, label: "बुकमार्क" },
-                            { href: "/admin?tab=certificates", icon: Award, label: "प्रमाणपत्र" },
-                            { href: "/admin?tab=study-progress", icon: Activity, label: "अध्ययन प्रगति" },
+                            { href: isEditorial ? "/admin?tab=profile" : "/dashboard?tab=profile", icon: User, label: "मेरा प्रोफ़ाइल" },
+                            { href: isEditorial ? "/admin?tab=library" : "/dashboard?tab=study", icon: BookOpen, label: "मेरी पुस्तकालय" },
+                            { href: isEditorial ? "/admin?tab=bookmarks" : "/dashboard?tab=bookmarks", icon: Bookmark, label: "बुकमार्क" },
+                            { href: isEditorial ? "/admin?tab=certificates" : "/dashboard?tab=study", icon: Award, label: "प्रमाणपत्र" },
+                            { href: isEditorial ? "/admin?tab=study-progress" : "/dashboard?tab=study", icon: Activity, label: "अध्ययन प्रगति" },
                             /* MEMBERSHIP ARCHIVED: { href: "/membership", icon: Crown, label: "सदस्यता" }, */
-                            { href: "/admin?tab=settings", icon: Settings, label: "सेटिंग्स" },
+                            { href: isEditorial ? "/admin?tab=settings" : "/dashboard?tab=profile&sub=settings", icon: Settings, label: "सेटिंग्स" },
                           ].map(({ href, icon: Icon, label }) => (
                             <Link
                               key={href}
@@ -700,13 +701,13 @@ export default function Navbar() {
               {/* Menu Items */}
               <div className="flex-grow px-3 py-4 space-y-0.5">
                 {[
-                  { href: "/admin?tab=profile", icon: User, label: "मेरा प्रोफ़ाइल" },
-                  { href: "/admin?tab=library", icon: BookOpen, label: "मेरी पुस्तकालय" },
-                  { href: "/admin?tab=bookmarks", icon: Bookmark, label: "बुकमार्क" },
-                  { href: "/admin?tab=certificates", icon: Award, label: "प्रमाणपत्र" },
-                  { href: "/admin?tab=study-progress", icon: Activity, label: "अध्ययन प्रगति" },
+                  { href: isEditorial ? "/admin?tab=profile" : "/dashboard?tab=profile", icon: User, label: "मेरा प्रोफ़ाइल" },
+                  { href: isEditorial ? "/admin?tab=library" : "/dashboard?tab=study", icon: BookOpen, label: "मेरी पुस्तकालय" },
+                  { href: isEditorial ? "/admin?tab=bookmarks" : "/dashboard?tab=bookmarks", icon: Bookmark, label: "बुकमार्क" },
+                  { href: isEditorial ? "/admin?tab=certificates" : "/dashboard?tab=study", icon: Award, label: "प्रमाणपत्र" },
+                  { href: isEditorial ? "/admin?tab=study-progress" : "/dashboard?tab=study", icon: Activity, label: "अध्ययन प्रगति" },
                   /* MEMBERSHIP ARCHIVED: { href: "/membership", icon: Crown, label: "सदस्यता" }, */
-                  { href: "/admin?tab=settings", icon: Settings, label: "सेटिंग्स" },
+                  { href: isEditorial ? "/admin?tab=settings" : "/dashboard?tab=profile&sub=settings", icon: Settings, label: "सेटिंग्स" },
                 ].map(({ href, icon: Icon, label }) => (
                   <Link
                     key={href}

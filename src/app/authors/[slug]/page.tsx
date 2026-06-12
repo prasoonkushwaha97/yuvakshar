@@ -26,6 +26,7 @@ import {
   X
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
+import { Profile } from "@/store/types";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 
 export default function AuthorProfile() {
@@ -47,30 +48,45 @@ export default function AuthorProfile() {
   const [activeTab, setActiveTab] = useState("articles"); // articles | magazine | portfolio | videos
 
   // Find author by slug
-  const author = useMemo(() => {
+  const dbAuthor = useMemo(() => {
     return users.find(u => u.slug === slug);
   }, [users, slug]);
 
-  // If author not found
-  if (!author) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1D] flex flex-col items-center justify-center p-6 text-center">
-        <div className="max-w-md space-y-4">
-          <h2 className="text-2xl font-bold font-serif text-slate-800 dark:text-white">प्रोफ़ाइल उपलब्ध नहीं है</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-serif">
-            यह लेखक प्रोफ़ाइल मौजूद नहीं है या इसे हटाया जा चुका है। कृपया यूआरएल की जांच करें।
-          </p>
-          <button 
-            onClick={() => router.push("/authors")}
-            className="inline-flex items-center gap-1 bg-primary text-white px-4 py-2 rounded-xl text-xs font-bold font-serif cursor-pointer hover:bg-primary/95 transition-all"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>लेखक सूची पर वापस जाएं</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const author = useMemo(() => {
+    if (dbAuthor) return dbAuthor;
+    
+    const derivedName = slug
+      ? slug
+          .split("-")
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ")
+      : "पाठक (Reader)";
+      
+    return {
+      id: "fallback-" + (slug || "reader"),
+      name: derivedName,
+      slug: slug || "reader",
+      bio: "युवाक्षर का उत्साही पाठक एवं स्वतंत्र चिंतक।",
+      role: null,
+      membership: "Free",
+      status: "active",
+      location: "भारत",
+      joinDate: "जून २०२६",
+      expertise_tags: ["साहित्य", "समाज", "विचार"],
+      followers: [] as string[],
+      reputation_score: 10,
+      reputation_tier: "Bronze",
+      cover_banner: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
+      avatar_url: "",
+      verification_badge: undefined,
+      social_links: {},
+      orcid_id: undefined,
+      google_scholar_url: undefined,
+      portfolio: [] as any[],
+      timeline: [] as any[],
+      achievements: [] as any[]
+    } as Profile;
+  }, [dbAuthor, slug]);
 
   // Filter content written by this author
   const authorArticles = useMemo(() => {
