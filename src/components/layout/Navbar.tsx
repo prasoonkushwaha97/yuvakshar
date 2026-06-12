@@ -368,7 +368,7 @@ export default function Navbar() {
                       {currentUser.name || "पाठक"}
                     </span>
                     <span className="text-[9px] text-slate-500 dark:text-slate-400 font-sans tracking-wide mt-0.5">
-                      {translateMembership(currentUser.membership)}
+                      {translateRole(currentUser.role)}
                     </span>
                   </div>
                   <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
@@ -395,9 +395,6 @@ export default function Navbar() {
                                 {currentUser.name || "पाठक"}
                               </p>
                               <div className="flex flex-col gap-1 mt-1">
-                                <span className={`inline-flex items-center w-fit px-2 py-0.5 rounded-full text-[9px] font-sans font-semibold ${getMembershipBadge(currentUser.membership).class}`}>
-                                  {getMembershipBadge(currentUser.membership).text}
-                                </span>
                                 <span className="text-[9px] text-slate-400 dark:text-slate-500 font-sans tracking-wide">
                                   {translateRole(currentUser.role)}
                                 </span>
@@ -413,7 +410,7 @@ export default function Navbar() {
                             { href: "/admin?tab=bookmarks", icon: Bookmark, label: "बुकमार्क" },
                             { href: "/admin?tab=certificates", icon: Award, label: "प्रमाणपत्र" },
                             { href: "/admin?tab=study-progress", icon: Activity, label: "अध्ययन प्रगति" },
-                            { href: "/membership", icon: Crown, label: "सदस्यता" },
+                            /* MEMBERSHIP ARCHIVED: { href: "/membership", icon: Crown, label: "सदस्यता" }, */
                             { href: "/admin?tab=settings", icon: Settings, label: "सेटिंग्स" },
                           ].map(({ href, icon: Icon, label }) => (
                             <Link
@@ -457,20 +454,7 @@ export default function Navbar() {
                           </>
                         )}
 
-                        {/* Upgrade Smart Card */}
-                        {currentUser.membership === "Patron" ? (
-                          <div className="mx-3 my-2.5 p-3 rounded-2xl bg-gradient-to-br from-primary/5 to-amber-500/5 dark:from-primary/10 dark:to-amber-500/10 border border-primary/20 dark:border-primary/30 text-[11px] leading-relaxed text-center">
-                            <p className="font-serif font-bold text-primary flex items-center justify-center gap-1.5 mb-1">👑 आप संरक्षक सदस्य हैं</p>
-                            <p className="text-slate-500 dark:text-slate-400 font-serif font-medium">युवाक्षर के सहयोग हेतु धन्यवाद।</p>
-                          </div>
-                        ) : (
-                          <div className="mx-3 my-2.5 p-3 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200/60 dark:border-amber-900/40 text-[11px] leading-relaxed">
-                            <p className="font-serif font-bold text-slate-800 dark:text-amber-300 flex items-center gap-1.5 mb-1.5">👑 प्रीमियम सदस्य बनें</p>
-                            <Link href="/membership" onClick={() => setProfileDropdownOpen(false)} className="block mt-1.5 text-center py-1.5 px-3 bg-gradient-to-r from-primary to-amber-500 text-white rounded-lg font-bold text-[11px]">
-                              अपग्रेड करें
-                            </Link>
-                          </div>
-                        )}
+                        {/* MEMBERSHIP ARCHIVED: Upgrade Smart Card removed for membership system archival */}
 
                         <div className="border-t border-slate-100 dark:border-slate-800/80 mt-2 pt-1.5">
                           <button
@@ -554,8 +538,8 @@ export default function Navbar() {
                   </div>
                   <div className="min-w-0">
                     <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{currentUser.name || "पाठक"}</p>
-                    <span className={`inline-flex mt-0.5 items-center px-2 py-0.5 rounded-full text-[9px] font-sans font-semibold ${getMembershipBadge(currentUser.membership).class}`}>
-                      {getMembershipBadge(currentUser.membership).text}
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-sans">
+                      {translateRole(currentUser.role)}
                     </span>
                   </div>
                 </div>
@@ -639,12 +623,9 @@ export default function Navbar() {
 
               {/* Quick Actions */}
               <div className="px-4 pb-6 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2 shrink-0">
-                <div className="grid grid-cols-2 gap-2">
-                  <Link href="/submit-article" onClick={() => handleMobileMenuToggle(false)} className="flex items-center justify-center gap-1.5 py-3 bg-primary/10 border border-primary/20 rounded-xl text-xs font-bold text-primary">
+                <div>
+                  <Link href="/submit-article" onClick={() => handleMobileMenuToggle(false)} className="flex items-center justify-center gap-1.5 py-3 bg-primary/10 border border-primary/20 rounded-xl text-xs font-bold text-primary w-full">
                     <span>✍️</span><span>रचना भेजें</span>
-                  </Link>
-                  <Link href="/membership" onClick={() => handleMobileMenuToggle(false)} className="flex items-center justify-center gap-1.5 py-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-400">
-                    <span>👑</span><span>सदस्यता</span>
                   </Link>
                 </div>
 
@@ -689,7 +670,7 @@ export default function Navbar() {
 
               {/* Header */}
               <div className="flex items-center justify-between px-5 pb-3 border-b border-slate-100 dark:border-slate-800 shrink-0">
-                <span className="font-serif font-bold text-base text-slate-800 dark:text-white">युवाक्षर सदस्य हब</span>
+                <span className="font-serif font-bold text-base text-slate-800 dark:text-white">युवाक्षर प्रोफ़ाइल</span>
                 <button onClick={() => setProfileDropdownOpen(false)} className="p-1.5 border border-slate-200 dark:border-slate-700 rounded-lg">
                   <X className="w-4 h-4 text-slate-500" />
                 </button>
@@ -709,10 +690,9 @@ export default function Navbar() {
                 <div className="min-w-0 flex-grow">
                   <p className="font-bold text-base text-slate-800 dark:text-white truncate">{currentUser.name || "पाठक"}</p>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-sans font-semibold ${getMembershipBadge(currentUser.membership).class}`}>
-                      {getMembershipBadge(currentUser.membership).text}
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-sans font-semibold">
+                      {translateRole(currentUser.role)}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-sans">{translateRole(currentUser.role)}</span>
                   </div>
                 </div>
               </div>
@@ -725,7 +705,7 @@ export default function Navbar() {
                   { href: "/admin?tab=bookmarks", icon: Bookmark, label: "बुकमार्क" },
                   { href: "/admin?tab=certificates", icon: Award, label: "प्रमाणपत्र" },
                   { href: "/admin?tab=study-progress", icon: Activity, label: "अध्ययन प्रगति" },
-                  { href: "/membership", icon: Crown, label: "सदस्यता" },
+                  /* MEMBERSHIP ARCHIVED: { href: "/membership", icon: Crown, label: "सदस्यता" }, */
                   { href: "/admin?tab=settings", icon: Settings, label: "सेटिंग्स" },
                 ].map(({ href, icon: Icon, label }) => (
                   <Link

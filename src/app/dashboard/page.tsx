@@ -232,8 +232,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Membership Info Card */}
-      {currentUser && (
+      {/* MEMBERSHIP ARCHIVED: Membership Info Card hidden for membership system archival */}
+      {false && currentUser && (
         <div className="mb-6 p-4 rounded-2xl border border-primary/20 bg-primary/5 dark:bg-slate-900/30 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-serif">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm uppercase">
@@ -312,7 +312,8 @@ export default function DashboardPage() {
             <span>३. लेखक समीक्षा</span>
           </button>
         )}
-        <button
+        {/* MEMBERSHIP ARCHIVED: Membership tab button hidden for membership system archival */}
+        {false && (<button
           onClick={() => setActiveTab("membership")}
           className={`pb-3 px-4 transition-all border-b-2 cursor-pointer flex items-center space-x-1.5 shrink-0 ${
             activeTab === "membership"
@@ -322,7 +323,7 @@ export default function DashboardPage() {
         >
           <Crown className="w-4 h-4" />
           <span>४. सदस्यता एवं रेफ़रल</span>
-        </button>
+        </button>)}
       </div>
 
       {/* Main Grid Layout */}
@@ -416,7 +417,8 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Tier Lock for Free Members */}
-                {currentUser && currentUser.membership === "Free" ? (
+                {/* MEMBERSHIP ARCHIVED: Premium lock disabled */}
+                {false ? (
                   <div className="absolute inset-0 bg-white/80 dark:bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-10 transition-all">
                     <Lock className="w-10 h-10 text-primary mb-3 animate-bounce" />
                     <h4 className="font-serif text-sm font-bold text-slate-800 dark:text-white mb-2">

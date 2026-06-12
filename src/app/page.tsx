@@ -26,6 +26,16 @@ import LiveNewsTicker from "@/components/yuvakshar/LiveNewsTicker";
 import { stripMarkdown } from "@/lib/markdown";
 import { mockAuthorProfiles } from "@/lib/mockData";
 
+// Helper to generate author profile URL slugs safely
+const slugifyAuthor = (name: string) => {
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\u0900-\u097F-]/g, '') // keep Devanagari + alphanumeric + hyphens
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+};
+
 export default function Home() {
   const { articles, magazines, settings, incrementArticleView, layouts, comments } = useCms();
   const [activeSlide, setActiveSlide] = useState(0);
@@ -229,7 +239,7 @@ export default function Home() {
                     <div className="flex items-center space-x-3 flex-wrap">
                       <div className="hidden lg:flex items-center space-x-1">
                         <User className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>{currentSlide.author}</span>
+                        <Link href={`/authors/${slugifyAuthor(currentSlide.author)}`} className="hover:text-primary hover:underline transition-colors">{currentSlide.author}</Link>
                       </div>
                       <span className="hidden lg:inline">•</span>
                       <span>{currentSlide.date}</span>
@@ -375,10 +385,10 @@ export default function Home() {
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                   <Link 
-                    href="/membership" 
+                    href="/magazine" 
                     className="border border-slate-300 dark:border-slate-700 hover:border-primary text-slate-700 dark:text-slate-200 hover:text-primary text-xs font-bold px-4 py-2.5 rounded-xl transition-all bg-white dark:bg-slate-800"
                   >
-                    सदस्यता लें
+                    पिछले अंक देखें
                   </Link>
                 </div>
               </div>
@@ -483,7 +493,7 @@ export default function Home() {
                     </div>
 
                     <div className="flex justify-between items-center pt-3 border-t border-slate-100 dark:border-slate-800/40 mt-4 text-[9px] text-slate-400">
-                      <span className="font-medium text-slate-500 dark:text-slate-400 hidden lg:inline">{art.author}</span>
+                      <Link href={`/authors/${slugifyAuthor(art.author)}`} className="font-medium text-slate-500 dark:text-slate-400 hidden lg:inline hover:text-primary hover:underline transition-colors">{art.author}</Link>
                       <span className="font-mono">{art.date}</span>
                     </div>
                   </div>
@@ -526,7 +536,7 @@ export default function Home() {
                         )}
                       </div>
                       <div className="flex items-center space-x-2 text-[9px] text-slate-400">
-                        <span className="text-slate-500 dark:text-slate-400 hidden lg:inline">{op.author}</span>
+                        <Link href={`/authors/${slugifyAuthor(op.author)}`} className="text-slate-500 dark:text-slate-400 hidden lg:inline hover:text-primary hover:underline transition-colors">{op.author}</Link>
                         <span className="hidden lg:inline">•</span>
                         <span className="font-mono">{op.date}</span>
                       </div>
@@ -713,7 +723,7 @@ export default function Home() {
 
                   <div className="flex justify-between items-center pt-3 border-t border-slate-150 dark:border-slate-800/60 mt-4 text-[10px] text-slate-400">
                     <div className="flex items-center space-x-1">
-                      <span className="font-medium text-slate-600 dark:text-slate-350 hidden lg:inline">{art.author}</span>
+                      <Link href={`/authors/${slugifyAuthor(art.author)}`} className="font-medium text-slate-600 dark:text-slate-350 hidden lg:inline hover:text-primary hover:underline transition-colors">{art.author}</Link>
                       <span className="font-mono lg:hidden">{art.date}</span>
                     </div>
                     <div className="hidden lg:flex items-center space-x-2 font-mono">
@@ -757,7 +767,9 @@ export default function Home() {
                     }}
                   />
                 </div>
-                <h4 className="font-serif font-bold text-sm text-slate-900 dark:text-white font-hindi">{author.name}</h4>
+                <Link href={`/authors/${slugifyAuthor(author.name)}`} className="hover:text-primary transition-colors">
+                  <h4 className="font-serif font-bold text-sm text-slate-900 dark:text-white font-hindi">{author.name}</h4>
+                </Link>
                 <span className="text-[10px] text-primary font-bold uppercase tracking-wider font-mono mt-0.5">{author.role}</span>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-3 font-light leading-relaxed">
                   {author.bio}

@@ -8,6 +8,16 @@ import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import { stripMarkdown } from "@/lib/markdown";
 
+// Helper to generate author profile URL slugs safely
+const slugifyAuthor = (name: string) => {
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\u0900-\u097F-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+};
+
 export default function SearchPage() {
   const { articles, logSearchQuery } = useCms();
   const [query, setQuery] = useState("");
