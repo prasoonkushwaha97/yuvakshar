@@ -237,7 +237,7 @@ export default function DashboardPage() {
         <div className="mb-6 p-4 rounded-2xl border border-primary/20 bg-primary/5 dark:bg-slate-900/30 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-serif">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm uppercase">
-              {currentUser.membership?.[0] || "F"}
+              {currentUser?.membership?.[0] || "F"}
             </div>
             <div>
               <p className="font-bold text-slate-800 dark:text-white leading-none">
@@ -250,7 +250,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center space-x-2">
-            {currentUser.membership === "Free" && (
+            {currentUser?.membership || "Free"}
               <button
                 onClick={() => updateUserMembership(currentUser.id, "Premium")}
                 className="px-4 py-2 bg-primary hover:bg-primary/95 text-white rounded-xl font-bold font-sans text-[10px] shadow-md transition-all cursor-pointer"
