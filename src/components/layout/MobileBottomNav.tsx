@@ -18,31 +18,46 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
   const { currentUser } = useCms();
   const [visible, setVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const visibleRef = React.useRef(true);
+  const lastScrollYRef = React.useRef(0);
 
   // Hide on admin pages
   if (pathname?.startsWith("/admin")) return null;
 
-  // Listen to window scroll to show/hide navigation
+  // Listen to window scroll to show/hide navigation (high-performance once-bound passive listener)
   useEffect(() => {
     let ticking = false;
+    lastScrollYRef.current = window.scrollY;
 
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
-          
-          // Determine scroll direction
+          const lastScrollY = lastScrollYRef.current;
+          const isVisible = visibleRef.current;
+
+          // Prevent iOS rubber-band bounce triggers
+          if (currentScrollY < 0) {
+            ticking = false;
+            return;
+          }
+
+          // Scroll Down -> Hide, Scroll Up -> Show
           if (currentScrollY > lastScrollY && currentScrollY > 80) {
-            // Scrolling down -> hide
-            if (visible) setVisible(false);
-          } else {
-            // Scrolling up -> show
-            if (!visible) setVisible(true);
+            if (isVisible) {
+              setVisible(false);
+              visibleRef.current = false;
+            }
+          } else if (currentScrollY < lastScrollY) {
+            if (!isVisible) {
+              setVisible(true);
+              visibleRef.current = true;
+            }
           }
           
-          setLastScrollY(currentScrollY);
+          lastScrollYRef.current = currentScrollY;
           ticking = false;
         });
         ticking = true;
@@ -53,7 +68,14 @@ export default function MobileBottomNav() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [lastScrollY, visible]);
+  }, []); // Bound only once!
+
+  // Reset navigation visibility to visible on page/route changes
+  useEffect(() => {
+    setVisible(true);
+    visibleRef.current = true;
+    lastScrollYRef.current = typeof window !== "undefined" ? window.scrollY : 0;
+  }, [pathname]);
 
   // Listen to mobile menu toggle event from Navbar to coordinate mutual exclusivity
   useEffect(() => {
@@ -73,7 +95,7 @@ export default function MobileBottomNav() {
   return (
     <nav 
       style={{ transform: isNavVisible ? "translateY(0)" : "translateY(100%)" }}
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-area-pb transition-transform duration-300 ease-in-out will-change-transform"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-[30] bg-background border-t border-border safe-area-pb transition-transform duration-300 ease-in-out will-change-transform"
     >
       <div className="flex items-stretch justify-around h-16">
         {navItems.map(({ href, icon: Icon, label, exact }) => {

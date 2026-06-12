@@ -85,6 +85,16 @@ export default function Navbar() {
   const { settings, logoutUser, currentUser, magazines, articles, openAuthModal } = useCms();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const handleMobileMenuToggle = (open: boolean) => {
+    setMobileMenuOpen(open);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("yuvakshar:mobileMenuToggle", { detail: { open } })
+      );
+    }
+  };
+
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [showSearch, setShowSearch] = useState(false);
   const [searchVal, setSearchVal] = useState("");
@@ -150,13 +160,13 @@ export default function Navbar() {
         {/* Left: Hamburger + Logo */}
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setMobileMenuOpen(true)}
+            onClick={() => handleMobileMenuToggle(true)}
             className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             aria-label="Menu"
           >
             <Menu className="w-5 h-5" />
           </button>
-          <Link href="/" className="flex items-center" onClick={() => setMobileMenuOpen(false)}>
+          <Link href="/" className="flex items-center" onClick={() => handleMobileMenuToggle(false)}>
             <img
               src={settings.appearance.logo_url || "/yuvakshar_logo_official.png"}
               alt="युवाक्षर"
@@ -499,8 +509,8 @@ export default function Navbar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setMobileMenuOpen(false)}
-              className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+              onClick={() => handleMobileMenuToggle(false)}
+              className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[49]"
             />
 
             {/* Drawer Panel */}
@@ -509,11 +519,11 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 260 }}
-              className="lg:hidden fixed inset-y-0 left-0 w-[82%] max-w-[320px] z-50 bg-white dark:bg-[#0A0F1D] flex flex-col shadow-2xl border-r border-slate-200 dark:border-slate-800 overflow-y-auto"
+              className="lg:hidden fixed inset-y-0 left-0 w-[82%] max-w-[320px] z-[50] bg-white dark:bg-[#0A0F1D] flex flex-col shadow-2xl border-r border-slate-200 dark:border-slate-800 overflow-y-auto"
             >
               {/* Drawer Header */}
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
-                <Link href="/" onClick={() => setMobileMenuOpen(false)}>
+                <Link href="/" onClick={() => handleMobileMenuToggle(false)}>
                   <img
                     src={settings.appearance.logo_url || "/yuvakshar_logo_official.png"}
                     alt="युवाक्षर"
@@ -522,7 +532,7 @@ export default function Navbar() {
                   />
                 </Link>
                 <button
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => handleMobileMenuToggle(false)}
                   className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300"
                 >
                   <X className="w-4 h-4" />
@@ -600,7 +610,7 @@ export default function Navbar() {
                                   { href: "/category/literature/memoir", label: "संस्मरण" },
                                   { href: "/category/literature/review", label: "पुस्तक समीक्षा" },
                                 ].map(sub => (
-                                  <Link key={sub.href} href={sub.href} onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-primary rounded-lg">
+                                  <Link key={sub.href} href={sub.href} onClick={() => handleMobileMenuToggle(false)} className="block px-3 py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-primary rounded-lg">
                                     {sub.label}
                                   </Link>
                                 ))}
@@ -611,7 +621,7 @@ export default function Navbar() {
                       ) : (
                         <Link
                           href={link.href}
-                          onClick={() => setMobileMenuOpen(false)}
+                          onClick={() => handleMobileMenuToggle(false)}
                           className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-serif transition-colors ${
                             isActive ? "bg-primary/10 text-primary font-bold" : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                           }`}
@@ -629,17 +639,17 @@ export default function Navbar() {
               {/* Quick Actions */}
               <div className="px-4 pb-6 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2 shrink-0">
                 <div className="grid grid-cols-2 gap-2">
-                  <Link href="/submit-article" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-1.5 py-3 bg-primary/10 border border-primary/20 rounded-xl text-xs font-bold text-primary">
+                  <Link href="/submit-article" onClick={() => handleMobileMenuToggle(false)} className="flex items-center justify-center gap-1.5 py-3 bg-primary/10 border border-primary/20 rounded-xl text-xs font-bold text-primary">
                     <span>✍️</span><span>रचना भेजें</span>
                   </Link>
-                  <Link href="/membership" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-1.5 py-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-400">
+                  <Link href="/membership" onClick={() => handleMobileMenuToggle(false)} className="flex items-center justify-center gap-1.5 py-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-400">
                     <span>👑</span><span>सदस्यता</span>
                   </Link>
                 </div>
 
                 {currentUser && (
                   <button
-                    onClick={() => { logoutUser(); setMobileMenuOpen(false); }}
+                    onClick={() => { logoutUser(); handleMobileMenuToggle(false); }}
                     className="w-full flex items-center justify-center gap-2 py-3 border border-red-200/50 dark:border-red-900/30 bg-red-50/50 dark:bg-red-950/10 rounded-xl text-sm text-red-500 dark:text-red-400 font-bold transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
@@ -658,7 +668,7 @@ export default function Navbar() {
       ═══════════════════════════════════════════════════ */}
       <AnimatePresence>
         {profileDropdownOpen && currentUser && (
-          <div className="lg:hidden fixed inset-0 z-50 flex items-end">
+          <div className="lg:hidden fixed inset-0 z-[99] flex items-end">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
@@ -671,7 +681,7 @@ export default function Navbar() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 260 }}
-              className="relative w-full max-h-[88vh] bg-white dark:bg-[#0F172A] rounded-t-3xl shadow-2xl z-50 overflow-y-auto flex flex-col border-t border-slate-200 dark:border-slate-800"
+              className="relative w-full max-h-[88vh] bg-white dark:bg-[#0F172A] rounded-t-3xl shadow-2xl z-[100] overflow-y-auto flex flex-col border-t border-slate-200 dark:border-slate-800"
             >
               {/* Handle */}
               <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-3 mb-4 shrink-0" />
