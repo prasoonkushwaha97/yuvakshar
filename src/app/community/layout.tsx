@@ -124,12 +124,12 @@ export default function CommunityLayout({
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-center border-t border-slate-100 dark:border-slate-800/60 pt-3">
                   <div>
-                    <span className="block text-xs font-black text-primary">{currentUser.community_reputation || 0}</span>
+                    <span className="block text-xs font-black text-primary">0</span>
                     <span className="text-[9px] text-slate-400 font-serif">प्रतिष्ठा अंक</span>
                   </div>
                   <div>
                     <span className="block text-xs font-black text-slate-700 dark:text-slate-300 font-mono">
-                      {currentUser.reputation_tier || "Bronze"}
+                      Bronze
                     </span>
                     <span className="text-[9px] text-slate-400 font-serif">रैंक टियर</span>
                   </div>

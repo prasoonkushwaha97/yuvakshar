@@ -209,8 +209,7 @@ export default function AuthorPortfolioPage() {
                 </div>
                 <p className="text-slate-650 dark:text-slate-350 leading-relaxed font-hindi">{p.content}</p>
                 <div className="flex items-center space-x-4 pt-1">
-                  <button onClick={() => handleLike(p.id)} className="flex items-center space-x-1 text-slate-400 hover:text-red-500 font-mono text-[10px] cursor-pointer">
-                    <Heart className="w-3.5 h-3.5" />
+                 <button className="flex items-center space-x-1 text-slate-400 font-mono text-[10px]">
                     <span>{p.likesCount}</span>
                   </button>
                 </div>
