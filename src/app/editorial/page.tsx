@@ -31,6 +31,7 @@ import { useCms, Article, Comment } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import { parseMarkdownToHtmlBlocks, stripMarkdown } from "@/lib/markdown";
 import ArticleQuiz from "@/components/yuvakshar/ArticleQuiz";
+import { generateAuthorSlug } from "@/lib/authorService";
 import AiAssistantSidebar from "@/components/yuvakshar/AiAssistantSidebar";
 import PaywallGate from "@/components/yuvakshar/PaywallGate";
 import { motion, AnimatePresence } from "framer-motion";
@@ -717,8 +718,37 @@ function EditorialPageContent() {
 
   const adBeforeRelated = ads.find(a => a.zone === "before_related" && a.active);
 
+  // Schema.org NewsArticle JSON-LD Payload
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": stripMarkdown(article.title),
+    "description": stripMarkdown(article.summary),
+    "image": [article.coverImage].filter(Boolean),
+    "datePublished": new Date(article.date || Date.now()).toISOString(),
+    "dateModified": new Date(article.date || Date.now()).toISOString(),
+    "author": [{
+      "@type": "Person",
+      "name": article.author,
+      "url": `https://yuvakshar.org/authors/${generateAuthorSlug(article.author)}`
+    }],
+    "publisher": {
+      "@type": "Organization",
+      "name": "युवाक्षर",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://yuvakshar.org/icon.png"
+      }
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-[#FAF8F3] dark:bg-[#0A0F1D] text-[#1E1E1E] dark:text-slate-200 pb-20">
+      {/* Schema.org NewsArticle Injection */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       
       {/* 1. TOP READING PROGRESS BAR */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-slate-200 dark:bg-slate-850 z-50">

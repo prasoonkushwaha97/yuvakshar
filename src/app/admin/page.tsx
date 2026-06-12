@@ -766,16 +766,16 @@ export default function AdminDashboard() {
   // Launch Readiness Checklist score calculator (10 check points)
   const getReadinessChecks = () => {
     const checks = [
-      { name: "डेटाबेस कनेक्शन", status: cms.supabaseConfigured, priority: "Critical" },
-      { name: "स्टोरेज बकेट एक्टिवेशन", status: cms.supabaseConfigured, priority: "High" },
-      { name: "सत्र प्रमाणीकरण सक्रिय", status: cms.supabaseConfigured, priority: "High" },
-      { name: "RLS नीतियां लागू", status: cms.supabaseConfigured, priority: "Critical" },
-      { name: "न्यूज़लेटर गेटवे कनेक्टेड", status: false, priority: "Medium" }, // Mock resend key
+      { name: "डेटाबेस कनेक्शन", status: cms.readinessStatuses?.dbConnected || false, priority: "Critical" },
+      { name: "स्टोरेज बकेट एक्टिवेशन", status: cms.readinessStatuses?.storageConnected || false, priority: "High" },
+      { name: "सत्र प्रमाणीकरण सक्रिय", status: cms.readinessStatuses?.authActive || false, priority: "High" },
+      { name: "RLS नीतियां लागू", status: cms.readinessStatuses?.rlsPoliciesActive || false, priority: "Critical" },
+      { name: "न्यूज़लेटर गेटवे कनेक्टेड", status: cms.readinessStatuses?.newsletterActive || false, priority: "Medium" },
       { name: "सर्च इंडेक्स रेडी", status: true, priority: "Medium" },
-      { name: "साइटमैप जनरेटेड", status: true, priority: "Low" },
-      { name: "SEO एवं स्कीमा वैलिडेशन", status: true, priority: "Medium" },
-      { name: "PWA इंस्टॉल प्रॉम्प्ट सक्रिय", status: true, priority: "Medium" },
-      { name: "आपदा बैकअप मॉड्यूल रेडी", status: true, priority: "High" }
+      { name: "साइटमैप जनरेटेड", status: cms.readinessStatuses?.sitemapGenerated || false, priority: "Low" },
+      { name: "SEO एवं स्कीमा वैलिडेशन", status: cms.readinessStatuses?.seoActive || false, priority: "Medium" },
+      { name: "PWA इंस्टॉल प्रॉम्प्ट सक्रिय", status: cms.readinessStatuses?.pwaActive || false, priority: "Medium" },
+      { name: "आपदा बैकअप मॉड्यूल रेडी", status: cms.readinessStatuses?.backupSystemActive || false, priority: "High" }
     ];
 
     const score = Math.round((checks.filter(c => c.status).length / checks.length) * 100);

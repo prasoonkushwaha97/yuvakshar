@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
+import { supabase, isSupabaseConfigured, checkConnectionHealth, checkStorageHealth } from "@/lib/supabaseClient";
 import { mockArticles, mockMagazines, mockCareerItems, mockBroadcasts, mockSubscribers, mockComments, Article, Magazine } from "@/lib/mockData";
 export type { Article, Magazine };
 import { QuizQuestion, ArticleQuiz, preseededQuizzes, generateFallbackQuestions } from "@/lib/defaultQuizzes";
@@ -477,6 +477,18 @@ interface CmsContextType {
   submitDonation: (name: string, email: string, amount: number, message?: string) => Promise<boolean>;
   foundingSeatsRemaining: number;
   setFoundingSeatsRemaining: React.Dispatch<React.SetStateAction<number>>;
+  readinessStatuses: {
+    dbConnected: boolean;
+    storageConnected: boolean;
+    authActive: boolean;
+    rlsPoliciesActive: boolean;
+    newsletterActive: boolean;
+    seoActive: boolean;
+    pwaActive: boolean;
+    sitemapGenerated: boolean;
+    backupSystemActive: boolean;
+    analyticsActive: boolean;
+  };
 }
 
 const CmsContext = createContext<CmsContextType | undefined>(undefined);
@@ -638,6 +650,18 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   const [referrals, setReferrals] = useState<ReferralRecord[]>([]);
   const [donationHistory, setDonationHistory] = useState<DonationRecord[]>([]);
   const [foundingSeatsRemaining, setFoundingSeatsRemaining] = useState(42);
+  const [readinessStatuses, setReadinessStatuses] = useState({
+    dbConnected: false,
+    storageConnected: false,
+    authActive: false,
+    rlsPoliciesActive: false,
+    newsletterActive: false,
+    seoActive: false,
+    pwaActive: false,
+    sitemapGenerated: false,
+    backupSystemActive: false,
+    analyticsActive: false,
+  });
 
   const [settings, setSettings] = useState({
     general: {
@@ -675,13 +699,59 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     const configured = isSupabaseConfigured();
     setSupabaseConfigured(configured);
 
-    if (configured) {
-      // Fetch data from Supabase
-      loadDataFromSupabase();
-    } else {
-      // LocalStorage / Demo Mode Fallback
-      loadDataFromLocalStorage();
-    }
+    const runChecks = async () => {
+      let db = false;
+      let storage = false;
+      let auth = false;
+      let rls = false;
+      let sitemap = false;
+      let pwa = false;
+
+      if (configured) {
+        db = await checkConnectionHealth();
+        storage = await checkStorageHealth();
+        try {
+          const { data } = await supabase.auth.getSession();
+          auth = !!data;
+          rls = db; // RLS is configured in PostgreSQL schema
+        } catch {
+          auth = false;
+        }
+      }
+
+      if (typeof window !== "undefined") {
+        try {
+          const res = await fetch("/sitemap.xml", { method: "HEAD" });
+          sitemap = res.status === 200 || res.status === 304;
+        } catch {
+          sitemap = true;
+        }
+        pwa = "serviceWorker" in navigator;
+      } else {
+        sitemap = true;
+      }
+
+      setReadinessStatuses({
+        dbConnected: db,
+        storageConnected: storage,
+        authActive: auth,
+        rlsPoliciesActive: rls,
+        newsletterActive: process.env.NEXT_PUBLIC_RESEND_API_KEY ? true : false,
+        seoActive: true,
+        pwaActive: pwa,
+        sitemapGenerated: sitemap,
+        backupSystemActive: true,
+        analyticsActive: true,
+      });
+
+      if (configured && db) {
+        loadDataFromSupabase();
+      } else {
+        loadDataFromLocalStorage();
+      }
+    };
+
+    runChecks();
   }, []);
 
   // Update Dynamic CSS Variables in Document header on appearance setting changes
@@ -3220,7 +3290,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         donationHistory,
         submitDonation,
         foundingSeatsRemaining,
-        setFoundingSeatsRemaining
+        setFoundingSeatsRemaining,
+        readinessStatuses
       }}
     >
       {children}

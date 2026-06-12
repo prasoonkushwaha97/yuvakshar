@@ -39,6 +39,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-white text-[#0F172A] dark:bg-[#0A0F1D] dark:text-slate-200 font-sans antialiased pb-16 lg:pb-0">
         <CmsProvider>
           <LanguageProvider>
+            {/* Global Beta Banner */}
+            <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[10px] md:text-xs font-serif py-1.5 px-4 text-center select-none shadow-sm relative z-[60] tracking-wide">
+              युवाक्षर बीटा संस्करण (Yuvakshar Beta Version) — कुछ सुविधाएँ अभी विकास के अधीन हैं।
+            </div>
+
             {/* Navigation bar */}
             <Navbar />
             

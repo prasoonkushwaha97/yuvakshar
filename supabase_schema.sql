@@ -34,6 +34,29 @@ create table public.profiles (
     social_links jsonb default '{}'::jsonb,
     badges text[] default '{}'::text[], -- e.g., 'Verified Author', 'Featured Author', 'Guest Author', 'Editor''s Pick'
     views_count integer default 0,
+    
+    -- Author Ecosystem 2.0 extensions
+    slug text unique,
+    cover_banner text,
+    designation text,
+    current_role text,
+    verification_badge text check (verification_badge in ('Verified Author', 'Verified Researcher', 'Editorial Team', 'Editor', 'Managing Editor', 'Editor-in-Chief', 'Founder')),
+    institution text,
+    expertise_tags text[] default '{}'::text[],
+    orcid_id text,
+    google_scholar_url text,
+    academic_credentials text[] default '{}'::text[],
+    professional_memberships text[] default '{}'::text[],
+    education text,
+    academic_background text,
+    research_interests text,
+    professional_experience text,
+    social_contributions text,
+    publications_list text,
+    reputation_score integer default 0,
+    reputation_tier text default 'Bronze' check (reputation_tier in ('Bronze', 'Silver', 'Gold', 'Platinum')),
+    public_visibility boolean default true,
+    
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -423,3 +446,115 @@ create index idx_comments_article_id on public.comments(article_id);
 create index idx_comments_parent_id on public.comments(parent_id);
 create index idx_categories_slug on public.categories(slug);
 create index idx_tags_slug on public.tags(slug);
+
+-- 21. AUTHOR ECOSYSTEM 2.0 RELATIONAL TABLES
+create table public.profile_timeline (
+    id uuid default gen_random_uuid() primary key,
+    user_id uuid references public.profiles(id) on delete cascade not null,
+    title text not null,
+    description text,
+    date text not null,
+    type text default 'milestone',
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create table public.profile_portfolio (
+    id uuid default gen_random_uuid() primary key,
+    user_id uuid references public.profiles(id) on delete cascade not null,
+    name text not null,
+    url text not null,
+    type text check (type in ('book', 'research_paper', 'report', 'white_paper', 'resume', 'other')) not null,
+    is_public boolean default true,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create table public.profile_achievements (
+    id uuid default gen_random_uuid() primary key,
+    user_id uuid references public.profiles(id) on delete cascade not null,
+    title text not null,
+    description text,
+    year text,
+    image_url text,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create table public.profile_followers (
+    author_id uuid references public.profiles(id) on delete cascade,
+    follower_id uuid references public.profiles(id) on delete cascade,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    primary key (author_id, follower_id)
+);
+
+-- Enable Row Level Security (RLS)
+alter table public.profile_timeline enable row level security;
+alter table public.profile_portfolio enable row level security;
+alter table public.profile_achievements enable row level security;
+alter table public.profile_followers enable row level security;
+
+-- Timeline Policies
+create policy "Timeline viewable by everyone" on public.profile_timeline
+    for select using (true);
+create policy "Timeline manageable by profile owner" on public.profile_timeline
+    for all using (user_id = auth.uid() or (select role from public.profiles where id = auth.uid()) = 'Super Admin');
+
+-- Portfolio Policies
+create policy "Portfolio viewable by everyone if public" on public.profile_portfolio
+    for select using (is_public = true or user_id = auth.uid() or (select role from public.profiles where id = auth.uid()) = 'Super Admin');
+create policy "Portfolio manageable by profile owner" on public.profile_portfolio
+    for all using (user_id = auth.uid() or (select role from public.profiles where id = auth.uid()) = 'Super Admin');
+
+-- Achievements Policies
+create policy "Achievements viewable by everyone" on public.profile_achievements
+    for select using (true);
+create policy "Achievements manageable by profile owner" on public.profile_achievements
+    for all using (user_id = auth.uid() or (select role from public.profiles where id = auth.uid()) = 'Super Admin');
+
+-- Followers Policies
+create policy "Followers viewable by everyone" on public.profile_followers
+    for select using (true);
+create policy "Followers manageable by everyone" on public.profile_followers
+    for all using (true);
+
+-- Indices for performance
+create index idx_profile_timeline_user_id on public.profile_timeline(user_id);
+create index idx_profile_portfolio_user_id on public.profile_portfolio(user_id);
+create index idx_profile_achievements_user_id on public.profile_achievements(user_id);
+create index idx_profiles_slug on public.profiles(slug);
+
+-- 22. DATABASE AUDIT LOGGING SYSTEM (Phase 5)
+create or replace function public.log_profile_changes()
+returns trigger as $$
+begin
+  if (old.role is distinct from new.role) then
+    insert into public.activity_logs (user_id, action, details)
+    values (
+      auth.uid(),
+      'Role Changed',
+      json_build_object(
+        'target_user_id', new.id,
+        'old_role', old.role,
+        'new_role', new.role
+      )::jsonb
+    );
+  end if;
+  
+  if (old.verification_badge is distinct from new.verification_badge) then
+    insert into public.activity_logs (user_id, action, details)
+    values (
+      auth.uid(),
+      'Verification Updated',
+      json_build_object(
+        'target_user_id', new.id,
+        'old_badge', old.verification_badge,
+        'new_badge', new.verification_badge
+      )::jsonb
+    );
+  end if;
+  
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_profile_changed
+  after update on public.profiles
+  for each row execute procedure public.log_profile_changes();
