@@ -1,28 +1,80 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Newspaper, BookOpen, Video, User } from "lucide-react";
+import { Home, Newspaper, BookOpen, Users, User } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 
 const navItems = [
   { href: "/", icon: Home, label: "होम", exact: true },
   { href: "/categories", icon: Newspaper, label: "समाचार", exact: false },
   { href: "/magazine", icon: BookOpen, label: "पत्रिका", exact: false },
-  { href: "/category/video", icon: Video, label: "वीडियो", exact: false },
+  { href: "/category/community", icon: Users, label: "कम्युनिटी", exact: false },
   { href: "/admin", icon: User, label: "प्रोफ़ाइल", exact: false },
 ];
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
   const { currentUser } = useCms();
+  const [visible, setVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Hide on admin pages
   if (pathname?.startsWith("/admin")) return null;
 
+  // Listen to window scroll to show/hide navigation
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          
+          // Determine scroll direction
+          if (currentScrollY > lastScrollY && currentScrollY > 80) {
+            // Scrolling down -> hide
+            if (visible) setVisible(false);
+          } else {
+            // Scrolling up -> show
+            if (!visible) setVisible(true);
+          }
+          
+          setLastScrollY(currentScrollY);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [lastScrollY, visible]);
+
+  // Listen to mobile menu toggle event from Navbar to coordinate mutual exclusivity
+  useEffect(() => {
+    const handleToggle = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setSidebarOpen(!!customEvent.detail?.open);
+    };
+
+    window.addEventListener("yuvakshar:mobileMenuToggle", handleToggle);
+    return () => {
+      window.removeEventListener("yuvakshar:mobileMenuToggle", handleToggle);
+    };
+  }, []);
+
+  const isNavVisible = visible && !sidebarOpen;
+
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-slate-800 safe-area-pb">
+    <nav 
+      style={{ transform: isNavVisible ? "translateY(0)" : "translateY(100%)" }}
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-area-pb transition-transform duration-300 ease-in-out will-change-transform"
+    >
       <div className="flex items-stretch justify-around h-16">
         {navItems.map(({ href, icon: Icon, label, exact }) => {
           const isActive = exact ? pathname === href : pathname?.startsWith(href) && href !== "/";
@@ -70,7 +122,7 @@ export default function MobileBottomNav() {
 
               {/* Profile indicator dot when logged in */}
               {href === "/admin" && currentUser && (
-                <span className="absolute top-2.5 right-[calc(50%-14px)] w-2 h-2 bg-green-500 rounded-full border-2 border-white dark:border-[#0F172A]" />
+                <span className="absolute top-2.5 right-[calc(50%-14px)] w-2 h-2 bg-green-500 rounded-full border-2 border-white dark:border-background" />
               )}
             </Link>
           );
