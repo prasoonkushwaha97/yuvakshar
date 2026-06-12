@@ -34,10 +34,27 @@ import {
   User,
   Cpu,
   Crown,
-  Gem
+  Gem,
+  Video as VideoIcon,
+  Play,
+  Pause,
+  Flame,
+  Bookmark,
+  BookMarked,
+  Camera,
+  Laptop,
+  Smartphone,
+  Tablet,
+  LogOut,
+  Sliders,
+  CheckCircle,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
-import { useCms, Article, Magazine, Profile, Comment, Submission, EditorialAssignment, Ad } from "@/store/CmsContext";
+import { useCms } from "@/store/CmsContext";
+import type { Article, Magazine, Profile, Comment, Submission, EditorialAssignment, Ad, Video, QuizCertificate } from "@/store/types";
+
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
 
@@ -120,7 +137,11 @@ export default function AdminDashboard() {
     assignMembershipManually,
     createCoupon,
     deleteCoupon,
-    getMembershipAnalytics
+    getMembershipAnalytics,
+    videos,
+    saveVideo,
+    deleteVideo,
+    setFeaturedVideo
   } = cms;
 
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -211,7 +232,60 @@ export default function AdminDashboard() {
   const [bioInput, setBioInput] = useState("");
   const [interestsInput, setInterestsInput] = useState<string[]>([]);
 
-  // Sync state if already logged in
+  // Redesigned profile states
+  const [dobInput, setDobInput] = useState("");
+  const [genderInput, setGenderInput] = useState("");
+  const [locationInput, setLocationInput] = useState("");
+  const [socialLinksInput, setSocialLinksInput] = useState({
+    twitter: "",
+    facebook: "",
+    youtube: "",
+    linkedin: "",
+    website: ""
+  });
+  const [verificationRequested, setVerificationRequested] = useState(false);
+  const [sessions, setSessions] = useState([
+    { id: "s1", device: "Windows 11 - Chrome (Current)", ip: "192.168.1.100", active: true },
+    { id: "s2", device: "Android 14 - OnePlus 11", ip: "192.168.1.102", active: false },
+    { id: "s3", device: "iPadOS 17 - Safari", ip: "192.168.1.105", active: false }
+  ]);
+
+  // Photo Crop/Camera States
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropOffset, setCropOffset] = useState({ x: 0, y: 0 });
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // Accessibility States (Immediate Auto-Save)
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [highContrast, setHighContrast] = useState(false);
+  const [fontSizeScale, setFontSizeScale] = useState<"sm" | "base" | "lg" | "xl">("base");
+  const [accessibleFont, setAccessibleFont] = useState(false);
+
+  // Timer settings
+  const [adminTimerSound, setAdminTimerSound] = useState(true);
+  const [adminTimerEnabled, setAdminTimerEnabled] = useState(true);
+  const [adminTimerStats, setAdminTimerStats] = useState(true);
+
+  // Video Management States
+  const [vidTitle, setVidTitle] = useState("");
+  const [vidDesc, setVidDesc] = useState("");
+  const [vidUrl, setVidUrl] = useState("");
+  const [vidCategory, setVidCategory] = useState<Video["category"]>("समाचार");
+  const [vidIsShorts, setVidIsShorts] = useState(false);
+  const [vidIsFeatured, setVidIsFeatured] = useState(false);
+  const [vidStatus, setVidStatus] = useState<Video["status"]>("Published");
+  const [vidDuration, setVidDuration] = useState("");
+  const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
+  const [showVideoForm, setShowVideoForm] = useState(false);
+  const [videoSearchQuery, setVideoSearchQuery] = useState("");
+  const [deleteVideoConfirmId, setDeleteVideoConfirmId] = useState<string | null>(null);
+  const [selectedCert, setSelectedCert] = useState<QuizCertificate | null>(null);
+
+  // Sync state if already logged in and initialize accessibility
   useEffect(() => {
     if (currentUser) {
       setIsLoggedIn(true);
@@ -221,7 +295,19 @@ export default function AdminDashboard() {
       setEmailInputState(currentUser.email || "");
       setBioInput(currentUser.bio || "");
       setInterestsInput(currentUser.interests || []);
-      
+      setDobInput(currentUser.dob || "");
+      setGenderInput(currentUser.gender || "");
+      setLocationInput(currentUser.location || "");
+      const sl = currentUser.social_links || {};
+      setSocialLinksInput({ twitter: sl.twitter || "", facebook: sl.facebook || "", youtube: sl.youtube || "", linkedin: sl.linkedin || "", website: sl.website || "" });
+
+
+      // Check verification state
+      const verifiedSaved = localStorage.getItem(`yuvakshar_verification_${currentUser.id}`);
+      if (verifiedSaved) {
+        setVerificationRequested(true);
+      }
+
       // Parse query params to set active tab
       if (typeof window !== "undefined") {
         const params = new URLSearchParams(window.location.search);
@@ -237,7 +323,44 @@ export default function AdminDashboard() {
         }
       }
     }
+
+    // Initialize accessibility settings from localStorage
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("yuvakshar_theme") as "light" | "dark" || "light";
+      setTheme(savedTheme);
+
+      const savedContrast = localStorage.getItem("yuvakshar_high_contrast") === "true";
+      setHighContrast(savedContrast);
+      if (savedContrast) document.documentElement.classList.add("high-contrast");
+
+      const savedScale = localStorage.getItem("yuvakshar_font_scale") as "sm" | "base" | "lg" | "xl" || "base";
+      setFontSizeScale(savedScale);
+      document.documentElement.setAttribute("data-font-scale", savedScale);
+
+      const savedFont = localStorage.getItem("yuvakshar_accessible_font") === "true";
+      setAccessibleFont(savedFont);
+      if (savedFont) document.documentElement.classList.add("accessible-font");
+
+      // Sync timer sounds
+      const savedTimer = localStorage.getItem("yuvakshar_timer_settings");
+      if (savedTimer) {
+        const parsed = JSON.parse(savedTimer);
+        if (parsed.sound !== undefined) setAdminTimerSound(parsed.sound);
+        if (parsed.enabled !== undefined) setAdminTimerEnabled(parsed.enabled);
+        if (parsed.statistics !== undefined) setAdminTimerStats(parsed.statistics);
+      }
+    }
   }, [currentUser]);
+
+  // Adjust active tab for general readers to profile if they are on dashboard by default
+  useEffect(() => {
+    if (currentUser) {
+      const isAdmin = cms.canAccessAdmin(currentUser);
+      if (!isAdmin && activeTab === "dashboard") {
+        setActiveTab("profile");
+      }
+    }
+  }, [currentUser, activeTab]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -250,7 +373,11 @@ export default function AdminDashboard() {
       avatar_url: avatarUrlInput,
       mobile: mobileInput,
       bio: bioInput,
-      interests: interestsInput
+      interests: interestsInput,
+      dob: dobInput,
+      gender: genderInput,
+      location: locationInput,
+      social_links: socialLinksInput
     });
     alert("प्रोफ़ाइल सफलतापूर्वक अपडेट की गई!");
   };
@@ -274,11 +401,6 @@ export default function AdminDashboard() {
   const [qType, setQType] = useState<"MCQ" | "Fact Recall" | "Comprehension" | "Analysis" | "Application">("MCQ");
 
   const [isGeneratingMonthlyReport, setIsGeneratingMonthlyReport] = useState(false);
-
-  // Admin Timer Settings States
-  const [adminTimerEnabled, setAdminTimerEnabled] = useState(true);
-  const [adminTimerSound, setAdminTimerSound] = useState(true);
-  const [adminTimerStats, setAdminTimerStats] = useState(true);
 
   // Load timer settings on mount
   useEffect(() => {
@@ -763,11 +885,80 @@ export default function AdminDashboard() {
       </header>
 
       {/* 2. MAIN LAYOUT CONTAINER */}
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-8 mt-4 lg:mt-0">
         
-        {/* SIDEBAR TABS SELECTOR (exactly 240px wide on desktop) */}
-        <aside className="w-full lg:w-[240px] shrink-0 space-y-4">
-          <div className="bg-slate-50 dark:bg-[#0F172A]/40 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 space-y-4">
+        {/* SIDEBAR TABS SELECTOR — Desktop sidebar + Mobile horizontal scroll tabs */}
+        <aside className="w-full lg:w-[240px] shrink-0">
+
+          {/* ─── MOBILE: Horizontal Scrollable Tabs (hidden on lg+) ─── */}
+          <div className="lg:hidden sticky top-[60px] z-30 bg-white dark:bg-[#0A0F1D] border-b border-slate-200 dark:border-slate-800 -mx-4 px-4 shadow-sm">
+            {/* User mini bar */}
+            <div className="flex items-center gap-2.5 py-2.5 border-b border-slate-100 dark:border-slate-800/60">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#FF5A1F] to-amber-400 p-[1.5px] flex items-center justify-center shrink-0">
+                <div className="w-full h-full rounded-full bg-white dark:bg-[#0A0F1D] flex items-center justify-center text-[10px] font-bold text-primary uppercase">
+                  {currentUser?.name ? currentUser.name[0] : "U"}
+                </div>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold font-serif text-slate-800 dark:text-white truncate">{currentUser?.name}</p>
+                <span className="text-[9px] text-slate-400 uppercase tracking-widest">{currentUser?.role || "सदस्य"}</span>
+              </div>
+              <button
+                onClick={logoutUser}
+                className="ml-auto shrink-0 text-[10px] font-bold text-red-400 border border-red-200/50 rounded-lg px-2 py-1 cursor-pointer"
+              >
+                लॉगआउट
+              </button>
+            </div>
+            {/* Scrollable Tab Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-2.5 pr-2">
+              {(() => {
+                const allTabs = [
+                  { id: "dashboard", label: "डैशबोर्ड", icon: BarChart3, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
+                  { id: "profile", label: "प्रोफ़ाइल", icon: User, visible: true },
+                  { id: "study-progress", label: "अध्ययन", icon: Brain, visible: true },
+                  { id: "library", label: "लाइब्रेरी", icon: BookMarked, visible: true },
+                  { id: "bookmarks", label: "बुकमार्क", icon: Bookmark, visible: true },
+                  { id: "certificates", label: "प्रमाणपत्र", icon: Award, visible: true },
+                  { id: "video-management", label: "वीडियो", icon: VideoIcon, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Sub Editor"].includes(currentUser.role || "") },
+                  { id: "magazines", label: "पत्रिका", icon: BookOpen, visible: ["Owner", "Admin", "Editor-in-Chief"].includes(currentUser.role || "") },
+                  { id: "articles", label: "लेख", icon: FileEdit, visible: cms.canManageArticles(currentUser) },
+                  { id: "assignments", label: "कार्य", icon: Calendar, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor"].includes(currentUser.role || "") },
+                  { id: "comments", label: "टिप्पणी", icon: MessageSquare, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
+                  { id: "quiz-management", label: "क्विज़", icon: Trophy, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
+                  { id: "ai-ecosystem", label: "एआई", icon: Sparkles, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
+                  { id: "users", label: "उपयोगकर्ता", icon: Users, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
+                  { id: "newsletter", label: "न्यूज़लेटर", icon: Mail, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
+                  { id: "memberships", label: "सदस्यता", icon: Crown, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
+                  { id: "settings", label: "सेटिंग्स", icon: Settings, visible: true },
+                  { id: "appearance", label: "स्वरूप", icon: Palette, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
+                  { id: "backups", label: "बैकअप", icon: Download, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
+                  { id: "launch", label: "लॉन्च", icon: ShieldCheck, visible: ["Owner", "Admin"].includes(currentUser.role || "") }
+                ];
+                return allTabs.filter(t => t.visible).map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => { setActiveTab(tab.id); setIsEditingArticle(false); }}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                        isActive
+                          ? "bg-primary text-white shadow-sm"
+                          : "bg-slate-100 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+
+          {/* ─── DESKTOP: Traditional Sidebar (hidden on mobile) ─── */}
+          <div className="hidden lg:block bg-slate-50 dark:bg-[#0F172A]/40 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 space-y-4">
             <div className="flex items-center space-x-3 pb-3 border-b border-slate-200 dark:border-slate-800">
               <div className="w-8 h-8 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-bold text-xs">
                 {currentUser?.name ? currentUser.name[0].toUpperCase() : "E"}
@@ -784,6 +975,10 @@ export default function AdminDashboard() {
                   { id: "dashboard", label: "डैशबोर्ड", icon: BarChart3, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
                   { id: "profile", label: "मेरा प्रोफ़ाइल", icon: User, visible: true },
                   { id: "study-progress", label: "मेरी अध्ययन प्रगति", icon: Brain, visible: true },
+                  { id: "library", label: "मेरी लाइब्रेरी", icon: BookMarked, visible: true },
+                  { id: "bookmarks", label: "सहेजे गए लेख", icon: Bookmark, visible: true },
+                  { id: "certificates", label: "मेरे प्रमाणपत्र", icon: Award, visible: true },
+                  { id: "video-management", label: "वीडियो डेस्क", icon: VideoIcon, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Sub Editor"].includes(currentUser.role || "") },
                   { id: "magazines", label: "पत्रिका प्रबंधन", icon: BookOpen, visible: ["Owner", "Admin", "Editor-in-Chief"].includes(currentUser.role || "") },
                   { id: "articles", label: "लेख व समाचार", icon: FileEdit, visible: cms.canManageArticles(currentUser) },
                   { id: "assignments", label: "संपादकीय कार्य", icon: Calendar, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor"].includes(currentUser.role || "") },
@@ -799,25 +994,20 @@ export default function AdminDashboard() {
                   { id: "backups", label: "आपदा बैकअप", icon: Download, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
                   { id: "launch", label: "लांच वेरिफिकेशन", icon: ShieldCheck, visible: ["Owner", "Admin"].includes(currentUser.role || "") }
                 ];
-                
                 const filteredTabs = allTabs.filter(tab => tab.visible);
-                
                 return filteredTabs.map((tab) => {
                   const Icon = tab.icon;
                   return (
                     <button
                       key={tab.id}
-                      onClick={() => {
-                        setActiveTab(tab.id);
-                        setIsEditingArticle(false);
-                      }}
-                      className={`flex items-center space-x-3 p-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      onClick={() => { setActiveTab(tab.id); setIsEditingArticle(false); }}
+                      className={`w-full flex items-center space-x-3 p-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         activeTab === tab.id
                           ? "bg-primary text-white shadow-md shadow-primary/20"
                           : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/40"
                       }`}
                     >
-                      <Icon className="w-4.5 h-4.5" />
+                      <Icon className="w-4 h-4 shrink-0" />
                       <span>{tab.label}</span>
                     </button>
                   );

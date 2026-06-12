@@ -6,6 +6,7 @@ import Link from "next/link";
 import { LanguageProvider } from "@/store/LanguageContext";
 import { CmsProvider } from "@/store/CmsContext";
 import AuthModal from "@/components/yuvakshar/AuthModal";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 
 export const metadata: Metadata = {
   title: "युवाक्षर | लेखन, चिंतन और परिवर्तन - Premium Devanagari Editorial & Magazine Platform",
@@ -25,6 +26,7 @@ export const metadata: Metadata = {
     title: "युवाक्षर - हिन्दी डिजिटल मंच",
     description: "Modern Hindi Digital Magazine & Youth Expression Hub",
   },
+  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
 };
 
 export default function RootLayout({
@@ -34,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="hi" className="h-full scroll-smooth">
-      <body className="min-h-full flex flex-col bg-white text-[#0F172A] dark:bg-[#0A0F1D] dark:text-slate-200 font-sans antialiased pb-20 lg:pb-0">
+      <body className="min-h-full flex flex-col bg-white text-[#0F172A] dark:bg-[#0A0F1D] dark:text-slate-200 font-sans antialiased pb-16 lg:pb-0">
         <CmsProvider>
           <LanguageProvider>
             {/* Navigation bar */}
@@ -51,29 +53,8 @@ export default function RootLayout({
             {/* Global Dynamic Footer */}
             <Footer />
 
-            {/* Fixed Bottom Navigation Bar for Mobile */}
-            <div className="fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-[#0F172A]/90 backdrop-blur-md border-t border-border lg:hidden flex items-center justify-around z-50 px-2 shadow-lg">
-              <Link href="/" className="flex flex-col items-center justify-center w-12 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all">
-                <span className="text-lg">🏠</span>
-                <span className="text-[9px] font-bold mt-0.5">होम</span>
-              </Link>
-              <Link href="/categories" className="flex flex-col items-center justify-center w-12 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all">
-                <span className="text-lg">📰</span>
-                <span className="text-[9px] font-bold mt-0.5">समाचार</span>
-              </Link>
-              <Link href="/magazine" className="flex flex-col items-center justify-center w-12 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all">
-                <span className="text-lg">📖</span>
-                <span className="text-[9px] font-bold mt-0.5">पत्रिका</span>
-              </Link>
-              <Link href="/search" className="flex flex-col items-center justify-center w-12 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all">
-                <span className="text-lg">🔍</span>
-                <span className="text-[9px] font-bold mt-0.5">खोज</span>
-              </Link>
-              <Link href="/admin" className="flex flex-col items-center justify-center w-12 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all">
-                <span className="text-lg">👤</span>
-                <span className="text-[9px] font-bold mt-0.5">प्रोफ़ाइल</span>
-              </Link>
-            </div>
+            {/* Mobile Bottom Navigation Bar */}
+            <MobileBottomNav />
           </LanguageProvider>
         </CmsProvider>
       </body>

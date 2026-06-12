@@ -148,3 +148,157 @@
   stroke-dashoffset: 1000;
   animation: drawStroke 3s ease-out forwards;
 }
+
+/* High Contrast Accessibility Settings */
+.high-contrast {
+  --background: #FFFFFF !important;
+  --foreground: #000000 !important;
+  --card: #FFFFFF !important;
+  --card-foreground: #000000 !important;
+  --primary: #C2410C !important;
+  --border: #000000 !important;
+  --input: #000000 !important;
+  --muted: #E2E8F0 !important;
+  --muted-foreground: #000000 !important;
+}
+
+.high-contrast.dark {
+  --background: #000000 !important;
+  --foreground: #FFFFFF !important;
+  --card: #000000 !important;
+  --card-foreground: #FFFFFF !important;
+  --primary: #F97316 !important;
+  --border: #FFFFFF !important;
+  --input: #FFFFFF !important;
+  --muted: #1E293B !important;
+  --muted-foreground: #FFFFFF !important;
+}
+
+/* Global Font Scaling support */
+html[data-font-scale="sm"] {
+  font-size: 14px;
+}
+html[data-font-scale="base"] {
+  font-size: 16px;
+}
+html[data-font-scale="lg"] {
+  font-size: 18px;
+}
+html[data-font-scale="xl"] {
+  font-size: 20px;
+}
+
+/* High Legibility Dyslexic / Accessibility Font */
+.accessible-font {
+  --font-serif: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* ═══════════════════════════════════════════
+   MOBILE-FIRST GLOBAL IMPROVEMENTS
+═══════════════════════════════════════════ */
+
+/* iOS Safe Area Support */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Prevent horizontal overflow on ALL pages */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Smooth scrolling on iOS */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Touch targets: minimum 44×44px for all interactive elements */
+button, a, [role="button"] {
+  min-height: 44px;
+}
+
+/* Scrollbar-none utility */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile Reading Typography */
+@media (max-width: 1024px) {
+  /* Better Devanagari line-height on mobile */
+  .font-serif, .font-hindi {
+    line-height: 1.8;
+  }
+
+  /* Prevent text from being too small on mobile */
+  p, li {
+    font-size: max(14px, 1em);
+  }
+
+  /* Article content comfortable reading */
+  .article-content p {
+    font-size: 17px;
+    line-height: 1.9;
+    margin-bottom: 1.25em;
+  }
+}
+
+/* Skeleton loader animation */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(203, 213, 225, 0.4) 25%,
+    rgba(203, 213, 225, 0.7) 50%,
+    rgba(203, 213, 225, 0.4) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0.5) 25%,
+    rgba(51, 65, 85, 0.7) 50%,
+    rgba(30, 41, 59, 0.5) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+/* Mobile Card hover — no hover effect on touch */
+@media (hover: none) {
+  .premium-card-hover:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* Marquee animation for breaking news */
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+.animate-marquee {
+  display: inline-block;
+  animation: marquee 25s linear infinite;
+}
+
+/* Prevent iOS zoom on input focus */
+@media (max-width: 1024px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}

@@ -284,60 +284,79 @@ export default function MagazinePage() {
 
   const currentLatest = magazines[0] || { issue: "वर्तमान अंक", month: "मई 2025", coverImage: "/yuvakshar_logo.jpg", description: "" };
 
-  // REQUIRE LOGIN CHECK
-  if (!currentUser) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-20 min-h-[60vh] flex flex-col items-center justify-center text-center space-y-6 text-[#0F172A] dark:text-slate-200">
-        <div className="p-5 bg-primary/10 rounded-full text-primary animate-pulse border border-primary/20">
-          <Lock className="w-12 h-12" />
+  // MEMBERSHIP & LOGIN CHECK FOR ACTIVE READING STATE
+  if (selectedMag) {
+    // 1. Not logged in -> Show Visitor Lock Screen
+    if (!currentUser) {
+      return (
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-20 min-h-[60vh] flex flex-col items-center justify-center text-center space-y-6 text-[#0F172A] dark:text-slate-200">
+          <div className="p-5 bg-primary/10 rounded-full text-primary animate-pulse border border-primary/20">
+            <Lock className="w-12 h-12" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="font-serif text-3xl font-bold text-slate-800 dark:text-white">पत्रिका पढ़ने के लिए लॉगिन आवश्यक है</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-serif max-w-md mx-auto">
+              युवाक्षर डिजिटल पत्रिका और हमारे एआई-संचालित स्वाध्याय उपकरणों तक पहुँचने के लिए लॉगिन करना आवश्यक है।
+            </p>
+          </div>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => setSelectedMag(null)}
+              className="border border-slate-200 dark:border-slate-800 hover:border-slate-350 px-6 py-3 rounded-full font-bold text-xs transition-all cursor-pointer bg-white dark:bg-slate-900"
+            >
+              संग्रह पर वापस जाएं
+            </button>
+            <button
+              onClick={() => openAuthModal()}
+              className="bg-primary hover:bg-primary/95 text-white px-8 py-3.5 rounded-full font-bold text-xs shadow-lg hover:shadow-primary/20 transition-all cursor-pointer"
+            >
+              लॉगिन करें
+            </button>
+            <button
+              onClick={() => openAuthModal()}
+              className="border border-primary text-primary hover:bg-primary/10 px-8 py-3.5 rounded-full font-bold text-xs transition-all cursor-pointer bg-white dark:bg-slate-900"
+            >
+              खाता बनाएं
+            </button>
+          </div>
         </div>
-        <div className="space-y-2">
-          <h2 className="font-serif text-3xl font-bold text-slate-800 dark:text-white">पत्रिका पढ़ने के लिए लॉगिन आवश्यक है</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 font-serif max-w-md mx-auto">
-            युवाक्षर मासिक डिजिटल पत्रिकाओं और हमारे एआई-संचालित स्वाध्याय उपकरणों तक पहुँचने के लिए लॉगिन करना आवश्यक है।
-          </p>
-        </div>
-        <button
-          onClick={() => openAuthModal(undefined)}
-          className="bg-primary hover:bg-primary/95 text-white px-8 py-3.5 rounded-full font-bold text-xs shadow-lg hover:shadow-primary/20 transition-all cursor-pointer"
-        >
-          लॉगिन करें (Sign In)
-        </button>
-      </div>
-    );
-  }
+      );
+    }
 
-  // MEMBERSHIP CHECK FOR SELECTED MAGAZINE
-  const hasAccess = selectedMag ? canAccessContent(currentUser, { accessLevel: selectedMag.accessLevel }) : true;
+    // 2. Logged in -> Verify membership or role bypass
+    const isEditorial = ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Sub Editor", "Fact Checker", "Reviewer", "Author", "Contributor"].includes(currentUser.role || "");
+    const isPremium = ["Premium", "Patron", "Subscriber", "Founding", "Institutional", "Lifetime"].includes(currentUser.membership || "");
+    const hasAccess = isEditorial || isPremium;
 
-  if (selectedMag && !hasAccess) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-20 min-h-[60vh] flex flex-col items-center justify-center text-center space-y-6 text-[#0F172A] dark:text-slate-200">
-        <div className="p-5 bg-amber-500/10 rounded-full text-amber-500 animate-pulse border border-amber-500/20">
-          <Crown className="w-12 h-12" />
+    if (!hasAccess) {
+      return (
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-20 min-h-[60vh] flex flex-col items-center justify-center text-center space-y-6 text-[#0F172A] dark:text-slate-200">
+          <div className="p-5 bg-amber-500/10 rounded-full text-amber-500 animate-pulse border border-amber-500/20">
+            <Crown className="w-12 h-12" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="font-serif text-3xl font-bold text-slate-800 dark:text-white">पत्रिका पढ़ने के लिए सक्रिय सदस्यता आवश्यक है</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-serif max-w-md mx-auto">
+              यह डिजिटल संस्करण ({selectedMag.issue}) केवल हमारे प्रीमियम सदस्यों के लिए उपलब्ध है। पढ़ने के लिए अपनी सदस्यता प्रारंभ करें।
+            </p>
+          </div>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => setSelectedMag(null)}
+              className="border border-slate-200 dark:border-slate-800 hover:border-slate-350 px-6 py-3 rounded-full font-bold text-xs transition-all cursor-pointer bg-white dark:bg-slate-900"
+            >
+              संग्रह पर वापस जाएं
+            </button>
+            <Link
+              href="/membership"
+              className="bg-primary hover:bg-primary/95 text-white px-8 py-3.5 rounded-full font-bold text-xs shadow-lg hover:shadow-primary/20 transition-all text-center flex items-center justify-center"
+            >
+              सदस्य बनें
+            </Link>
+          </div>
         </div>
-        <div className="space-y-2">
-          <h2 className="font-serif text-3xl font-bold text-slate-800 dark:text-white">प्रीमियम सदस्यता आवश्यक है</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 font-serif max-w-md mx-auto">
-            यह संस्करण ({selectedMag.issue}) केवल {selectedMag.accessLevel === "Patron" ? "संरक्षक (Patron)" : "प्रीमियम (Premium)"} सदस्यों के लिए उपलब्ध है। पढ़ने के लिए अपनी सदस्यता को अपग्रेड करें।
-          </p>
-        </div>
-        <div className="flex gap-4 justify-center">
-          <button
-            onClick={() => setSelectedMag(null)}
-            className="border border-slate-200 dark:border-slate-800 hover:border-slate-350 px-6 py-3 rounded-full font-bold text-xs transition-all cursor-pointer bg-white dark:bg-slate-900"
-          >
-            संग्रह पर वापस जाएं
-          </button>
-          <Link
-            href="/membership"
-            className="bg-primary hover:bg-primary/95 text-white px-8 py-3.5 rounded-full font-bold text-xs shadow-lg hover:shadow-primary/20 transition-all"
-          >
-            सदस्यता अपग्रेड करें (Upgrade)
-          </Link>
-        </div>
-      </div>
-    );
+      );
+    }
   }
 
   return (

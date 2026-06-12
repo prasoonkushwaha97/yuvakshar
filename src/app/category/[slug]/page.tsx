@@ -69,6 +69,12 @@ export default function CategoryDetailPage() {
 
   const categoryName = categorySlugMap[slug] || slug;
 
+  useEffect(() => {
+    if (categoryName) {
+      document.title = `${categoryName} | युवाक्षर`;
+    }
+  }, [categoryName]);
+
   const filteredArticles = articles.filter(art => {
     const matchesCategory = art.category === categoryName || art.category.toLowerCase() === slug.toLowerCase();
     const matchesSearch = art.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -90,24 +96,19 @@ export default function CategoryDetailPage() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 min-h-screen space-y-10 text-[#0F172A] dark:text-slate-200">
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 min-h-screen space-y-6 text-[#0F172A] dark:text-slate-200">
       
-      {/* Back Link */}
-      <div>
-        <Link href="/" className="inline-flex items-center space-x-2 text-xs text-slate-500 hover:text-primary transition-colors font-medium font-serif">
-          <ArrowLeft className="w-4 h-4" />
+      {/* Breadcrumb & Navigation */}
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-serif text-slate-500 border-b border-border pb-3">
+        <div className="flex items-center space-x-1.5 font-medium">
+          <Link href="/" className="hover:text-primary transition-colors">मुख्य पृष्ठ</Link>
+          <span className="text-slate-400">/</span>
+          <span className="text-foreground dark:text-slate-200 font-semibold">{categoryName}</span>
+        </div>
+        <Link href="/" className="inline-flex items-center space-x-1 hover:text-primary transition-colors font-medium">
+          <ArrowLeft className="w-3.5 h-3.5" />
           <span>मुख्य पृष्ठ पर वापस जाएं</span>
         </Link>
-      </div>
-
-      {/* Title */}
-      <div className="border-b border-border pb-6">
-        <h1 className="font-serif text-3xl md:text-5xl text-primary font-bold font-hindi">
-          श्रेणी: {categoryName}
-        </h1>
-        <p className="text-xs text-slate-400 uppercase tracking-wider mt-2">
-          Category ledger block for {slug} indexation
-        </p>
       </div>
 
       {/* Advanced Filter and Search Bar row */}

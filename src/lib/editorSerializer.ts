@@ -22,6 +22,7 @@ export interface BlockItem {
   text?: string; // HTML string
   listType?: "bullet" | "ordered";
   listItems?: ListBlockItem[];
+  mediaType?: "image" | "gallery";
   images?: ImageItem[];
   videoUrl?: string;
   videoType?: "youtube" | "vimeo" | "embed" | "short";
@@ -215,8 +216,8 @@ export function deserializeMarkdownToBlocks(markdown: string): BlockItem[] {
     }
     
     // 2. Quote (Markdown: > text or HTML: <blockquote class="pull-quote">text</blockquote>)
-    const quoteHtmlMatch = chunk.match(/^<blockquote([^>]*)>(.*?)<\/blockquote>/is);
-    const quoteMdMatch = chunk.match(/^>\s*(.*)/s);
+    const quoteHtmlMatch = chunk.match(/^<blockquote([^>]*)>([\s\S]*?)<\/blockquote>/i);
+    const quoteMdMatch = chunk.match(/^>\s*([\s\S]*)/);
     if (quoteHtmlMatch) {
       const attrs = quoteHtmlMatch[1];
       const text = quoteHtmlMatch[2];
@@ -284,11 +285,11 @@ export function deserializeMarkdownToBlocks(markdown: string): BlockItem[] {
     }
     
     // 4. Special Block Box
-    const specialMatch = chunk.match(/^<div class="special-block\s+([^"]+)"\s+data-type="([^"]+)"[^>]*>(.*?)<\/div>/is);
+    const specialMatch = chunk.match(/^<div class="special-block\s+([^"]+)"\s+data-type="([^"]+)"[^>]*>([\s\S]*?)<\/div>/i);
     if (specialMatch) {
       const type = specialMatch[2] as any;
       const contentHtml = specialMatch[3];
-      const innerContentMatch = contentHtml.match(/<div class="special-block-content">(.*?)<\/div>/is);
+      const innerContentMatch = contentHtml.match(/<div class="special-block-content">([\s\S]*?)<\/div>/i);
       const text = innerContentMatch ? innerContentMatch[1].trim() : contentHtml.trim();
       
       blocks.push({
@@ -367,13 +368,13 @@ export function deserializeMarkdownToBlocks(markdown: string): BlockItem[] {
       const tableData: string[][] = [];
       const mergedCells: any[] = [];
       
-      const rowMatches = chunk.match(/<tr>(.*?)<\/tr>/gis) || [];
+      const rowMatches = chunk.match(/<tr>([\s\S]*?)<\/tr>/gi) || [];
       rowMatches.forEach((rowHtml, rIdx) => {
         const cellData: string[] = [];
         // Match td tags
-        const cellMatches = rowHtml.match(/<td([^>]*)>(.*?)<\/td>/gis) || [];
+        const cellMatches = rowHtml.match(/<td([^>]*)>([\s\S]*?)<\/td>/gi) || [];
         cellMatches.forEach((cellHtml, cIdx) => {
-          const innerMatch = cellHtml.match(/<td([^>]*)>(.*?)<\/td>/is);
+          const innerMatch = cellHtml.match(/<td([^>]*)>([\s\S]*?)<\/td>/i);
           if (innerMatch) {
             const attrs = innerMatch[1];
             const text = innerMatch[2].trim();
@@ -426,7 +427,7 @@ export function deserializeMarkdownToBlocks(markdown: string): BlockItem[] {
     }
     
     // 8. Paragraph (HTML <div> or clean text)
-    const alignHtmlMatch = chunk.match(/^<div style="text-align:\s*(left|center|right|justify);?"[^>]*>(.*?)<\/div>/is);
+    const alignHtmlMatch = chunk.match(/^<div style="text-align:\s*(left|center|right|justify);?"[^>]*>([\s\S]*?)<\/div>/i);
     if (alignHtmlMatch) {
       const align = alignHtmlMatch[1].toLowerCase() as any;
       const text = alignHtmlMatch[2];

@@ -91,9 +91,10 @@ export interface DonationRecord {
 export interface Profile {
   id: string;
   name: string;
-  role: "Owner" | "Admin" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Fact Check Reviewer" | "Author" | "Contributor" | null;
+  role: "Owner" | "Admin" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Sub Editor" | "Fact Checker" | "Reviewer" | "Author" | "Contributor" | "Fact Check Reviewer" | null;
   membership: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime" | null;
-  status: "active" | "suspended";
+  status: "active" | "suspended" | "pending";
+  password?: string;
   bio?: string;
   avatar_url?: string;
   social_links?: Record<string, string>;
@@ -102,11 +103,30 @@ export interface Profile {
   email?: string;
   mobile?: string;
   interests?: string[];
+  dob?: string;
+  gender?: string;
+  location?: string;
+  joinDate?: string;
   // Analytics and rewards
   referralRewardsEarned?: number;
   articlesReadCount?: number;
   totalReadingTime?: number;
   categoryStats?: Record<string, number>;
+}
+
+export interface Video {
+  id: string;
+  title: string;
+  description: string;
+  youtubeUrl: string;
+  category: "समाचार" | "विशेष रिपोर्ट" | "साक्षात्कार" | "विचार" | "साहित्य" | "शिक्षा" | "पर्यावरण" | "इतिहास" | "पत्रिका विशेष" | "युवाक्षर संवाद";
+  thumbnailUrl?: string;
+  isFeatured: boolean;
+  isShorts: boolean;
+  status: "Draft" | "Published";
+  publishDate: string;
+  viewCount?: number;
+  duration?: string;
 }
 
 export interface Category {
@@ -330,9 +350,10 @@ interface CmsContextType {
   quizCertificates: QuizCertificate[];
   quizSettings: Record<string, QuizSettings>;
   leaderboard: QuizLeaderboardEntry[];
+  videos: Video[];
   
   // Auth Operations
-  loginUser: (email: string, role: string, customName?: string, customMobile?: string) => Promise<boolean>;
+  loginUser: (email: string, role: string, customName?: string, customMobile?: string, passwordInput?: string) => Promise<boolean>;
   logoutUser: () => void;
   updateUserRole: (userId: string, role: Profile["role"]) => Promise<void>;
   createUser: (user: Omit<Profile, "id">) => Promise<void>;
@@ -349,6 +370,11 @@ interface CmsContextType {
   deleteArticle: (id: string) => Promise<void>;
   incrementArticleView: (id: string) => Promise<void>;
   incrementArticleLike: (id: string) => Promise<void>;
+
+  // Videos CRUD
+  saveVideo: (video: Partial<Video> & { id?: string }) => Promise<Video>;
+  deleteVideo: (id: string) => Promise<void>;
+  setFeaturedVideo: (id: string) => Promise<void>;
 
   // Magazines CRUD
   saveMagazine: (magazine: Partial<Magazine>) => Promise<Magazine>;
@@ -459,7 +485,81 @@ interface CmsContextType {
 
 const CmsContext = createContext<CmsContextType | undefined>(undefined);
 
+const initialMockVideos: Video[] = [
+  {
+    id: "vid-1",
+    title: "विशेष चर्चा: भारत में डिजिटल संप्रभुता और सुपरकंप्यूटिंग क्रांति का भविष्य",
+    description: "इस विशेष रिपोर्ट में देखिए कि कैसे राष्ट्रीय सुपरकंप्यूटिंग मिशन (NSM) भारत को तकनीक के क्षेत्र में आत्मनिर्भर बनाने की दिशा में नए मार्ग प्रशस्त कर रहा है। इसमें परम सुपरकंप्यूटर श्रृंखला और घरेलू माइक्रोप्रोसेसर विकास के बारे में चर्चा की गई है।",
+    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    category: "विशेष रिपोर्ट",
+    thumbnailUrl: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
+    isFeatured: true,
+    isShorts: false,
+    status: "Published",
+    publishDate: "११ जून २०२६",
+    viewCount: 1540,
+    duration: "12:45"
+  },
+  {
+    id: "vid-2",
+    title: "युवाक्षर संवाद: नई राष्ट्रीय शिक्षा नीति (NEP) और भारतीय भाषाएं",
+    description: "शिक्षाविदों के साथ एक विशेष साक्षात्कार जहां हमने भारतीय भाषाओं में उच्च शिक्षा और तकनीकी विषयों के शिक्षण पर विस्तार से चर्चा की। क्या मातृभाषा में शिक्षण बौद्धिक विकास को गति देगा?",
+    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    category: "साक्षात्कार",
+    thumbnailUrl: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=400&q=80",
+    isFeatured: false,
+    isShorts: false,
+    status: "Published",
+    publishDate: "१० जून २०२६",
+    viewCount: 850,
+    duration: "18:20"
+  },
+  {
+    id: "vid-3",
+    title: "गंगा और पर्यावरण: जमीनी स्तर पर संरक्षण की चुनौतियाँ",
+    description: "ऋषिकेश से लेकर वाराणसी तक गंगा नदी के संरक्षण और प्रदूषण नियंत्रण प्रयासों पर एक गहन रिपोर्ट। जैविक खेती और कचरा प्रबंधन पर चर्चा।",
+    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    category: "पर्यावरण",
+    thumbnailUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80",
+    isFeatured: false,
+    isShorts: false,
+    status: "Published",
+    publishDate: "०९ जून २०२६",
+    viewCount: 1200,
+    duration: "8:15"
+  },
+  {
+    id: "vid-4",
+    title: "डिजिटल इंडिया क्या है? (शॉर्ट वीडियो)",
+    description: "डिजिटल भारत अभियान के मुख्य स्तंभ और आम नागरिक के जीवन पर इसका प्रभाव। १ मिनट में पूरी जानकारी।",
+    youtubeUrl: "https://www.youtube.com/shorts/dQw4w9WgXcQ",
+    category: "समाचार",
+    thumbnailUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80",
+    isFeatured: false,
+    isShorts: true,
+    status: "Published",
+    publishDate: "०८ जून २०२६",
+    viewCount: 4500,
+    duration: "0:58"
+  },
+  {
+    id: "vid-5",
+    title: "सुपरकंप्यूटर कैसे काम करता है? (लघु ज्ञान)",
+    description: "सुपरकंप्यूटर की समानांतर प्रोसेसिंग क्षमता और सामान्य कंप्यूटर से इसकी तुलना। केवल ६० सेकंड में।",
+    youtubeUrl: "https://www.youtube.com/shorts/dQw4w9WgXcQ",
+    category: "शिक्षा",
+    thumbnailUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=400&q=80",
+    isFeatured: false,
+    isShorts: true,
+    status: "Published",
+    publishDate: "०७ जून २०२६",
+    viewCount: 3100,
+    duration: "0:55"
+  }
+];
+
 export function CmsProvider({ children }: { children: React.ReactNode }) {
+  const [videos, setVideos] = useState<Video[]>([]);
   const [supabaseConfigured, setSupabaseConfigured] = useState(false);
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -715,14 +815,47 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
     // Users
     const localUsers = localStorage.getItem("yuvakshar_users");
+    const defaultStaff: Profile[] = [
+      { id: "staff-owner", name: "Ravi Owner", email: "owner@yuvakshar.in", role: "Owner", membership: "Patron", status: "active", password: "password123", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
+      { id: "staff-admin", name: "Amit Admin", email: "admin@yuvakshar.in", role: "Admin", membership: "Patron", status: "active", password: "password123", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
+      { id: "staff-chief", name: "Prasoon Chief", email: "chief@yuvakshar.in", role: "Editor-in-Chief", membership: "Patron", status: "active", password: "password123", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
+      { id: "staff-managing", name: "Sumit Managing", email: "managing@yuvakshar.in", role: "Managing Editor", membership: "Premium", status: "active", password: "password123", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
+      { id: "staff-editor", name: "Ravi Sharma", email: "editor@yuvakshar.in", role: "Editor", membership: "Premium", status: "active", password: "password123", badges: ["Editor"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
+      { id: "staff-subeditor", name: "Alok SubEditor", email: "subeditor@yuvakshar.in", role: "Sub Editor", membership: "Premium", status: "active", password: "password123", badges: ["Sub Editor"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
+      { id: "staff-factchecker", name: "Nitin Checker", email: "factchecker@yuvakshar.in", role: "Fact Checker", membership: "Premium", status: "active", password: "password123", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
+      { id: "staff-reviewer", name: "Varun Reviewer", email: "reviewer@yuvakshar.in", role: "Reviewer", membership: "Premium", status: "active", password: "password123", badges: ["Reviewer"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
+      { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "Author", membership: "Premium", status: "active", password: "password123", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
+      { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "Contributor", membership: "Free", status: "active", password: "password123", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
+    ];
     if (localUsers) {
-      setUsers(JSON.parse(localUsers));
+      const parsedUsers: Profile[] = JSON.parse(localUsers);
+      let merged = false;
+      defaultStaff.forEach(staff => {
+        const staffEmail = staff.email;
+        if (staffEmail && !parsedUsers.some(u => u.email && u.email.toLowerCase() === staffEmail.toLowerCase())) {
+          parsedUsers.push(staff);
+          merged = true;
+        }
+      });
+      // In case they exist but don't have joinDate, let's update them
+      parsedUsers.forEach(u => {
+        const matching = defaultStaff.find(s => s.id === u.id);
+        if (matching) {
+          if (!u.joinDate) u.joinDate = matching.joinDate;
+          if (!u.dob) u.dob = matching.dob;
+          if (!u.gender) u.gender = matching.gender;
+          if (!u.location) u.location = matching.location;
+        }
+      });
+      localStorage.setItem("yuvakshar_users", JSON.stringify(parsedUsers));
+      setUsers(parsedUsers);
     } else {
       const initialUsers: Profile[] = [
-        { id: "u-1", name: "Owner", email: "yuvakshar.editor@gmail.com", role: "Owner", membership: "Patron", status: "active", badges: ["Primary Owner"] },
-        { id: "u-2", name: "प्रसून कुशवाहा", email: "prasoon.kushwaha@yuvakshar.org", role: "Editor-in-Chief", membership: "Patron", status: "active", badges: ["Verified Author"] },
-        { id: "u-3", name: "Guest Author", email: "m.tripathi@gmail.com", role: "Author", membership: "Premium", status: "active", badges: ["Contributor"] },
-        { id: "u-4", name: "Featured Author", email: "reader.demo@yuvakshar.org", role: null, membership: "Free", status: "active", badges: ["Reader"] }
+        { id: "u-1", name: "Owner", email: "yuvakshar.editor@gmail.com", role: "Owner", membership: "Patron", status: "active", password: "password123", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
+        { id: "u-2", name: "प्रसून कुशवाहा", email: "prasoon.kushwaha@yuvakshar.org", role: "Editor-in-Chief", membership: "Patron", status: "active", password: "password123", badges: ["Verified Author"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
+        { id: "u-3", name: "Guest Author", email: "m.tripathi@gmail.com", role: "Author", membership: "Premium", status: "active", password: "password123", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
+        { id: "u-4", name: "Featured Author", email: "reader.demo@yuvakshar.org", role: null, membership: "Free", status: "active", password: "password123", badges: ["Reader"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "नई दिल्ली, भारत" },
+        ...defaultStaff
       ];
       setUsers(initialUsers);
       localStorage.setItem("yuvakshar_users", JSON.stringify(initialUsers));
@@ -898,6 +1031,15 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       setFoundingSeatsRemaining(42);
       localStorage.setItem("yuvakshar_founding_seats", "42");
     }
+
+    // Load Videos
+    const localVideos = localStorage.getItem("yuvakshar_videos");
+    if (localVideos) {
+      setVideos(JSON.parse(localVideos));
+    } else {
+      setVideos(initialMockVideos);
+      localStorage.setItem("yuvakshar_videos", JSON.stringify(initialMockVideos));
+    }
   };
 
   const loadDataFromSupabase = async () => {
@@ -990,7 +1132,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   };
 
   // 2. Auth Operations
-  const loginUser = async (email: string, role: string, customName?: string, customMobile?: string): Promise<boolean> => {
+  const loginUser = async (email: string, role: string, customName?: string, customMobile?: string, passwordInput?: string): Promise<boolean> => {
     // Trigger login
     if (supabaseConfigured) {
       // Attempt auth magic links or oauth
@@ -1002,7 +1144,41 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       return true;
     } else {
       // Mock Sign In
-      // If email matches primary owner email, force role to Owner
+      const existingUser = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
+
+      if (existingUser) {
+        // Check if user is suspended
+        if (existingUser.status === "suspended") {
+          alert("त्रुटि: आपका खाता निलंबित (suspended) है। लॉगिन की अनुमति नहीं है।");
+          return false;
+        }
+
+        // Check password if stored
+        if (existingUser.password && existingUser.password !== passwordInput) {
+          alert("त्रुटि: गलत पासवर्ड!");
+          return false;
+        }
+
+        setCurrentUser(existingUser);
+        localStorage.setItem("yuvakshar_session_user", JSON.stringify(existingUser));
+
+        if (authCallback) {
+          authCallback();
+        }
+        setAuthCallback(null);
+        setAuthModalOpen(false);
+
+        // log action
+        logActivity(`Logged in as Mock User (${existingUser.role || "Reader"})`, {
+          performer: existingUser.name,
+          performerRole: existingUser.role,
+          actionType: "Login",
+          dateTime: new Date().toISOString()
+        });
+        return true;
+      }
+
+      // If user does not exist, create dynamically as reader/subscriber
       const isPrimaryOwner = email === "yuvakshar.editor@gmail.com";
       const finalRole = isPrimaryOwner 
         ? "Owner" 
@@ -1013,8 +1189,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         ? "Patron" 
         : (role === "Patron Member" ? "Patron" : role === "Premium Member" ? "Premium" : "Free");
 
-      const existingUser = users.find(u => u.email === email);
-      const mockProfile: Profile = existingUser || {
+      const mockProfile: Profile = {
         id: isPrimaryOwner ? "u-1" : "mock-uid-" + Math.floor(Math.random() * 1000),
         name: finalName,
         email: email,
@@ -1022,63 +1197,62 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         role: finalRole as Profile["role"],
         membership: finalMembership as Profile["membership"],
         status: "active",
+        password: passwordInput,
         social_links: {},
         badges: isPrimaryOwner ? ["Primary Owner"] : ["Verified User"]
       };
 
       // Ensure this user is added to the dynamic users list if not already there
-      if (!existingUser) {
-        const updatedUsers = [...users, mockProfile];
-        setUsers(updatedUsers);
-        localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+      const updatedUsers = [...users, mockProfile];
+      setUsers(updatedUsers);
+      localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
 
-        // Referral reward check: credit 15 days if they register from a referral
-        setTimeout(() => {
-          setReferrals(prevRefs => {
-            const matchIndex = prevRefs.findIndex(r => r.referredEmail.toLowerCase() === email.toLowerCase() && r.status === "pending");
-            if (matchIndex !== -1) {
-              const matchedRef = prevRefs[matchIndex];
-              // Credit 15 days to referrer
-              setUsers(prevUsers => {
-                const newU = prevUsers.map(u => {
-                  if (u.id === matchedRef.referrerId) {
-                    return {
-                      ...u,
-                      referralRewardsEarned: (u.referralRewardsEarned || 0) + 15
-                    };
-                  }
-                  return u;
-                });
-                localStorage.setItem("yuvakshar_users", JSON.stringify(newU));
-                return newU;
+      // Referral reward check: credit 15 days if they register from a referral
+      setTimeout(() => {
+        setReferrals(prevRefs => {
+          const matchIndex = prevRefs.findIndex(r => r.referredEmail.toLowerCase() === email.toLowerCase() && r.status === "pending");
+          if (matchIndex !== -1) {
+            const matchedRef = prevRefs[matchIndex];
+            // Credit 15 days to referrer
+            setUsers(prevUsers => {
+              const newU = prevUsers.map(u => {
+                if (u.id === matchedRef.referrerId) {
+                  return {
+                    ...u,
+                    referralRewardsEarned: (u.referralRewardsEarned || 0) + 15
+                  };
+                }
+                return u;
               });
+              localStorage.setItem("yuvakshar_users", JSON.stringify(newU));
+              return newU;
+            });
 
-              // Extend referrer membership expiry
-              setUserMemberships(prevMems => {
-                const newM = prevMems.map(m => {
-                  if (m.userId === matchedRef.referrerId && m.status === "active") {
-                    const exp = new Date(m.expiryDate);
-                    exp.setDate(exp.getDate() + 15);
-                    return {
-                      ...m,
-                      expiryDate: exp.toISOString().split("T")[0]
-                    };
-                  }
-                  return m;
-                });
-                localStorage.setItem("yuvakshar_memberships", JSON.stringify(newM));
-                return newM;
+            // Extend referrer membership expiry
+            setUserMemberships(prevMems => {
+              const newM = prevMems.map(m => {
+                if (m.userId === matchedRef.referrerId && m.status === "active") {
+                  const exp = new Date(m.expiryDate);
+                  exp.setDate(exp.getDate() + 15);
+                  return {
+                    ...m,
+                    expiryDate: exp.toISOString().split("T")[0]
+                  };
+                }
+                return m;
               });
+              localStorage.setItem("yuvakshar_memberships", JSON.stringify(newM));
+              return newM;
+            });
 
-              const updatedRefs = [...prevRefs];
-              updatedRefs[matchIndex] = { ...matchedRef, status: "registered" as const };
-              localStorage.setItem("yuvakshar_referrals", JSON.stringify(updatedRefs));
-              return updatedRefs;
-            }
-            return prevRefs;
-          });
-        }, 100);
-      }
+            const updatedRefs = [...prevRefs];
+            updatedRefs[matchIndex] = { ...matchedRef, status: "registered" as const };
+            localStorage.setItem("yuvakshar_referrals", JSON.stringify(updatedRefs));
+            return updatedRefs;
+          }
+          return prevRefs;
+        });
+      }, 100);
 
       setCurrentUser(mockProfile);
       localStorage.setItem("yuvakshar_session_user", JSON.stringify(mockProfile));
@@ -1141,6 +1315,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       role: user.role,
       membership: user.membership,
       status: user.status || "active",
+      password: user.password,
+      mobile: user.mobile,
+      social_links: user.social_links || {},
       badges: user.role ? [user.role] : ["Reader"]
     };
 
@@ -1278,7 +1455,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
-    if (!performerRole || !["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(performerRole)) {
+    if (!performerRole || !["Owner", "Admin"].includes(performerRole)) {
       alert("त्रुटि: आपके पास पासवर्ड रीसेट करने की अनुमति नहीं है!");
       return;
     }
@@ -1288,14 +1465,19 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    logActivity(`Password reset initiated for ${targetUser.email}`, {
+    const tempPassword = "temp_" + Math.floor(10000 + Math.random() * 90000);
+    const updatedUsers = users.map(u => u.id === userId ? { ...u, password: tempPassword } : u);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+
+    logActivity(`Password reset for ${targetUser.email}`, {
       performer: currentUser?.name || "System",
-      performerRole: performerRole || "Subscriber",
+      performerRole: performerRole,
       targetUser: targetUser.email,
       actionType: "Password Reset",
       dateTime: new Date().toISOString()
     });
-    alert(`पाठक ${targetUser.name} का पासवर्ड रीसेट लिंक भेज दिया गया है!`);
+    alert(`उपयोगकर्ता ${targetUser.name} का पासवर्ड रीसेट कर दिया गया है!\nअस्थायी पासवर्ड: ${tempPassword}\n(कृपया इसे सदस्य को प्रदान करें)`);
   };
 
   const updateUserRole = async (userId: string, role: Profile["role"]) => {
@@ -1374,6 +1556,84 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
     }
     logActivity(`Deleted Article: ${id}`);
+  };
+
+  const saveVideo = async (video: Partial<Video> & { id?: string }) => {
+    let updated: Video[];
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('hi-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+    const formattedDate = formatter.format(now);
+
+    const extractYoutubeId = (url: string) => {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    };
+
+    const parsedId = extractYoutubeId(video.youtubeUrl || "");
+    const finalThumbnail = video.thumbnailUrl || (parsedId ? `https://img.youtube.com/vi/${parsedId}/maxresdefault.jpg` : undefined);
+
+    if (video.id) {
+      // Edit
+      updated = videos.map(v => {
+        if (v.id === video.id) {
+          const updatedVid = {
+            ...v,
+            ...video,
+            thumbnailUrl: finalThumbnail
+          } as Video;
+          return updatedVid;
+        }
+        return v;
+      });
+    } else {
+      // Add
+      const newVideo: Video = {
+        id: `vid-${Date.now()}`,
+        title: video.title || "Untitled Video",
+        description: video.description || "",
+        youtubeUrl: video.youtubeUrl || "",
+        category: video.category || "समाचार",
+        thumbnailUrl: finalThumbnail,
+        isFeatured: video.isFeatured || false,
+        isShorts: video.isShorts || false,
+        status: video.status || "Published",
+        publishDate: formattedDate,
+        viewCount: 0,
+        duration: video.duration || (video.isShorts ? "0:59" : "5:00")
+      };
+      updated = [newVideo, ...videos];
+    }
+
+    // Enforce single featured video constraint
+    if (video.isFeatured) {
+      updated = updated.map(v => {
+        const isCurrent = v.id === video.id || (video.id === undefined && v.id === updated[0].id);
+        return { ...v, isFeatured: isCurrent };
+      });
+    }
+
+    setVideos(updated);
+    localStorage.setItem("yuvakshar_videos", JSON.stringify(updated));
+    logActivity(`Saved Video: ${video.title} (Featured: ${video.isFeatured})`);
+    return updated.find(v => v.id === video.id || (video.id === undefined && v.id === updated[0].id))!;
+  };
+
+  const deleteVideo = async (id: string) => {
+    const updated = videos.filter(v => v.id !== id);
+    setVideos(updated);
+    localStorage.setItem("yuvakshar_videos", JSON.stringify(updated));
+    logActivity(`Deleted Video: ${id}`);
+  };
+
+  const setFeaturedVideo = async (id: string) => {
+    const updated = videos.map(v => ({
+      ...v,
+      isFeatured: v.id === id
+    }));
+    setVideos(updated);
+    localStorage.setItem("yuvakshar_videos", JSON.stringify(updated));
+    logActivity(`Set Featured Video: ${id}`);
   };
 
   const saveMagazine = async (mag: Partial<Magazine>): Promise<Magazine> => {
@@ -2686,6 +2946,10 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         updateSettings,
         saveArticle,
         deleteArticle,
+        saveVideo,
+        deleteVideo,
+        setFeaturedVideo,
+        videos,
         saveMagazine,
         deleteMagazine,
         incrementArticleView,

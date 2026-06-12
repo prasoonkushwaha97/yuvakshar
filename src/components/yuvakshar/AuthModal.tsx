@@ -230,7 +230,7 @@ export default function AuthModal() {
     setIsLoading(true);
 
     setTimeout(async () => {
-      const success = await loginUser(email.trim(), "Subscriber");
+      const success = await loginUser(email.trim(), "Subscriber", undefined, undefined, password);
       setIsLoading(false);
       
       if (success) {
@@ -293,8 +293,8 @@ export default function AuthModal() {
     setIsLoading(true);
 
     setTimeout(async () => {
-      // Call loginUser passing customName and customMobile
-      const success = await loginUser(email.trim(), "Subscriber", name.trim(), mobile.trim());
+      // Call loginUser passing customName, customMobile, and password
+      const success = await loginUser(email.trim(), "Subscriber", name.trim(), mobile.trim(), password);
       setIsLoading(false);
 
       if (success) {

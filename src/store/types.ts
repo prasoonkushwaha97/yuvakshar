@@ -1,0 +1,329 @@
+/**
+ * Yuvakshar CMS Shared Types
+ * 
+ * This file contains all shared TypeScript interfaces used across the CMS.
+ * Kept in a separate file (not "use client") to avoid Turbopack static analysis 
+ * issues when importing types from client components.
+ */
+
+// ─── Article & Magazine ────────────────────────────────────────────────────
+// These are re-exported from mockData for convenience
+export type { Article, Magazine } from "@/lib/mockData";
+
+// ─── User & Profile ────────────────────────────────────────────────────────
+export interface Profile {
+  id: string;
+  name: string;
+  role: "Owner" | "Admin" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Sub Editor" | "Fact Checker" | "Reviewer" | "Author" | "Contributor" | "Fact Check Reviewer" | null;
+  membership: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime" | null;
+  status: "active" | "suspended" | "pending";
+  password?: string;
+  bio?: string;
+  avatar_url?: string;
+  social_links?: Record<string, string>;
+  badges?: string[];
+  views_count?: number;
+  email?: string;
+  mobile?: string;
+  interests?: string[];
+  dob?: string;
+  gender?: string;
+  location?: string;
+  joinDate?: string;
+  referralRewardsEarned?: number;
+  articlesReadCount?: number;
+  totalReadingTime?: number;
+  categoryStats?: Record<string, number>;
+}
+
+// ─── Video ─────────────────────────────────────────────────────────────────
+export interface Video {
+  id: string;
+  title: string;
+  description: string;
+  youtubeUrl: string;
+  category: "समाचार" | "विशेष रिपोर्ट" | "साक्षात्कार" | "विचार" | "साहित्य" | "शिक्षा" | "पर्यावरण" | "इतिहास" | "पत्रिका विशेष" | "युवाक्षर संवाद";
+  thumbnailUrl?: string;
+  isFeatured: boolean;
+  isShorts: boolean;
+  status: "Draft" | "Published";
+  publishDate: string;
+  viewCount?: number;
+  duration?: string;
+}
+
+// ─── Comment ───────────────────────────────────────────────────────────────
+export interface Comment {
+  id: string;
+  article_id: string;
+  parent_id: string | null;
+  name: string;
+  user_id?: string | null;
+  content: string;
+  likes: number;
+  status: "approved" | "pending" | "spam" | "deleted";
+  is_reported: boolean;
+  created_at: string;
+}
+
+// ─── Submission ────────────────────────────────────────────────────────────
+export interface Submission {
+  id: string;
+  type: "contact" | "feedback" | "suggestion" | "report" | "article";
+  name: string;
+  email: string;
+  mobile?: string;
+  subject?: string;
+  content: string;
+  status: "New" | "Open" | "In Progress" | "Resolved" | "Archived";
+  replies?: any[];
+  category?: string;
+  title?: string;
+  image_url?: string;
+  pdf_url?: string;
+  doc_url?: string;
+  created_at: string;
+}
+
+// ─── Editorial Assignment ──────────────────────────────────────────────────
+export interface EditorialAssignment {
+  id: string;
+  article_id: string;
+  author_id?: string;
+  reviewer_id?: string;
+  section_editor_id?: string;
+  deadline?: string;
+  status: "Assigned" | "In Progress" | "Under Review" | "Completed";
+  created_at: string;
+}
+
+// ─── Ad ────────────────────────────────────────────────────────────────────
+export interface Ad {
+  id: string;
+  name: string;
+  zone: "after_first_p" | "mid_content" | "before_related";
+  type: "adsense" | "custom_html" | "banner";
+  code?: string;
+  image_url?: string;
+  link_url?: string;
+  active: boolean;
+  impression_count: number;
+  click_count: number;
+}
+
+// ─── Quiz ──────────────────────────────────────────────────────────────────
+export interface QuizAttempt {
+  id: string;
+  userId: string;
+  userName: string;
+  articleId: string;
+  score: number;
+  totalQuestions: number;
+  percentage: number;
+  durationSeconds: number;
+  timestamp: string;
+  answers: Record<number, string>;
+}
+
+export interface QuizCertificate {
+  id: string;
+  userId: string;
+  userName: string;
+  articleTitle: string;
+  score: number;
+  percentage: number;
+  date: string;
+  certificateType: "सहभागिता प्रमाणपत्र" | "उत्कृष्टता प्रमाणपत्र" | "ज्ञानवीर प्रमाणपत्र";
+  badge: string;
+}
+
+export interface QuizSettings {
+  articleId: string;
+  isEnabled: boolean;
+  questionCount: number;
+  difficulty: "सरल" | "मध्यम" | "उन्नत";
+}
+
+export interface QuizLeaderboardEntry {
+  id: string;
+  userName: string;
+  score: number;
+  completedQuizzes: number;
+  certificatesCount: number;
+  interval: "weekly" | "monthly" | "alltime";
+}
+
+// ─── Membership ────────────────────────────────────────────────────────────
+export interface UserMembership {
+  id: string;
+  userId: string;
+  plan: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime";
+  billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly" | "Lifetime" | "One-time";
+  startDate: string;
+  endDate?: string;
+  autoRenewal: boolean;
+  status: "active" | "expired" | "cancelled";
+  couponApplied?: string;
+  discountAmount?: number;
+}
+
+export interface PaymentRecord {
+  id: string;
+  userId: string;
+  amount: number;
+  currency: string;
+  plan: string;
+  billingCycle: string;
+  status: "success" | "failed" | "pending" | "refunded";
+  transactionId?: string;
+  date: string;
+  couponApplied?: string;
+  discountAmount?: number;
+}
+
+export interface Coupon {
+  code: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  validFor: ("Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime")[];
+  expiryDate: string;
+  usageLimit?: number;
+  usageCount: number;
+  isActive: boolean;
+  createdBy: string;
+}
+
+export interface ReferralRecord {
+  id: string;
+  referrerId: string;
+  referredEmail: string;
+  status: "pending" | "converted";
+  rewardGranted: boolean;
+  date: string;
+}
+
+// ─── Other ─────────────────────────────────────────────────────────────────
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  parent_id?: string | null;
+  language_code: string;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+  language_code: string;
+}
+
+export interface SearchAnalytics {
+  id: string;
+  query: string;
+  search_count: number;
+  click_count: number;
+  zero_results: boolean;
+  updated_at: string;
+}
+
+export interface HomepageLayout {
+  id: string;
+  name: string;
+  layout_json: {
+    hero_story_id: string;
+    sections_order: string[];
+    visible_sections: Record<string, boolean>;
+  };
+  version: number;
+  is_published: boolean;
+}
+
+export interface ActivityLog {
+  id: string;
+  user_id?: string;
+  action: string;
+  details?: Record<string, any>;
+  created_at: string;
+}
+
+export interface TopicMastery {
+  userId: string;
+  category: string;
+  badges: string[];
+}
+
+export interface MonthlyReport {
+  id: string;
+  userId: string;
+  monthYear: string;
+  articlesRead: number;
+  quizzesAttempted: number;
+  averageScore: number;
+  bestCategory: string;
+  studyTimeSeconds: number;
+  certificatesCount: number;
+  growthPercentage: number;
+}
+
+export interface AiSettings {
+  enabledModules: Record<string, boolean>;
+  apiProvider: "OpenAI" | "Gemini";
+  apiKeys: { openai: string; gemini: string; };
+  tokenLimit: number;
+  tokensUsed: number;
+  usageAnalytics: Array<{ date: string; tokensUsed: number; cost: number; feature: string; }>;
+  accessRules: Record<string, "Free" | "Premium" | "Patron">;
+}
+
+export interface AiNote {
+  id: string;
+  userId: string;
+  content: string;
+  articleId?: string;
+  createdAt: string;
+  tags?: string[];
+}
+
+export interface DonationRecord {
+  id: string;
+  name: string;
+  email: string;
+  amount: number;
+  message?: string;
+  date: string;
+}
+
+export interface Membership {
+  id: string;
+  user_id: string;
+  type: "Free Reader" | "Registered Reader" | "Premium Member" | "Patron";
+  status: "active" | "expired" | "cancelled";
+  expires_at?: string;
+}
+
+export interface GeneralSettings {
+  site_name: string;
+  tagline: string;
+  primary_email: string;
+  editorial_email: string;
+  support_email: string;
+  newsletter_email: string;
+  notification_email: string;
+}
+
+export interface AppearanceSettings {
+  primary_color: string;
+  secondary_color: string;
+  background_color: string;
+  logo_url: string;
+  favicon_url: string;
+  font_headlines: string;
+  font_body: string;
+}
+
+export interface FooterSettings {
+  copyright_text: string;
+  links: Array<{ name: string; href: string }>;
+}
