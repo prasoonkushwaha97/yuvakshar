@@ -1262,7 +1262,7 @@ export default function SubmitArticlePage() {
 
       {/* Auto Save toast alert */}
       {autosaveMessage && (
-        <div className="fixed bottom-6 right-6 bg-[#0F172A] text-green-400 border border-green-500/30 py-2.5 px-5 rounded-2xl text-xs font-sans shadow-2xl flex items-center space-x-2 z-50 animate-bounce">
+        <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] right-4 lg:bottom-6 lg:right-6 bg-[#0F172A] text-green-400 border border-green-500/30 py-2.5 px-5 rounded-2xl text-xs font-sans shadow-2xl flex items-center space-x-2 z-[45] animate-bounce">
           <CheckCircle2 className="w-4 h-4" />
           <span>{autosaveMessage}</span>
         </div>

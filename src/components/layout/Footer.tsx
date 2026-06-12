@@ -39,11 +39,11 @@ export default function Footer() {
   };
 
   return (
-    <footer className="w-full bg-[#FAF8F3] dark:bg-[#0A0F1D] text-[#1E1E1E] dark:text-slate-300 border-t border-[#E7E2D8] dark:border-slate-800 py-12 mt-16 text-xs relative z-30">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+    <footer className="w-full bg-[#FAF8F3] dark:bg-[#0A0F1D] text-[#1E1E1E] dark:text-slate-300 border-t border-[#E7E2D8] dark:border-slate-800 py-6 lg:py-12 mt-8 lg:mt-16 text-xs relative z-30">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8">
         
         {/* Left Area: Brand & Tagline */}
-        <div className="md:col-span-3 space-y-4">
+        <div className="md:col-span-3 space-y-2 md:space-y-4">
           <div className="flex items-center">
             <img 
               src={settings.appearance.logo_url || "/yuvakshar_logo_official.png"} 
@@ -60,7 +60,7 @@ export default function Footer() {
         </div>
 
         {/* Column 2: हमारे बारे में & नीतियां */}
-        <div className="md:col-span-3 space-y-4">
+        <div className="md:col-span-3 space-y-2 md:space-y-4">
           <h4 className="font-serif text-sm font-bold text-[#1E1E1E] dark:text-white border-l-2 border-[#EA580C] pl-2 uppercase tracking-wider">
             हमारे बारे में व नीतियां
           </h4>
@@ -73,7 +73,7 @@ export default function Footer() {
         </div>
 
         {/* Column 3: संपर्क व विमर्श */}
-        <div className="md:col-span-3 space-y-4">
+        <div className="md:col-span-3 space-y-2 md:space-y-4">
           <h4 className="font-serif text-sm font-bold text-[#1E1E1E] dark:text-white border-l-2 border-[#EA580C] pl-2 uppercase tracking-wider">
             संपर्क व विमर्श
           </h4>
@@ -112,7 +112,7 @@ export default function Footer() {
         </div>
 
         {/* Column 4: Newsletter Signup Card */}
-        <div className="md:col-span-3 space-y-4">
+        <div className="md:col-span-3 space-y-2 md:space-y-4">
           <h4 className="font-serif text-sm font-bold text-[#1E1E1E] dark:text-white border-l-2 border-[#EA580C] pl-2 uppercase tracking-wider">
             न्यूज़लेटर सदस्यता
           </h4>
@@ -142,7 +142,7 @@ export default function Footer() {
 
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 mt-10 pt-6 border-t border-[#E7E2D8] dark:border-slate-800 text-center text-slate-500 font-mono">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 mt-6 lg:mt-10 pt-4 lg:pt-6 border-t border-[#E7E2D8] dark:border-slate-800 text-center text-slate-500 font-mono">
         <p>{settings.footer.copyright_text}</p>
       </div>
     </footer>

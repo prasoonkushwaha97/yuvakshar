@@ -338,7 +338,7 @@ export default function AuthModal() {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 bg-[#0A0F1D]/85 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="fixed inset-0 bg-[#0A0F1D]/85 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
         <motion.div
           variants={modalVariants}
           initial="hidden"

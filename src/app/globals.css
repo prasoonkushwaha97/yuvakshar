@@ -88,7 +88,7 @@
     box-sizing: border-box;
   }
   body {
-    @apply bg-background text-foreground overflow-x-hidden antialiased;
+    @apply bg-background text-foreground overflow-x-hidden antialiased pb-[calc(4rem+env(safe-area-inset-bottom,0px))] lg:pb-0;
     font-family: var(--font-sans);
   }
   

@@ -221,30 +221,30 @@ export default function Home() {
                       {currentSlide.title}
                     </h2>
                   </Link>
-                  <p className="text-xs text-slate-300 line-clamp-2 font-light">
+                  <p className="text-xs text-slate-300 line-clamp-2 font-light hidden lg:block">
                     {currentSlide.summary}
                   </p>
 
                   <div className="flex flex-wrap items-center justify-between pt-2 border-t border-white/10 text-[10px] text-slate-400 gap-2">
                     <div className="flex items-center space-x-3 flex-wrap">
-                      <div className="flex items-center space-x-1">
+                      <div className="hidden lg:flex items-center space-x-1">
                         <User className="w-3.5 h-3.5 text-primary shrink-0" />
                         <span>{currentSlide.author}</span>
                       </div>
-                      <span>•</span>
+                      <span className="hidden lg:inline">•</span>
                       <span>{currentSlide.date}</span>
-                      <span>•</span>
-                      <div className="flex items-center space-x-1">
+                      <span className="hidden lg:inline">•</span>
+                      <div className="hidden lg:flex items-center space-x-1">
                         <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <span>{currentSlide.readTime}</span>
                       </div>
-                      <span>•</span>
-                      <div className="flex items-center space-x-1">
+                      <span className="hidden lg:inline">•</span>
+                      <div className="hidden lg:flex items-center space-x-1">
                         <Eye className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <span>{currentSlide.views} पठन</span>
                       </div>
-                      <span>•</span>
-                      <div className="flex items-center space-x-1">
+                      <span className="hidden lg:inline">•</span>
+                      <div className="hidden lg:flex items-center space-x-1">
                         <MessageSquare className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <span>{comments.filter(c => c.article_id === currentSlide.id).length} टिप्पणियाँ</span>
                       </div>
@@ -297,7 +297,7 @@ export default function Home() {
                             {news.title}
                           </Link>
                           {news.accessLevel && news.accessLevel !== "Free" && (
-                            <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider font-sans border ${
+                            <span className={`hidden lg:inline-block text-[8px] font-bold px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider font-sans border ${
                               news.accessLevel === "Patron" ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20"
                             }`}>
                               {news.accessLevel}
@@ -466,7 +466,7 @@ export default function Home() {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         {art.accessLevel && art.accessLevel !== "Free" && (
-                          <div className="absolute top-2 left-2">
+                          <div className="absolute top-2 left-2 hidden lg:block">
                             <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm uppercase tracking-wider text-white font-sans ${
                               art.accessLevel === "Patron" ? "bg-amber-500" : "bg-[#3B82F6]"
                             }`}>
@@ -483,7 +483,7 @@ export default function Home() {
                     </div>
 
                     <div className="flex justify-between items-center pt-3 border-t border-slate-100 dark:border-slate-800/40 mt-4 text-[9px] text-slate-400">
-                      <span className="font-medium text-slate-500 dark:text-slate-400">{art.author}</span>
+                      <span className="font-medium text-slate-500 dark:text-slate-400 hidden lg:inline">{art.author}</span>
                       <span className="font-mono">{art.date}</span>
                     </div>
                   </div>
@@ -518,7 +518,7 @@ export default function Home() {
                           {op.title}
                         </Link>
                         {op.accessLevel && op.accessLevel !== "Free" && (
-                          <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider font-sans border ${
+                          <span className={`hidden lg:inline-block text-[8px] font-bold px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider font-sans border ${
                             op.accessLevel === "Patron" ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20"
                           }`}>
                             {op.accessLevel}
@@ -526,8 +526,8 @@ export default function Home() {
                         )}
                       </div>
                       <div className="flex items-center space-x-2 text-[9px] text-slate-400">
-                        <span className="text-slate-500 dark:text-slate-400">{op.author}</span>
-                        <span>•</span>
+                        <span className="text-slate-500 dark:text-slate-400 hidden lg:inline">{op.author}</span>
+                        <span className="hidden lg:inline">•</span>
                         <span className="font-mono">{op.date}</span>
                       </div>
                     </div>
@@ -631,9 +631,9 @@ export default function Home() {
             <div className="lg:col-span-4 space-y-4">
               <h4 className="font-serif font-bold text-sm text-primary border-l-2 border-primary pl-2">ताजा यूट्यूब शॉर्ट्स (Shorts Grid)</h4>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex lg:grid lg:grid-cols-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 scrollbar-none gap-4">
                 {/* Short 1 */}
-                <div className="space-y-2">
+                <div className="space-y-2 w-[180px] sm:w-[220px] lg:w-auto shrink-0 lg:shrink-1">
                   <div className="aspect-[9/16] w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 shadow bg-black">
                     <iframe
                       src="https://www.youtube.com/embed/dQw4w9WgXcQ"
@@ -648,7 +648,7 @@ export default function Home() {
                 </div>
 
                 {/* Short 2 */}
-                <div className="space-y-2">
+                <div className="space-y-2 w-[180px] sm:w-[220px] lg:w-auto shrink-0 lg:shrink-1">
                   <div className="aspect-[9/16] w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 shadow bg-black">
                     <iframe
                       src="https://www.youtube.com/embed/dQw4w9WgXcQ"
@@ -692,7 +692,7 @@ export default function Home() {
                         className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
                       />
                       {art.accessLevel && art.accessLevel !== "Free" && (
-                        <div className="absolute top-2.5 left-2.5">
+                        <div className="absolute top-2.5 left-2.5 hidden lg:block">
                           <span className={`text-[9px] font-bold px-2 py-0.5 rounded shadow-sm uppercase tracking-wider text-white font-sans ${
                             art.accessLevel === "Patron" ? "bg-rose-500" : "bg-[#3B82F6]"
                           }`}>
@@ -706,16 +706,17 @@ export default function Home() {
                         {art.title}
                       </h4>
                     </Link>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 font-light">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 font-light hidden lg:block">
                       {art.summary}
                     </p>
                   </div>
 
                   <div className="flex justify-between items-center pt-3 border-t border-slate-150 dark:border-slate-800/60 mt-4 text-[10px] text-slate-400">
                     <div className="flex items-center space-x-1">
-                      <span className="font-medium text-slate-600 dark:text-slate-350">{art.author}</span>
+                      <span className="font-medium text-slate-600 dark:text-slate-350 hidden lg:inline">{art.author}</span>
+                      <span className="font-mono lg:hidden">{art.date}</span>
                     </div>
-                    <div className="flex items-center space-x-2 font-mono">
+                    <div className="hidden lg:flex items-center space-x-2 font-mono">
                       <span>{art.readTime}</span>
                       <span>•</span>
                       <span>{art.views} पठन</span>

@@ -670,7 +670,7 @@ export default function MagazinePage() {
             {/* FLOATING ACTION BUTTON FOR COLLAPSIBLE AI DRAWER */}
             <button 
               onClick={() => setIsAiOpen(true)}
-              className="fixed bottom-8 right-8 z-40 bg-primary hover:bg-primary/95 text-white p-4.5 rounded-full shadow-2xl flex items-center justify-center space-x-2 cursor-pointer font-hindi text-xs font-black transition-all hover:scale-105 active:scale-95 border border-primary/20"
+              className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] right-4 lg:bottom-8 lg:right-8 z-[40] bg-primary hover:bg-primary/95 text-white p-4.5 rounded-full shadow-2xl flex items-center justify-center space-x-2 cursor-pointer font-hindi text-xs font-black transition-all hover:scale-105 active:scale-95 border border-primary/20"
             >
               <Sparkles className="w-5 h-5 animate-pulse" />
               <span>🤖 AI सहायक</span>
@@ -686,7 +686,7 @@ export default function MagazinePage() {
                     animate={{ opacity: 0.5 }}
                     exit={{ opacity: 0 }}
                     onClick={() => setIsAiOpen(false)}
-                    className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+                    className="fixed inset-0 z-[49] bg-black/60 backdrop-blur-sm"
                   />
 
                   {/* Drawer body */}
@@ -695,7 +695,7 @@ export default function MagazinePage() {
                     animate={{ x: 0 }}
                     exit={{ x: "100%" }}
                     transition={{ type: "spring", damping: 20, stiffness: 100 }}
-                    className="fixed top-0 right-0 h-full w-full sm:w-[450px] z-50 bg-white dark:bg-[#0F172A] border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col justify-between"
+                    className="fixed top-0 right-0 h-full w-full sm:w-[450px] z-[50] bg-white dark:bg-[#0F172A] border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col justify-between"
                   >
                     <div>
                       {/* Drawer Header */}

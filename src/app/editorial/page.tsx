@@ -1130,7 +1130,7 @@ function EditorialPageContent() {
 
           {/* Selection Tooltip box */}
           {selectedText && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-slate-950 border border-primary/20 rounded-2xl p-4 shadow-2xl flex flex-col space-y-3 max-w-sm w-full text-xs">
+            <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-[45] bg-white dark:bg-slate-950 border border-primary/20 rounded-2xl p-4 shadow-2xl flex flex-col space-y-3 max-w-sm w-full text-xs">
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2">
                 <span className="font-serif font-bold text-primary flex items-center space-x-1">
                   <Highlighter className="w-3.5 h-3.5 animate-pulse" />
@@ -1378,7 +1378,7 @@ function EditorialPageContent() {
       </div>
 
       {/* FLOATING READER ACCESSIBILITY TOOLBAR PANEL */}
-      <div className="fixed bottom-6 left-6 lg:bottom-auto lg:top-1/3 lg:left-8 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800/80 p-2 rounded-full shadow-2xl flex lg:flex-col gap-3.5 items-center">
+      <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-4 lg:bottom-auto lg:top-1/3 lg:left-8 z-[40] bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800/80 p-2 rounded-full shadow-2xl flex lg:flex-col gap-3.5 items-center">
         <button
           onClick={() => {
             if (!currentUser) {

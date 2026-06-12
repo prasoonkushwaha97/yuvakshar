@@ -309,7 +309,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
         onClick={() => setIsOpen(true)}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="fixed right-6 bottom-20 lg:bottom-6 z-40 p-4 rounded-full bg-gradient-to-tr from-primary to-amber-500 text-white font-bold shadow-[0_0_20px_rgba(234,88,12,0.4)] hover:shadow-[0_0_30px_rgba(245,158,11,0.6)] cursor-pointer flex items-center space-x-1"
+        className="fixed right-6 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:bottom-6 z-[40] p-4 rounded-full bg-gradient-to-tr from-primary to-amber-500 text-white font-bold shadow-[0_0_20px_rgba(234,88,12,0.4)] hover:shadow-[0_0_30px_rgba(245,158,11,0.6)] cursor-pointer flex items-center space-x-1"
         title="AI ज्ञान इंजन"
       >
         <Sparkles className="w-5.5 h-5.5 animate-pulse text-amber-100" />
@@ -326,7 +326,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
               animate={{ opacity: 0.4 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 z-[49] bg-black/60 backdrop-blur-sm"
             />
 
             {/* Sidebar body (glassmorphic saffron borders) */}
@@ -335,7 +335,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 26, stiffness: 220 }}
-              className="fixed top-0 right-0 h-full w-full max-w-md z-50 bg-[#FAF8F3]/98 dark:bg-[#080D1A]/95 border-l border-amber-500/20 shadow-2xl flex flex-col justify-between"
+              className="fixed top-0 right-0 h-full w-full max-w-md z-[50] bg-[#FAF8F3]/98 dark:bg-[#080D1A]/95 border-l border-amber-500/20 shadow-2xl flex flex-col justify-between"
             >
               {/* Header */}
               <div className="p-4 border-b border-amber-500/10 flex items-center justify-between bg-primary/5">
