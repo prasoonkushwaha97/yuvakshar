@@ -33,10 +33,41 @@ async function run() {
     await page.goto('http://localhost:3000/admin', { waitUntil: 'networkidle2' });
     await new Promise(r => setTimeout(r, 2000));
     
+    // Check if we need to click the login trigger button
+    console.log('Clicking "कृपया पहले लॉगिन करें" button...');
+    const triggerButtons = await page.$$('button');
+    let clickedTrigger = false;
+    for (let btn of triggerButtons) {
+      const text = await page.evaluate(el => el.textContent, btn);
+      if (text.includes('कृपया पहले लॉगिन करें')) {
+        await btn.click();
+        clickedTrigger = true;
+        break;
+      }
+    }
+    await new Promise(r => setTimeout(r, 1500));
+
+    // Now click the "Email / पासवर्ड" tab in the AuthModal
+    console.log('Clicking Email/Password tab...');
+    const authButtons = await page.$$('button');
+    for (let btn of authButtons) {
+      const text = await page.evaluate(el => el.textContent, btn);
+      if (text.includes('Email / पासवर्ड')) {
+        await btn.click();
+        break;
+      }
+    }
+    await new Promise(r => setTimeout(r, 1000));
+
     // Fill login
+    console.log('Filling credentials...');
     await page.type('input[type="email"]', 'yuvakshar.editor@gmail.com');
+    await page.type('input[type="password"]', 'password123');
+    
+    // Find the submit button for Email Login and click it
+    console.log('Submitting login...');
     await page.click('button[type="submit"]');
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 4000));
     await page.screenshot({ path: path.join(targetDir, 'real_admin_dashboard.png') });
     console.log('3. Admin Dashboard captured.');
 

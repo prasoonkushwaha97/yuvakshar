@@ -49,42 +49,37 @@
   --popover-foreground: #1E1E1E;
   --primary: #EA580C;
   --primary-foreground: #FFFFFF;
-  --secondary: #2F2F2F; /* secondary card color */
+  --secondary: #1E1E1E;
   --secondary-foreground: #FFFFFF;
   --muted: #F4EFE6;
   --muted-foreground: #6B7280;
-  --accent: #EA580C; /* accent color for buttons, links, etc. */
-  --accent-foreground: #FFFFFF;
-  --border: #3A3A3A; /* border color */
-  --input: #3A3A3A;
+  --accent: rgba(234, 88, 12, 0.1);
+  --accent-foreground: #EA580C;
+  --border: #E7E2D8;
+  --input: #E7E2D8;
   --ring: #EA580C;
   --radius: 0.5rem;
-  --radius-card: 1rem;   /* 16px */
-  --radius-button: 0.75rem; /* 12px */
-  --radius-input: 0.75rem;
-  --radius-modal: 1.5rem;   /* 24px */
-  --radius-hero: 1.5rem;
-  --shadow-depth: 0 6px 18px rgba(0,0,0,0.25);
 }
 
 .dark {
-  --background: #1E1E1E; /* warm charcoal base */
-  --foreground: #E0E0E0; /* soft light text */
-  --card: #2A2A2A; /* slightly lighter card surface */
-  --card-foreground: #E0E0E0;
+  --background: #1E1E1E;
+  --foreground: #E5E7EB;
+  --card: #2A2A2A;
+  --card-foreground: #E5E7EB;
   --popover: #1E1E1E;
-  --popover-foreground: #E0E0E0;
+  --popover-foreground: #E5E7EB;
   --primary: #EA580C;
   --primary-foreground: #FFFFFF;
-  --secondary: #2D2D2D;
-  --secondary-foreground: #E0E0E0;
-  --muted: #2D2D2D;
-  --muted-foreground: #B0B0B0;
-  --accent: rgba(234, 88, 12, 0.15);
-  --accent-foreground: #EA580C;
+  --secondary: #2F2F2F;
+  --secondary-foreground: #E5E7EB;
+  --muted: #2F2F2F;
+  --muted-foreground: #BDBDBD;
+  --accent: #EA580C;
+  --accent-foreground: #FFFFFF;
   --border: #3A3A3A;
   --input: #3A3A3A;
   --ring: #EA580C;
+  --radius: 0.5rem;
 }
 
 @layer base {

@@ -160,7 +160,7 @@ export default function Navbar() {
             <img
               src={settings.appearance.logo_url || "/yuvakshar_logo_official.png"}
               alt="युवाक्षर"
-              className="h-8 w-auto object-contain"
+              className="logo h-8 w-auto object-contain"
               onError={(e) => { (e.target as HTMLImageElement).src = "/yuvakshar_logo_official.png"; }}
             />
           </Link>
