@@ -232,48 +232,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* MEMBERSHIP ARCHIVED: Membership Info Card hidden for membership system archival */}
-      {false && currentUser && (
-        <div className="mb-6 p-4 rounded-2xl border border-primary/20 bg-primary/5 dark:bg-slate-900/30 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-serif">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm uppercase">
-              {currentUser?.membership?.[0] || "F"}
-            </div>
-            <div>
-              <p className="font-bold text-slate-800 dark:text-white leading-none">
-                सदस्यता स्तर: <span className="text-primary font-sans font-bold">{currentUser.membership || "Free"}</span>
-              </p>
-              <p className="text-[10px] text-slate-400 mt-1">
-                {currentUser.role ? `टीम भूमिका: ${currentUser.role}` : "युवाक्षर डिजिटल पाठक परिषद"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            {currentUser?.membership || "Free"}
-              <button
-                onClick={() => updateUserMembership(currentUser.id, "Premium")}
-                className="px-4 py-2 bg-primary hover:bg-primary/95 text-white rounded-xl font-bold font-sans text-[10px] shadow-md transition-all cursor-pointer"
-              >
-                प्रीमियम में अपग्रेड करें (₹99/माह)
-              </button>
-            )}
-            {(currentUser.membership === "Free" || currentUser.membership === "Premium") && (
-              <button
-                onClick={() => updateUserMembership(currentUser.id, "Patron")}
-                className="px-4 py-2 border border-primary text-primary hover:bg-primary/5 rounded-xl font-bold font-sans text-[10px] transition-all cursor-pointer"
-              >
-                पैट्रन संरक्षक बनें (₹499)
-              </button>
-            )}
-            {currentUser.membership === "Patron" && (
-              <span className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-600 rounded-lg font-bold font-sans text-[10px] animate-pulse">
-                🌟 प्रतिष्ठित पैट्रन संरक्षक
-              </span>
-            )}
-          </div>
-        </div>
-      )}
+      {/* MEMBERSHIP ARCHIVED: Membership Info Card — hidden, preserved for future reactivation */}
 
       {/* Tabs Navigation */}
       <div className="flex overflow-x-auto border-b border-slate-200 dark:border-slate-800 justify-start space-x-2 pb-px text-xs font-bold font-serif mb-8 scrollbar-none">
@@ -416,25 +375,7 @@ export default function DashboardPage() {
                   <h3 className="font-serif text-sm font-bold">एआई ज्ञान रिपोर्ट (AI Knowledge Report)</h3>
                 </div>
 
-                {/* Tier Lock for Free Members */}
-                {/* MEMBERSHIP ARCHIVED: Premium lock disabled */}
-                {false ? (
-                  <div className="absolute inset-0 bg-white/80 dark:bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-10 transition-all">
-                    <Lock className="w-10 h-10 text-primary mb-3 animate-bounce" />
-                    <h4 className="font-serif text-sm font-bold text-slate-800 dark:text-white mb-2">
-                      एआई ज्ञान रिपोर्ट लॉक है
-                    </h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed font-serif mb-4">
-                      अपनी पढ़ाई की गहराई, संज्ञानात्मक शक्तियों (Cognitive Metrics) और ज्ञान रिपोर्ट तक पहुँचने के लिए अपनी सदस्यता को अभी अपग्रेड करें।
-                    </p>
-                    <button
-                      onClick={() => updateUserMembership(currentUser.id, "Premium")}
-                      className="px-6 py-2.5 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl text-xs shadow-md transition-all cursor-pointer"
-                    >
-                      Upgrade to Premium Membership
-                    </button>
-                  </div>
-                ) : null}
+                {/* MEMBERSHIP ARCHIVED: Premium lock overlay removed — AI Knowledge Report is now freely accessible to all logged-in users */}
 
                 {/* Report Content */}
                 <div className="space-y-6">
