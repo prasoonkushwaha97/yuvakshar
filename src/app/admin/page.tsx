@@ -607,7 +607,7 @@ export default function AdminDashboard() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!emailInput.trim()) return;
-    const success = await loginUser(emailInput, roleInput);
+    const success = await loginUser(emailInput, "123456");
     if (success) {
       setIsLoggedIn(true);
     }
@@ -4303,6 +4303,11 @@ function MagazinesManagement() {
   const [status, setStatus] = useState<"Draft" | "Published" | "Archived">("Draft");
   const [pdfSourceUrl, setPdfSourceUrl] = useState<string>("");
   const [pages, setPages] = useState<string[]>([""]);
+  const [edition, setEdition] = useState<string>("");
+  const [category, setCategory] = useState<string>("");
+  const [publishDate, setPublishDate] = useState<string>(new Date().toISOString());
+  const [isFeatured, setIsFeatured] = useState<boolean>(false);
+  const [isRecommended, setIsRecommended] = useState<boolean>(false);
 
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -4319,6 +4324,11 @@ function MagazinesManagement() {
     setStatus("Draft");
     setPdfSourceUrl("");
     setPages([""]);
+    setEdition("");
+    setCategory("");
+    setPublishDate(new Date().toISOString());
+    setIsFeatured(false);
+    setIsRecommended(false);
   };
 
   const handleEdit = (mag: Magazine) => {
@@ -4332,6 +4342,11 @@ function MagazinesManagement() {
     setStatus(mag.status || "Draft");
     setPdfSourceUrl(mag.pdfSourceUrl || "");
     setPages(mag.pages && mag.pages.length > 0 ? mag.pages : [""]);
+    setEdition(mag.edition || "");
+    setCategory(mag.category || "");
+    setPublishDate(mag.publishDate || new Date().toISOString());
+    setIsFeatured(mag.isFeatured || false);
+    setIsRecommended(mag.isRecommended || false);
     setSubTab("upload");
   };
 
@@ -4365,6 +4380,11 @@ function MagazinesManagement() {
       accessLevel,
       status,
       pdfSourceUrl: pdfSourceUrl || undefined,
+      edition,
+      category,
+      publishDate,
+      isFeatured,
+      isRecommended,
     };
 
     try {

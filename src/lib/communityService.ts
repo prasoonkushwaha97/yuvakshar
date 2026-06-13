@@ -918,3 +918,77 @@ export const searchCommunity = async (
 
   return { posts, groups, events, challenges };
 };
+
+// ─── SOCIAL GRAPH & ACTIVITY TIMELINE ───────────────────────────────────────
+
+/**
+ * Toggle Follow User
+ */
+export const toggleFollowUser = async (currentUserId: string, targetUserId: string): Promise<boolean> => {
+  // In a real app, this hits the DB. Here we just mock a success toggle
+  // by utilizing a mock local storage map or just returning a simulated success
+  if (typeof window === "undefined") return false;
+  
+  const followGraph = JSON.parse(localStorage.getItem("yuvakshar_social_graph") || "{}");
+  if (!followGraph[currentUserId]) followGraph[currentUserId] = [];
+  
+  const isFollowing = followGraph[currentUserId].includes(targetUserId);
+  if (isFollowing) {
+    followGraph[currentUserId] = followGraph[currentUserId].filter((id: string) => id !== targetUserId);
+  } else {
+    followGraph[currentUserId].push(targetUserId);
+  }
+  
+  localStorage.setItem("yuvakshar_social_graph", JSON.stringify(followGraph));
+  return !isFollowing;
+};
+
+/**
+ * Check if following
+ */
+export const isUserFollowing = (currentUserId: string, targetUserId: string): boolean => {
+  if (typeof window === "undefined") return false;
+  const followGraph = JSON.parse(localStorage.getItem("yuvakshar_social_graph") || "{}");
+  return followGraph[currentUserId]?.includes(targetUserId) || false;
+};
+
+/**
+ * Get unified Social Timeline (Posts, Replies, Activity)
+ */
+export const getUserSocialTimeline = async (userId: string): Promise<any[]> => {
+  initializeCommunityData();
+  const posts = getLocalStorageItem<CommunityPost[]>("yuvakshar_c_posts", mockPosts)
+    .filter(p => p.user_id === userId);
+    
+  const comments = getLocalStorageItem<CommunityComment[]>("yuvakshar_c_comments", mockComments)
+    .filter(c => c.user_id === userId);
+    
+  const timeline: any[] = [];
+  
+  posts.forEach(p => {
+    timeline.push({
+      ...p,
+      activity_type: p.post_type === "poll" ? "Created Poll" : "Posted",
+      timestamp: new Date(p.created_at).getTime()
+    });
+  });
+  
+  comments.forEach(c => {
+    timeline.push({
+      id: c.id,
+      user_id: c.user_id,
+      user_name: c.user_name,
+      user_avatar: c.user_avatar,
+      content: c.content,
+      post_id: c.post_id,
+      activity_type: "Replied",
+      post_type: "reply",
+      created_at: c.created_at,
+      likesCount: c.likesCount,
+      timestamp: new Date(c.created_at).getTime()
+    });
+  });
+  
+  // Sort descending
+  return timeline.sort((a, b) => b.timestamp - a.timestamp);
+};

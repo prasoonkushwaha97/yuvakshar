@@ -1,31 +1,32 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
-console.log("[SupabaseClientDebug] NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl || "(empty)");
-console.log("[SupabaseClientDebug] NEXT_PUBLIC_SUPABASE_ANON_KEY length:", supabaseAnonKey ? supabaseAnonKey.length : 0);
-console.log("[SupabaseClientDebug] isSupabaseConfigured() result:", (
-  supabaseUrl !== "" &&
-  supabaseAnonKey !== "" &&
-  !supabaseUrl.includes("your_supabase_url") &&
-  !supabaseUrl.includes("placeholder-url")
-));
-
 export const isSupabaseConfigured = (): boolean => {
-  const result = (
+  return (
     supabaseUrl !== "" &&
     supabaseAnonKey !== "" &&
-    !supabaseUrl.includes("your_supabase_url") &&
-    !supabaseUrl.includes("placeholder-url")
+    supabaseUrl.startsWith("https://") &&
+    !supabaseUrl.includes("placeholder") &&
+    !supabaseUrl.includes("your_supabase_url")
   );
-  return result;
 };
 
-// Initialize Supabase Client (provide empty defaults to prevent throw on initial parse if unconfigured)
-export const supabase = createClient(
-  supabaseUrl || "https://placeholder-url.supabase.co",
-  supabaseAnonKey || "placeholder-anon-key"
+if (process.env.NODE_ENV !== "production" && !isSupabaseConfigured()) {
+  console.warn("⚠️ [Supabase] Environment variables missing or invalid. Check .env.local");
+}
+
+export const supabase: SupabaseClient = createClient(
+  isSupabaseConfigured() ? supabaseUrl : "https://unconfigured.supabase.co",
+  isSupabaseConfigured() ? supabaseAnonKey : "unconfigured-anon-key",
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  }
 );
 
 /**
@@ -63,4 +64,3 @@ export const checkStorageHealth = async (): Promise<boolean> => {
     return false;
   }
 };
-

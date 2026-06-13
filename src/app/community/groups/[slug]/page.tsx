@@ -31,6 +31,8 @@ import {
   CommunityReadingProgress,
   CommunityGroupMember
 } from "@/lib/communityService";
+import ProfilePreviewWrapper from "@/components/yuvakshar/ProfilePreviewCard";
+import HoverUserCard from "@/components/yuvakshar/HoverUserCard";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -496,7 +498,11 @@ export default function GroupDetailPage() {
                         
                         <div className="flex justify-between items-start">
                           <div className="flex items-center space-x-2">
-                            <span className="font-bold text-slate-800 dark:text-slate-200 font-hindi">{p.user_name}</span>
+                            <HoverUserCard userId={p.user_id}>
+                              <Link href={`/community/u/${p.user_id}`} className="font-bold text-slate-800 dark:text-slate-200 font-hindi hover:text-primary transition-colors">
+                                {p.user_name}
+                              </Link>
+                            </HoverUserCard>
                             
                             {/* Role Badge inside group */}
                             <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold ${
@@ -619,18 +625,20 @@ export default function GroupDetailPage() {
                 const userProfile = users.find(u => u.id === member.user_id);
                 return (
                   <div key={member.id} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center space-x-2 min-w-0">
-                      <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center font-bold text-[9px] text-slate-500 uppercase shrink-0 overflow-hidden">
-                        {userProfile?.avatar_url ? (
-                          <img src={userProfile.avatar_url} alt={userProfile.name} className="w-full h-full object-cover" />
-                        ) : (
-                          userProfile?.name[0] || "M"
-                        )}
-                      </div>
-                      <span className="font-bold font-hindi truncate text-slate-800 dark:text-slate-200">
-                        {userProfile?.name || "सदस्य"}
-                      </span>
-                    </div>
+                    <HoverUserCard userId={member.user_id}>
+                      <Link href={`/community/u/${member.user_id}`} className="flex items-center space-x-2 min-w-0 hover:opacity-80 transition-opacity">
+                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center font-bold text-[9px] text-slate-500 uppercase shrink-0 overflow-hidden">
+                          {userProfile?.avatar_url ? (
+                            <img src={userProfile.avatar_url} alt={userProfile.name} className="w-full h-full object-cover" />
+                          ) : (
+                            userProfile?.name[0] || "M"
+                          )}
+                        </div>
+                        <span className="font-bold font-hindi truncate text-slate-800 dark:text-slate-200 hover:text-primary transition-colors">
+                          {userProfile?.name || "सदस्य"}
+                        </span>
+                      </Link>
+                    </HoverUserCard>
 
                     <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${
                       member.role === "Owner" || member.role === "Moderator"

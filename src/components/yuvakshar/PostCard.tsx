@@ -12,7 +12,7 @@ import {
   MoreHorizontal
 } from "lucide-react";
 import GlassCard from "@/components/yuvakshar/GlassCard";
-import HoverAuthorCard from "@/components/yuvakshar/HoverAuthorCard";
+import HoverUserCard from "@/components/yuvakshar/HoverUserCard";
 import { CommunityPost } from "@/lib/communityService";
 import { Profile } from "@/store/CmsContext";
 
@@ -62,17 +62,7 @@ export default function PostCard({
   const badge = getPostTypeBadge(post.post_type);
   const reputation = authorProfile?.reputation_score || 120;
 
-  // Author Data map for Hover Card
-  const hoverAuthorData = {
-    id: authorProfile?.id || post.user_id,
-    slug: authorProfile?.slug,
-    name: post.user_name,
-    avatar_url: authorProfile?.avatar_url,
-    role: post.user_rank || authorProfile?.role || "सदस्य",
-    bio: authorProfile?.bio,
-    followersCount: (authorProfile as any)?.followers?.length || 42,
-    followingCount: (authorProfile as any)?.following?.length || 12,
-  };
+  const hoverUserId = authorProfile?.id || post.user_id;
 
   // Optimistic UI States for instant feedback
   const [isLikedOpt, setIsLikedOpt] = useState(false); // In a real app, initialize from user's liked posts list
@@ -98,23 +88,23 @@ export default function PostCard({
       <div className="flex items-start justify-between">
         <div className="flex items-center space-x-3">
           
-          <HoverAuthorCard author={hoverAuthorData}>
-            <Link href={`/community/authors/${authorProfile?.slug || post.user_id}`} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-200 flex items-center justify-center font-bold text-sm text-slate-500 uppercase shrink-0 overflow-hidden hover:opacity-90 block border border-slate-300 dark:border-slate-700">
+          <HoverUserCard userId={hoverUserId}>
+            <Link href={`/community/u/${authorProfile?.slug || post.user_id}`} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-200 flex items-center justify-center font-bold text-sm text-slate-500 uppercase shrink-0 overflow-hidden hover:opacity-90 block border border-slate-300 dark:border-slate-700">
               {authorProfile?.avatar_url ? (
                 <img src={authorProfile.avatar_url} alt={post.user_name} className="w-full h-full object-cover" />
               ) : (
                 post.user_name[0]
               )}
             </Link>
-          </HoverAuthorCard>
+          </HoverUserCard>
           
           <div>
             <div className="flex items-center space-x-2">
-              <HoverAuthorCard author={hoverAuthorData}>
-                <Link href={`/community/authors/${authorProfile?.slug || post.user_id}`} className="text-sm font-bold text-slate-850 dark:text-white hover:text-primary font-hindi leading-tight">
+              <HoverUserCard userId={hoverUserId}>
+                <Link href={`/community/u/${authorProfile?.slug || post.user_id}`} className="text-sm font-bold text-slate-850 dark:text-white hover:text-primary font-hindi leading-tight">
                   {post.user_name}
                 </Link>
-              </HoverAuthorCard>
+              </HoverUserCard>
               
               {post.user_rank && (
                 <span className="hidden sm:inline-block text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold font-serif">

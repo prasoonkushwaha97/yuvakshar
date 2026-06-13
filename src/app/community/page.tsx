@@ -350,7 +350,7 @@ function CommunityFeedPageContent() {
               विचारों को आवाज़ देने और साथी लेखकों से संवाद स्थापित करने के लिए कृपया लॉगिन करें।
             </p>
             <button 
-              onClick={() => loginUser("yuvakshar.editor@gmail.com", "Admin")}
+              onClick={() => loginUser("yuvakshar.editor@gmail.com")}
               className="text-[10px] text-primary hover:text-primary/95 font-bold cursor-pointer font-hindi"
             >
               यहाँ क्लिक करके तुरंत लॉगिन करें →

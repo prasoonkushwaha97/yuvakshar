@@ -274,25 +274,28 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
               </div>
 
               <div className="bg-slate-50 dark:bg-[#111827] rounded-2xl border border-slate-200/50 dark:border-slate-800/40 p-4">
-                <h3 className="text-lg font-black font-hindi text-slate-800 dark:text-white mb-4">सुझाए गए लेखक</h3>
+                <h3 className="text-lg font-black font-hindi text-slate-800 dark:text-white mb-4">सुझाए गए सदस्य</h3>
                 <div className="space-y-4">
                   {[
-                    { name: "डॉ. रमेश चंद्र", role: "प्रख्यात साहित्यकार" },
-                    { name: "कविता तिवारी", role: "युवा कवयित्री" },
-                    { name: "सुमित शर्मा", role: "समीक्षक" },
+                    { id: "ramesh-chandra", name: "डॉ. रमेश चंद्र", role: "प्रख्यात साहित्यकार" },
+                    { id: "kavita-tiwari", name: "कविता तिवारी", role: "युवा कवयित्री" },
+                    { id: "sumit-sharma", name: "सुमित शर्मा", role: "समीक्षक" },
                   ].map((author, idx) => (
-                    <div key={idx} className="flex items-center gap-3 cursor-pointer hover:bg-slate-100/50 dark:hover:bg-slate-800/30 p-2 -mx-2 rounded-lg transition-colors">
+                    <Link key={idx} href={`/community/u/${author.id}`} className="flex items-center gap-3 cursor-pointer hover:bg-slate-100/50 dark:hover:bg-slate-800/30 p-2 -mx-2 rounded-lg transition-colors">
                       <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0 flex items-center justify-center font-bold text-primary">
                         {author.name[0]}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-bold text-sm text-slate-800 dark:text-slate-200 font-hindi truncate">{author.name}</div>
+                        <div className="font-bold text-sm text-slate-800 dark:text-slate-200 font-hindi truncate hover:text-primary transition-colors">{author.name}</div>
                         <div className="text-[11px] text-slate-500 font-hindi truncate">{author.role}</div>
                       </div>
-                      <button className="px-3 py-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-xs font-bold font-hindi">
+                      <button 
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); alert("फ़ॉलो किया गया!"); }}
+                        className="px-3 py-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-xs font-bold font-hindi hover:opacity-90"
+                      >
                         Follow
                       </button>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>

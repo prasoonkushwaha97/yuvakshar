@@ -8,7 +8,27 @@
 
 // ─── Article & Magazine ────────────────────────────────────────────────────
 // These are re-exported from mockData for convenience
-export type { Article, Magazine } from "@/lib/mockData";
+export type { Article } from "@/lib/mockData";
+
+export interface MagazineIssue {
+  id: string;
+  issue: string;
+  edition?: string;
+  month: string;
+  year?: string;
+  coverImage: string;
+  description: string;
+  pages: string[]; // Array of image URLs representing pages
+  category?: string;
+  accessLevel?: "Free" | "Premium" | "Patron";
+  status?: "Draft" | "Published" | "Archived";
+  publishDate?: string;
+  pdfSourceUrl?: string; // Optional raw PDF for download purposes only
+  isFeatured?: boolean;
+  isRecommended?: boolean;
+}
+
+export type Magazine = MagazineIssue;
 
 // ─── User & Profile ────────────────────────────────────────────────────────
 export interface Profile {
@@ -68,6 +88,11 @@ export interface Profile {
   portfolio?: Array<{ id: string; name: string; url: string; type: "book" | "research_paper" | "report" | "white_paper" | "resume" | "other"; is_public: boolean }>;
   achievements?: Array<{ id: string; title: string; description?: string; year?: string; image_url?: string }>;
   followers?: string[];
+  following?: string[];
+  social_posts_count?: number;
+  social_replies_count?: number;
+  groups_count?: number;
+  reading_streak?: number;
   featured?: boolean;
   publicVisibility?: boolean;
 }

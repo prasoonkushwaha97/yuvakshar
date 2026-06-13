@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase, isSupabaseConfigured, checkConnectionHealth, checkStorageHealth } from "@/lib/supabaseClient";
-import { mockArticles, mockMagazines, mockCareerItems, mockBroadcasts, mockSubscribers, mockComments, Article, Magazine } from "@/lib/mockData";
-export type { Article, Magazine };
+import { mockArticles, mockMagazineIssues, mockCareerItems, mockBroadcasts, mockSubscribers, mockComments, Article } from "@/lib/mockData";
+export type { Article };
 import { QuizQuestion, ArticleQuiz, preseededQuizzes, generateFallbackQuestions } from "@/lib/defaultQuizzes";
 import { callOpenAi, callGemini } from "@/lib/aiService";
 import { generateMockAiResponse } from "@/lib/mockAiResponse";
@@ -99,8 +99,8 @@ export interface DonationRecord {
   date: string;
 }
 
-import { Profile, OrgTask, VerificationRequest, OrgAuditLog, RoleTransfer, PrivateMessage } from "./types";
-export type { Profile, OrgTask, VerificationRequest, OrgAuditLog, RoleTransfer, PrivateMessage };
+import { Profile, OrgTask, VerificationRequest, OrgAuditLog, RoleTransfer, PrivateMessage, Magazine, MagazineIssue } from "./types";
+export type { Profile, OrgTask, VerificationRequest, OrgAuditLog, RoleTransfer, PrivateMessage, Magazine, MagazineIssue };
 
 export interface Video {
   id: string;
@@ -345,7 +345,8 @@ interface CmsContextType {
   videos: Video[];
   
   // Auth Operations
-  loginUser: (email: string, role: string, customName?: string, customMobile?: string, passwordInput?: string) => Promise<boolean>;
+  loginUser: (email: string, passwordInput?: string) => Promise<boolean>;
+  registerUser: (email: string, role: string, customName: string, customMobile: string, passwordInput: string) => Promise<boolean>;
   logoutUser: () => void;
   updateUserRole: (userId: string, role: Profile["role"]) => Promise<void>;
   createUser: (user: Omit<Profile, "id">) => Promise<void>;
@@ -617,7 +618,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   const [articles, setArticles] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
-  const [magazines, setMagazines] = useState<Magazine[]>([]);
+  const [magazines, setMagazines] = useState<MagazineIssue[]>(mockMagazineIssues);
   const [comments, setComments] = useState<Comment[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [assignments, setAssignments] = useState<EditorialAssignment[]>([]);
@@ -1068,8 +1069,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     if (localMagazines && JSON.parse(localMagazines).length >= 3) {
       setMagazines(JSON.parse(localMagazines));
     } else {
-      setMagazines(mockMagazines);
-      localStorage.setItem("yuvakshar_magazines", JSON.stringify(mockMagazines));
+      setMagazines(mockMagazineIssues);
+      localStorage.setItem("yuvakshar_magazines", JSON.stringify(mockMagazineIssues));
     }
 
     // Submissions
@@ -1603,7 +1604,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       if (dbMagazines && dbMagazines.length > 0) {
         setMagazines(dbMagazines);
       } else {
-        setMagazines(mockMagazines);
+        setMagazines(mockMagazineIssues);
       }
 
       // Load Comments
@@ -1729,289 +1730,156 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   };
 
   // 2. Auth Operations
-  const loginUser = async (email: string, role: string, customName?: string, customMobile?: string, passwordInput?: string): Promise<boolean> => {
-    console.log("[AuthDebug] loginUser invoked", {
-      email,
-      role,
-      customName,
-      customMobile,
-      hasPassword: !!passwordInput
-    });
-    console.log("[AuthDebug] supabaseConfigured:", supabaseConfigured);
-    console.log("[AuthDebug] isSupabaseConfigured():", isSupabaseConfigured());
-    console.log("[AuthDebug] process.env.NEXT_PUBLIC_SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL ? "Present" : "Missing");
-    console.log("[AuthDebug] process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "Present" : "Missing");
+  const loginUser = async (email: string, passwordInput?: string): Promise<boolean> => {
+    if (!isSupabaseConfigured()) {
+      alert("System Configuration Error: Authentication is offline.");
+      return false;
+    }
+    
+    try {
+      if (email === "google.reader@gmail.com") {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: window.location.origin }
+        });
+        if (error) throw error;
+        return true;
+      }
 
-    if (supabaseConfigured) {
-      console.log("[AuthDebug] Supabase is configured; executing Supabase authentication flow");
-      try {
-        if (email === "google.reader@gmail.com") {
-          console.log("[AuthDebug] Starting signInWithOAuth for Google");
-          const { error } = await supabase.auth.signInWithOAuth({
-            provider: "google",
-            options: {
-              redirectTo: window.location.origin
-            }
-          });
-          if (error) {
-            console.error("[AuthDebug] Google OAuth error:", error.message);
-            alert("Google OAuth त्रुटि: " + error.message);
-            return false;
-          }
-          console.log("[AuthDebug] Google OAuth flow initiated successfully");
-          return true;
-        }
-
-        if (passwordInput) {
-          if (customName) {
-            console.log("[AuthDebug] Initiating supabase.auth.signUp with options", {
-              email,
-              name: customName,
-              mobile: customMobile,
-              role
-            });
-            const { data, error } = await supabase.auth.signUp({
-              email,
-              password: passwordInput,
-              options: {
-                data: {
-                  name: customName,
-                  mobile: customMobile || "",
-                  role: role || "Subscriber"
-                }
-              }
-            });
-            console.log("[AuthDebug] signUp response:", { data, error });
-            if (error) {
-              console.error("[AuthDebug] signUp failed with error:", error);
-              alert("पंजीकरण त्रुटि: " + error.message);
-              return false;
-            }
-            console.log("[AuthDebug] signUp succeeded. User created:", data?.user);
-            alert("पंजीकरण सफल! कृपया अपने ईमेल में पुष्टिकरण लिंक की जांच करें (यदि ईमेल सत्यापन सक्षम है)।");
-            return true;
-          } else {
-            console.log("[AuthDebug] Initiating supabase.auth.signInWithPassword", { email });
-            const { data, error } = await supabase.auth.signInWithPassword({
-              email,
-              password: passwordInput,
-            });
-            console.log("[AuthDebug] signInWithPassword response:", { data, error });
-            if (error) {
-              console.error("[AuthDebug] signInWithPassword failed with error:", error);
-              alert("लॉगिन त्रुटि: " + error.message);
-              return false;
-            }
-            console.log("[AuthDebug] signInWithPassword succeeded. User ID:", data?.user?.id);
-            return true;
-          }
-        }
-
-        console.log("[AuthDebug] Initiating passwordless signInWithOtp", { email });
-        const { error } = await supabase.auth.signInWithOtp({ email });
-        console.log("[AuthDebug] signInWithOtp response error:", error);
+      if (passwordInput) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password: passwordInput,
+        });
         if (error) {
-          console.error("[AuthDebug] signInWithOtp failed with error:", error);
-          alert("OTP भेजने में त्रुटि: " + error.message);
+          if (error.message.includes("Invalid login credentials")) {
+            alert("लॉगिन त्रुटि: अमान्य ईमेल या पासवर्ड।");
+          } else {
+            alert("लॉगिन त्रुटि: " + error.message);
+          }
           return false;
         }
-        console.log("[AuthDebug] signInWithOtp succeeded");
         return true;
-      } catch (err: any) {
-        console.error("[AuthDebug] Unexpected exception caught in loginUser:", err);
-        alert("Auth error: " + err.message);
+      } else {
+        // Fallback for magic link if no password provided
+        const { error } = await supabase.auth.signInWithOtp({ email });
+        if (error) throw error;
+        return true;
+      }
+    } catch (err: any) {
+      alert("Auth Error: " + err.message);
+      return false;
+    }
+  };
+
+  const registerUser = async (email: string, role: string, customName: string, customMobile: string, passwordInput: string): Promise<boolean> => {
+    if (!isSupabaseConfigured()) {
+      alert("System Configuration Error: Authentication is offline.");
+      return false;
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password: passwordInput,
+        options: {
+          data: {
+            name: customName,
+            mobile: customMobile,
+            role: role || "Subscriber"
+          }
+        }
+      });
+
+      if (error) {
+        if (error.message.includes("User already registered")) {
+          alert("पंजीकरण त्रुटि: यह ईमेल पहले से ही पंजीकृत है। कृपया लॉगिन करें।");
+        } else {
+          alert("पंजीकरण त्रुटि: " + error.message);
+        }
         return false;
       }
-    } else {
-      console.log("[AuthDebug] Supabase not configured; executing Mock authentication flow");
-      // Mock Sign In
-      const existingUser = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
 
-      if (existingUser) {
-        // Check if user is suspended
-        if (existingUser.status === "suspended") {
-          alert("त्रुटि: आपका खाता निलंबित (suspended) है। लॉगिन की अनुमति नहीं है।");
-          return false;
-        }
-
-        // Check password if stored
-        if (existingUser.password && existingUser.password !== passwordInput) {
-          alert("त्रुटि: गलत पासवर्ड!");
-          return false;
-        }
-
-        setCurrentUser(existingUser);
-        localStorage.setItem("yuvakshar_session_user", JSON.stringify(existingUser));
-
-        if (authCallback) {
-          authCallback();
-        }
-        setAuthCallback(null);
-        setAuthModalOpen(false);
-
-        // log action
-        logActivity(`Logged in as Mock User (${existingUser.role || "Reader"})`, {
-          performer: existingUser.name,
-          performerRole: existingUser.role,
-          actionType: "Login",
-          dateTime: new Date().toISOString()
-        });
-        return true;
+      // Automatically create the initial profile
+      if (data?.user) {
+        const newProfile: Profile = {
+          id: data.user.id,
+          name: customName || email.split("@")[0].toUpperCase(),
+          email: email,
+          mobile: customMobile,
+          role: (role || "Subscriber") as Profile["role"],
+          membership: "Free",
+          status: "active",
+          joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
+          slug: generateAuthorSlug(customName || email.split("@")[0]),
+          // Chaupal Identity Defaults
+          followers: [],
+          following: [],
+          social_posts_count: 0,
+          social_replies_count: 0,
+          groups_count: 0,
+          reading_streak: 0,
+          reputation_score: 0,
+          reputation_tier: "Bronze"
+        };
+        
+        await supabase.from("profiles").upsert(newProfile);
       }
 
-      // If user does not exist, create dynamically as reader/subscriber
-      const isPrimaryOwner = email === "yuvakshar.editor@gmail.com";
-      const finalRole = isPrimaryOwner 
-        ? "Owner" 
-        : (role === "Subscriber" || role === "Free Member" || role === "Premium Member" || role === "Patron Member" ? null : role);
-      const finalName = customName || (isPrimaryOwner ? "Owner" : email.split("@")[0].toUpperCase());
-      const finalMobile = customMobile || "";
-      const finalMembership = isPrimaryOwner 
-        ? "Patron" 
-        : (role === "Patron Member" ? "Patron" : role === "Premium Member" ? "Premium" : "Free");
-
-      const mockProfile: Profile = {
-        id: isPrimaryOwner ? "u-1" : "mock-uid-" + Math.floor(Math.random() * 1000),
-        name: finalName,
-        email: email,
-        mobile: finalMobile,
-        role: finalRole as Profile["role"],
-        membership: finalMembership as Profile["membership"],
-        status: "active",
-        password: passwordInput,
-        social_links: {},
-        badges: isPrimaryOwner ? ["Primary Owner"] : ["Verified User"]
-      };
-
-      // Ensure this user is added to the dynamic users list if not already there
-      const updatedUsers = [...users, mockProfile];
-      setUsers(updatedUsers);
-      localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
-
-      // Referral reward check: credit 15 days if they register from a referral
-      setTimeout(() => {
-        setReferrals(prevRefs => {
-          const matchIndex = prevRefs.findIndex(r => r.referredEmail.toLowerCase() === email.toLowerCase() && r.status === "pending");
-          if (matchIndex !== -1) {
-            const matchedRef = prevRefs[matchIndex];
-            // Credit 15 days to referrer
-            setUsers(prevUsers => {
-              const newU = prevUsers.map(u => {
-                if (u.id === matchedRef.referrerId) {
-                  return {
-                    ...u,
-                    referralRewardsEarned: (u.referralRewardsEarned || 0) + 15
-                  };
-                }
-                return u;
-              });
-              localStorage.setItem("yuvakshar_users", JSON.stringify(newU));
-              return newU;
-            });
-
-            // Extend referrer membership expiry
-            setUserMemberships(prevMems => {
-              const newM = prevMems.map(m => {
-                if (m.userId === matchedRef.referrerId && m.status === "active") {
-                  const exp = new Date(m.expiryDate);
-                  exp.setDate(exp.getDate() + 15);
-                  return {
-                    ...m,
-                    expiryDate: exp.toISOString().split("T")[0]
-                  };
-                }
-                return m;
-              });
-              localStorage.setItem("yuvakshar_memberships", JSON.stringify(newM));
-              return newM;
-            });
-
-            const updatedRefs = [...prevRefs];
-            updatedRefs[matchIndex] = { ...matchedRef, status: "registered" as const };
-            localStorage.setItem("yuvakshar_referrals", JSON.stringify(updatedRefs));
-            return updatedRefs;
-          }
-          return prevRefs;
-        });
-      }, 100);
-
-      setCurrentUser(mockProfile);
-      localStorage.setItem("yuvakshar_session_user", JSON.stringify(mockProfile));
-      
-      if (authCallback) {
-        authCallback();
-      }
-      setAuthCallback(null);
-      setAuthModalOpen(false);
-      
-      // log action
-      logActivity(`Logged in as Mock User (${finalRole})`, {
-        performer: finalName,
-        performerRole: finalRole,
-        actionType: "Login",
-        dateTime: new Date().toISOString()
-      });
+      alert("पंजीकरण सफल! कृपया अपने ईमेल में पुष्टिकरण लिंक की जांच करें।");
       return true;
+    } catch (err: any) {
+      alert("Registration Error: " + err.message);
+      return false;
     }
   };
 
   const sendOtpCode = async (email: string): Promise<boolean> => {
-    if (supabaseConfigured) {
-      const { error } = await supabase.auth.signInWithOtp({ email });
-      if (error) {
-        alert("OTP भेजने में त्रुटि: " + error.message);
-        return false;
-      }
-      return true;
-    } else {
-      alert(`परीक्षण मोड: OTP कोड ईमेल '${email}' पर भेजा गया (लॉगिन के लिए '123456' दर्ज करें)`);
-      return true;
+    if (!isSupabaseConfigured()) {
+       alert("System Configuration Error: Authentication is offline.");
+       return false;
     }
+    const { error } = await supabase.auth.signInWithOtp({ email });
+    if (error) {
+      alert("OTP भेजने में त्रुटि: " + error.message);
+      return false;
+    }
+    return true;
   };
 
   const verifyOtpCode = async (email: string, token: string): Promise<boolean> => {
-    if (supabaseConfigured) {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token,
-        type: "email"
-      });
-      if (error) {
-        alert("OTP सत्यापन त्रुटि: " + error.message);
-        return false;
-      }
-      setAuthModalOpen(false);
-      return true;
-    } else {
-      if (token === "123456") {
-        return await loginUser(email, "Subscriber");
-      } else {
-        alert("अमान्य OTP कोड! कृपया '123456' दर्ज करें।");
-        return false;
-      }
+    if (!isSupabaseConfigured()) {
+      alert("System Configuration Error: Authentication is offline.");
+      return false;
     }
+    const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
+    if (error) {
+      alert("OTP सत्यापन त्रुटि: " + error.message);
+      return false;
+    }
+    setAuthModalOpen(false);
+    return true;
   };
 
   const sendPasswordReset = async (email: string): Promise<boolean> => {
-    if (supabaseConfigured) {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
-      });
-      if (error) {
-        alert("पासवर्ड रीसेट लिंक भेजने में त्रुटि: " + error.message);
-        return false;
-      }
-      alert("पासवर्ड रीसेट लिंक आपके ईमेल पर भेज दिया गया है!");
-      return true;
-    } else {
-      alert("परीक्षण मोड: पासवर्ड रीसेट लिंक भेज दिया गया है!");
-      return true;
+    if (!isSupabaseConfigured()) {
+      alert("System Configuration Error: Authentication is offline.");
+      return false;
     }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`
+    });
+    if (error) {
+      alert("पासवर्ड रीसेट लिंक भेजने में त्रुटि: " + error.message);
+      return false;
+    }
+    alert("पासवर्ड रीसेट लिंक आपके ईमेल पर भेज दिया गया है!");
+    return true;
   };
 
-  const logoutUser = () => {
-    if (supabaseConfigured) {
-      supabase.auth.signOut();
+  const logoutUser = async () => {
+    if (isSupabaseConfigured()) {
+      await supabase.auth.signOut();
     }
     setCurrentUser(null);
     localStorage.removeItem("yuvakshar_session_user");
@@ -4225,6 +4093,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         memberships,
         users,
         loginUser,
+        registerUser,
         logoutUser,
         updateUserRole,
         createUser,

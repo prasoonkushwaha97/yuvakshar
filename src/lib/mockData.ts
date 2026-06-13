@@ -26,17 +26,22 @@ export interface Article {
   requiresEICApproval?: boolean;
 }
 
-export interface Magazine {
+export interface MagazineIssue {
   id: string;
   issue: string;
+  edition?: string;
   month: string;
+  year?: string;
   coverImage: string;
   description: string;
   pages: string[];
+  category?: string;
   accessLevel?: "Free" | "Premium" | "Patron";
   status?: "Draft" | "Published" | "Archived";
-  year?: string;
+  publishDate?: string;
   pdfSourceUrl?: string;
+  isFeatured?: boolean;
+  isRecommended?: boolean;
 }
 
 export interface CareerItem {
@@ -1294,7 +1299,7 @@ export const mockArticles: Article[] = [
   }
 ];
 
-export const mockMagazines: Magazine[] = [
+export const mockMagazineIssues: MagazineIssue[] = [
   {
     "id": "mag-25",
     "issue": "अंक 25 — जून 2026",
