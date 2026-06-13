@@ -24,7 +24,9 @@ import {
   Unlock,
   Lock,
   Award,
-  Brain
+  Brain,
+  MessageSquare,
+  ArrowRight
 } from "lucide-react";
 
 import { useCms, Article, Comment } from "@/store/CmsContext";
@@ -1049,6 +1051,28 @@ function EditorialPageContent() {
           {/* Article Interactive Quiz Section */}
           <div className="max-w-[850px]">
             <ArticleQuiz articleId={article.id} />
+          </div>
+
+          {/* Chaupal Discussion Bridge */}
+          <div className="max-w-[850px] py-8 mt-4 border-t border-slate-200 dark:border-slate-800">
+            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border border-indigo-100 dark:border-indigo-900/50 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="space-y-2 text-center md:text-left">
+                <h3 className="text-xl font-black font-hindi text-slate-800 dark:text-white flex items-center justify-center md:justify-start gap-2">
+                  <span>🏛️</span> इस लेख पर चौपाल में चर्चा करें
+                </h3>
+                <p className="text-sm font-hindi text-slate-600 dark:text-slate-400 max-w-md leading-relaxed">
+                  युवाक्षर चौपाल पर अन्य पाठकों, लेखकों और बुद्धिजीवियों के साथ इस विषय पर अपने विचार साझा करें।
+                </p>
+              </div>
+              <Link 
+                href={`/community/discussion?articleId=${article.id}&title=${encodeURIComponent(article.title)}`}
+                className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-bold font-hindi px-6 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 active:scale-95"
+              >
+                <MessageSquare className="w-5 h-5" />
+                <span>चौपाल पर जाएं</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
 
           {/* Comments section */}

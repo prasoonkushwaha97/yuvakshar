@@ -33,6 +33,7 @@ import {
 import { useCms } from "@/store/CmsContext";
 import { fetchPosts, toggleLikePost, CommunityPost } from "@/lib/communityService";
 import type { Profile } from "@/store/types";
+import PostCard from "@/components/yuvakshar/PostCard";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -72,6 +73,12 @@ export default function AuthorPortfolioPage() {
   const [authorPosts, setAuthorPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"posts" | "showcase" | "info" | "collab">("showcase");
+  const [bookmarkedPostIds, setBookmarkedPostIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("yuvakshar_c_post_bookmarks");
+    if (saved) setBookmarkedPostIds(JSON.parse(saved));
+  }, []);
 
   // Collections state
   const [collections, setCollections] = useState<CollectionFolder[]>([]);
@@ -369,6 +376,50 @@ export default function AuthorPortfolioPage() {
     const updatedCol = { ...col, items: col.items.filter(i => i.id !== itemId) };
     const updated = collections.map(c => c.id === colId ? updatedCol : c);
     saveCollections(updated);
+  };
+
+  // --- PostCard Handlers ---
+  const handleLikePost = async (postId: string) => {
+    if (!currentUser) return;
+    try {
+      const newCount = await toggleLikePost(postId, currentUser.id);
+      setAuthorPosts(authorPosts.map(p => p.id === postId ? { ...p, likesCount: newCount } : p));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleBookmarkToggle = (postId: string) => {
+    if (!currentUser) return;
+    let updated = [...bookmarkedPostIds];
+    if (updated.includes(postId)) {
+      updated = updated.filter(id => id !== postId);
+    } else {
+      updated.push(postId);
+    }
+    setBookmarkedPostIds(updated);
+    localStorage.setItem("yuvakshar_c_post_bookmarks", JSON.stringify(updated));
+  };
+
+  const triggerShare = (post: CommunityPost) => {
+    window.dispatchEvent(new CustomEvent("yuvakshar:openShareModal", {
+      detail: { title: post.title || "साहित्यिक प्रविष्टि", url: `${window.location.origin}/community/discussion/thread/${post.id}` }
+    }));
+  };
+
+  const renderContentWithHashtags = (content: string) => {
+    const parts = content.split(/(\s+)/);
+    return parts.map((part, idx) => {
+      if (part.startsWith("#")) {
+        const cleanTag = part.replace(/[^\w\u0900-\u097F]/g, "");
+        return (
+          <Link key={idx} href={`/community?search=${encodeURIComponent("#" + cleanTag)}`} className="text-primary hover:underline font-bold transition-all">
+            {part}
+          </Link>
+        );
+      }
+      return part;
+    });
   };
 
   // Author Showcase Filtering
@@ -1078,56 +1129,30 @@ export default function AuthorPortfolioPage() {
 
           {/* Tab Content: Posts */}
           {activeTab === "posts" && (
-            <div className="space-y-4">
+            <div className="space-y-4 max-w-[800px]">
               {authorPosts.length > 0 ? (
                 authorPosts.map(p => (
-                  <GlassCard key={p.id} className="p-5 border-slate-200/60 dark:border-slate-800/40 space-y-3 text-xs">
-                    
-                    {/* Header */}
-                    <div className="flex justify-between items-center text-[10px]">
-                      
-                      {/* Post Type Badge */}
-                      <span className={`text-[9px] font-bold font-hindi border px-2 py-0.5 rounded-full ${
-                        (p.post_type as string) === "poetry"
-                          ? "bg-purple-50 text-purple-650 border-purple-100 dark:bg-purple-950/20 dark:text-purple-400 dark:border-purple-900/30"
-                          : p.post_type === "image"
-                            ? "bg-green-50 text-green-600 border-green-100 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/30"
-                            : p.post_type === "poll"
-                              ? "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30"
-                              : "bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/30"
-                      }`}>
-                        {(p.post_type as string) === "poetry" ? "📝 कविता" : p.post_type === "image" ? "🖼️ चित्र" : p.post_type === "poll" ? "❓ प्रश्न" : "✍️ लेख"}
-                      </span>
-                      
-                      <span className="font-mono text-slate-400">{new Date(p.created_at).toLocaleDateString("hi-IN")}</span>
-                    </div>
-
-                    {/* Content */}
-                    <div className="space-y-1">
-                      {p.title && <h4 className="text-xs font-bold text-slate-850 dark:text-white font-hindi">{p.title}</h4>}
-                      <p className="text-slate-650 dark:text-slate-350 leading-relaxed font-hindi whitespace-pre-wrap">{p.content}</p>
-                    </div>
-
-                    {/* Interactions */}
-                    <div className="flex items-center space-x-4 pt-1.5 border-t border-slate-100 dark:border-slate-800/40 text-[10px]">
-                      <button 
-                        onClick={() => handleLike(p.id)}
-                        className="flex items-center space-x-1 text-slate-400 hover:text-red-500 font-mono cursor-pointer transition-colors"
-                      >
-                        <Heart className="w-4 h-4 shrink-0" />
-                        <span>{p.likesCount}</span>
-                      </button>
-                      
-                      <Link 
-                        href={`/community/discussion/thread/${p.id}`}
-                        className="flex items-center space-x-1 text-slate-400 hover:text-primary transition-colors font-hindi"
-                      >
-                        <Mail className="w-4 h-4 shrink-0" />
-                        <span>{p.commentsCount} टिप्पणियाँ</span>
-                      </Link>
-                    </div>
-
-                  </GlassCard>
+                  <PostCard 
+                    key={p.id} 
+                    post={p} 
+                    authorProfile={users.find(u => u.id === p.user_id) || author}
+                    currentUser={currentUser}
+                    isBookmarked={bookmarkedPostIds.includes(p.id)}
+                    onLike={handleLikePost}
+                    onBookmark={handleBookmarkToggle}
+                    onShare={triggerShare}
+                    onPollVote={(pid, optIdx) => {
+                      setAuthorPosts(authorPosts.map(p2 => {
+                        if (p2.id === pid && p2.poll_options) {
+                          const updatedOps = [...p2.poll_options] as any[];
+                          updatedOps[optIdx].votes = (updatedOps[optIdx].votes || 0) + 1;
+                          return { ...p2, poll_options: updatedOps };
+                        }
+                        return p2;
+                      }));
+                    }}
+                    renderContentWithHashtags={renderContentWithHashtags}
+                  />
                 ))
               ) : (
                 <p className="text-center py-10 text-xs text-slate-450 font-hindi border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">इस लेखक ने अभी चौपाल पर कोई पोस्ट साझा नहीं की है।</p>

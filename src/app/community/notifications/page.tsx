@@ -25,6 +25,7 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<CommunityNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<"all" | "unread">("all");
+  const [followedBackIds, setFollowedBackIds] = useState<string[]>([]);
 
   const loadNotifications = async () => {
     setLoading(true);
@@ -193,12 +194,38 @@ export default function NotificationsPage() {
                   )}
 
                   {notif.notification_type === "follow" && (
-                    <Link 
-                      href={`/community/authors/${notif.sender_name}`}
-                      className="text-[9px] font-bold text-primary border border-primary/20 hover:bg-primary/5 rounded-lg px-2.5 py-1 transition-all flex items-center gap-1 font-hindi"
-                    >
-                      <span>प्रोफ़ाइल खोलें</span>
-                    </Link>
+                    <div className="flex gap-2">
+                      <Link 
+                        href={`/community/authors/${notif.sender_name}`}
+                        className="text-[9px] font-bold text-slate-500 border border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800 rounded-lg px-2.5 py-1 transition-all flex items-center gap-1 font-hindi shrink-0"
+                      >
+                        <span>प्रोफ़ाइल खोलें</span>
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setFollowedBackIds([...followedBackIds, notif.sender_id]);
+                          // Simulating follow back API call
+                        }}
+                        className={`text-[9px] font-bold rounded-lg px-2.5 py-1 transition-all flex items-center gap-1 font-hindi cursor-pointer shrink-0 ${
+                          followedBackIds.includes(notif.sender_id) 
+                            ? "bg-slate-100 text-slate-500 dark:bg-slate-800" 
+                            : "bg-primary text-white hover:bg-primary/90 shadow-sm"
+                        }`}
+                        disabled={followedBackIds.includes(notif.sender_id)}
+                      >
+                        {followedBackIds.includes(notif.sender_id) ? (
+                          <>
+                            <UserCheck className="w-2.5 h-2.5" />
+                            <span>फॉलो किया</span>
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="w-2.5 h-2.5" />
+                            <span>वापस फॉलो करें</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   )}
 
                   {!notif.is_read && (

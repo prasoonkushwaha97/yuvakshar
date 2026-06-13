@@ -28,6 +28,7 @@ import {
 } from "@/lib/communityService";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
+import PostCard from "@/components/yuvakshar/PostCard";
 import ProfilePreviewWrapper from "@/components/yuvakshar/ProfilePreviewCard";
 import confetti from "canvas-confetti";
 
@@ -388,189 +389,23 @@ function CommunityFeedPageContent() {
           </div>
         ) : filteredPosts.length > 0 ? (
           filteredPosts.map((post) => {
-            const hasVoted = post.poll_votes && currentUser && currentUser.id in post.poll_votes;
-            const voteTotal = post.poll_votes ? Object.keys(post.poll_votes).length : 0;
-            const badge = getPostTypeBadge(post.post_type);
-            
-            // Get writer details
             const authorProfile = users.find(u => u.id === post.user_id || u.name === post.user_name);
-            const reputation = authorProfile?.reputation_score || 120;
             const isBookmarked = bookmarkedPostIds.includes(post.id);
 
             return (
-              <GlassCard key={post.id} className="p-5 border-slate-200/60 dark:border-slate-800/40 space-y-4">
-                
-                {/* Post Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3">
-                    <ProfilePreviewWrapper userId={post.user_id}>
-                      <Link href={`/community/authors/${authorProfile?.slug || post.user_id}`} className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-500 uppercase shrink-0 overflow-hidden hover:opacity-90 block">
-                        {authorProfile?.avatar_url ? (
-                          <img src={authorProfile.avatar_url} alt={post.user_name} className="w-full h-full object-cover" />
-                        ) : (
-                          post.user_name[0]
-                        )}
-                      </Link>
-                    </ProfilePreviewWrapper>
-                    
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <ProfilePreviewWrapper userId={post.user_id}>
-                          <Link href={`/community/authors/${authorProfile?.slug || post.user_id}`} className="text-xs font-bold text-slate-850 dark:text-white hover:text-primary font-hindi">
-                            {post.user_name}
-                          </Link>
-                        </ProfilePreviewWrapper>
-                        
-                        {post.user_rank && (
-                          <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold font-serif">
-                            {post.user_rank}
-                          </span>
-                        )}
-                        
-                        <span className="text-[9px] text-amber-500 font-bold font-hindi flex items-center">
-                          ⭐ {reputation}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center space-x-1.5 text-[9px] text-slate-400 mt-0.5">
-                        <span className="font-mono">{new Date(post.created_at).toLocaleDateString("hi-IN")}</span>
-                        {post.group_name && (
-                          <>
-                            <span>•</span>
-                            <Link href={`/community/groups/${post.group_id}`} className="text-primary hover:underline font-hindi font-semibold">
-                              {post.group_name}
-                            </Link>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Post Type Badge */}
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.class} font-hindi`}>
-                    {badge.text}
-                  </span>
-                </div>
-
-                {/* Post Title */}
-                {post.title && (
-                  <h3 className="font-serif text-sm font-bold text-slate-800 dark:text-white font-hindi">
-                    {post.title}
-                  </h3>
-                )}
-
-                {/* Post Content with clickable hashtags */}
-                <p className="text-xs text-slate-650 dark:text-slate-300 leading-relaxed font-hindi whitespace-pre-wrap">
-                  {renderContentWithHashtags(post.content)}
-                </p>
-
-                {/* Render Poll type */}
-                {post.post_type === "poll" && post.poll_question && post.poll_options && (
-                  <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-850/80 space-y-2.5">
-                    <p className="text-xs font-bold text-slate-800 dark:text-slate-300 font-serif font-hindi">{post.poll_question}</p>
-                    <div className="space-y-2">
-                      {post.poll_options.map((opt, idx) => {
-                        const optVotes = post.poll_votes 
-                          ? Object.values(post.poll_votes).filter(v => v === idx).length 
-                          : 0;
-                        const percent = voteTotal > 0 ? Math.round((optVotes / voteTotal) * 100) : 0;
-                        
-                        return (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => handlePollVote(post.id, idx)}
-                            disabled={!!hasVoted}
-                            className="w-full relative flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs transition-all overflow-hidden bg-white dark:bg-slate-950 cursor-pointer disabled:cursor-default"
-                          >
-                            <div 
-                              className="absolute top-0 left-0 bottom-0 bg-primary/10 transition-all duration-500"
-                              style={{ width: `${percent}%` }}
-                            />
-                            <span className="relative z-10 font-hindi">{opt}</span>
-                            <span className="relative z-10 font-bold font-mono text-[10px] text-slate-400">
-                              {percent}% ({optVotes})
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <p className="text-[9px] text-slate-400 font-mono">कुल मत: {voteTotal}</p>
-                  </div>
-                )}
-
-                {/* Render Image attachment */}
-                {post.post_type === "image" && post.media_url && (
-                  <div className="relative h-[250px] w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-400 text-xs">
-                    [छवि फाइल: {post.media_url}]
-                  </div>
-                )}
-
-                {/* Render PDF attachment */}
-                {post.post_type === "pdf" && post.media_url && (
-                  <div className="flex items-center space-x-3 p-3 bg-red-500/5 hover:bg-red-500/10 rounded-2xl border border-red-200/50 text-xs text-red-500 transition-all cursor-pointer">
-                    <FileText className="w-5 h-5 shrink-0 text-red-500" />
-                    <div className="min-w-0">
-                      <span className="block font-bold font-mono truncate">{post.media_url}</span>
-                      <span className="text-[10px] text-slate-450 uppercase font-bold tracking-wider font-hindi">PDF दस्तावेज़ पठन</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Post Footer Actions */}
-                <div className="flex items-center justify-between pt-3 border-t border-slate-150/40 dark:border-slate-800/40">
-                  <div className="flex items-center space-x-6">
-                    
-                    {/* Likes */}
-                    <button
-                      onClick={() => handleLike(post.id)}
-                      className="flex items-center space-x-1.5 text-xs text-slate-400 hover:text-red-500 transition-all cursor-pointer"
-                    >
-                      <Heart className="w-4 h-4" />
-                      <span className="font-mono text-[10px] font-bold">{post.likesCount}</span>
-                    </button>
-
-                    {/* Comments Link */}
-                    <Link
-                      href={`/community/discussion/thread/${post.id}`}
-                      className="flex items-center space-x-1.5 text-xs text-slate-400 hover:text-primary transition-all"
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      <span className="font-mono text-[10px] font-bold">{post.commentsCount}</span>
-                    </Link>
-
-                    {/* Bookmark Toggle */}
-                    <button 
-                      onClick={() => handleBookmarkToggle(post.id)}
-                      className={`transition-all cursor-pointer ${isBookmarked ? "text-primary" : "text-slate-400 hover:text-primary"}`}
-                    >
-                      <Bookmark className="w-4 h-4" />
-                    </button>
-
-                    {/* Share Trigger */}
-                    <button 
-                      onClick={() => triggerShare(post)}
-                      className="text-slate-400 hover:text-primary transition-all cursor-pointer"
-                    >
-                      <Share2 className="w-4 h-4" />
-                    </button>
-
-                  </div>
-
-                  {/* Convert to Article Draft (Admin/Editor/Author role check) */}
-                  {currentUser && ["Admin", "Owner", "Editor", "Author", "Contributor"].includes(currentUser.role || "") && (
-                    <button
-                      onClick={() => convertPostToArticle(post)}
-                      className="text-[10px] text-primary hover:text-primary/95 font-bold flex items-center space-x-1 cursor-pointer font-hindi"
-                    >
-                      <FileEdit className="w-3.5 h-3.5" />
-                      <span>लेख में बदलें (Convert to Article)</span>
-                    </button>
-                  )}
-
-                </div>
-
-              </GlassCard>
+              <PostCard 
+                key={post.id}
+                post={post}
+                authorProfile={authorProfile}
+                currentUser={currentUser}
+                isBookmarked={isBookmarked}
+                onLike={handleLike}
+                onBookmark={handleBookmarkToggle}
+                onShare={triggerShare}
+                onPollVote={handlePollVote}
+                onConvert={convertPostToArticle}
+                renderContentWithHashtags={renderContentWithHashtags}
+              />
             );
           })
         ) : (

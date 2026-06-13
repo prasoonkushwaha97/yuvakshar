@@ -17,6 +17,11 @@ const navItems = [
 export default function MobileBottomNav() {
   const pathname = usePathname();
   const { currentUser } = useCms();
+  
+  if (pathname && (pathname.startsWith("/admin") || pathname.startsWith("/community"))) {
+    return null;
+  }
+
   const isEditorial = currentUser && ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Author", "Contributor", "Fact Check Reviewer"].includes(currentUser.role || "");
   const profileHref = currentUser ? (isEditorial ? "/admin" : "/dashboard") : "/dashboard";
 

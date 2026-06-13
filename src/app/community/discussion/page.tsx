@@ -16,6 +16,7 @@ import { useCms } from "@/store/CmsContext";
 import { fetchPosts, createPost, CommunityPost } from "@/lib/communityService";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 const categories = [
   { id: "General", name: "सामान्य विमर्श (General Discussion)", desc: "साहित्य और समाज से जुड़े किसी भी सामान्य विषय पर चर्चा।" },
@@ -28,6 +29,7 @@ const categories = [
 
 export default function ForumBoardPage() {
   const { currentUser } = useCms();
+  const searchParams = useSearchParams();
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [selectedCat, setSelectedCat] = useState<string>("General");
   const [loading, setLoading] = useState(true);
@@ -54,6 +56,17 @@ export default function ForumBoardPage() {
   useEffect(() => {
     loadDiscussions();
   }, []);
+
+  useEffect(() => {
+    const articleId = searchParams?.get("articleId");
+    const articleTitle = searchParams?.get("title");
+    if (articleId && articleTitle) {
+      setSelectedCat("Criticism");
+      setTitle(`चर्चा: ${articleTitle}`);
+      setContent(`मैंने अभी युवाक्षर पर यह लेख पढ़ा: "${articleTitle}"\n\nइस पर मेरे विचार हैं:\n\n`);
+      setShowComposer(true);
+    }
+  }, [searchParams]);
 
   const handleSubmitThread = async (e: React.FormEvent) => {
     e.preventDefault();
