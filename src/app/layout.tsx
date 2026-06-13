@@ -8,6 +8,7 @@ import { CmsProvider } from "@/store/CmsContext";
 import AuthModal from "@/components/yuvakshar/AuthModal";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import fs from "fs";
 import path from "path";
 
@@ -125,6 +126,7 @@ export default function RootLayout({
             <MobileBottomNav />
           </LanguageProvider>
         </CmsProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
