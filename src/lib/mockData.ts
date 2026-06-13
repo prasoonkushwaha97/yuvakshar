@@ -1384,28 +1384,7 @@ export const mockBroadcasts: TickerBroadcast[] = [
   { id: "3", type: "magazine", message: "नया डिजिटल अंक जारी: 'अंक 25 — जून 2026'" }
 ];
 
-export const mockSubscribers: string[] = [
-  "prasoon.kushwaha@yuvakshar.org",
-  "editor.desk@yuvakshar.org",
-  "amit.tiwari@gmail.com",
-  "meera.tripathi@outlook.com",
-  "vikram.aditya@iitd.ac.in",
-  "raghavendra.sharan@ecology.org",
-  "anil.joshi@himalaya.org",
-  "sanjeev.sanyal@policy.gov.in",
-  "arundhati.roy@literature.in",
-  "giriraj.kishore@sahityadisk.org",
-  "rahul.verma@delhiuniversity.edu",
-  "priya.sharma@niti.gov.in",
-  "vivek.bindal@startupindia.org",
-  "shreya.iyer@pennstate.edu",
-  "aniket.choudhury@iitb.ac.in",
-  "sneha.gupta@jnu.ac.in",
-  "manoj.pandey@defence.gov.in",
-  "deepa.subramanian@isro.gov.in",
-  "kunal.sen@finance.res.in",
-  "tanya.bansal@rediffmail.com"
-];
+
 
 export const mockComments = [
   {

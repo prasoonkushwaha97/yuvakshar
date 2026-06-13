@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { supabase, isSupabaseConfigured, checkConnectionHealth, checkStorageHealth } from "@/lib/supabaseClient";
-import { mockArticles, mockMagazineIssues, mockCareerItems, mockBroadcasts, mockSubscribers, mockComments, Article } from "@/lib/mockData";
+import { supabase, isSupabaseConfigured, getSupabaseConfigError, checkConnectionHealth, checkStorageHealth } from "@/lib/supabaseClient";
+import { mockArticles, mockMagazineIssues, mockCareerItems, mockBroadcasts, mockComments, Article } from "@/lib/mockData";
 export type { Article };
 import { QuizQuestion, ArticleQuiz, preseededQuizzes, generateFallbackQuestions } from "@/lib/defaultQuizzes";
 import { callOpenAi, callGemini } from "@/lib/aiService";
@@ -1091,8 +1091,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     if (localSubscribers && JSON.parse(localSubscribers).length >= 15) {
       setSubscribers(JSON.parse(localSubscribers));
     } else {
-      setSubscribers(mockSubscribers);
-      localStorage.setItem("yuvakshar_subscribers", JSON.stringify(mockSubscribers));
+      setSubscribers([]);
+      localStorage.setItem("yuvakshar_subscribers", JSON.stringify([]));
     }
 
     // Newsletter Campaigns
@@ -1168,16 +1168,16 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     // Users
     const localUsers = localStorage.getItem("yuvakshar_users");
     const defaultStaff: Profile[] = [
-      { id: "staff-owner", name: "Ravi Owner", email: "owner@yuvakshar.in", role: "संस्थापक", department: "संस्थापक", org_id: "YUV-FND-0001", membership: "Patron", status: "active", password: "password123", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
-      { id: "staff-admin", name: "Amit Admin", email: "admin@yuvakshar.in", role: "प्रशासक", department: "प्रशासन", org_id: "YUV-ADM-0002", membership: "Patron", status: "active", password: "password123", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
-      { id: "staff-chief", name: "Prasoon Chief", email: "chief@yuvakshar.in", role: "प्रधान संपादक", department: "संपादकीय", org_id: "YUV-ED-0001", membership: "Patron", status: "active", password: "password123", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
-      { id: "staff-managing", name: "Sumit Managing", email: "managing@yuvakshar.in", role: "कार्यकारी संपादक", department: "संपादकीय", org_id: "YUV-ED-0002", membership: "Premium", status: "active", password: "password123", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
-      { id: "staff-editor", name: "Ravi Sharma", email: "editor@yuvakshar.in", role: "संपादक", department: "संपादकीय", org_id: "YUV-ED-0003", membership: "Premium", status: "active", password: "password123", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
-      { id: "staff-subeditor", name: "Alok SubEditor", email: "subeditor@yuvakshar.in", role: "सहायक संपादक", department: "संपादकीय", org_id: "YUV-ED-0004", membership: "Premium", status: "active", password: "password123", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
-      { id: "staff-factchecker", name: "Nitin Checker", email: "factchecker@yuvakshar.in", role: "प्रूफरीडर", department: "गुणवत्ता", org_id: "YUV-QL-0001", membership: "Premium", status: "active", password: "password123", badges: ["समीक्षक"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
-      { id: "staff-reviewer", name: "Varun Reviewer", email: "reviewer@yuvakshar.in", role: "भाषा समीक्षक", department: "गुणवत्ता", org_id: "YUV-QL-0002", membership: "Premium", status: "active", password: "password123", badges: ["समीक्षक"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
-      { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "संपादक", department: "संपादकीय", org_id: "YUV-ED-0005", membership: "Premium", status: "active", password: "password123", badges: ["लेखक", "कवि"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
-      { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "स्वयंसेवक", department: "स्वयंसेवी", org_id: "YUV-VOL-0001", membership: "Free", status: "active", password: "password123", badges: ["कवि"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
+      { id: "staff-owner", name: "Ravi Owner", email: "owner@yuvakshar.in", role: "संस्थापक", department: "संस्थापक", org_id: "YUV-FND-0001", membership: "Patron", status: "active", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
+      { id: "staff-admin", name: "Amit Admin", email: "admin@yuvakshar.in", role: "प्रशासक", department: "प्रशासन", org_id: "YUV-ADM-0002", membership: "Patron", status: "active", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
+      { id: "staff-chief", name: "Prasoon Chief", email: "chief@yuvakshar.in", role: "प्रधान संपादक", department: "संपादकीय", org_id: "YUV-ED-0001", membership: "Patron", status: "active", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
+      { id: "staff-managing", name: "Sumit Managing", email: "managing@yuvakshar.in", role: "कार्यकारी संपादक", department: "संपादकीय", org_id: "YUV-ED-0002", membership: "Premium", status: "active", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
+      { id: "staff-editor", name: "Ravi Sharma", email: "editor@yuvakshar.in", role: "संपादक", department: "संपादकीय", org_id: "YUV-ED-0003", membership: "Premium", status: "active", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
+      { id: "staff-subeditor", name: "Alok SubEditor", email: "subeditor@yuvakshar.in", role: "सहायक संपादक", department: "संपादकीय", org_id: "YUV-ED-0004", membership: "Premium", status: "active", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
+      { id: "staff-factchecker", name: "Nitin Checker", email: "factchecker@yuvakshar.in", role: "प्रूफरीडर", department: "गुणवत्ता", org_id: "YUV-QL-0001", membership: "Premium", status: "active", badges: ["समीक्षक"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
+      { id: "staff-reviewer", name: "Varun Reviewer", email: "reviewer@yuvakshar.in", role: "भाषा समीक्षक", department: "गुणवत्ता", org_id: "YUV-QL-0002", membership: "Premium", status: "active", badges: ["समीक्षक"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
+      { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "संपादक", department: "संपादकीय", org_id: "YUV-ED-0005", membership: "Premium", status: "active", badges: ["लेखक", "कवि"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
+      { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "स्वयंसेवक", department: "स्वयंसेवी", org_id: "YUV-VOL-0001", membership: "Free", status: "active", badges: ["कवि"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
     ];
     let finalUsers: Profile[] = [];
     if (localUsers) {
@@ -1242,9 +1242,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     } else {
       const initialUsers: Profile[] = [
         { id: "u-1", name: "Founder", email: "yuvakshar.editor@gmail.com", role: "Founder", department: "संस्थापक", org_id: "YUV-FND-0000", membership: "Patron", status: "active", password: "@Yuvaksharprasoon9516", badges: ["Founder", "Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
-        { id: "u-2", name: "प्रसून कुशवाहा", email: "prasoon.kushwaha@yuvakshar.org", role: "प्रधान संपादक", department: "संपादकीय", org_id: "YUV-ED-0000", membership: "Patron", status: "active", password: "password123", badges: ["सत्यापित साहित्यकार"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
-        { id: "u-3", name: "Guest Author", email: "m.tripathi@gmail.com", role: "संपादक", department: "संपादकीय", org_id: "YUV-ED-0006", membership: "Premium", status: "active", password: "password123", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
-        { id: "u-4", name: "Featured Reader", email: "reader.demo@yuvakshar.org", role: "सदस्य", department: "None", membership: "Free", status: "active", password: "password123", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "नई दिल्ली, भारत" },
+        { id: "u-2", name: "प्रसून कुशवाहा", email: "prasoon.kushwaha@yuvakshar.org", role: "प्रधान संपादक", department: "संपादकीय", org_id: "YUV-ED-0000", membership: "Patron", status: "active", badges: ["सत्यापित साहित्यकार"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
+        { id: "u-3", name: "Guest Author", email: "m.tripathi@gmail.com", role: "संपादक", department: "संपादकीय", org_id: "YUV-ED-0006", membership: "Premium", status: "active", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
+        { id: "u-4", name: "Featured Reader", email: "reader.demo@yuvakshar.org", role: "सदस्य", department: "None", membership: "Free", status: "active", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "नई दिल्ली, भारत" },
         ...defaultStaff
       ];
       finalUsers = enrichUsersList(initialUsers, loadedArticles);
@@ -1640,7 +1640,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       if (dbSubscribers && dbSubscribers.length > 0) {
         setSubscribers(dbSubscribers.map(s => s.email));
       } else {
-        setSubscribers(mockSubscribers);
+        setSubscribers([]);
       }
 
       // Load campaigns
@@ -1705,16 +1705,16 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         setUsers(enriched);
       } else {
         const defaultStaff: Profile[] = [
-          { id: "staff-owner", name: "Ravi Owner", email: "owner@yuvakshar.in", role: "Owner", membership: "Patron", status: "active", password: "password123", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
-          { id: "staff-admin", name: "Amit Admin", email: "admin@yuvakshar.in", role: "Admin", membership: "Patron", status: "active", password: "password123", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
-          { id: "staff-chief", name: "Prasoon Chief", email: "chief@yuvakshar.in", role: "Editor-in-Chief", membership: "Patron", status: "active", password: "password123", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
-          { id: "staff-managing", name: "Sumit Managing", email: "managing@yuvakshar.in", role: "Managing Editor", membership: "Premium", status: "active", password: "password123", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
-          { id: "staff-editor", name: "Ravi Sharma", email: "editor@yuvakshar.in", role: "Editor", membership: "Premium", status: "active", password: "password123", badges: ["Editor"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
-          { id: "staff-subeditor", name: "Alok SubEditor", email: "subeditor@yuvakshar.in", role: "Sub Editor", membership: "Premium", status: "active", password: "password123", badges: ["Sub Editor"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
-          { id: "staff-factchecker", name: "Nitin Checker", email: "factchecker@yuvakshar.in", role: "Fact Checker", membership: "Premium", status: "active", password: "password123", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
-          { id: "staff-reviewer", name: "Varun Reviewer", email: "reviewer@yuvakshar.in", role: "Reviewer", membership: "Premium", status: "active", password: "password123", badges: ["Reviewer"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
-          { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "Author", membership: "Premium", status: "active", password: "password123", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
-          { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "Contributor", membership: "Free", status: "active", password: "password123", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
+          { id: "staff-owner", name: "Ravi Owner", email: "owner@yuvakshar.in", role: "Owner", membership: "Patron", status: "active", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
+          { id: "staff-admin", name: "Amit Admin", email: "admin@yuvakshar.in", role: "Admin", membership: "Patron", status: "active", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
+          { id: "staff-chief", name: "Prasoon Chief", email: "chief@yuvakshar.in", role: "Editor-in-Chief", membership: "Patron", status: "active", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
+          { id: "staff-managing", name: "Sumit Managing", email: "managing@yuvakshar.in", role: "Managing Editor", membership: "Premium", status: "active", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
+          { id: "staff-editor", name: "Ravi Sharma", email: "editor@yuvakshar.in", role: "Editor", membership: "Premium", status: "active", badges: ["Editor"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
+          { id: "staff-subeditor", name: "Alok SubEditor", email: "subeditor@yuvakshar.in", role: "Sub Editor", membership: "Premium", status: "active", badges: ["Sub Editor"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
+          { id: "staff-factchecker", name: "Nitin Checker", email: "factchecker@yuvakshar.in", role: "Fact Checker", membership: "Premium", status: "active", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
+          { id: "staff-reviewer", name: "Varun Reviewer", email: "reviewer@yuvakshar.in", role: "Reviewer", membership: "Premium", status: "active", badges: ["Reviewer"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
+          { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "Author", membership: "Premium", status: "active", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
+          { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "Contributor", membership: "Free", status: "active", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
         ];
 
          const initialUsers: Profile[] = [
@@ -1731,8 +1731,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
   // 2. Auth Operations
   const loginUser = async (email: string, passwordInput?: string): Promise<boolean> => {
-    if (!isSupabaseConfigured()) {
-      alert("System Configuration Error: Authentication is offline.");
+    const configError = getSupabaseConfigError();
+    if (configError) {
+      alert(configError);
       return false;
     }
     
@@ -1742,7 +1743,10 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           provider: "google",
           options: { redirectTo: window.location.origin }
         });
-        if (error) throw error;
+        if (error) {
+          alert("❌ Google provider disabled: " + error.message);
+          return false;
+        }
         return true;
       }
 
@@ -1752,29 +1756,29 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           password: passwordInput,
         });
         if (error) {
-          if (error.message.includes("Invalid login credentials")) {
-            alert("लॉगिन त्रुटि: अमान्य ईमेल या पासवर्ड।");
-          } else {
-            alert("लॉगिन त्रुटि: " + error.message);
-          }
+          alert("❌ Supabase connection failed: " + error.message);
           return false;
         }
         return true;
       } else {
         // Fallback for magic link if no password provided
         const { error } = await supabase.auth.signInWithOtp({ email });
-        if (error) throw error;
+        if (error) {
+          alert("❌ Supabase connection failed: " + error.message);
+          return false;
+        }
         return true;
       }
     } catch (err: any) {
-      alert("Auth Error: " + err.message);
+      alert("❌ Supabase connection failed: " + err.message);
       return false;
     }
   };
 
   const registerUser = async (email: string, role: string, customName: string, customMobile: string, passwordInput: string): Promise<boolean> => {
-    if (!isSupabaseConfigured()) {
-      alert("System Configuration Error: Authentication is offline.");
+    const configError = getSupabaseConfigError();
+    if (configError) {
+      alert(configError);
       return false;
     }
 
@@ -1792,11 +1796,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        if (error.message.includes("User already registered")) {
-          alert("पंजीकरण त्रुटि: यह ईमेल पहले से ही पंजीकृत है। कृपया लॉगिन करें।");
-        } else {
-          alert("पंजीकरण त्रुटि: " + error.message);
-        }
+        alert("❌ Supabase connection failed: " + error.message);
         return false;
       }
 
@@ -1829,52 +1829,70 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       alert("पंजीकरण सफल! कृपया अपने ईमेल में पुष्टिकरण लिंक की जांच करें।");
       return true;
     } catch (err: any) {
-      alert("Registration Error: " + err.message);
+      alert("❌ Supabase connection failed: " + err.message);
       return false;
     }
   };
 
   const sendOtpCode = async (email: string): Promise<boolean> => {
-    if (!isSupabaseConfigured()) {
-       alert("System Configuration Error: Authentication is offline.");
-       return false;
-    }
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    if (error) {
-      alert("OTP भेजने में त्रुटि: " + error.message);
+    const configError = getSupabaseConfigError();
+    if (configError) {
+      alert(configError);
       return false;
     }
-    return true;
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ email });
+      if (error) {
+        alert("❌ Supabase connection failed: " + error.message);
+        return false;
+      }
+      return true;
+    } catch (err: any) {
+      alert("❌ Supabase connection failed: " + err.message);
+      return false;
+    }
   };
 
   const verifyOtpCode = async (email: string, token: string): Promise<boolean> => {
-    if (!isSupabaseConfigured()) {
-      alert("System Configuration Error: Authentication is offline.");
+    const configError = getSupabaseConfigError();
+    if (configError) {
+      alert(configError);
       return false;
     }
-    const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
-    if (error) {
-      alert("OTP सत्यापन त्रुटि: " + error.message);
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
+      if (error) {
+        alert("❌ Auth callback failed: " + error.message);
+        return false;
+      }
+      setAuthModalOpen(false);
+      return true;
+    } catch (err: any) {
+      alert("❌ Auth callback failed: " + err.message);
       return false;
     }
-    setAuthModalOpen(false);
-    return true;
   };
 
   const sendPasswordReset = async (email: string): Promise<boolean> => {
-    if (!isSupabaseConfigured()) {
-      alert("System Configuration Error: Authentication is offline.");
+    const configError = getSupabaseConfigError();
+    if (configError) {
+      alert(configError);
       return false;
     }
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`
-    });
-    if (error) {
-      alert("पासवर्ड रीसेट लिंक भेजने में त्रुटि: " + error.message);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+      if (error) {
+        alert("❌ Supabase connection failed: " + error.message);
+        return false;
+      }
+      alert("पासवर्ड रीसेट लिंक आपके ईमेल पर भेज दिया गया है!");
+      return true;
+    } catch (err: any) {
+      alert("❌ Supabase connection failed: " + err.message);
       return false;
     }
-    alert("पासवर्ड रीसेट लिंक आपके ईमेल पर भेज दिया गया है!");
-    return true;
   };
 
   const logoutUser = async () => {

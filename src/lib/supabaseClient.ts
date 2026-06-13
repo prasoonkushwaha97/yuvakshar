@@ -1,16 +1,32 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
+console.log("SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL);
+console.log("SUPABASE_KEY_EXISTS", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
+export const getSupabaseConfigError = (): string | null => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+
+  if (!url) {
+    return "❌ Missing NEXT_PUBLIC_SUPABASE_URL";
+  }
+  if (!key) {
+    return "❌ Missing NEXT_PUBLIC_SUPABASE_ANON_KEY";
+  }
+  if (!url.startsWith("https://")) {
+    return `❌ Invalid NEXT_PUBLIC_SUPABASE_URL (must start with https://, got: ${url})`;
+  }
+  if (url.includes("placeholder") || url.includes("your_supabase_url")) {
+    return `❌ Placeholder NEXT_PUBLIC_SUPABASE_URL detected: ${url}`;
+  }
+  return null;
+};
+
 export const isSupabaseConfigured = (): boolean => {
-  return (
-    supabaseUrl !== "" &&
-    supabaseAnonKey !== "" &&
-    supabaseUrl.startsWith("https://") &&
-    !supabaseUrl.includes("placeholder") &&
-    !supabaseUrl.includes("your_supabase_url")
-  );
+  return getSupabaseConfigError() === null;
 };
 
 if (process.env.NODE_ENV !== "production" && !isSupabaseConfigured()) {
