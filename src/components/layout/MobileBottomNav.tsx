@@ -102,7 +102,7 @@ export default function MobileBottomNav() {
 
   const isNavVisible = visible && !sidebarOpen;
 
-  if (pathname?.startsWith("/admin")) return null;
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/community")) return null;
 
   return (
     <nav 

@@ -597,7 +597,7 @@ const initialMockVideos: Video[] = [
   }
 ];
 
-const isOwner = (role?: string | null) => role === "Owner" || role === "संस्थापक";
+const isOwner = (role?: string | null) => role === "Owner" || role === "Founder" || role === "संस्थापक";
 const isAdmin = (role?: string | null) => role === "Admin" || role === "प्रशासक" || role === "प्रधान प्रशासक" || isOwner(role);
 const isEIC = (role?: string | null) => role === "Editor-in-Chief" || role === "प्रधान संपादक" || isAdmin(role);
 const isManagingEditor = (role?: string | null) => role === "Managing Editor" || role === "कार्यकारी संपादक" || role === "प्रबंध संपादक" || isEIC(role);
@@ -1201,12 +1201,46 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           if (!u.org_id) u.org_id = matching.org_id;
         }
       });
+      
+      // Ensure primary Founder account is updated or added
+      const founderIndex = parsedUsers.findIndex(u => u.email && u.email.toLowerCase() === "yuvakshar.editor@gmail.com");
+      if (founderIndex !== -1) {
+        parsedUsers[founderIndex].name = "Founder";
+        parsedUsers[founderIndex].role = "Founder";
+        parsedUsers[founderIndex].password = "@Yuvaksharprasoon9516";
+        parsedUsers[founderIndex].membership = "Patron";
+        if (!parsedUsers[founderIndex].badges) parsedUsers[founderIndex].badges = [];
+        if (!parsedUsers[founderIndex].badges.includes("Founder")) {
+          parsedUsers[founderIndex].badges.push("Founder");
+        }
+        if (!parsedUsers[founderIndex].badges.includes("Primary Owner")) {
+          parsedUsers[founderIndex].badges.push("Primary Owner");
+        }
+      } else {
+        parsedUsers.push({
+          id: "u-1",
+          name: "Founder",
+          email: "yuvakshar.editor@gmail.com",
+          role: "Founder",
+          department: "संस्थापक",
+          org_id: "YUV-FND-0000",
+          membership: "Patron",
+          status: "active",
+          password: "@Yuvaksharprasoon9516",
+          badges: ["Founder", "Primary Owner"],
+          joinDate: "जून २०२६",
+          dob: "1988-08-12",
+          gender: "Male",
+          location: "नई दिल्ली, भारत"
+        });
+      }
+
       finalUsers = enrichUsersList(parsedUsers, loadedArticles);
       localStorage.setItem("yuvakshar_users", JSON.stringify(finalUsers));
       setUsers(finalUsers);
     } else {
       const initialUsers: Profile[] = [
-        { id: "u-1", name: "Owner", email: "yuvakshar.editor@gmail.com", role: "संस्थापक", department: "संस्थापक", org_id: "YUV-FND-0000", membership: "Patron", status: "active", password: "password123", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
+        { id: "u-1", name: "Founder", email: "yuvakshar.editor@gmail.com", role: "Founder", department: "संस्थापक", org_id: "YUV-FND-0000", membership: "Patron", status: "active", password: "@Yuvaksharprasoon9516", badges: ["Founder", "Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
         { id: "u-2", name: "प्रसून कुशवाहा", email: "prasoon.kushwaha@yuvakshar.org", role: "प्रधान संपादक", department: "संपादकीय", org_id: "YUV-ED-0000", membership: "Patron", status: "active", password: "password123", badges: ["सत्यापित साहित्यकार"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
         { id: "u-3", name: "Guest Author", email: "m.tripathi@gmail.com", role: "संपादक", department: "संपादकीय", org_id: "YUV-ED-0006", membership: "Premium", status: "active", password: "password123", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
         { id: "u-4", name: "Featured Reader", email: "reader.demo@yuvakshar.org", role: "सदस्य", department: "None", membership: "Free", status: "active", password: "password123", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "नई दिल्ली, भारत" },
@@ -1681,13 +1715,10 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "Author", membership: "Premium", status: "active", password: "password123", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
           { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "Contributor", membership: "Free", status: "active", password: "password123", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
         ];
-        const initialUsers: Profile[] = [
-          { id: "u-1", name: "Owner", email: "yuvakshar.editor@gmail.com", role: "Owner", membership: "Patron", status: "active", password: "password123", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
-          { id: "u-2", name: "प्रसून कुशवाहा", email: "prasoon.kushwaha@yuvakshar.org", role: "Editor-in-Chief", membership: "Patron", status: "active", password: "password123", badges: ["Verified Author"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
-          { id: "u-3", name: "Guest Author", email: "m.tripathi@gmail.com", role: "Author", membership: "Premium", status: "active", password: "password123", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
-          { id: "u-4", name: "Featured Author", email: "reader.demo@yuvakshar.org", role: null, membership: "Free", status: "active", password: "password123", badges: ["Reader"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "नई दिल्ली, भारत" },
-          ...defaultStaff
-        ];
+
+         const initialUsers: Profile[] = [
+         ...defaultStaff
+         ];
         const enriched = enrichUsersList(initialUsers, loadedArticles);
         setUsers(enriched);
       }
@@ -1699,10 +1730,23 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
   // 2. Auth Operations
   const loginUser = async (email: string, role: string, customName?: string, customMobile?: string, passwordInput?: string): Promise<boolean> => {
+    console.log("[AuthDebug] loginUser invoked", {
+      email,
+      role,
+      customName,
+      customMobile,
+      hasPassword: !!passwordInput
+    });
+    console.log("[AuthDebug] supabaseConfigured:", supabaseConfigured);
+    console.log("[AuthDebug] isSupabaseConfigured():", isSupabaseConfigured());
+    console.log("[AuthDebug] process.env.NEXT_PUBLIC_SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL ? "Present" : "Missing");
+    console.log("[AuthDebug] process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "Present" : "Missing");
+
     if (supabaseConfigured) {
+      console.log("[AuthDebug] Supabase is configured; executing Supabase authentication flow");
       try {
         if (email === "google.reader@gmail.com") {
-          // Google OAuth
+          console.log("[AuthDebug] Starting signInWithOAuth for Google");
           const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
@@ -1710,15 +1754,22 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
             }
           });
           if (error) {
+            console.error("[AuthDebug] Google OAuth error:", error.message);
             alert("Google OAuth त्रुटि: " + error.message);
             return false;
           }
+          console.log("[AuthDebug] Google OAuth flow initiated successfully");
           return true;
         }
 
         if (passwordInput) {
           if (customName) {
-            // Sign Up (Register)
+            console.log("[AuthDebug] Initiating supabase.auth.signUp with options", {
+              email,
+              name: customName,
+              mobile: customMobile,
+              role
+            });
             const { data, error } = await supabase.auth.signUp({
               email,
               password: passwordInput,
@@ -1730,38 +1781,49 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
                 }
               }
             });
+            console.log("[AuthDebug] signUp response:", { data, error });
             if (error) {
+              console.error("[AuthDebug] signUp failed with error:", error);
               alert("पंजीकरण त्रुटि: " + error.message);
               return false;
             }
+            console.log("[AuthDebug] signUp succeeded. User created:", data?.user);
             alert("पंजीकरण सफल! कृपया अपने ईमेल में पुष्टिकरण लिंक की जांच करें (यदि ईमेल सत्यापन सक्षम है)।");
             return true;
           } else {
-            // Sign In
+            console.log("[AuthDebug] Initiating supabase.auth.signInWithPassword", { email });
             const { data, error } = await supabase.auth.signInWithPassword({
               email,
               password: passwordInput,
             });
+            console.log("[AuthDebug] signInWithPassword response:", { data, error });
             if (error) {
+              console.error("[AuthDebug] signInWithPassword failed with error:", error);
               alert("लॉगिन त्रुटि: " + error.message);
               return false;
             }
+            console.log("[AuthDebug] signInWithPassword succeeded. User ID:", data?.user?.id);
             return true;
           }
         }
 
-        // Default: Passwordless Email OTP
+        console.log("[AuthDebug] Initiating passwordless signInWithOtp", { email });
         const { error } = await supabase.auth.signInWithOtp({ email });
+        console.log("[AuthDebug] signInWithOtp response error:", error);
         if (error) {
+          console.error("[AuthDebug] signInWithOtp failed with error:", error);
           alert("OTP भेजने में त्रुटि: " + error.message);
           return false;
         }
+        console.log("[AuthDebug] signInWithOtp succeeded");
         return true;
       } catch (err: any) {
+        console.error("[AuthDebug] Unexpected exception caught in loginUser:", err);
         alert("Auth error: " + err.message);
         return false;
       }
     } else {
+      console.log("[AuthDebug] Supabase not configured; executing Mock authentication flow");
       // Mock Sign In
       const existingUser = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
 

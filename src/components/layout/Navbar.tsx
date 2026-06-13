@@ -131,7 +131,7 @@ export default function Navbar() {
     }
   };
 
-  if (pathname && pathname.startsWith("/admin")) {
+  if (pathname && (pathname.startsWith("/admin") || pathname.startsWith("/community"))) {
     return null;
   }
 

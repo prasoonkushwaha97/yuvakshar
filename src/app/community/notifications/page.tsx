@@ -8,9 +8,8 @@ import {
   MessageSquare, 
   UserPlus, 
   Trophy, 
-  Award,
-  FileText,
-  AlertCircle
+  ArrowRight,
+  UserCheck
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { 
@@ -19,6 +18,7 @@ import {
   CommunityNotification 
 } from "@/lib/communityService";
 import GlassCard from "@/components/yuvakshar/GlassCard";
+import Link from "next/link";
 
 export default function NotificationsPage() {
   const { currentUser } = useCms();
@@ -52,10 +52,34 @@ export default function NotificationsPage() {
     }
   };
 
-  const filtered = notifications.filter(n => {
-    if (filterType === "unread") return !n.is_read;
-    return true;
-  });
+  const getPriorityScore = (type: CommunityNotification["notification_type"]) => {
+    switch (type) {
+      case "rank_up":
+      case "challenge_update":
+      case "collab_request":
+        return 1; // High priority
+      case "reply":
+      case "comment":
+        return 2; // Medium priority
+      case "like":
+      case "follow":
+      default:
+        return 3; // Normal priority
+    }
+  };
+
+  const filtered = notifications
+    .filter(n => {
+      if (filterType === "unread") return !n.is_read;
+      return true;
+    })
+    .sort((a, b) => {
+      // First sort by priority score
+      const scoreDiff = getPriorityScore(a.notification_type) - getPriorityScore(b.notification_type);
+      if (scoreDiff !== 0) return scoreDiff;
+      // Then sort by date (newest first)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
 
   const getIcon = (type: CommunityNotification["notification_type"]) => {
     switch (type) {
@@ -75,19 +99,133 @@ export default function NotificationsPage() {
     }
   };
 
+  const groupNotificationsByTime = (notifs: CommunityNotification[]) => {
+    const today: CommunityNotification[] = [];
+    const yesterday: CommunityNotification[] = [];
+    const thisWeek: CommunityNotification[] = [];
+    const older: CommunityNotification[] = [];
+
+    const now = new Date();
+    const oneDay = 24 * 60 * 60 * 1000;
+    
+    notifs.forEach(n => {
+      const date = new Date(n.created_at);
+      const diff = now.getTime() - date.getTime();
+      
+      if (diff < oneDay && now.getDate() === date.getDate()) {
+        today.push(n);
+      } else if (diff < 2 * oneDay) {
+        yesterday.push(n);
+      } else if (diff < 7 * oneDay) {
+        thisWeek.push(n);
+      } else {
+        older.push(n);
+      }
+    });
+
+    return { today, yesterday, thisWeek, older };
+  };
+
+  const timeGroups = groupNotificationsByTime(filtered);
+
+  const renderGroup = (title: string, list: CommunityNotification[]) => {
+    if (list.length === 0) return null;
+
+    return (
+      <div className="space-y-3.5">
+        <h4 className="text-[10px] uppercase font-bold text-slate-400 font-serif tracking-wider pl-1">{title}</h4>
+        <div className="space-y-3">
+          {list.map((notif) => {
+            const priority = getPriorityScore(notif.notification_type);
+            const isHigh = priority === 1;
+
+            return (
+              <GlassCard 
+                key={notif.id} 
+                className={`p-4 border flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all ${
+                  !notif.is_read
+                    ? "border-l-3 border-l-primary bg-primary/2.5 dark:bg-primary/5 border-slate-200/80 dark:border-slate-800/80"
+                    : "border-slate-200/60 dark:border-slate-800/40"
+                }`}
+              >
+                <div className="flex items-start space-x-3.5 min-w-0 flex-1">
+                  <div className="w-9 h-9 rounded-xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-850">
+                    {getIcon(notif.notification_type)}
+                  </div>
+
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <p className="text-xs text-slate-700 dark:text-slate-300 font-hindi leading-relaxed font-medium">
+                      {notif.content}
+                    </p>
+                    <span className="block text-[9px] text-slate-400 font-mono">
+                      {new Date(notif.created_at).toLocaleTimeString("hi-IN", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Inline Action buttons */}
+                <div className="flex items-center space-x-2 shrink-0 ml-12 md:ml-0">
+                  {notif.notification_type === "collab_request" && (
+                    <div className="flex gap-1.5">
+                      <button 
+                        onClick={() => alert("सहयोग अनुरोध स्वीकार कर लिया गया है!")}
+                        className="bg-green-600 hover:bg-green-700 text-white text-[9px] font-bold px-2.5 py-1 rounded-lg font-hindi cursor-pointer"
+                      >
+                        स्वीकार करें
+                      </button>
+                      <button 
+                        onClick={() => alert("सहयोग अनुरोध अस्वीकार कर दिया गया है।")}
+                        className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-500 text-[9px] font-bold px-2.5 py-1 rounded-lg font-hindi cursor-pointer"
+                      >
+                        हटाएं
+                      </button>
+                    </div>
+                  )}
+
+                  {(notif.notification_type === "comment" || notif.notification_type === "reply" || notif.notification_type === "like") && notif.related_id && (
+                    <Link 
+                      href={`/community/discussion/thread/${notif.related_id}`}
+                      className="text-[9px] font-bold text-primary border border-primary/20 hover:bg-primary/5 rounded-lg px-2.5 py-1 transition-all flex items-center gap-1 font-hindi"
+                    >
+                      <span>देखें</span>
+                      <ArrowRight className="w-2.5 h-2.5" />
+                    </Link>
+                  )}
+
+                  {notif.notification_type === "follow" && (
+                    <Link 
+                      href={`/community/authors/${notif.sender_name}`}
+                      className="text-[9px] font-bold text-primary border border-primary/20 hover:bg-primary/5 rounded-lg px-2.5 py-1 transition-all flex items-center gap-1 font-hindi"
+                    >
+                      <span>प्रोफ़ाइल खोलें</span>
+                    </Link>
+                  )}
+
+                  {!notif.is_read && (
+                    <span className="w-2 h-2 rounded-full bg-primary shrink-0 self-center" />
+                  )}
+                </div>
+
+              </GlassCard>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const hasNotifications = filtered.length > 0;
+
   return (
     <div className="space-y-6 text-[#0F172A] dark:text-slate-200">
       
-      {/* Header board */}
+      {/* Header bar */}
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white dark:bg-[#0F172A]/35 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/40">
-        
-        {/* Title */}
         <div className="flex items-center space-x-2 text-primary font-bold text-xs font-serif font-hindi">
           <Bell className="w-5 h-5" />
           <span>सूचना केंद्र (Notification Center)</span>
         </div>
 
-        {/* Action button */}
         {notifications.some(n => !n.is_read) && (
           <button
             onClick={handleMarkAllRead}
@@ -97,10 +235,9 @@ export default function NotificationsPage() {
             <span>सभी को पढ़ा गया मार्क करें</span>
           </button>
         )}
-
       </div>
 
-      {/* Tabs / Filters row */}
+      {/* Tabs */}
       <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-900/60 rounded-xl p-1 w-fit">
         {[
           { id: "all", name: "सभी सूचनाएं" },
@@ -111,7 +248,7 @@ export default function NotificationsPage() {
             onClick={() => setFilterType(tab.id as any)}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer font-hindi ${
               filterType === tab.id
-                ? "bg-white dark:bg-slate-950 text-slate-800 dark:text-white shadow-sm"
+                ? "bg-white dark:bg-slate-950 text-slate-850 dark:text-white shadow-sm"
                 : "text-slate-400 hover:text-slate-500"
             }`}
           >
@@ -120,42 +257,19 @@ export default function NotificationsPage() {
         ))}
       </div>
 
-      {/* Notifications listings */}
-      <div className="space-y-4">
+      {/* Grouped Listings */}
+      <div className="space-y-6">
         {loading ? (
           <div className="py-20 text-center text-xs text-slate-450 animate-pulse font-serif">
             सूचनाएं लोड की जा रही हैं...
           </div>
-        ) : filtered.length > 0 ? (
-          filtered.map((notif) => (
-            <GlassCard 
-              key={notif.id} 
-              className={`p-4 border-slate-200/60 dark:border-slate-800/40 flex items-start space-x-3.5 transition-all ${
-                !notif.is_read ? "border-l-3 border-l-primary bg-primary/2.5" : ""
-              }`}
-            >
-              {/* Type indicator icon */}
-              <div className="w-9 h-9 rounded-xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-850">
-                {getIcon(notif.notification_type)}
-              </div>
-
-              {/* Notification text details */}
-              <div className="min-w-0 flex-1 space-y-1">
-                <p className="text-xs text-slate-700 dark:text-slate-355 font-hindi leading-relaxed font-medium">
-                  {notif.content}
-                </p>
-                <span className="block text-[9px] text-slate-400 font-mono">
-                  {new Date(notif.created_at).toLocaleString("hi-IN")}
-                </span>
-              </div>
-
-              {/* Unread circle badge */}
-              {!notif.is_read && (
-                <span className="w-2 h-2 rounded-full bg-primary shrink-0 self-center" />
-              )}
-
-            </GlassCard>
-          ))
+        ) : hasNotifications ? (
+          <>
+            {renderGroup("आज (Today)", timeGroups.today)}
+            {renderGroup("कल (Yesterday)", timeGroups.yesterday)}
+            {renderGroup("इस सप्ताह (This Week)", timeGroups.thisWeek)}
+            {renderGroup("विगत सूचनाएं (Older)", timeGroups.older)}
+          </>
         ) : (
           <div className="py-20 text-center text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl font-serif text-xs flex flex-col items-center gap-2 justify-center">
             <CheckCheck className="w-8 h-8 text-green-500" />

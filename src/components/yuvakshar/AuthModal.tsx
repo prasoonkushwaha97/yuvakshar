@@ -21,7 +21,8 @@ export default function AuthModal() {
     users,
     sendOtpCode,
     verifyOtpCode,
-    sendPasswordReset
+    sendPasswordReset,
+    supabaseConfigured
   } = useCms();
   
   // Tab states: 'login' | 'register'
@@ -242,11 +243,14 @@ export default function AuthModal() {
       return;
     }
 
+    console.log("[AuthDebug] handleLoginSubmit starting for:", email);
     setEmailError("");
     setIsLoading(true);
 
     setTimeout(async () => {
+      console.log("[AuthDebug] handleLoginSubmit calling loginUser...");
       const success = await loginUser(email.trim(), "Subscriber", undefined, undefined, password);
+      console.log("[AuthDebug] handleLoginSubmit loginUser returned:", success);
       setIsLoading(false);
       
       if (success) {
@@ -271,6 +275,7 @@ export default function AuthModal() {
   // Register New User Account Action
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("[AuthDebug] handleRegisterSubmit starting for:", { name, email, mobile });
     if (!name.trim()) {
       setRegisterError("कृपया अपना नाम दर्ज करें।");
       triggerShake();
@@ -299,7 +304,8 @@ export default function AuthModal() {
 
     // Check if user already exists
     const userExists = users.some(u => u.email === email.trim());
-    if (userExists) {
+    console.log("[AuthDebug] handleRegisterSubmit check userExists in local state:", userExists, "supabaseConfigured:", supabaseConfigured);
+    if (!supabaseConfigured && userExists) {
       setRegisterError("इस ईमेल से खाता पहले से मौजूद है। लॉगिन करें।");
       triggerShake();
       return;
@@ -310,7 +316,9 @@ export default function AuthModal() {
 
     setTimeout(async () => {
       // Call loginUser passing customName, customMobile, and password
+      console.log("[AuthDebug] handleRegisterSubmit calling loginUser...");
       const success = await loginUser(email.trim(), "Subscriber", name.trim(), mobile.trim(), password);
+      console.log("[AuthDebug] handleRegisterSubmit loginUser returned:", success);
       setIsLoading(false);
 
       if (success) {

@@ -60,6 +60,8 @@ export interface CommunityComment {
   likesCount: number;
   created_at: string;
   replies?: CommunityComment[];
+  reply_to_name?: string;
+  reply_to_content?: string;
 }
 
 export interface CommunityReadingProgress {
@@ -596,7 +598,9 @@ export const addComment = async (
   userId: string,
   userName: string,
   content: string,
-  parentId?: string | null
+  parentId?: string | null,
+  replyToName?: string | null,
+  replyToContent?: string | null
 ): Promise<CommunityComment> => {
   const newComment: CommunityComment = {
     id: `comm-${Date.now()}`,
@@ -608,7 +612,9 @@ export const addComment = async (
     content,
     is_accepted_answer: false,
     likesCount: 0,
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
+    reply_to_name: replyToName || undefined,
+    reply_to_content: replyToContent || undefined
   };
 
   initializeCommunityData();

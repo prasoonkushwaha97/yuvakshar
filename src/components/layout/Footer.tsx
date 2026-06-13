@@ -18,7 +18,7 @@ export default function Footer() {
     }
   }, [currentUser]);
 
-  if (pathname && pathname.startsWith("/admin")) {
+  if (pathname && (pathname.startsWith("/admin") || pathname.startsWith("/community"))) {
     return null;
   }
 

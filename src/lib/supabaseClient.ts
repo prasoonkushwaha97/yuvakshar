@@ -3,13 +3,23 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
+console.log("[SupabaseClientDebug] NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl || "(empty)");
+console.log("[SupabaseClientDebug] NEXT_PUBLIC_SUPABASE_ANON_KEY length:", supabaseAnonKey ? supabaseAnonKey.length : 0);
+console.log("[SupabaseClientDebug] isSupabaseConfigured() result:", (
+  supabaseUrl !== "" &&
+  supabaseAnonKey !== "" &&
+  !supabaseUrl.includes("your_supabase_url") &&
+  !supabaseUrl.includes("placeholder-url")
+));
+
 export const isSupabaseConfigured = (): boolean => {
-  return (
+  const result = (
     supabaseUrl !== "" &&
     supabaseAnonKey !== "" &&
     !supabaseUrl.includes("your_supabase_url") &&
     !supabaseUrl.includes("placeholder-url")
   );
+  return result;
 };
 
 // Initialize Supabase Client (provide empty defaults to prevent throw on initial parse if unconfigured)

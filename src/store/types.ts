@@ -14,7 +14,7 @@ export type { Article, Magazine } from "@/lib/mockData";
 export interface Profile {
   id: string;
   name: string;
-  role: "संस्थापक" | "सह-संस्थापक" | "प्रधान प्रशासक" | "प्रशासक" | "प्रधान संपादक" | "कार्यकारी संपादक" | "वरिष्ठ संपादक" | "संपादक" | "सहायक संपादक" | "समुदाय प्रबंधक" | "समुदाय मॉडरेटर" | "समूह व्यवस्थापक" | "समूह मॉडरेटर" | "प्रूफरीडर" | "भाषा समीक्षक" | "कार्यक्रम समन्वयक" | "चुनौती समन्वयक" | "प्रमाणपत्र प्रबंधक" | "स्वयंसेवक" | "प्रशिक्षु" | "सदस्य" | "Owner" | "Admin" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Sub Editor" | "Fact Checker" | "Reviewer" | "Author" | "Contributor" | "Fact Check Reviewer" | null;
+  role: "Founder" | "संस्थापक" | "सह-संस्थापक" | "प्रधान प्रशासक" | "प्रशासक" | "प्रधान संपादक" | "कार्यकारी संपादक" | "वरिष्ठ संपादक" | "संपादक" | "सहायक संपादक" | "समुदाय प्रबंधक" | "समुदाय मॉडरेटर" | "समूह व्यवस्थापक" | "समूह मॉडरेटर" | "प्रूफरीडर" | "भाषा समीक्षक" | "कार्यक्रम समन्वयक" | "चुनौती समन्वयक" | "प्रमाणपत्र प्रबंधक" | "स्वयंसेवक" | "प्रशिक्षु" | "सदस्य" | "Owner" | "Admin" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Sub Editor" | "Fact Checker" | "Reviewer" | "Author" | "Contributor" | "Fact Check Reviewer" | null;
   membership: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime" | null;
   status: "active" | "suspended" | "pending" | "Draft" | "Pending Approval" | "Approved" | "Rejected" | "Resigned";
   password?: string;
