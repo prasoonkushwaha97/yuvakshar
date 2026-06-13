@@ -6,6 +6,7 @@ import { useCms, Profile } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
 import { generateAuthorSlug } from "@/lib/authorService";
+import ProfilePreviewWrapper from "@/components/yuvakshar/ProfilePreviewCard";
 
 interface BookmarksTabProps {
   currentUser: Profile;
@@ -62,12 +63,14 @@ export default function BookmarksTab({ currentUser }: BookmarksTabProps) {
                     <span>•</span>
                     <span>
                       लेखक:{" "}
-                      <Link 
-                        href={`/authors/${generateAuthorSlug(art.author || "युवाक्षर डेस्क")}`}
-                        className="hover:text-primary hover:underline transition-colors font-bold"
-                      >
-                        {art.author || "युवाक्षर डेस्क"}
-                      </Link>
+                      <ProfilePreviewWrapper userId={art.author || "युवाक्षर डेस्क"}>
+                        <Link 
+                          href={`/authors/${generateAuthorSlug(art.author || "युवाक्षर डेस्क")}`}
+                          className="hover:text-primary hover:underline transition-colors font-bold"
+                        >
+                          {art.author || "युवाक्षर डेस्क"}
+                        </Link>
+                      </ProfilePreviewWrapper>
                     </span>
                   </div>
                 </div>

@@ -23,7 +23,7 @@ import GlassCard from "@/components/yuvakshar/GlassCard";
 import { getLiteraryIdentities } from "@/lib/repositoryService";
 
 const sidebarLinks = [
-  { name: "कम्युनिटी फीड", href: "/community", icon: Home },
+  { name: "🏛️ चौपाल (Home)", href: "/community", icon: Home },
   { name: "समूह और क्लब", href: "/community/groups", icon: Users },
   { name: "चर्चा मंच", href: "/community/discussion", icon: MessageSquare },
   { name: "साहित्यिक चुनौतियां", href: "/community/challenges", icon: Trophy },

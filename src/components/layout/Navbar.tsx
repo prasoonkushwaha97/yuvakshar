@@ -162,13 +162,15 @@ export default function Navbar() {
       <div className="lg:hidden sticky top-0 z-50 w-full h-[60px] bg-white dark:bg-[#1E1E1E] border-b border-slate-200 dark:border-[#3A3A3A] flex items-center justify-between px-4 shadow-sm">
         {/* Left: Hamburger + Logo */}
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => handleMobileMenuToggle(true)}
-            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            aria-label="Menu"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
+          {!pathname?.startsWith("/community") && (
+            <button
+              onClick={() => handleMobileMenuToggle(true)}
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
           <Link href="/" className="flex items-center" onClick={() => handleMobileMenuToggle(false)}>
             <img
               src={settings.appearance.logo_url || "/yuvakshar_logo_official.png"}

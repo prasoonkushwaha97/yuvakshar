@@ -40,7 +40,7 @@ export async function GET(request: Request) {
     let defaultPath = path.join(process.cwd(), "public", fallbackFilename);
     
     if (!fs.existsSync(defaultPath)) {
-      fallbackFilename = "yuvakshar_logo_official.png";
+      fallbackFilename = "favicon.ico";
       defaultPath = path.join(process.cwd(), "public", fallbackFilename);
     }
     

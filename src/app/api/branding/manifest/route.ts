@@ -12,7 +12,7 @@ export async function GET() {
   
   if (!isSupabaseConfigured()) {
     try {
-      const defaultPath = path.join(process.cwd(), "public", "yuvakshar_logo_official.png");
+      const defaultPath = path.join(process.cwd(), "public", "favicon.ico");
       const stat = fs.statSync(defaultPath);
       version = stat.mtimeMs.toString();
     } catch {

@@ -76,9 +76,18 @@ export default function AuthorDirectory() {
       );
     }
 
-    // Role filter
     if (selectedRole !== "all") {
-      result = result.filter(u => u.role === selectedRole);
+      result = result.filter(u => {
+        if (selectedRole === "Owner") return ["Owner", "संस्थापक"].includes(u.role || "");
+        if (selectedRole === "Admin") return ["Admin", "प्रशासक"].includes(u.role || "");
+        if (selectedRole === "Editor-in-Chief") return ["Editor-in-Chief", "प्रधान संपादक"].includes(u.role || "");
+        if (selectedRole === "Managing Editor") return ["Managing Editor", "प्रबंध संपादक"].includes(u.role || "");
+        if (selectedRole === "Editor") return ["Editor", "संपादक"].includes(u.role || "");
+        if (selectedRole === "Sub Editor") return ["Sub Editor", "सह संपादक"].includes(u.role || "");
+        if (selectedRole === "Author") return ["Author", "लेखक"].includes(u.role || "");
+        if (selectedRole === "Contributor") return ["Contributor", "योगदानकर्ता"].includes(u.role || "");
+        return u.role === selectedRole;
+      });
     }
 
     // Expertise filter

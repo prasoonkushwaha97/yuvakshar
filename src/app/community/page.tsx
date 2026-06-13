@@ -27,6 +27,7 @@ import {
 } from "@/lib/communityService";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
+import ProfilePreviewWrapper from "@/components/yuvakshar/ProfilePreviewCard";
 
 export default function CommunityFeedPage() {
   const { currentUser, loginUser, supabaseConfigured } = useCms();
@@ -409,14 +410,18 @@ export default function CommunityFeedPage() {
                 {/* Post Header */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-500 uppercase shrink-0">
-                      {post.user_name ? post.user_name[0] : "U"}
-                    </div>
+                    <ProfilePreviewWrapper userId={post.user_id}>
+                      <Link href={`/authors/${post.user_id}`} className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-500 uppercase shrink-0 overflow-hidden hover:opacity-90 block">
+                        {post.user_name ? post.user_name[0] : "U"}
+                      </Link>
+                    </ProfilePreviewWrapper>
                     <div>
                       <div className="flex items-center space-x-2">
-                        <Link href={`/community/authors/${post.user_id}`} className="text-xs font-bold text-slate-800 dark:text-white hover:text-primary font-hindi">
-                          {post.user_name}
-                        </Link>
+                        <ProfilePreviewWrapper userId={post.user_id}>
+                          <Link href={`/authors/${post.user_id}`} className="text-xs font-bold text-slate-800 dark:text-white hover:text-primary font-hindi">
+                            {post.user_name}
+                          </Link>
+                        </ProfilePreviewWrapper>
                         {post.user_rank && (
                           <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold font-serif">
                             {post.user_rank}

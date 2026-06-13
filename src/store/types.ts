@@ -14,10 +14,19 @@ export type { Article, Magazine } from "@/lib/mockData";
 export interface Profile {
   id: string;
   name: string;
-  role: "Owner" | "Admin" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Sub Editor" | "Fact Checker" | "Reviewer" | "Author" | "Contributor" | "Fact Check Reviewer" | null;
+  role: "संस्थापक" | "सह-संस्थापक" | "प्रधान प्रशासक" | "प्रशासक" | "प्रधान संपादक" | "कार्यकारी संपादक" | "वरिष्ठ संपादक" | "संपादक" | "सहायक संपादक" | "समुदाय प्रबंधक" | "समुदाय मॉडरेटर" | "समूह व्यवस्थापक" | "समूह मॉडरेटर" | "प्रूफरीडर" | "भाषा समीक्षक" | "कार्यक्रम समन्वयक" | "चुनौती समन्वयक" | "प्रमाणपत्र प्रबंधक" | "स्वयंसेवक" | "प्रशिक्षु" | "सदस्य" | "Owner" | "Admin" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Sub Editor" | "Fact Checker" | "Reviewer" | "Author" | "Contributor" | "Fact Check Reviewer" | null;
   membership: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime" | null;
-  status: "active" | "suspended" | "pending";
+  status: "active" | "suspended" | "pending" | "Draft" | "Pending Approval" | "Approved" | "Rejected" | "Resigned";
   password?: string;
+  department?: string; // Hindi department identifier
+  org_id?: string;     // e.g. YUV-ED-0001
+  suspended_by?: string | null;
+  temporary_password?: boolean;
+  force_password_change?: boolean;
+  state?: string;
+  district?: string;
+  qualification?: string;
+  experience?: string;
   bio?: string;
   avatar_url?: string;
   social_links?: Record<string, string>;
@@ -116,6 +125,9 @@ export interface Submission {
 export interface EditorialAssignment {
   id: string;
   article_id: string;
+  article_title?: string;
+  author_name?: string;
+  reviewer_name?: string;
   author_id?: string;
   reviewer_id?: string;
   section_editor_id?: string;
@@ -354,3 +366,73 @@ export interface FooterSettings {
   copyright_text: string;
   links: Array<{ name: string; href: string }>;
 }
+
+// ─── Organizational Governance Extensions ──────────────────────────────────
+export interface OrgTask {
+  id: string;
+  title: string;
+  description: string;
+  assigned_by: string;
+  assigned_by_name: string;
+  assigned_to: string;
+  assigned_to_name: string;
+  department: string;
+  priority: "Low" | "Medium" | "High" | "Urgent";
+  due_date: string;
+  attachments?: string[];
+  status: "Pending" | "In Progress" | "Completed" | "Rejected" | "Needs Revision";
+  created_at: string;
+}
+
+export interface VerificationRequest {
+  id: string;
+  user_id: string;
+  user_name: string;
+  badge_requested: string;
+  status: "Pending" | "Approved" | "Rejected";
+  supporting_docs?: string;
+  review_notes?: string;
+  decision_notes?: string;
+  decided_by?: string;
+  decided_by_name?: string;
+  decided_at?: string;
+  created_at: string;
+}
+
+export interface OrgAuditLog {
+  id: string;
+  user_id: string;
+  user_name: string;
+  action: string;
+  details: string;
+  timestamp: string;
+  severity: "Info" | "Warning" | "Critical";
+}
+
+export interface RoleTransfer {
+  id: string;
+  user_id: string;
+  user_name: string;
+  old_role: string;
+  new_role: string;
+  changed_by: string;
+  changed_by_name: string;
+  date: string;
+}
+
+export interface PrivateMessage {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  sender_name: string;
+  receiver_name: string;
+  content: string;
+  timestamp: string;
+  read: boolean;
+  reply_to?: string;
+  forwarded?: boolean;
+  reactions?: Record<string, string[]>;
+  pinned?: boolean;
+  archived_by?: string[];
+}
+

@@ -34,7 +34,9 @@ import ArticleQuiz from "@/components/yuvakshar/ArticleQuiz";
 import { generateAuthorSlug } from "@/lib/authorService";
 import AiAssistantSidebar from "@/components/yuvakshar/AiAssistantSidebar";
 import PaywallGate from "@/components/yuvakshar/PaywallGate";
+import ProfilePreviewWrapper from "@/components/yuvakshar/ProfilePreviewCard";
 import { motion, AnimatePresence } from "framer-motion";
+
 
 const translateRole = (role?: string | null) => {
   if (role === null) return "सदस्य";
@@ -823,7 +825,8 @@ function EditorialPageContent() {
           </p>
           
           <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 font-sans pt-2">
-            <span>लेखक: <Link href={`/authors/${generateAuthorSlug(article.author)}`} className="hover:text-primary hover:underline font-bold transition-colors">{article.author}</Link></span>
+            <span>लेखक: <ProfilePreviewWrapper userId={article.author}><Link href={`/authors/${generateAuthorSlug(article.author)}`} className="hover:text-primary hover:underline font-bold transition-colors">{article.author}</Link></ProfilePreviewWrapper></span>
+
             <span>•</span>
             <span>दिनांक: {article.date}</span>
             <span>•</span>
@@ -838,16 +841,21 @@ function EditorialPageContent() {
       <div className="border-y border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/10 py-4 px-4 md:px-8">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-serif">
           <div className="flex items-center space-x-3">
-            <Link href={`/authors/${generateAuthorSlug(article.author)}`} className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm hover:border-primary transition-all">
-              {article.author?.[0]}
-            </Link>
-            <div>
-              <Link href={`/authors/${generateAuthorSlug(article.author)}`} className="hover:text-primary transition-colors">
-                <p className="font-bold text-slate-800 dark:text-white leading-none">{article.author}</p>
+            <ProfilePreviewWrapper userId={article.author}>
+              <Link href={`/authors/${generateAuthorSlug(article.author)}`} className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm hover:border-primary transition-all">
+                {article.author?.[0]}
               </Link>
+            </ProfilePreviewWrapper>
+            <div>
+              <ProfilePreviewWrapper userId={article.author}>
+                <Link href={`/authors/${generateAuthorSlug(article.author)}`} className="hover:text-primary transition-colors">
+                  <p className="font-bold text-slate-800 dark:text-white leading-none">{article.author}</p>
+                </Link>
+              </ProfilePreviewWrapper>
               <p className="text-[10px] text-slate-400 mt-1">{article.authorRole || "वरिष्ठ संपादक"}</p>
             </div>
           </div>
+
           
           <div className="flex items-center space-x-4">
             <button 
@@ -975,9 +983,12 @@ function EditorialPageContent() {
             </div>
             <div className="space-y-2 text-center sm:text-left">
               <div className="flex flex-col sm:flex-row items-center gap-2">
-                <Link href={`/authors/${generateAuthorSlug(article.author)}`} className="hover:text-primary transition-colors">
-                  <h4 className="font-serif font-bold text-base text-slate-855 dark:text-white leading-none">{article.author}</h4>
-                </Link>
+                <ProfilePreviewWrapper userId={article.author}>
+                  <Link href={`/authors/${generateAuthorSlug(article.author)}`} className="hover:text-primary transition-colors">
+                    <h4 className="font-serif font-bold text-base text-slate-855 dark:text-white leading-none">{article.author}</h4>
+                  </Link>
+                </ProfilePreviewWrapper>
+
                 <span className="text-[9px] uppercase tracking-wider font-bold bg-primary/10 border border-primary/20 text-primary px-2.5 py-0.5 rounded-full font-sans mt-1 sm:mt-0">
                   {article.authorRole || "वरिष्ठ लेखक"}
                 </span>
@@ -1119,9 +1130,12 @@ function EditorialPageContent() {
                             )}
                           </div>
                           <div>
-                            <Link href={`/authors/${commenter?.slug || generateAuthorSlug(c.name)}`} className="font-serif font-bold text-slate-700 dark:text-slate-350 hover:text-primary transition-colors">
-                              {c.name}
-                            </Link>
+                            <ProfilePreviewWrapper userId={commenter?.id || c.name}>
+                              <Link href={`/authors/${commenter?.slug || generateAuthorSlug(c.name)}`} className="font-serif font-bold text-slate-700 dark:text-slate-350 hover:text-primary transition-colors">
+                                {c.name}
+                              </Link>
+                            </ProfilePreviewWrapper>
+
                             <span className="text-[8px] uppercase tracking-wider font-bold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-400 px-1.5 py-0.5 rounded-md ml-2 inline-block">
                               {translateRole(commenter?.role || "Subscriber")}
                             </span>
@@ -1172,9 +1186,12 @@ function EditorialPageContent() {
                                     )}
                                   </div>
                                   <div>
-                                    <Link href={`/authors/${repCommenter?.slug || generateAuthorSlug(rep.name)}`} className="font-serif font-bold text-slate-700 dark:text-slate-350 hover:text-primary transition-colors">
-                                      {rep.name}
-                                    </Link>
+                                    <ProfilePreviewWrapper userId={repCommenter?.id || rep.name}>
+                                      <Link href={`/authors/${repCommenter?.slug || generateAuthorSlug(rep.name)}`} className="font-serif font-bold text-slate-700 dark:text-slate-350 hover:text-primary transition-colors">
+                                        {rep.name}
+                                      </Link>
+                                    </ProfilePreviewWrapper>
+
                                     <span className="text-[7px] uppercase tracking-wider font-bold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-400 px-1.5 py-0.5 rounded ml-1.5 inline-block">
                                       {translateRole(repCommenter?.role || "Subscriber")}
                                     </span>

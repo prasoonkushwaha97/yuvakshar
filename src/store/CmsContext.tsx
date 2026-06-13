@@ -99,8 +99,8 @@ export interface DonationRecord {
   date: string;
 }
 
-import { Profile } from "./types";
-export type { Profile };
+import { Profile, OrgTask, VerificationRequest, OrgAuditLog, RoleTransfer, PrivateMessage } from "./types";
+export type { Profile, OrgTask, VerificationRequest, OrgAuditLog, RoleTransfer, PrivateMessage };
 
 export interface Video {
   id: string;
@@ -167,6 +167,9 @@ export interface Submission {
 export interface EditorialAssignment {
   id: string;
   article_id: string;
+  article_title?: string;
+  author_name?: string;
+  reviewer_name?: string;
   author_id?: string;
   reviewer_id?: string;
   section_editor_id?: string;
@@ -496,6 +499,27 @@ interface CmsContextType {
     backupSystemActive: boolean;
     analyticsActive: boolean;
   };
+  
+  // Organizational Governance Extensions
+  tasks: OrgTask[];
+  verifications: VerificationRequest[];
+  orgAuditLogs: OrgAuditLog[];
+  roleTransfers: RoleTransfer[];
+  privateMessages: PrivateMessage[];
+  announcements: Array<{ id: string; title: string; content: string; target: string; created_by: string; created_by_name: string; created_at: string }>;
+  assignTask: (task: Omit<OrgTask, "id" | "created_at">) => Promise<void>;
+  updateTaskStatus: (taskId: string, status: OrgTask["status"]) => Promise<void>;
+  createCandidate: (candidateData: any) => Promise<void>;
+  approveCandidate: (candidateId: string, approverId: string) => Promise<void>;
+  rejectCandidate: (candidateId: string, approverId: string) => Promise<void>;
+  processVerification: (reqId: string, status: "Approved" | "Rejected", notes: string, deciderId: string) => Promise<void>;
+  assignBadge: (userId: string, badge: string, assignerId: string) => Promise<void>;
+  removeBadge: (userId: string, badge: string, removerId: string) => Promise<void>;
+  sendPrivateMessage: (senderId: string, receiverId: string, content: string, replyTo?: string) => Promise<void>;
+  toggleMessageReaction: (msgId: string, userId: string, reaction: string) => Promise<void>;
+  logAuditAction: (userId: string, action: string, details: string, severity: OrgAuditLog["severity"]) => Promise<void>;
+  updateTeamMemberProfile: (userId: string, data: Partial<Profile>, authorizerId: string) => Promise<void>;
+  addAnnouncement: (announcement: { title: string; content: string; target: string; created_by: string; created_by_name: string }) => Promise<void>;
 }
 
 const CmsContext = createContext<CmsContextType | undefined>(undefined);
@@ -573,6 +597,13 @@ const initialMockVideos: Video[] = [
   }
 ];
 
+const isOwner = (role?: string | null) => role === "Owner" || role === "संस्थापक";
+const isAdmin = (role?: string | null) => role === "Admin" || role === "प्रशासक" || role === "प्रधान प्रशासक" || isOwner(role);
+const isEIC = (role?: string | null) => role === "Editor-in-Chief" || role === "प्रधान संपादक" || isAdmin(role);
+const isManagingEditor = (role?: string | null) => role === "Managing Editor" || role === "कार्यकारी संपादक" || role === "प्रबंध संपादक" || isEIC(role);
+const isEditor = (role?: string | null) => role === "Editor" || role === "संपादक" || role === "वरिष्ठ संपादक" || isManagingEditor(role);
+const isSubEditor = (role?: string | null) => role === "Sub Editor" || role === "सहायक संपादक" || isEditor(role);
+
 export function CmsProvider({ children }: { children: React.ReactNode }) {
   const [videos, setVideos] = useState<Video[]>([]);
   const [supabaseConfigured, setSupabaseConfigured] = useState(false);
@@ -598,6 +629,12 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   const [layouts, setLayouts] = useState<HomepageLayout[]>([]);
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
+  const [tasks, setTasks] = useState<OrgTask[]>([]);
+  const [verifications, setVerifications] = useState<VerificationRequest[]>([]);
+  const [orgAuditLogs, setOrgAuditLogs] = useState<OrgAuditLog[]>([]);
+  const [roleTransfers, setRoleTransfers] = useState<RoleTransfer[]>([]);
+  const [privateMessages, setPrivateMessages] = useState<PrivateMessage[]>([]);
+  const [announcements, setAnnouncements] = useState<Array<{ id: string; title: string; content: string; target: string; created_by: string; created_by_name: string; created_at: string }>>([]);
   const [quizzes, setQuizzes] = useState<ArticleQuiz[]>([]);
   const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
   const [quizCertificates, setQuizCertificates] = useState<QuizCertificate[]>([]);
@@ -1130,16 +1167,16 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     // Users
     const localUsers = localStorage.getItem("yuvakshar_users");
     const defaultStaff: Profile[] = [
-      { id: "staff-owner", name: "Ravi Owner", email: "owner@yuvakshar.in", role: "Owner", membership: "Patron", status: "active", password: "password123", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
-      { id: "staff-admin", name: "Amit Admin", email: "admin@yuvakshar.in", role: "Admin", membership: "Patron", status: "active", password: "password123", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
-      { id: "staff-chief", name: "Prasoon Chief", email: "chief@yuvakshar.in", role: "Editor-in-Chief", membership: "Patron", status: "active", password: "password123", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
-      { id: "staff-managing", name: "Sumit Managing", email: "managing@yuvakshar.in", role: "Managing Editor", membership: "Premium", status: "active", password: "password123", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
-      { id: "staff-editor", name: "Ravi Sharma", email: "editor@yuvakshar.in", role: "Editor", membership: "Premium", status: "active", password: "password123", badges: ["Editor"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
-      { id: "staff-subeditor", name: "Alok SubEditor", email: "subeditor@yuvakshar.in", role: "Sub Editor", membership: "Premium", status: "active", password: "password123", badges: ["Sub Editor"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
-      { id: "staff-factchecker", name: "Nitin Checker", email: "factchecker@yuvakshar.in", role: "Fact Checker", membership: "Premium", status: "active", password: "password123", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
-      { id: "staff-reviewer", name: "Varun Reviewer", email: "reviewer@yuvakshar.in", role: "Reviewer", membership: "Premium", status: "active", password: "password123", badges: ["Reviewer"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
-      { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "Author", membership: "Premium", status: "active", password: "password123", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
-      { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "Contributor", membership: "Free", status: "active", password: "password123", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
+      { id: "staff-owner", name: "Ravi Owner", email: "owner@yuvakshar.in", role: "संस्थापक", department: "संस्थापक", org_id: "YUV-FND-0001", membership: "Patron", status: "active", password: "password123", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
+      { id: "staff-admin", name: "Amit Admin", email: "admin@yuvakshar.in", role: "प्रशासक", department: "प्रशासन", org_id: "YUV-ADM-0002", membership: "Patron", status: "active", password: "password123", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
+      { id: "staff-chief", name: "Prasoon Chief", email: "chief@yuvakshar.in", role: "प्रधान संपादक", department: "संपादकीय", org_id: "YUV-ED-0001", membership: "Patron", status: "active", password: "password123", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
+      { id: "staff-managing", name: "Sumit Managing", email: "managing@yuvakshar.in", role: "कार्यकारी संपादक", department: "संपादकीय", org_id: "YUV-ED-0002", membership: "Premium", status: "active", password: "password123", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
+      { id: "staff-editor", name: "Ravi Sharma", email: "editor@yuvakshar.in", role: "संपादक", department: "संपादकीय", org_id: "YUV-ED-0003", membership: "Premium", status: "active", password: "password123", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
+      { id: "staff-subeditor", name: "Alok SubEditor", email: "subeditor@yuvakshar.in", role: "सहायक संपादक", department: "संपादकीय", org_id: "YUV-ED-0004", membership: "Premium", status: "active", password: "password123", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
+      { id: "staff-factchecker", name: "Nitin Checker", email: "factchecker@yuvakshar.in", role: "प्रूफरीडर", department: "गुणवत्ता", org_id: "YUV-QL-0001", membership: "Premium", status: "active", password: "password123", badges: ["समीक्षक"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
+      { id: "staff-reviewer", name: "Varun Reviewer", email: "reviewer@yuvakshar.in", role: "भाषा समीक्षक", department: "गुणवत्ता", org_id: "YUV-QL-0002", membership: "Premium", status: "active", password: "password123", badges: ["समीक्षक"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
+      { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "संपादक", department: "संपादकीय", org_id: "YUV-ED-0005", membership: "Premium", status: "active", password: "password123", badges: ["लेखक", "कवि"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
+      { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "स्वयंसेवक", department: "स्वयंसेवी", org_id: "YUV-VOL-0001", membership: "Free", status: "active", password: "password123", badges: ["कवि"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
     ];
     let finalUsers: Profile[] = [];
     if (localUsers) {
@@ -1160,6 +1197,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           if (!u.dob) u.dob = matching.dob;
           if (!u.gender) u.gender = matching.gender;
           if (!u.location) u.location = matching.location;
+          if (!u.department) u.department = matching.department;
+          if (!u.org_id) u.org_id = matching.org_id;
         }
       });
       finalUsers = enrichUsersList(parsedUsers, loadedArticles);
@@ -1167,10 +1206,10 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       setUsers(finalUsers);
     } else {
       const initialUsers: Profile[] = [
-        { id: "u-1", name: "Owner", email: "yuvakshar.editor@gmail.com", role: "Owner", membership: "Patron", status: "active", password: "password123", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
-        { id: "u-2", name: "प्रसून कुशवाहा", email: "prasoon.kushwaha@yuvakshar.org", role: "Editor-in-Chief", membership: "Patron", status: "active", password: "password123", badges: ["Verified Author"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
-        { id: "u-3", name: "Guest Author", email: "m.tripathi@gmail.com", role: "Author", membership: "Premium", status: "active", password: "password123", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
-        { id: "u-4", name: "Featured Author", email: "reader.demo@yuvakshar.org", role: null, membership: "Free", status: "active", password: "password123", badges: ["Reader"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "नई दिल्ली, भारत" },
+        { id: "u-1", name: "Owner", email: "yuvakshar.editor@gmail.com", role: "संस्थापक", department: "संस्थापक", org_id: "YUV-FND-0000", membership: "Patron", status: "active", password: "password123", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
+        { id: "u-2", name: "प्रसून कुशवाहा", email: "prasoon.kushwaha@yuvakshar.org", role: "प्रधान संपादक", department: "संपादकीय", org_id: "YUV-ED-0000", membership: "Patron", status: "active", password: "password123", badges: ["सत्यापित साहित्यकार"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
+        { id: "u-3", name: "Guest Author", email: "m.tripathi@gmail.com", role: "संपादक", department: "संपादकीय", org_id: "YUV-ED-0006", membership: "Premium", status: "active", password: "password123", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
+        { id: "u-4", name: "Featured Reader", email: "reader.demo@yuvakshar.org", role: "सदस्य", department: "None", membership: "Free", status: "active", password: "password123", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "नई दिल्ली, भारत" },
         ...defaultStaff
       ];
       finalUsers = enrichUsersList(initialUsers, loadedArticles);
@@ -1359,6 +1398,71 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     } else {
       setVideos(initialMockVideos);
       localStorage.setItem("yuvakshar_videos", JSON.stringify(initialMockVideos));
+    }
+
+    // Load Tasks
+    const localTasks = localStorage.getItem("yuvakshar_tasks");
+    if (localTasks) {
+      setTasks(JSON.parse(localTasks));
+    } else {
+      const initial: OrgTask[] = [
+        { id: "task-1", title: "निराला जयंती विशेषांक संपादन", description: "सूर्यकांत त्रिपाठी निराला जी की जयंती पर विशेष लेखों का संकलन और संपादन पूर्ण करें।", assigned_by: "u-2", assigned_by_name: "प्रसून कुशवाहा", assigned_to: "staff-editor", assigned_to_name: "Ravi Sharma", department: "संपादकीय", priority: "High", due_date: "2026-06-25", status: "In Progress", created_at: "2026-06-10T12:00:00Z" },
+        { id: "task-2", title: "प्रशासनिक भूमिका समीक्षा", description: "सभी नवीन टीम सदस्यों की भूमिकाओं की समीक्षा करें और अनुमतियाँ अद्यतन करें।", assigned_by: "u-1", assigned_by_name: "Owner", assigned_to: "staff-admin", assigned_to_name: "Amit Admin", department: "प्रशासन", priority: "Medium", due_date: "2026-06-30", status: "Pending", created_at: "2026-06-11T10:00:00Z" },
+        { id: "task-3", title: "वेबसाइट वर्तनी सुधार", description: "मुखपृष्ठ पर हाल ही में प्रकाशित लेखों की भाषा और वर्तनी सुधार करें।", assigned_by: "staff-chief", assigned_by_name: "Prasoon Chief", assigned_to: "staff-factchecker", assigned_to_name: "Nitin Checker", department: "गुणवत्ता", priority: "Low", due_date: "2026-06-18", status: "Needs Revision", created_at: "2026-06-12T09:30:00Z" }
+      ];
+      setTasks(initial);
+      localStorage.setItem("yuvakshar_tasks", JSON.stringify(initial));
+    }
+
+    // Load Verifications
+    const localVerifications = localStorage.getItem("yuvakshar_verifications");
+    if (localVerifications) {
+      setVerifications(JSON.parse(localVerifications));
+    } else {
+      const initial: VerificationRequest[] = [
+        { id: "ver-1", user_id: "staff-editor", user_name: "Ravi Sharma", badge_requested: "सत्यापित लेखक", status: "Pending", supporting_docs: "प्रकाशित लेखों के लिंक और साहित्यिक बायो", review_notes: "सभी आलेखों की समीक्षा जारी है", created_at: "2026-06-12T10:00:00Z" },
+        { id: "ver-2", user_id: "u-3", user_name: "Guest Author", badge_requested: "सत्यापित साहित्यकार", status: "Approved", supporting_docs: "३ साहित्यिक पुस्तकों के आईएसबीएन विवरण", review_notes: "मान्य राष्ट्रीय साहित्यिक योगदान", decided_by: "u-1", decided_by_name: "Owner", decided_at: "2026-06-10T15:00:00Z", created_at: "2026-06-09T08:00:00Z" }
+      ];
+      setVerifications(initial);
+      localStorage.setItem("yuvakshar_verifications", JSON.stringify(initial));
+    }
+
+    // Load Audit Logs
+    const localOrgAuditLogs = localStorage.getItem("yuvakshar_org_audit_logs");
+    if (localOrgAuditLogs) {
+      setOrgAuditLogs(JSON.parse(localOrgAuditLogs));
+    } else {
+      const initial: OrgAuditLog[] = [
+        { id: "log-1", user_id: "u-1", user_name: "Owner", action: "भूमिका परिवर्तन", details: "Amit Admin की भूमिका प्रशासक से प्रधान प्रशासक में बदली", severity: "Info", timestamp: "2026-06-10T12:00:00Z" },
+        { id: "log-2", user_id: "u-2", user_name: "प्रसून कुशवाहा", action: "सुरक्षा घटना", details: "अनधिकृत उपयोगकर्ता u-4 द्वारा /admin पर पहुंच का प्रयास - अस्वीकृत", severity: "Warning", timestamp: "2026-06-12T15:30:00Z" }
+      ];
+      setOrgAuditLogs(initial);
+      localStorage.setItem("yuvakshar_org_audit_logs", JSON.stringify(initial));
+    }
+
+    // Load Role Transfers
+    const localRoleTransfers = localStorage.getItem("yuvakshar_role_transfers");
+    if (localRoleTransfers) {
+      setRoleTransfers(JSON.parse(localRoleTransfers));
+    } else {
+      const initial: RoleTransfer[] = [
+        { id: "trans-1", user_id: "staff-admin", user_name: "Amit Admin", old_role: "प्रशासक", new_role: "प्रधान प्रशासक", changed_by: "u-1", changed_by_name: "Owner", date: "10 जून २०२६" }
+      ];
+      setRoleTransfers(initial);
+      localStorage.setItem("yuvakshar_role_transfers", JSON.stringify(initial));
+    }
+
+    // Load Private Messages
+    const localPrivateMessages = localStorage.getItem("yuvakshar_private_messages");
+    if (localPrivateMessages) {
+      setPrivateMessages(JSON.parse(localPrivateMessages));
+    } else {
+      const initial: PrivateMessage[] = [
+        { id: "msg-1", sender_id: "u-2", sender_name: "प्रसून कुशवाहा", receiver_id: "staff-editor", receiver_name: "Ravi Sharma", content: "नमस्कार रवि जी, निराला विशेषांक के संपादन का काम कहाँ तक पहुँचा?", timestamp: "2026-06-12T09:00:00Z", read: true },
+        { id: "msg-2", sender_id: "staff-editor", sender_name: "Ravi Sharma", receiver_id: "u-2", receiver_name: "प्रसून कुशवाहा", content: "जी प्रसून जी, ७०% आलेख संपादित हो चुके हैं, कल दोपहर तक ड्राफ्ट भेज दूँगा।", timestamp: "2026-06-12T09:15:00Z", read: true, reply_to: "msg-1" }
+      ];
+      setPrivateMessages(initial);
+      localStorage.setItem("yuvakshar_private_messages", JSON.stringify(initial));
     }
   };
 
@@ -1856,22 +1960,24 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     const performerRole = currentUser?.role;
     
     // Authorization check
-    if (!performerRole || !["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(performerRole)) {
+    if (!performerRole || !isManagingEditor(performerRole)) {
       alert("त्रुटि: आपके पास नया उपयोगकर्ता बनाने की अनुमति नहीं है!");
       return;
     }
     
-    if (user.role === "Owner" && performerRole !== "Owner") {
+    if (isOwner(user.role) && !isOwner(performerRole)) {
       alert("त्रुटि: केवल Owner ही नया Owner बना सकता है!");
       return;
     }
     
-    if (user.role === "Admin" && performerRole !== "Owner" && performerRole !== "Admin") {
+    if (isAdmin(user.role) && !isAdmin(performerRole)) {
       alert("त्रुटि: आपके पास Admin बनाने की अनुमति नहीं है!");
       return;
     }
 
-    if ((user.role === "Editor-in-Chief" || user.role === "Managing Editor" || user.role === "Editor" || user.role === null) && (performerRole !== "Owner" && performerRole !== "Admin")) {
+    if ((user.role === "Editor-in-Chief" || user.role === "Managing Editor" || user.role === "Editor" || 
+         user.role === "प्रधान संपादक" || user.role === "कार्यकारी संपादक" || 
+         user.role === "संपादक" || user.role === "वरिष्ठ संपादक" || user.role === null) && !isAdmin(performerRole)) {
       alert("त्रुटि: केवल Owner या Admin ही संपादकीय नेतृत्व या पाठक खाते बना सकते हैं!");
       return;
     }
@@ -1908,22 +2014,37 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
-    if (!performerRole || !["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(performerRole)) {
+    if (!performerRole || !isManagingEditor(performerRole)) {
       alert("त्रुटि: आपके पास उपयोगकर्ता संशोधित करने की अनुमति नहीं है!");
       return;
     }
 
-    if (targetUser.role === "Owner" && performerRole !== "Owner") {
+    if (isOwner(targetUser.role) && !isOwner(performerRole)) {
       alert("त्रुटि: आप Owner का विवरण संशोधित नहीं कर सकते!");
       return;
     }
 
+    if (isOwner(targetUser.role)) {
+      if (data.role && data.role !== targetUser.role) {
+        alert("त्रुटि: संस्थापक (Founder) को पदावनत (demote) नहीं किया जा सकता है!");
+        return;
+      }
+      if (data.status === "suspended") {
+        alert("त्रुटि: संस्थापक (Founder) को निलंबित नहीं किया जा सकता है!");
+        return;
+      }
+    }
+
     if (data.role && data.role !== targetUser.role) {
-      if (data.role === "Owner" && performerRole !== "Owner") {
+      if (userId === currentUser?.id) {
+        alert("त्रुटि: आप स्वयं की भूमिका नहीं बदल सकते (Self-promotion blocked)!");
+        return;
+      }
+      if (isOwner(data.role) && !isOwner(performerRole)) {
         alert("त्रुटि: केवल Owner ही Owner पदोन्नति कर सकता है!");
         return;
       }
-      if (data.role === "Admin" && performerRole !== "Owner" && performerRole !== "Admin") {
+      if (isAdmin(data.role) && !isAdmin(performerRole)) {
         alert("त्रुटि: आपके पास Admin भूमिका प्रदान करने की अनुमति नहीं है!");
         return;
       }
@@ -1953,18 +2074,18 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
-    if (!performerRole || !["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(performerRole)) {
+    if (!performerRole || !isManagingEditor(performerRole)) {
       alert("त्रुटि: आपके पास उपयोगकर्ता हटाने की अनुमति नहीं है!");
       return;
     }
 
-    if (targetUser.role === "Owner") {
-      alert("त्रुटि: Owner को हटाया नहीं जा सकता!");
+    if (isOwner(targetUser.role)) {
+      alert("त्रुटि: Owner/संस्थापक को हटाया नहीं जा सकता!");
       return;
     }
 
-    if (targetUser.role === "Admin" && performerRole !== "Owner") {
-      alert("त्रुटि: केवल Owner ही Admin को हटा सकता है!");
+    if (isAdmin(targetUser.role) && !isOwner(performerRole)) {
+      alert("त्रुटि: केवल Owner/संस्थापक ही Admin को हटा सकता है!");
       return;
     }
 
@@ -3114,22 +3235,398 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     return user !== null;
   };
 
+  // In-App Notification Helper
+  const sendInAppNotification = (userId: string, senderId: string, senderName: string, type: string, content: string, relatedId?: string) => {
+    try {
+      const localNots = localStorage.getItem("yuvakshar_c_notifications");
+      const nots = localNots ? JSON.parse(localNots) : [];
+      const newNot = {
+        id: `not-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        user_id: userId,
+        sender_id: senderId,
+        sender_name: senderName,
+        notification_type: type as any,
+        content: content,
+        related_id: relatedId,
+        is_read: false,
+        created_at: new Date().toISOString()
+      };
+      nots.unshift(newNot);
+      localStorage.setItem("yuvakshar_c_notifications", JSON.stringify(nots));
+    } catch (e) {
+      console.error("Error creating in-app notification:", e);
+    }
+  };
+
+  const logAuditAction = async (userId: string, action: string, details: string, severity: OrgAuditLog["severity"]) => {
+    const deciderUser = users.find(u => u.id === userId);
+    const userName = deciderUser ? deciderUser.name : "System";
+    const newLog: OrgAuditLog = {
+      id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      user_id: userId,
+      user_name: userName,
+      action,
+      details,
+      timestamp: new Date().toISOString(),
+      severity
+    };
+    const updated = [newLog, ...orgAuditLogs];
+    setOrgAuditLogs(updated);
+    localStorage.setItem("yuvakshar_org_audit_logs", JSON.stringify(updated));
+  };
+
+  const assignTask = async (taskData: Omit<OrgTask, "id" | "created_at">) => {
+    const taskId = `task-${Date.now()}`;
+    const newTask: OrgTask = {
+      ...taskData,
+      id: taskId,
+      created_at: new Date().toISOString()
+    };
+    const updated = [newTask, ...tasks];
+    setTasks(updated);
+    localStorage.setItem("yuvakshar_tasks", JSON.stringify(updated));
+
+    // Audit Log
+    logAuditAction(taskData.assigned_by, "कार्य असाइनमेंट", `कार्य "${taskData.title}" को ${taskData.assigned_to_name} को सौंपा गया।`, "Info");
+
+    // Notification
+    sendInAppNotification(taskData.assigned_to, taskData.assigned_by, taskData.assigned_by_name, "collab_request", `आपको नया कार्य सौंपा गया है: "${taskData.title}"। प्राथमिकता: ${taskData.priority}।`);
+
+    // Simulated Email Log
+    console.log(`[SIMULATED EMAIL SENT]
+To: ${taskData.assigned_to}@yuvakshar.org
+Subject: नया कार्य आवंटन - ${taskData.title}
+Body: नमस्कार, आपको "${taskData.assigned_by_name}" द्वारा कार्य "${taskData.title}" आवंटित किया गया है।
+विभाग: ${taskData.department}
+प्राथमिकता: ${taskData.priority}
+नियत तारीख: ${taskData.due_date}
+विवरण: ${taskData.description}
+`);
+    console.log(`[SIMULATED REMINDERS SCHEDULED] Scheduled email reminders for task ${taskId} at 7 days, 3 days, 1 day, and due date.`);
+  };
+
+  const updateTaskStatus = async (taskId: string, status: OrgTask["status"]) => {
+    const updated = tasks.map(t => {
+      if (t.id === taskId) {
+        // Audit
+        if (currentUser) {
+          logAuditAction(currentUser.id, "कार्य स्थिति परिवर्तन", `कार्य "${t.title}" की स्थिति बदलकर ${status} की गई।`, "Info");
+          // Notify Assigner
+          sendInAppNotification(t.assigned_by, currentUser.id, currentUser.name, "challenge_update", `कार्य "${t.title}" की स्थिति बदलकर ${status} कर दी गई है।`);
+        }
+        return { ...t, status };
+      }
+      return t;
+    });
+    setTasks(updated);
+    localStorage.setItem("yuvakshar_tasks", JSON.stringify(updated));
+  };
+
+  const createCandidate = async (candidateData: any) => {
+    // Basic password hashing simulation
+    const simulatedHash = `hash_${btoa(candidateData.password || "temp123")}`;
+    const newCandidate: Profile = {
+      ...candidateData,
+      id: `cand-${Date.now()}`,
+      status: "Pending Approval",
+      password: simulatedHash,
+      temporary_password: true,
+      force_password_change: true,
+      joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" })
+    };
+    
+    const updated = [...users, newCandidate];
+    setUsers(updated);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+
+    if (currentUser) {
+      logAuditAction(currentUser.id, "उम्मीदवार निर्माण", `नया उम्मीदवार ${candidateData.name} (${candidateData.role}) अप्रूवल कतार में जोड़ा गया।`, "Info");
+    }
+  };
+
+  const approveCandidate = async (candidateId: string, approverId: string) => {
+    const approver = users.find(u => u.id === approverId);
+    const updated = users.map(u => {
+      if (u.id === candidateId) {
+        // Generate Unique Org ID based on Department
+        const dept = u.department || "प्रशासन";
+        let prefix = "YUV-GEN";
+        if (dept === "संस्थापक") prefix = "YUV-FND";
+        else if (dept === "प्रशासन") prefix = "YUV-ADM";
+        else if (dept === "संपादकीय") prefix = "YUV-ED";
+        else if (dept === "समुदाय") prefix = "YUV-COM";
+        else if (dept === "गुणवत्ता") prefix = "YUV-QL";
+        else if (dept === "कार्यक्रम") prefix = "YUV-PRG";
+        else if (dept === "स्वयंसेवी") prefix = "YUV-VOL";
+
+        const count = users.filter(usr => usr.department === dept).length + 1;
+        const orgId = `${prefix}-${count.toString().padStart(4, "0")}`;
+
+        logAuditAction(approverId, "उम्मीदवार स्वीकृति", `उम्मीदवार ${u.name} स्वीकृत किया गया। संगठन आईडी: ${orgId}`, "Info");
+        
+        // Simulated Credentials Email
+        console.log(`[SIMULATED EMAIL SENT]
+To: ${u.email}
+Subject: आपका युवाक्षर खाता सक्रिय कर दिया गया है
+Body: बधाई हो ${u.name}! आपका संगठन खाता स्वीकृत हो गया है।
+संगठन आईडी: ${orgId}
+भूमिका: ${u.role}
+विभाग: ${u.department}
+अस्थायी पासवर्ड: (सच्चे हैश के तहत सुरक्षित)
+कृपया पहले लॉगिन पर अपना पासवर्ड बदलें।
+`);
+
+        return {
+          ...u,
+          status: "active" as any,
+          org_id: orgId,
+          temporary_password: true,
+          force_password_change: true
+        };
+      }
+      return u;
+    });
+    setUsers(updated);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+  };
+
+  const rejectCandidate = async (candidateId: string, approverId: string) => {
+    const updated = users.map(u => {
+      if (u.id === candidateId) {
+        logAuditAction(approverId, "उम्मीदवार अस्वीकृति", `उम्मीदवार ${u.name} का आवेदन अस्वीकार किया गया।`, "Warning");
+        return { ...u, status: "Rejected" as any };
+      }
+      return u;
+    });
+    setUsers(updated);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+  };
+
+  const updateTeamMemberProfile = async (userId: string, data: Partial<Profile>, authorizerId: string) => {
+    const authorizer = users.find(u => u.id === authorizerId);
+    if (!authorizer) return;
+
+    // Check authority rules
+    const target = users.find(u => u.id === userId);
+    if (!target) return;
+
+    // founder level rules: Owner can never be modified or demoted
+    if (target.id === "staff-owner" || target.id === "u-1") {
+      alert("संस्थापक (Owner) की भूमिका या स्थिति को बदला नहीं जा सकता है!");
+      return;
+    }
+
+    const updated = users.map(u => {
+      if (u.id === userId) {
+        // Log Audit
+        if (data.role && data.role !== u.role) {
+          logAuditAction(authorizerId, "भूमिका परिवर्तन", `टीम सदस्य ${u.name} की भूमिका ${u.role} से बदलकर ${data.role} की गई।`, "Critical");
+          
+          // Role Transfer History record
+          const transfer: RoleTransfer = {
+            id: `trans-${Date.now()}`,
+            user_id: u.id,
+            user_name: u.name,
+            old_role: u.role || "सदस्य",
+            new_role: data.role || "सदस्य",
+            changed_by: authorizerId,
+            changed_by_name: authorizer.name,
+            date: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" })
+          };
+          const savedTransfers = localStorage.getItem("yuvakshar_role_transfers");
+          const transfers = savedTransfers ? JSON.parse(savedTransfers) : [];
+          transfers.unshift(transfer);
+          setRoleTransfers(transfers);
+          localStorage.setItem("yuvakshar_role_transfers", JSON.stringify(transfers));
+        }
+
+        if (data.department && data.department !== u.department) {
+          logAuditAction(authorizerId, "विभाग परिवर्तन", `टीम सदस्य ${u.name} का विभाग ${u.department || "None"} से बदलकर ${data.department} किया गया।`, "Info");
+        }
+
+        if (data.status && data.status !== u.status) {
+          logAuditAction(authorizerId, "दर्जा परिवर्तन", `टीम सदस्य ${u.name} का दर्जा ${u.status} से बदलकर ${data.status} किया गया।`, "Warning");
+        }
+
+        return { ...u, ...data };
+      }
+      return u;
+    });
+
+    setUsers(updated);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+
+    if (currentUser && currentUser.id === userId) {
+      const self = updated.find(u => u.id === userId) || null;
+      if (self) {
+        setCurrentUser(self);
+        localStorage.setItem("yuvakshar_session_user", JSON.stringify(self));
+      }
+    }
+  };
+
+  const processVerification = async (reqId: string, status: "Approved" | "Rejected", notes: string, deciderId: string) => {
+    const decider = users.find(u => u.id === deciderId);
+    if (!decider) return;
+
+    const verificationReq = verifications.find(v => v.id === reqId);
+    if (verificationReq && verificationReq.user_id === deciderId) {
+      alert("त्रुटि: आप स्वयं के सत्यापन अनुरोध को स्वीकृत नहीं कर सकते (Self-verification blocked)!");
+      return;
+    }
+
+    const updatedReqs = verifications.map(v => {
+      if (v.id === reqId) {
+        logAuditAction(deciderId, "सत्यापन निर्णय", `सत्यापन अनुरोध ${reqId} (${v.badge_requested}) को ${status} किया गया।`, status === "Approved" ? "Info" : "Warning");
+        
+        if (status === "Approved") {
+          // Assign badge to user
+          const updatedUsers = users.map(u => {
+            if (u.id === v.user_id) {
+              const currentBadges = u.badges || [];
+              if (!currentBadges.includes(v.badge_requested)) {
+                currentBadges.push(v.badge_requested);
+              }
+              return { ...u, badges: currentBadges };
+            }
+            return u;
+          });
+          setUsers(updatedUsers);
+          localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+        }
+
+        return {
+          ...v,
+          status,
+          decision_notes: notes,
+          decided_by: deciderId,
+          decided_by_name: decider.name,
+          decided_at: new Date().toISOString()
+        };
+      }
+      return v;
+    });
+
+    setVerifications(updatedReqs);
+    localStorage.setItem("yuvakshar_verifications", JSON.stringify(updatedReqs));
+  };
+
+  const assignBadge = async (userId: string, badge: string, assignerId: string) => {
+    const updated = users.map(u => {
+      if (u.id === userId) {
+        const b = u.badges || [];
+        if (!b.includes(badge)) b.push(badge);
+        logAuditAction(assignerId, "बैज आवंटन", `उपयोगकर्ता ${u.name} को बैज "${badge}" आवंटित किया गया।`, "Info");
+        return { ...u, badges: b };
+      }
+      return u;
+    });
+    setUsers(updated);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+  };
+
+  const removeBadge = async (userId: string, badge: string, removerId: string) => {
+    const updated = users.map(u => {
+      if (u.id === userId) {
+        const b = (u.badges || []).filter(bg => bg !== badge);
+        logAuditAction(removerId, "बैज निष्कासन", `उपयोगकर्ता ${u.name} से बैज "${badge}" निकाला गया।`, "Info");
+        return { ...u, badges: b };
+      }
+      return u;
+    });
+    setUsers(updated);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+  };
+
+  const sendPrivateMessage = async (senderId: string, receiverId: string, content: string, replyTo?: string) => {
+    const sender = users.find(u => u.id === senderId);
+    const receiver = users.find(u => u.id === receiverId);
+    if (!sender || !receiver) return;
+
+    const newMsg: PrivateMessage = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      sender_id: senderId,
+      receiver_id: receiverId,
+      sender_name: sender.name,
+      receiver_name: receiver.name,
+      content,
+      timestamp: new Date().toISOString(),
+      read: false,
+      reply_to: replyTo,
+      reactions: {}
+    };
+
+    const updated = [...privateMessages, newMsg];
+    setPrivateMessages(updated);
+    localStorage.setItem("yuvakshar_private_messages", JSON.stringify(updated));
+  };
+
+  const toggleMessageReaction = async (msgId: string, userId: string, reaction: string) => {
+    const updated = privateMessages.map(m => {
+      if (m.id === msgId) {
+        const reacts = m.reactions || {};
+        const userList: string[] = reacts[reaction] || [];
+        let updatedList: string[] = [];
+        if (userList.includes(userId)) {
+          updatedList = userList.filter((id: string) => id !== userId);
+        } else {
+          updatedList = [...userList, userId];
+        }
+        reacts[reaction] = updatedList;
+        return { ...m, reactions: reacts };
+      }
+      return m;
+    });
+    setPrivateMessages(updated);
+    localStorage.setItem("yuvakshar_private_messages", JSON.stringify(updated));
+  };
+
+  const addAnnouncement = async (ann: { title: string; content: string; target: string; created_by: string; created_by_name: string }) => {
+    const newAnn = {
+      ...ann,
+      id: `ann-${Date.now()}`,
+      created_at: new Date().toISOString()
+    };
+    const updated = [newAnn, ...announcements];
+    setAnnouncements(updated);
+    localStorage.setItem("yuvakshar_announcements", JSON.stringify(updated));
+
+    // Audit
+    logAuditAction(ann.created_by, "सांस्थानिक घोषणा", `घोषणा जारी की गई: "${ann.title}"। लक्षित समूह: ${ann.target}`, "Info");
+
+    // In-app notifications to target roles/departments
+    users.forEach(u => {
+      const isTarget = ann.target === "All Team Members" && u.role !== "सदस्य" && u.role !== null
+        || ann.target === u.department
+        || ann.target === u.role;
+      if (isTarget) {
+        sendInAppNotification(u.id, ann.created_by, ann.created_by_name, "challenge_update", `सांस्थानिक घोषणा: ${ann.title}`);
+      }
+    });
+  };
+
   const canManageArticles = (user: Profile | null) => {
     if (!user || !user.role) return false;
-    return ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Author"].includes(user.role);
+    return [
+      "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक",
+      "कार्यकारी संपादक", "वरिष्ठ संपादक", "संपादक", "सहायक संपादक",
+      "Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Author"
+    ].includes(user.role);
   };
 
   const canPublishArticles = (user: Profile | null, contentType: string) => {
     if (!user || !user.role) return false;
     
-    // Check if they are part of the publishing roles
-    const hasPublishingRole = ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor"].includes(user.role);
+    const hasPublishingRole = [
+      "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक",
+      "कार्यकारी संपादक", "वरिष्ठ संपादक", "संपादक",
+      "Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor"
+    ].includes(user.role);
     if (!hasPublishingRole) return false;
 
-    // Special Content Workflow: Editorials, Investigative Reports, and Special Reports require Editor-in-Chief or Owner approval
     const isSpecialContent = ["Editorial", "Special Report", "Research Report"].includes(contentType);
     if (isSpecialContent) {
-      return ["Owner", "Editor-in-Chief"].includes(user.role);
+      return ["संस्थापक", "प्रधान संपादक", "Owner", "Editor-in-Chief"].includes(user.role);
     }
 
     return true;
@@ -3137,7 +3634,12 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
   const canAccessAdmin = (user: Profile | null) => {
     if (!user || !user.role) return false;
+    if (user.role === "सदस्य") return false;
     return [
+      "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक",
+      "कार्यकारी संपादक", "वरिष्ठ संपादक", "संपादक", "सहायक संपादक", "समुदाय प्रबंधक",
+      "समुदाय मॉडरेटर", "समूह व्यवस्थापक", "समूह मॉडरेटर", "प्रूफरीडर", "भाषा समीक्षक",
+      "कार्यक्रम समन्वयक", "चुनौती समन्वयक", "प्रमाणपत्र प्रबंधक", "स्वयंसेवक", "प्रशिक्षु",
       "Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Fact Check Reviewer", "Author"
     ].includes(user.role);
   };
@@ -3736,6 +4238,25 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         submitDonation,
         foundingSeatsRemaining,
         setFoundingSeatsRemaining,
+        tasks,
+        verifications,
+        orgAuditLogs,
+        roleTransfers,
+        privateMessages,
+        announcements,
+        assignTask,
+        updateTaskStatus,
+        createCandidate,
+        approveCandidate,
+        rejectCandidate,
+        updateTeamMemberProfile,
+        processVerification,
+        assignBadge,
+        removeBadge,
+        sendPrivateMessage,
+        toggleMessageReaction,
+        logAuditAction,
+        addAnnouncement,
         readinessStatuses
       }}
     >

@@ -145,6 +145,14 @@ export default function AdminDashboard() {
     setFeaturedVideo
   } = cms;
 
+  const role = currentUser?.role || "";
+  const isOwnerRole = ["Owner", "संस्थापक"].includes(role);
+  const isAdminRole = ["Owner", "Admin", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक"].includes(role);
+  const isEICRole = ["Owner", "Admin", "Editor-in-Chief", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक"].includes(role);
+  const isManagingEditorRole = ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक", "कार्यकारी संपादक", "प्रबंध संपादक"].includes(role);
+  const isEditorRole = ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक", "कार्यकारी संपादक", "प्रबंध संपादक", "वरिष्ठ संपादक", "संपादक"].includes(role);
+  const isSubEditorRole = ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Sub Editor", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक", "कार्यकारी संपादक", "प्रबंध संपादक", "वरिष्ठ संपादक", "संपादक", "सहायक संपादक"].includes(role);
+
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [emailInput, setEmailInput] = useState("");
@@ -319,7 +327,7 @@ export default function AdminDashboard() {
         if (tab) {
           setActiveTab(tab);
         } else {
-          if (currentUser.role && ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role)) {
+          if (isManagingEditorRole) {
             setActiveTab("dashboard");
           } else {
             setActiveTab("profile");
@@ -987,26 +995,26 @@ export default function AdminDashboard() {
             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-2.5 pr-2">
               {(() => {
                 const allTabs = [
-                  { id: "dashboard", label: "डैशबोर्ड", icon: BarChart3, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
+                  { id: "dashboard", label: "डैशबोर्ड", icon: BarChart3, visible: isManagingEditorRole },
                   { id: "profile", label: "प्रोफ़ाइल", icon: User, visible: true },
                   { id: "study-progress", label: "अध्ययन", icon: Brain, visible: true },
                   { id: "library", label: "लाइब्रेरी", icon: BookMarked, visible: true },
                   { id: "bookmarks", label: "बुकमार्क", icon: Bookmark, visible: true },
                   { id: "certificates", label: "प्रमाणपत्र", icon: Award, visible: true },
-                  { id: "video-management", label: "वीडियो", icon: VideoIcon, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Sub Editor"].includes(currentUser.role || "") },
-                  { id: "magazines", label: "पत्रिका", icon: BookOpen, visible: ["Owner", "Admin", "Editor-in-Chief"].includes(currentUser.role || "") },
+                  { id: "video-management", label: "वीडियो", icon: VideoIcon, visible: isSubEditorRole },
+                  { id: "magazines", label: "पत्रिका", icon: BookOpen, visible: isEICRole },
                   { id: "articles", label: "लेख", icon: FileEdit, visible: cms.canManageArticles(currentUser) },
-                  { id: "assignments", label: "कार्य", icon: Calendar, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor"].includes(currentUser.role || "") },
-                  { id: "comments", label: "टिप्पणी", icon: MessageSquare, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
-                  { id: "quiz-management", label: "क्विज़", icon: Trophy, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
-                  { id: "ai-ecosystem", label: "एआई", icon: Sparkles, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
-                  { id: "users", label: "उपयोगकर्ता", icon: Users, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
-                  { id: "newsletter", label: "न्यूज़लेटर", icon: Mail, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
-                  { id: "memberships", label: "सदस्यता", icon: Crown, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
+                  { id: "assignments", label: "कार्य", icon: Calendar, visible: isEditorRole },
+                  { id: "comments", label: "टिप्पणी", icon: MessageSquare, visible: isManagingEditorRole },
+                  { id: "quiz-management", label: "क्विज़", icon: Trophy, visible: isManagingEditorRole },
+                  { id: "ai-ecosystem", label: "एआई", icon: Sparkles, visible: isAdminRole },
+                  { id: "users", label: "उपयोगकर्ता", icon: Users, visible: isAdminRole },
+                  { id: "newsletter", label: "न्यूज़लेटर", icon: Mail, visible: isManagingEditorRole },
+                  { id: "memberships", label: "सदस्यता", icon: Crown, visible: isAdminRole },
                   { id: "settings", label: "सेटिंग्स", icon: Settings, visible: true },
-                  { id: "appearance", label: "स्वरूप", icon: Palette, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
-                  { id: "backups", label: "बैकअप", icon: Download, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
-                  { id: "launch", label: "लॉन्च", icon: ShieldCheck, visible: ["Owner", "Admin"].includes(currentUser.role || "") }
+                  { id: "appearance", label: "स्वरूप", icon: Palette, visible: isAdminRole },
+                  { id: "backups", label: "बैकअप", icon: Download, visible: isAdminRole },
+                  { id: "launch", label: "लॉन्च", icon: ShieldCheck, visible: isAdminRole }
                 ];
                 return allTabs.filter(t => t.visible).map((tab) => {
                   const Icon = tab.icon;
@@ -1045,27 +1053,27 @@ export default function AdminDashboard() {
             <div className="flex flex-col space-y-1">
               {(() => {
                 const allTabs = [
-                  { id: "dashboard", label: "डैशबोर्ड", icon: BarChart3, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
+                  { id: "dashboard", label: "डैशबोर्ड", icon: BarChart3, visible: isManagingEditorRole },
                   { id: "profile", label: "मेरा प्रोफ़ाइल", icon: User, visible: true },
                   { id: "study-progress", label: "मेरी अध्ययन प्रगति", icon: Brain, visible: true },
                   { id: "library", label: "मेरी लाइब्रेरी", icon: BookMarked, visible: true },
                   { id: "bookmarks", label: "सहेजे गए लेख", icon: Bookmark, visible: true },
                   { id: "certificates", label: "मेरे प्रमाणपत्र", icon: Award, visible: true },
-                  { id: "video-management", label: "वीडियो डेस्क", icon: VideoIcon, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Sub Editor"].includes(currentUser.role || "") },
-                  { id: "magazines", label: "पत्रिका प्रबंधन", icon: BookOpen, visible: ["Owner", "Admin", "Editor-in-Chief"].includes(currentUser.role || "") },
+                  { id: "video-management", label: "वीडियो डेस्क", icon: VideoIcon, visible: isSubEditorRole },
+                  { id: "magazines", label: "पत्रिका प्रबंधन", icon: BookOpen, visible: isEICRole },
                   { id: "articles", label: "लेख व समाचार", icon: FileEdit, visible: cms.canManageArticles(currentUser) },
-                  { id: "assignments", label: "संपादकीय कार्य", icon: Calendar, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor"].includes(currentUser.role || "") },
-                  { id: "comments", label: "टिप्पणी नियंत्रण", icon: MessageSquare, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
-                  { id: "quiz-management", label: "ज्ञान एवं अध्ययन प्रबंधन", icon: Trophy, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
-                  { id: "ai-ecosystem", label: "एआई पारिस्थितिकी तंत्र", icon: Sparkles, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
-                  { id: "users", label: "उपयोगकर्ता", icon: Users, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
-                  { id: "newsletter", label: "न्यूज़लेटर अभियान", icon: Mail, visible: ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(currentUser.role || "") },
-                  { id: "memberships", label: "सदस्यता प्रबंधन", icon: Crown, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
-                  { id: "ads", label: "विज्ञापन प्रबंधक", icon: Globe, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
+                  { id: "assignments", label: "संपादकीय कार्य", icon: Calendar, visible: isEditorRole },
+                  { id: "comments", label: "टिप्पणी नियंत्रण", icon: MessageSquare, visible: isManagingEditorRole },
+                  { id: "quiz-management", label: "ज्ञान एवं अध्ययन प्रबंधन", icon: Trophy, visible: isManagingEditorRole },
+                  { id: "ai-ecosystem", label: "एआई पारिस्थितिकी तंत्र", icon: Sparkles, visible: isAdminRole },
+                  { id: "users", label: "उपयोगकर्ता", icon: Users, visible: isAdminRole },
+                  { id: "newsletter", label: "न्यूज़लेटर अभियान", icon: Mail, visible: isManagingEditorRole },
+                  { id: "memberships", label: "सदस्यता प्रबंधन", icon: Crown, visible: isAdminRole },
+                  { id: "ads", label: "विज्ञापन प्रबंधक", icon: Globe, visible: isAdminRole },
                   { id: "settings", label: "सेटिंग्स", icon: Settings, visible: true },
-                  { id: "appearance", label: "स्वरूप और सेटिंग्स", icon: Palette, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
-                  { id: "backups", label: "आपदा बैकअप", icon: Download, visible: ["Owner", "Admin"].includes(currentUser.role || "") },
-                  { id: "launch", label: "लांच वेरिफिकेशन", icon: ShieldCheck, visible: ["Owner", "Admin"].includes(currentUser.role || "") }
+                  { id: "appearance", label: "स्वरूप और सेटिंग्स", icon: Palette, visible: isAdminRole },
+                  { id: "backups", label: "आपदा बैकअप", icon: Download, visible: isAdminRole },
+                  { id: "launch", label: "लांच वेरिफिकेशन", icon: ShieldCheck, visible: isAdminRole }
                 ];
                 const filteredTabs = allTabs.filter(tab => tab.visible);
                 return filteredTabs.map((tab) => {
@@ -1101,7 +1109,7 @@ export default function AdminDashboard() {
         <main className="flex-grow space-y-6">
           
           {/* Supabase Demo warning block: Shown only for Owner or Admin in development mode */}
-          {process.env.NODE_ENV === "development" && (currentUser?.role === "Owner" || currentUser?.role === "Admin") && !cms.supabaseConfigured && (
+          {process.env.NODE_ENV === "development" && isAdminRole && !cms.supabaseConfigured && (
             <div className="p-4 border border-amber-200 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center space-x-3 text-xs leading-relaxed">
               <AlertTriangle className="w-5 h-5 shrink-0" />
               <p>
@@ -1719,7 +1727,7 @@ export default function AdminDashboard() {
             </div>
             
             {/* Create User Form Section */}
-            {(currentUser?.role === "Owner" || currentUser?.role === "Admin" || currentUser?.role === "Editor-in-Chief" || currentUser?.role === "Managing Editor") && (
+            {isManagingEditorRole && (
               <GlassCard glow="saffron" className="p-5 space-y-4">
                 <h3 className="font-serif font-bold text-sm text-primary">नया उपयोगकर्ता जोड़ें (Add New User)</h3>
                 
@@ -1775,7 +1783,7 @@ export default function AdminDashboard() {
                       onChange={(e) => setNewUserRole(e.target.value === "" ? null : (e.target.value as Profile["role"]))}
                       className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none text-slate-700 dark:text-slate-200"
                     >
-                      {currentUser?.role === "Owner" && (
+                      {isOwnerRole && (
                         <>
                           <option value="Owner">स्वामी</option>
                           <option value="Admin">प्रशासक</option>
@@ -1788,7 +1796,7 @@ export default function AdminDashboard() {
                           <option value="">सदस्य (Subscriber)</option>
                         </>
                       )}
-                      {currentUser?.role === "Admin" && (
+                      {(isAdminRole && !isOwnerRole) && (
                         <>
                           <option value="Admin">Admin</option>
                           <option value="Editor-in-Chief">Editor-in-Chief</option>
@@ -1800,7 +1808,7 @@ export default function AdminDashboard() {
                           <option value="">Subscriber</option>
                         </>
                       )}
-                      {(currentUser?.role === "Editor-in-Chief" || currentUser?.role === "Managing Editor") && (
+                      {(isManagingEditorRole && !isAdminRole) && (
                         <>
                           <option value="Author">Author</option>
                           <option value="Contributor">Contributor</option>
@@ -1830,25 +1838,24 @@ export default function AdminDashboard() {
 
               <div className="divide-y divide-slate-100 dark:divide-slate-800/40">
                 {users.map((usr) => {
-                  const isOwnerTarget = usr.role === "Owner";
-                  const isAdminTarget = usr.role === "Admin";
+                  const isOwnerTarget = ["Owner", "संस्थापक"].includes(usr.role || "");
+                  const isAdminTarget = ["Admin", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक"].includes(usr.role || "");
                   const isSelf = currentUser?.id === usr.id;
                   
                   // Performer permissions evaluation
-                  const performerRole = currentUser?.role || "Subscriber";
                   const canChangeRole = !isSelf && (
-                    performerRole === "Owner" || 
-                    (performerRole === "Admin" && !isOwnerTarget) ||
-                    ((performerRole === "Editor-in-Chief" || performerRole === "Managing Editor") && (usr.role === "Author" || usr.role === "Contributor"))
+                    isOwnerRole || 
+                    (isAdminRole && !isOwnerTarget) ||
+                    (isManagingEditorRole && ["Author", "Contributor", "लेखक", "योगदानकर्ता"].includes(usr.role || ""))
                   );
 
-                  const canToggleStatus = !isSelf && !isOwnerTarget && (performerRole === "Owner" || performerRole === "Admin");
+                  const canToggleStatus = !isSelf && !isOwnerTarget && isAdminRole;
                   const canDelete = !isSelf && !isOwnerTarget && (
-                    performerRole === "Owner" || 
-                    (performerRole === "Admin" && !isAdminTarget)
+                    isOwnerRole || 
+                    (isAdminRole && !isAdminTarget)
                   );
-                  const canTransfer = performerRole === "Owner" && !isSelf && usr.status === "active";
-                  const canReset = (performerRole === "Owner" || performerRole === "Admin") && !isOwnerTarget;
+                  const canTransfer = isOwnerRole && !isSelf && usr.status === "active";
+                  const canReset = isAdminRole && !isOwnerTarget;
 
                   return (
                     <div key={usr.id} className="grid grid-cols-12 gap-2 p-4 items-center hover:bg-slate-50/50 dark:hover:bg-slate-900/10 transition-colors">
@@ -1871,7 +1878,7 @@ export default function AdminDashboard() {
                             }}
                             className="bg-transparent border border-slate-200 dark:border-slate-800 rounded px-2 py-1 focus:outline-none font-medium text-slate-700 dark:text-slate-300"
                           >
-                            {performerRole === "Owner" && (
+                            {isOwnerRole && (
                               <>
                                 <option value="Owner">Owner</option>
                                 <option value="Admin">Admin</option>
@@ -1884,7 +1891,7 @@ export default function AdminDashboard() {
                                 <option value="">Subscriber</option>
                               </>
                             )}
-                            {performerRole === "Admin" && (
+                            {(isAdminRole && !isOwnerRole) && (
                               <>
                                 <option value="Admin">Admin</option>
                                 <option value="Editor-in-Chief">Editor-in-Chief</option>
@@ -1896,7 +1903,7 @@ export default function AdminDashboard() {
                                 <option value="">Subscriber</option>
                               </>
                             )}
-                            {(performerRole === "Editor-in-Chief" || performerRole === "Managing Editor") && (
+                            {(isManagingEditorRole && !isAdminRole) && (
                               <>
                                 <option value="Author">Author</option>
                                 <option value="Contributor">Contributor</option>
