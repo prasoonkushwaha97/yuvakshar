@@ -120,6 +120,10 @@ export default function AuthModal() {
       setTimeout(() => {
         setSuccessMessage("");
         closeAuthModal();
+        const params = new URLSearchParams(window.location.search);
+        const redirectTo = params.get("redirect_to");
+        if (redirectTo) window.location.href = redirectTo;
+        else if (window.location.pathname === "/login") window.location.href = "/";
       }, 1500);
     } else {
       triggerShake();
@@ -227,6 +231,10 @@ export default function AuthModal() {
         setOtpSent(false);
         setEmailOtp("");
         closeAuthModal();
+        const params = new URLSearchParams(window.location.search);
+        const redirectTo = params.get("redirect_to");
+        if (redirectTo) window.location.href = redirectTo;
+        else if (window.location.pathname === "/login") window.location.href = "/";
       }, 1500);
     } else {
       triggerShake();
@@ -266,6 +274,10 @@ export default function AuthModal() {
           setEmail("");
           setPassword("");
           closeAuthModal();
+          const params = new URLSearchParams(window.location.search);
+          const redirectTo = params.get("redirect_to");
+          if (redirectTo) window.location.href = redirectTo;
+          else if (window.location.pathname === "/login") window.location.href = "/";
         }, 1500);
       } else {
         triggerShake();
@@ -333,6 +345,10 @@ export default function AuthModal() {
           setPassword("");
           setConfirmPassword("");
           closeAuthModal();
+          const params = new URLSearchParams(window.location.search);
+          const redirectTo = params.get("redirect_to");
+          if (redirectTo) window.location.href = redirectTo;
+          else if (window.location.pathname === "/login") window.location.href = "/";
         }, 1500);
       } else {
         triggerShake();
