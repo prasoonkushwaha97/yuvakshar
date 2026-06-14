@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/utils/supabase/server';
 
 export const FOUNDER_EMAIL = 'prasoonkushwaha9754@gmail.com';
 
@@ -27,6 +27,7 @@ export type Permission = {
 // 1. getCurrentUser
 export const getCurrentUser = cache(async () => {
   try {
+    const supabase = await createClient();
     const { data: { user }, error } = await supabase.auth.getUser();
     if (error || !user) return null;
     return user;
@@ -52,6 +53,7 @@ export const getCurrentUserRoles = cache(async (): Promise<Role[]> => {
   }
 
   try {
+    const supabase = await createClient();
     // Resolve user_roles -> roles
     const { data, error } = await supabase
       .from('user_roles')
@@ -97,6 +99,7 @@ export const getCurrentUserPermissions = cache(async (): Promise<Permission[]> =
 
   // PHASE 2: FOUNDER SAFETY SYSTEM (Fallback)
   if (user.email === FOUNDER_EMAIL) {
+    const supabase = await createClient();
     // Fetch all permissions for the emergency founder
     const { data } = await supabase.from('permissions').select('*');
     return (data as Permission[]) || [];
@@ -108,6 +111,7 @@ export const getCurrentUserPermissions = cache(async (): Promise<Permission[]> =
     
     const roleIds = roles.map(r => r.id);
     
+    const supabase = await createClient();
     // Resolve: user_roles -> role_permissions -> permissions
     const { data, error } = await supabase
       .from('role_permissions')

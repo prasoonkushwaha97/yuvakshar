@@ -708,8 +708,24 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
             .select("*")
             .eq("id", session.user.id)
             .single();
+
+          // Load the user's actual role from user_roles -> roles
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('roles(name)')
+            .eq('user_id', session.user.id);
+            
+          let actualRole = "Subscriber";
+          if (session.user.email === 'prasoonkushwaha9754@gmail.com') {
+             actualRole = "Founder";
+          }
+          if (roleData && roleData.length > 0) {
+            const roleObj = Array.isArray(roleData[0].roles) ? roleData[0].roles[0] : roleData[0].roles;
+            if (roleObj && roleObj.name) actualRole = roleObj.name;
+          }
             
           if (profile) {
+            profile.role = actualRole; // Sync highest privilege role
             setCurrentUser(profile);
             localStorage.setItem("yuvakshar_session_user", JSON.stringify(profile));
           } else {
@@ -717,7 +733,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
             const newProfile: Profile = {
               id: session.user.id,
               name: session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "NEW USER", username: session.user.email || "".split('@')[0].replace(/['"]/g, ''), email: session.user.email || "",
-              role: session.user.user_metadata?.role || null, // Free reader
+              role: actualRole as any,
               status: "active",
               joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
               slug: generateAuthorSlug(session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "user")
@@ -730,7 +746,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
                 id: newProfile.id,
                 email: newProfile.email,
                 name: newProfile.name,
-                role: newProfile.role || 'Subscriber',
+                role: actualRole,
                 status: newProfile.status,
                 slug: newProfile.slug
               });
