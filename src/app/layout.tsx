@@ -7,9 +7,46 @@ import { LanguageProvider } from "@/store/LanguageContext";
 import { CmsProvider } from "@/store/CmsContext";
 import AuthModal from "@/components/yuvakshar/AuthModal";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
+import { ToastProvider } from "@/components/ui/ToastProvider";
 import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
+import { Noto_Sans_Devanagari, Noto_Serif_Devanagari, Hind, Mukta, Inter } from "next/font/google";
 import fs from "fs";
 import path from "path";
+
+const notoSansDeva = Noto_Sans_Devanagari({
+  subsets: ["devanagari", "latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-noto-sans-deva",
+  display: "swap",
+});
+
+const notoSerifDeva = Noto_Serif_Devanagari({
+  subsets: ["devanagari", "latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-noto-serif-deva",
+  display: "swap",
+});
+
+const hindFont = Hind({
+  subsets: ["devanagari", "latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-hind",
+  display: "swap",
+});
+
+const muktaFont = Mukta({
+  subsets: ["devanagari", "latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-mukta",
+  display: "swap",
+});
+
+const interFont = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 async function getBrandingVersion(): Promise<string> {
   if (!isSupabaseConfigured()) {
@@ -92,13 +129,26 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+import { hasAnyRole } from "@/lib/rbacService";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isFounder = await hasAnyRole(['founder']);
+  const isCoFounder = await hasAnyRole(['co_founder']);
+  const isSuperAdmin = await hasAnyRole(['super_admin']);
+  const isAdmin = await hasAnyRole(['admin']);
+  const isEditorInChief = await hasAnyRole(['editor_in_chief']);
+  const isModerator = await hasAnyRole(['moderator']);
+
+  const showFounderWorkspace = isFounder;
+  const showAdminWorkspace = isFounder || isCoFounder || isSuperAdmin || isAdmin;
+  const showModeratorWorkspace = isFounder || isCoFounder || isSuperAdmin || isAdmin || isEditorInChief || isModerator;
+
   return (
-    <html lang="hi" className="h-full scroll-smooth">
+    <html lang="hi" className={`h-full scroll-smooth ${notoSansDeva.variable} ${notoSerifDeva.variable} ${hindFont.variable} ${muktaFont.variable} ${interFont.variable}`}>
       <body className="min-h-full flex flex-col bg-white text-[#0F172A] dark:bg-[#0A0F1D] dark:text-slate-200 font-sans antialiased pb-16 lg:pb-0">
         <CmsProvider>
           <LanguageProvider>
@@ -108,7 +158,11 @@ export default function RootLayout({
             </div>
 
             {/* Navigation bar */}
-            <Navbar />
+            <Navbar 
+              showFounderWorkspace={showFounderWorkspace}
+              showAdminWorkspace={showAdminWorkspace}
+              showModeratorWorkspace={showModeratorWorkspace}
+            />
             
             {/* Global Auth Modal */}
             <AuthModal />
@@ -123,6 +177,9 @@ export default function RootLayout({
 
             {/* Mobile Bottom Navigation Bar */}
             <MobileBottomNav />
+            
+            {/* Notifications */}
+            <ToastProvider />
           </LanguageProvider>
         </CmsProvider>
       </body>

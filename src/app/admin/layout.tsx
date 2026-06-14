@@ -1,0 +1,20 @@
+import { ReactNode } from 'react';
+import { redirect } from 'next/navigation';
+import { hasAnyRole } from '@/lib/rbacService';
+
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+  // Server-side authorization check for the Admin workspace
+  // Allowed roles: founder, co_founder, super_admin, admin
+  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
+  
+  if (!isAuthorized) {
+    // Redirect unauthorized users away from the admin workspace
+    redirect('/unauthorized');
+  }
+
+  return (
+    <div className="admin-workspace-layout min-h-screen bg-background">
+      {children}
+    </div>
+  );
+}

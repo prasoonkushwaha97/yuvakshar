@@ -34,6 +34,9 @@ export type Magazine = MagazineIssue;
 export interface Profile {
   id: string;
   name: string;
+  username: string;
+  username_changed_at?: string;
+  previous_username?: string;
   role: "Founder" | "संस्थापक" | "सह-संस्थापक" | "प्रधान प्रशासक" | "प्रशासक" | "प्रधान संपादक" | "कार्यकारी संपादक" | "वरिष्ठ संपादक" | "संपादक" | "सहायक संपादक" | "समुदाय प्रबंधक" | "समुदाय मॉडरेटर" | "समूह व्यवस्थापक" | "समूह मॉडरेटर" | "प्रूफरीडर" | "भाषा समीक्षक" | "कार्यक्रम समन्वयक" | "चुनौती समन्वयक" | "प्रमाणपत्र प्रबंधक" | "स्वयंसेवक" | "प्रशिक्षु" | "सदस्य" | "Owner" | "Admin" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Sub Editor" | "Fact Checker" | "Reviewer" | "Author" | "Contributor" | "Fact Check Reviewer" | null;
   status: "active" | "suspended" | "pending" | "Draft" | "Pending Approval" | "Approved" | "Rejected" | "Resigned";
   password?: string;
@@ -61,6 +64,7 @@ export interface Profile {
   articlesReadCount?: number;
   totalReadingTime?: number;
   categoryStats?: Record<string, number>;
+  bookmarks?: string[];
   
   // Author Ecosystem 2.0 extensions
   slug?: string;
@@ -183,18 +187,6 @@ export interface QuizAttempt {
   answers: Record<number, string>;
 }
 
-export interface QuizCertificate {
-  id: string;
-  userId: string;
-  userName: string;
-  articleTitle: string;
-  score: number;
-  percentage: number;
-  date: string;
-  certificateType: "सहभागिता प्रमाणपत्र" | "उत्कृष्टता प्रमाणपत्र" | "ज्ञानवीर प्रमाणपत्र";
-  badge: string;
-}
-
 export interface QuizSettings {
   articleId: string;
   isEnabled: boolean;
@@ -207,7 +199,6 @@ export interface QuizLeaderboardEntry {
   userName: string;
   score: number;
   completedQuizzes: number;
-  certificatesCount: number;
   interval: "weekly" | "monthly" | "alltime";
 }
 
@@ -274,7 +265,6 @@ export interface MonthlyReport {
   averageScore: number;
   bestCategory: string;
   studyTimeSeconds: number;
-  certificatesCount: number;
   growthPercentage: number;
 }
 

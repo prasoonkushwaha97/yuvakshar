@@ -1,0 +1,61 @@
+export const RESERVED_USERNAMES = [
+  "admin", "administrator", "root", "system", "support", "help", "api", 
+  "about", "settings", "login", "signup", "editor", "founder", "yuvakshar",
+  "contact", "community", "dashboard", "profile", "bookmarks", 
+  "literary-journey", "articles", "magazines"
+];
+
+export function validateUsername(username: string): { valid: boolean; error?: string } {
+  if (!username) return { valid: false, error: "Username is required." };
+  
+  const lower = username.toLowerCase();
+  
+  if (lower.length < 3 || lower.length > 30) {
+    return { valid: false, error: "Username must be between 3 and 30 characters." };
+  }
+
+  if (RESERVED_USERNAMES.includes(lower)) {
+    return { valid: false, error: "This username is reserved." };
+  }
+
+  if (/\s/.test(username)) {
+    return { valid: false, error: "Username cannot contain spaces." };
+  }
+
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+    return { valid: false, error: "Username can only contain letters, numbers, and underscores." };
+  }
+
+  if (username.startsWith("_")) {
+    return { valid: false, error: "Username cannot start with an underscore." };
+  }
+
+  if (username.endsWith("_")) {
+    return { valid: false, error: "Username cannot end with an underscore." };
+  }
+
+  if (/__/.test(username)) {
+    return { valid: false, error: "Username cannot contain consecutive underscores." };
+  }
+
+  return { valid: true };
+}
+
+export function generateDeterministicUsername(email: string, existingUsernames: Set<string>): string {
+  let base = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
+  
+  if (base.length < 3) base = base.padEnd(3, '0');
+  if (base.length > 30) base = base.substring(0, 30);
+  
+  base = base.replace(/_+/g, '_').replace(/^_/, '').replace(/_$/, '');
+  
+  let test = base;
+  let counter = 1;
+  
+  while (existingUsernames.has(test.toLowerCase()) || RESERVED_USERNAMES.includes(test.toLowerCase())) {
+    test = `${base}${counter}`;
+    counter++;
+  }
+  
+  return test;
+}

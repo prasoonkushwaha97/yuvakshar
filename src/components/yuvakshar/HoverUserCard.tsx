@@ -6,6 +6,7 @@ import { UserPlus, MessageCircle, BookOpen, Star, UserCheck } from "lucide-react
 import { useCms } from "@/store/CmsContext";
 import { isUserFollowing, toggleFollowUser } from "@/lib/communityService";
 import type { Profile } from "@/store/types";
+import { RoleBadgeList } from "@/components/ui/RoleBadge";
 
 interface HoverUserCardProps {
   userId: string;
@@ -152,6 +153,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
                 {user.name}
               </Link>
               <div className="text-[11px] text-slate-500 font-mono">@{user.slug || user.id}</div>
+              {(user as any).roles && <div className="mt-2"><RoleBadgeList roles={(user as any).roles} /></div>}
             </div>
 
             <div className="text-xs text-slate-700 dark:text-slate-300 font-hindi mb-4 line-clamp-2 leading-relaxed">

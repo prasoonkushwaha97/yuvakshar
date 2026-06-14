@@ -53,7 +53,7 @@ import {
 } from "lucide-react";
 
 import { useCms } from "@/store/CmsContext";
-import type { Article, Magazine, Profile, Comment, Submission, EditorialAssignment, Ad, Video, QuizCertificate } from "@/store/types";
+import type { Article, Magazine, Profile, Comment, Submission, EditorialAssignment, Ad, Video } from "@/store/types";
 
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
@@ -120,7 +120,6 @@ export default function AdminDashboard() {
     resetUserPassword,
     quizzes,
     quizAttempts,
-    quizCertificates,
     quizSettings,
     leaderboard,
     saveQuiz,
@@ -286,7 +285,7 @@ export default function AdminDashboard() {
   const [showVideoForm, setShowVideoForm] = useState(false);
   const [videoSearchQuery, setVideoSearchQuery] = useState("");
   const [deleteVideoConfirmId, setDeleteVideoConfirmId] = useState<string | null>(null);
-  const [selectedCert, setSelectedCert] = useState<QuizCertificate | null>(null);
+
 
   // Sync state if already logged in and initialize accessibility
   useEffect(() => {
@@ -438,7 +437,6 @@ export default function AdminDashboard() {
     const completedArticlesCount = new Set(userAttempts.filter(att => att.percentage >= 60).map(att => att.articleId)).size;
     const averageScore = totalAttempts > 0 ? Math.round(userAttempts.reduce((acc, curr) => acc + curr.percentage, 0) / totalAttempts) : 0;
     const totalStudyTime = userAttempts.reduce((acc, curr) => acc + curr.durationSeconds, 0);
-    const certificatesCount = quizCertificates.filter(c => c.userId === (currentUser?.id || "anonymous-reader")).length;
 
     setTimeout(() => {
       const canvas = document.createElement("canvas");
@@ -479,7 +477,6 @@ export default function AdminDashboard() {
       ctx.fillText(`• हल की गईं ज्ञान परीक्षाएं (Attempts): ${totalAttempts}`, 100, 260);
       ctx.fillText(`• औसत स्कोर (Average Score): ${averageScore}%`, 100, 300);
       ctx.fillText(`• स्वाध्याय में व्यतीत कुल समय: ${Math.round(totalStudyTime / 60)} मिनट`, 100, 340);
-      ctx.fillText(`• अर्जित डीजी-प्रमाणपत्र (Certificates): ${certificatesCount}`, 100, 380);
 
       ctx.fillText("2. मानसिक एवं संज्ञानात्मक क्षमताएं (Cognitive Metrics)", 80, 450);
       
@@ -872,9 +869,6 @@ export default function AdminDashboard() {
   }
 
   const canAccessTab = (tab: string) => {
-    if (["profile", "study-progress", "library", "bookmarks", "certificates", "settings"].includes(tab)) {
-      return true; // Personal reader tabs are accessible to all authenticated users
-    }
     return cms.canAccessAdmin(currentUser); // Administrative tabs require editor/admin roles
   };
 
@@ -987,11 +981,6 @@ export default function AdminDashboard() {
               {(() => {
                 const allTabs = [
                   { id: "dashboard", label: "डैशबोर्ड", icon: BarChart3, visible: isManagingEditorRole },
-                  { id: "profile", label: "प्रोफ़ाइल", icon: User, visible: true },
-                  { id: "study-progress", label: "अध्ययन", icon: Brain, visible: true },
-                  { id: "library", label: "लाइब्रेरी", icon: BookMarked, visible: true },
-                  { id: "bookmarks", label: "बुकमार्क", icon: Bookmark, visible: true },
-                  { id: "certificates", label: "प्रमाणपत्र", icon: Award, visible: true },
                   { id: "video-management", label: "वीडियो", icon: VideoIcon, visible: isSubEditorRole },
                   { id: "magazines", label: "पत्रिका", icon: BookOpen, visible: isEICRole },
                   { id: "articles", label: "लेख", icon: FileEdit, visible: cms.canManageArticles(currentUser) },
@@ -1001,7 +990,6 @@ export default function AdminDashboard() {
                   { id: "ai-ecosystem", label: "एआई", icon: Sparkles, visible: isAdminRole },
                   { id: "users", label: "उपयोगकर्ता", icon: Users, visible: isAdminRole },
                   { id: "newsletter", label: "न्यूज़लेटर", icon: Mail, visible: isManagingEditorRole },
-                  { id: "settings", label: "सेटिंग्स", icon: Settings, visible: true },
                   { id: "appearance", label: "स्वरूप", icon: Palette, visible: isAdminRole },
                   { id: "backups", label: "बैकअप", icon: Download, visible: isAdminRole },
                   { id: "launch", label: "लॉन्च", icon: ShieldCheck, visible: isAdminRole }
@@ -1044,11 +1032,6 @@ export default function AdminDashboard() {
               {(() => {
                 const allTabs = [
                   { id: "dashboard", label: "डैशबोर्ड", icon: BarChart3, visible: isManagingEditorRole },
-                  { id: "profile", label: "मेरा प्रोफ़ाइल", icon: User, visible: true },
-                  { id: "study-progress", label: "मेरी अध्ययन प्रगति", icon: Brain, visible: true },
-                  { id: "library", label: "मेरी लाइब्रेरी", icon: BookMarked, visible: true },
-                  { id: "bookmarks", label: "सहेजे गए लेख", icon: Bookmark, visible: true },
-                  { id: "certificates", label: "मेरे प्रमाणपत्र", icon: Award, visible: true },
                   { id: "video-management", label: "वीडियो डेस्क", icon: VideoIcon, visible: isSubEditorRole },
                   { id: "magazines", label: "पत्रिका प्रबंधन", icon: BookOpen, visible: isEICRole },
                   { id: "articles", label: "लेख व समाचार", icon: FileEdit, visible: cms.canManageArticles(currentUser) },
@@ -1059,7 +1042,6 @@ export default function AdminDashboard() {
                   { id: "users", label: "उपयोगकर्ता", icon: Users, visible: isAdminRole },
                   { id: "newsletter", label: "न्यूज़लेटर अभियान", icon: Mail, visible: isManagingEditorRole },
                   { id: "ads", label: "विज्ञापन प्रबंधक", icon: Globe, visible: isAdminRole },
-                  { id: "settings", label: "सेटिंग्स", icon: Settings, visible: true },
                   { id: "appearance", label: "स्वरूप और सेटिंग्स", icon: Palette, visible: isAdminRole },
                   { id: "backups", label: "आपदा बैकअप", icon: Download, visible: isAdminRole },
                   { id: "launch", label: "लांच वेरिफिकेशन", icon: ShieldCheck, visible: isAdminRole }
@@ -1728,8 +1710,7 @@ export default function AdminDashboard() {
                       return;
                     }
                     await createUser({
-                      name: newUserName,
-                      email: newUserEmail,
+                      name: newUserName, username: newUserEmail.split('@')[0].replace(/['"]/g, ''), email: newUserEmail,
                       role: newUserRole,
 
                       status: "active"
@@ -2460,551 +2441,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* TAB: STUDY PROGRESS */}
-        {activeTab === "study-progress" && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
-                <h2 className="font-serif text-2xl font-bold border-l-2 border-primary pl-2">मेरी अध्ययन प्रगति</h2>
-                <p className="text-xs text-slate-400">युवाक्षर ज्ञान परख पोर्टल पर आपका व्यक्तिगत स्वाध्याय ट्रैकर।</p>
-              </div>
-              <button 
-                onClick={handleDownloadMonthlyReport}
-                disabled={isGeneratingMonthlyReport}
-                className="bg-primary hover:bg-primary/95 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
-              >
-                <Download className="w-4 h-4" />
-                <span>{isGeneratingMonthlyReport ? "रिपोर्ट तैयार हो रही है..." : "मासिक रिपोर्ट डाउनलोड करें (PDF)"}</span>
-              </button>
-            </div>
-
-            {/* Stats Cards */}
-            {(() => {
-              const userAttempts = quizAttempts.filter(att => att.userId === (currentUser?.id || "anonymous-reader"));
-              const totalAttempts = userAttempts.length;
-              const completedArticlesCount = new Set(userAttempts.filter(att => att.percentage >= 60).map(att => att.articleId)).size;
-              const averageScore = totalAttempts > 0 ? Math.round(userAttempts.reduce((acc, curr) => acc + curr.percentage, 0) / totalAttempts) : 0;
-              const bestScore = totalAttempts > 0 ? Math.max(...userAttempts.map(att => att.percentage)) : 0;
-              const totalStudyTime = userAttempts.reduce((acc, curr) => acc + curr.durationSeconds, 0);
-              const certificatesCount = quizCertificates.filter(c => c.userId === (currentUser?.id || "anonymous-reader")).length;
-
-              // Cognitive Metrics
-              const counts = { MCQ: 0, "Fact Recall": 0, Comprehension: 0, Analysis: 0, Application: 0 };
-              const corrects = { MCQ: 0, "Fact Recall": 0, Comprehension: 0, Analysis: 0, Application: 0 };
-              userAttempts.forEach(att => {
-                const artQuiz = quizzes.find(q => q.articleId === att.articleId);
-                if (artQuiz) {
-                  artQuiz.questions.forEach((q, qIdx) => {
-                    if (att.answers[qIdx] !== undefined) {
-                      counts[q.questionType] = (counts[q.questionType] || 0) + 1;
-                      if (att.answers[qIdx] === q.correctAnswer) {
-                        corrects[q.questionType] = (corrects[q.questionType] || 0) + 1;
-                      }
-                    }
-                  });
-                }
-              });
-
-              const memory = counts["Fact Recall"] > 0 ? Math.round((corrects["Fact Recall"] / counts["Fact Recall"]) * 100) : averageScore;
-              const understanding = counts["Comprehension"] > 0 ? Math.round((corrects["Comprehension"] / counts["Comprehension"]) * 100) : averageScore;
-              const analysis = counts["Analysis"] > 0 ? Math.round((corrects["Analysis"] / counts["Analysis"]) * 100) : averageScore;
-              const logic = counts["Application"] > 0 ? Math.round((corrects["Application"] / counts["Application"]) * 100) : averageScore;
-
-              // Reputation badge
-              const rep = getUserReputation(totalAttempts, averageScore);
-
-              return (
-                <>
-                  {/* Scoreboard Cards */}
-                  <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-                    <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-4 rounded-xl text-center space-y-1">
-                      <span className="text-[10px] text-slate-400 block uppercase font-serif">पूर्ण लेख</span>
-                      <p className="text-2xl font-bold font-serif text-primary">{completedArticlesCount}</p>
-                    </div>
-                    <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-4 rounded-xl text-center space-y-1">
-                      <span className="text-[10px] text-slate-400 block uppercase font-serif">क्विज प्रयास</span>
-                      <p className="text-2xl font-bold font-serif text-primary">{totalAttempts}</p>
-                    </div>
-                    <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-4 rounded-xl text-center space-y-1">
-                      <span className="text-[10px] text-slate-400 block uppercase font-serif">सर्वश्रेष्ठ स्कोर</span>
-                      <p className="text-2xl font-bold font-serif text-primary">{bestScore}%</p>
-                    </div>
-                    <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-4 rounded-xl text-center space-y-1">
-                      <span className="text-[10px] text-slate-400 block uppercase font-serif">औसत स्कोर</span>
-                      <p className="text-2xl font-bold font-serif text-primary">{averageScore}%</p>
-                    </div>
-                    <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-4 rounded-xl text-center space-y-1">
-                      <span className="text-[10px] text-slate-400 block uppercase font-serif">कुल समय (मिनट)</span>
-                      <p className="text-2xl font-bold font-serif text-primary">{Math.round(totalStudyTime / 60)}</p>
-                    </div>
-                    <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-4 rounded-xl text-center space-y-1">
-                      <span className="text-[10px] text-slate-400 block uppercase font-serif">प्रमाणपत्र</span>
-                      <p className="text-2xl font-bold font-serif text-primary">{certificatesCount}</p>
-                    </div>
-                  </div>
-
-                  {/* Reputation and Topic Mastery Badges */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4">
-                      <h3 className="font-serif font-bold text-sm text-primary flex items-center space-x-1.5">
-                        <Award className="w-5 h-5" />
-                        <span>स्वाध्याय स्तर (Study Achievement Level)</span>
-                      </h3>
-                      <div className="flex items-center space-x-4 bg-white dark:bg-slate-900/60 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
-                        <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary text-2xl">
-                          🏆
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-slate-800 dark:text-white font-serif">{rep.title}</p>
-                          <p className="text-xs text-slate-400 mt-0.5">{rep.desc}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4">
-                      <h3 className="font-serif font-bold text-sm text-primary flex items-center space-x-1.5">
-                        <Trophy className="w-5 h-5" />
-                        <span>श्रेणी विशेषज्ञता बैज (Topic Mastery Badges)</span>
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {(() => {
-                          const categoryStats: Record<string, { total: number; passed: number; best: number }> = {};
-                          userAttempts.forEach(att => {
-                            const art = articles.find(a => a.id === att.articleId);
-                            if (art) {
-                              const cat = art.category || "सामान्य";
-                              if (!categoryStats[cat]) {
-                                categoryStats[cat] = { total: 0, passed: 0, best: 0 };
-                              }
-                              categoryStats[cat].total += 1;
-                              if (att.percentage >= 60) {
-                                categoryStats[cat].passed += 1;
-                              }
-                              if (att.percentage > categoryStats[cat].best) {
-                                categoryStats[cat].best = att.percentage;
-                              }
-                            }
-                          });
-
-                          const topicBadgesDef = [
-                            { category: "AI", badge: "🏅 AI विशेषज्ञ" },
-                            { category: "इतिहास", badge: "🏅 इतिहास साधक" },
-                            { category: "पर्यावरण", badge: "🏅 पर्यावरण विश्लेषक" },
-                            { category: "शिक्षा", badge: "🏅 शिक्षा शोधकर्ता" },
-                            { category: "संविधान", badge: "🏅 संविधान अध्येता" },
-                            { category: "राजनीति", badge: "🏅 राजनीति विश्लेषक" },
-                            { category: "साहित्य", badge: "🏅 साहित्य साधक" }
-                          ];
-
-                          const activeBadges = topicBadgesDef.filter(item => (categoryStats[item.category]?.passed || 0) >= 10);
-                          const pendingBadges = topicBadgesDef.filter(item => {
-                            const count = categoryStats[item.category]?.passed || 0;
-                            return count > 0 && count < 10;
-                          });
-
-                          return (
-                            <>
-                              {activeBadges.map((badge, idx) => (
-                                <div key={idx} className="bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 px-3 py-1.5 rounded-lg text-xs font-bold font-serif flex items-center space-x-1">
-                                  <span>{badge.badge}</span>
-                                </div>
-                              ))}
-                              {pendingBadges.map((badge, idx) => (
-                                <div key={idx} className="bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-lg text-xs text-slate-400 flex flex-col items-start gap-1 font-serif">
-                                  <span>{badge.badge} (अपूर्ण)</span>
-                                  <span className="text-[9px] text-slate-500">प्रगति: {categoryStats[badge.category]?.passed || 0}/10 उत्तीर्ण लेख</span>
-                                </div>
-                              ))}
-                              {activeBadges.length === 0 && pendingBadges.length === 0 && (
-                                <span className="text-xs text-slate-500 font-serif">कोई श्रेणी विशेषज्ञता बैज प्रगति पर नहीं है। (10 क्विज उत्तीर्ण करने पर बैज प्राप्त करें)</span>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Cognitive Analytics progress meters */}
-                  <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4">
-                    <h3 className="font-serif font-bold text-sm text-primary flex items-center space-x-1.5">
-                      <Brain className="w-5 h-5" />
-                      <span>आपकी अध्ययन क्षमता (Cognitive Analytics Visualization)</span>
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                      {[
-                        { title: "स्मरण शक्ति (Memory)", score: memory, desc: "तथ्य-आधारित रिकॉल क्षमता" },
-                        { title: "विषय समझ (Understanding)", score: understanding, desc: "अवधारणात्मक समझ क्षमता" },
-                        { title: "विश्लेषण क्षमता (Analysis)", score: analysis, desc: "जटिल विश्लेषण एवं तर्क क्षमता" },
-                        { title: "तार्किक सोच (Logic)", score: logic, desc: "व्यावहारिक अनुप्रयोग क्षमता" }
-                      ].map((item, idx) => (
-                        <div key={idx} className="bg-white dark:bg-slate-900/60 p-4 rounded-xl border border-slate-100 dark:border-slate-800 space-y-2">
-                          <p className="text-xs font-bold font-serif">{item.title}</p>
-                          <div className="relative pt-1">
-                            <div className="flex mb-2 items-center justify-between">
-                              <div>
-                                <span className="text-[10px] font-semibold inline-block py-0.5 px-2 uppercase rounded-full bg-primary/10 text-primary">
-                                  क्षम्यता दर
-                                </span>
-                              </div>
-                              <div className="text-right">
-                                <span className="text-xs font-bold font-mono text-primary">
-                                  {item.score}%
-                                </span>
-                              </div>
-                            </div>
-                            <div className="overflow-hidden h-2.5 text-xs flex rounded bg-slate-100 dark:bg-slate-800">
-                              <div 
-                                style={{ width: `${item.score}%` }} 
-                                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary transition-all duration-500"
-                              />
-                            </div>
-                          </div>
-                          <p className="text-[10px] text-slate-400 mt-1">{item.desc}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Privacy-First Leaderboard / Active Readers Circle */}
-                  <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4">
-                    <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
-                      <h3 className="font-serif font-bold text-sm text-primary flex items-center space-x-1.5 font-hindi">
-                        <Trophy className="w-5 h-5" />
-                        <span>सक्रिय स्वाध्याय मण्डल (Active Readers Circle)</span>
-                      </h3>
-                      <div className="flex space-x-1 bg-white dark:bg-slate-900/60 p-0.5 rounded-lg border border-slate-200 dark:border-slate-800">
-                        {["weekly", "monthly", "alltime"].map((type) => (
-                          <button
-                            key={type}
-                            onClick={() => setTimeFilter(type as any)}
-                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer font-hindi ${
-                              timeFilter === type 
-                                ? "bg-primary text-white" 
-                                : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-                            }`}
-                          >
-                            {type === "weekly" ? "साप्ताहिक" : type === "monthly" ? "मासिक" : "सर्वकालिक"}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs font-serif text-left border-collapse font-hindi">
-                        <thead>
-                          <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 text-[10px] uppercase font-mono">
-                            <th className="py-2.5 font-semibold">पाठक (Reader)</th>
-                            <th className="py-2.5 font-semibold text-center">पूर्ण क्विज</th>
-                            <th className="py-2.5 font-semibold text-center">प्रमाणपत्र</th>
-                            <th className="py-2.5 font-semibold text-right">स्वाध्याय स्तर</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40">
-                          {leaderboard
-                            .filter(entry => entry.interval === timeFilter)
-                            .sort((a, b) => b.completedQuizzes - a.completedQuizzes)
-                            .slice(0, 5)
-                            .map((entry, idx) => (
-                              <tr key={entry.id} className="text-slate-700 dark:text-slate-300">
-                                <td className="py-3 font-serif font-bold text-slate-800 dark:text-white flex items-center space-x-2">
-                                  <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] text-slate-500">
-                                    📖
-                                  </span>
-                                  <span>
-                                    {(() => {
-                                      const parts = entry.userName.split(" ");
-                                      if (parts.length > 1) {
-                                        return `${parts[0]} ${parts[1][0]}.`;
-                                      }
-                                      return entry.userName.length > 5 ? `${entry.userName.slice(0, 4)}...` : entry.userName;
-                                    })()}
-                                  </span>
-                                </td>
-                                <td className="py-3 text-center font-mono">{entry.completedQuizzes}</td>
-                                <td className="py-3 text-center font-mono">{entry.certificatesCount}</td>
-                                <td className="py-3 text-right font-serif font-bold text-primary">
-                                  {(() => {
-                                    if (entry.completedQuizzes >= 25) return "ज्ञान साधक";
-                                    if (entry.completedQuizzes >= 15) return "स्वाध्यायी";
-                                    if (entry.completedQuizzes >= 8) return "जिज्ञासु पाठक";
-                                    return "नवपाठक";
-                                  })()}
-                                </td>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  {/* Certificates Gallery */}
-                  {quizCertificates.filter(c => c.userId === (currentUser?.id || "anonymous-reader")).length > 0 && (
-                    <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4">
-                      <h3 className="font-serif font-bold text-sm text-primary flex items-center space-x-1.5">
-                        <Award className="w-5 h-5" />
-                        <span>अर्जित डिजिटल प्रमाणपत्र (My Digital Certificates)</span>
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {quizCertificates
-                          .filter(c => c.userId === (currentUser?.id || "anonymous-reader"))
-                          .map((cert) => (
-                            <div key={cert.id} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 p-4 rounded-xl flex flex-col justify-between space-y-4">
-                              <div>
-                                <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                                  {cert.certificateType}
-                                </span>
-                                <h4 className="font-serif font-bold text-xs mt-2.5 text-slate-800 dark:text-white leading-snug">{cert.articleTitle}</h4>
-                                <div className="text-[10px] text-slate-400 space-y-1 mt-2 font-mono">
-                                  <p>दिनांक: {new Date(cert.date).toLocaleDateString("hi-IN")}</p>
-                                  <p>प्राप्तांक: {cert.score} ({cert.percentage}%)</p>
-                                  <p>प्रमाणपत्र ID: {cert.id.slice(0, 8).toUpperCase()}</p>
-                                </div>
-                              </div>
-                              <button 
-                                onClick={() => {
-                                  const canvas = document.createElement("canvas");
-                                  canvas.width = 1200;
-                                  canvas.height = 800;
-                                  const ctx = canvas.getContext("2d");
-                                  if (!ctx) return;
-
-                                  ctx.fillStyle = "#FAF8F5";
-                                  ctx.fillRect(0, 0, 1200, 800);
-
-                                  ctx.strokeStyle = "#EA580C";
-                                  ctx.lineWidth = 15;
-                                  ctx.strokeRect(30, 30, 1140, 740);
-
-                                  ctx.strokeStyle = "#C2410C";
-                                  ctx.lineWidth = 2;
-                                  ctx.strokeRect(45, 45, 1110, 710);
-
-                                  ctx.fillStyle = "#EA580C";
-                                  ctx.font = "bold 34px 'Noto Serif Devanagari', serif";
-                                  ctx.textAlign = "center";
-                                  ctx.fillText("युवाक्षर स्वाध्याय पीठ", 600, 140);
-
-                                  ctx.fillStyle = "#1E293B";
-                                  ctx.font = "italic 22px 'Noto Sans Devanagari', sans-serif";
-                                  ctx.fillText("ज्ञान, चिंतन एवं राष्ट्रनिर्माण हेतु सतत प्रतिबद्धता", 600, 180);
-
-                                  ctx.fillStyle = "#EA580C";
-                                  ctx.font = "bold 44px 'Noto Serif Devanagari', serif";
-                                  ctx.fillText(cert.certificateType, 600, 290);
-
-                                  ctx.fillStyle = "#475569";
-                                  ctx.font = "20px 'Noto Sans Devanagari', sans-serif";
-                                  ctx.fillStyle = "#475569";
-                                  ctx.font = "20px 'Noto Sans Devanagari', sans-serif";
-                                  ctx.fillText("प्रमाणित किया जाता है कि", 600, 360);
-
-                                  ctx.fillStyle = "#EA580C";
-                                  ctx.font = "bold 42px 'Noto Serif Devanagari', serif";
-                                  ctx.fillText(cert.userName, 600, 430);
-
-                                  ctx.fillStyle = "#475569";
-                                  ctx.font = "20px 'Noto Sans Devanagari', sans-serif";
-                                  ctx.fillText(`ने लेख '${cert.articleTitle}' का सफलतापूर्वक अध्ययन किया और मूल्यांकन में`, 600, 490);
-                                  ctx.fillText(`${cert.percentage}% अंक प्राप्त कर यह सम्मान प्राप्त किया।`, 600, 530);
-
-                                  // Seal / Signature
-                                  ctx.strokeStyle = "#EA580C";
-                                  ctx.lineWidth = 3;
-                                  ctx.beginPath();
-                                  ctx.arc(600, 650, 45, 0, Math.PI * 2);
-                                  ctx.stroke();
-                                  ctx.fillStyle = "#EA580C";
-                                  ctx.font = "bold 13px 'Noto Serif Devanagari', sans-serif";
-                                  ctx.fillText("युवाक्षर", 600, 645);
-                                  ctx.fillText("पीठ", 600, 663);
-
-                                  // Date & Certification Details
-                                  ctx.fillStyle = "#64748B";
-                                  ctx.font = "13px monospace";
-                                  ctx.textAlign = "left";
-                                  ctx.fillText(`दिनांक: ${new Date(cert.date).toLocaleDateString("hi-IN")}`, 80, 700);
-                                  ctx.fillText(`ID: ${cert.id.toUpperCase()}`, 80, 725);
-
-                                  ctx.textAlign = "right";
-                                  ctx.fillText("YUVAKSHAR COGNITIVE COUNCIL", 1120, 700);
-                                  ctx.fillText("DIGITAL ACCREDITED SYSTEM", 1120, 725);
-
-                                  const link = document.createElement("a");
-                                  link.download = `Yuvakshar_Certificate_${cert.id}.png`;
-                                  link.href = canvas.toDataURL("image/png");
-                                  link.click();
-                                }}
-                                className="mt-4 w-full bg-primary hover:bg-primary/95 text-white py-2 rounded-xl text-center text-xs font-bold transition-all shadow cursor-pointer"
-                              >
-                                प्रमाणपत्र डाउनलोड करें
-                              </button>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              );
-            })()}
-          </div>
-        )}
-
-        {/* TAB: PROFILE */}
-        {activeTab === "profile" && (
-          <div className="space-y-6 max-w-2xl mx-auto">
-            <div>
-              <h2 className="font-serif text-2xl font-bold border-l-2 border-primary pl-2">मेरा प्रोफ़ाइल</h2>
-              <p className="text-xs text-slate-400">अपनी व्यक्तिगत जानकारी और रुचि क्षेत्रों को प्रबंधित करें।</p>
-            </div>
-
-            <GlassCard glow="gold" className="p-6 space-y-6">
-              <form onSubmit={handleSaveProfile} className="space-y-4 text-xs font-serif">
-                {/* Profile Photo selector */}
-                <div className="flex flex-col sm:flex-row items-center gap-6 pb-4 border-b border-slate-100 dark:border-slate-800">
-                  <div className="w-20 h-20 rounded-full overflow-hidden bg-primary/10 border-2 border-primary flex items-center justify-center shrink-0">
-                    {avatarUrlInput ? (
-                      <img src={avatarUrlInput} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-2xl font-bold text-primary">{nameInput ? nameInput[0].toUpperCase() : "U"}</span>
-                    )}
-                  </div>
-
-                  <div className="space-y-2 w-full">
-                    <label className="text-slate-500 font-medium block">प्रोफ़ाइल फोटो (Avatar URL)</label>
-                    <input
-                      type="text"
-                      value={avatarUrlInput}
-                      onChange={(e) => setAvatarUrlInput(e.target.value)}
-                      placeholder="चित्र URL दर्ज करें..."
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs focus:outline-none focus:border-primary text-slate-700 dark:text-slate-200"
-                    />
-                    
-                    {/* Quick Avatar selection circles */}
-                    <div className="flex flex-wrap gap-2 items-center">
-                      <span className="text-[10px] text-slate-400 font-sans block">त्वरित चयन:</span>
-                      {[
-                        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80",
-                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
-                        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
-                        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
-                      ].map((url, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => setAvatarUrlInput(url)}
-                          className="w-7 h-7 rounded-full overflow-hidden border border-slate-200 hover:border-primary transition-all cursor-pointer"
-                        >
-                          <img src={url} alt={`Avatar ${i}`} className="w-full h-full object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-slate-500 font-medium">नाम (Full Name)</label>
-                    <input
-                      type="text"
-                      value={nameInput}
-                      onChange={(e) => setNameInput(e.target.value)}
-                      placeholder="उदा. राहुल शर्मा"
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-primary text-slate-700 dark:text-slate-200 text-xs font-serif"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-slate-500 font-medium">भूमिका (Role)</label>
-                    <input
-                      type="text"
-                      value={translateRole(currentUser?.role)}
-                      className="w-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none text-slate-400 text-xs cursor-not-allowed"
-                      disabled
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-slate-500 font-medium">ईमेल (Email Address)</label>
-                    <input
-                      type="email"
-                      value={emailInputState}
-                      className="w-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none text-slate-400 text-xs cursor-not-allowed"
-                      disabled
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-slate-500 font-medium">मोबाइल नंबर (Mobile Number)</label>
-                    <input
-                      type="tel"
-                      value={mobileInput}
-                      onChange={(e) => setMobileInput(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                      placeholder="१०-अंकीय मोबाइल संख्या"
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-primary text-slate-700 dark:text-slate-200 text-xs font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-slate-500 font-medium">संक्षिप्त परिचय (Bio)</label>
-                  <textarea
-                    rows={3}
-                    value={bioInput}
-                    onChange={(e) => setBioInput(e.target.value)}
-                    placeholder="अपने बारे में संक्षिप्त परिचय यहाँ लिखें..."
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-primary text-slate-700 dark:text-slate-200 text-xs font-serif"
-                  />
-                </div>
-
-                {/* Areas of Interest checkboxes */}
-                <div className="space-y-2">
-                  <label className="text-slate-500 font-medium block">रुचि के क्षेत्र (Areas of Interest)</label>
-                  <div className="flex flex-wrap gap-3">
-                    {["साहित्य", "पर्यावरण", "इतिहास", "विज्ञान", "सामयिक"].map((interest) => {
-                      const isChecked = interestsInput.includes(interest);
-                      return (
-                        <label
-                          key={interest}
-                          className={`flex items-center space-x-2 px-3 py-1.5 rounded-full border cursor-pointer select-none transition-all ${
-                            isChecked
-                              ? "bg-primary/10 border-primary text-primary font-bold"
-                              : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:border-slate-350"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => {
-                              if (isChecked) {
-                                setInterestsInput(interestsInput.filter(x => x !== interest));
-                              } else {
-                                setInterestsInput([...interestsInput, interest]);
-                              }
-                            }}
-                            className="hidden"
-                          />
-                          <span>{interest}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-primary hover:bg-primary/95 text-white py-3.5 rounded-xl font-bold transition-all shadow-md cursor-pointer flex items-center justify-center space-x-1"
-                >
-                  <span>प्रोफ़ाइल सुरक्षित करें</span>
-                </button>
-              </form>
-            </GlassCard>
-          </div>
-        )}
-
         {/* TAB: AI ECOSYSTEM MANAGEMENT */}
         {activeTab === "ai-ecosystem" && (
           <div className="space-y-6">
@@ -3229,99 +2665,6 @@ export default function AdminDashboard() {
 
               </div>
             </div>
-          </div>
-        )}
-
-        {/* TAB: SETTINGS */}
-        {activeTab === "settings" && (
-          <div className="space-y-6 max-w-2xl mx-auto">
-            <div>
-              <h2 className="font-serif text-2xl font-bold border-l-2 border-primary pl-2">वैयक्तिक सेटिंग्स</h2>
-              <p className="text-xs text-slate-400">युवाक्षर पोर्टल पर अपने पठन और स्वाध्याय अनुभवों को कस्टमाइज़ करें।</p>
-            </div>
-
-            <GlassCard glow="none" className="p-6 space-y-6">
-              <div className="space-y-4 font-serif text-xs">
-                
-                {/* Sound preferences */}
-                <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
-                  <div className="space-y-1">
-                    <h4 className="font-bold text-slate-800 dark:text-white">स्वाध्याय टाइमर ध्वनि (Chime Sound)</h4>
-                    <p className="text-[10px] text-slate-400 font-sans">स्वाध्याय सत्र पूरा होने पर घंटानाद बजना सक्षम करें।</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={adminTimerSound}
-                      onChange={(e) => {
-                        setAdminTimerSound(e.target.checked);
-                        const saved = localStorage.getItem("yuvakshar_timer_settings");
-                        const parsed = saved ? JSON.parse(saved) : {};
-                        localStorage.setItem("yuvakshar_timer_settings", JSON.stringify({ ...parsed, sound: e.target.checked }));
-                      }}
-                      className="sr-only peer"
-                    />
-                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                  </label>
-                </div>
-
-                {/* Notifications preferences */}
-                <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
-                  <div className="space-y-1">
-                    <h4 className="font-bold text-slate-800 dark:text-white">ब्राउज़र पुश सूचनाएँ (Push Notifications)</h4>
-                    <p className="text-[10px] text-slate-400 font-sans">डेस्कटॉप/मोबाइल पर समय पूर्ण होने पर सूचना प्रेषण।</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={adminTimerEnabled}
-                      onChange={(e) => {
-                        setAdminTimerEnabled(e.target.checked);
-                        const saved = localStorage.getItem("yuvakshar_timer_settings");
-                        const parsed = saved ? JSON.parse(saved) : {};
-                        localStorage.setItem("yuvakshar_timer_settings", JSON.stringify({ ...parsed, enabled: e.target.checked }));
-                      }}
-                      className="sr-only peer"
-                    />
-                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                  </label>
-                </div>
-
-                {/* Statistics preferences */}
-                <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
-                  <div className="space-y-1">
-                    <h4 className="font-bold text-slate-800 dark:text-white">स्वाध्याय सांख्यिकी (Timer Statistics)</h4>
-                    <p className="text-[10px] text-slate-400 font-sans">आज, इस सप्ताह और इस माह के अध्ययन समय का अंकन।</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={adminTimerStats}
-                      onChange={(e) => {
-                        setAdminTimerStats(e.target.checked);
-                        const saved = localStorage.getItem("yuvakshar_timer_settings");
-                        const parsed = saved ? JSON.parse(saved) : {};
-                        localStorage.setItem("yuvakshar_timer_settings", JSON.stringify({ ...parsed, statistics: e.target.checked }));
-                      }}
-                      className="sr-only peer"
-                    />
-                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                  </label>
-                </div>
-
-                <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 p-4 rounded-xl space-y-2 leading-relaxed">
-                  <h5 className="font-bold text-primary font-serif">सुरक्षा एवं सत्र (Security & Sessions)</h5>
-                  <p className="text-[10px] text-slate-400 font-serif">आप वर्तमान में एकीकृत युवाक्षर Supabase Auth टोकन का उपयोग कर रहे हैं। आपके सत्र क्रेडेंशियल्स याद रखे जाएंगे (Remember Login) ताकि दुबारा प्रवेश करने पर स्वतः लॉगिन बना रहे।</p>
-                </div>
-
-                <button
-                  onClick={() => alert("वैयक्तिक सेटिंग्स सफलतापूर्वक सहेज ली गई हैं!")}
-                  className="w-full bg-primary hover:bg-primary/95 text-white py-3 rounded-xl font-bold transition-all shadow-md cursor-pointer flex items-center justify-center space-x-1"
-                >
-                  <span>सेटिंग्स सहेजें</span>
-                </button>
-              </div>
-            </GlassCard>
           </div>
         )}
 

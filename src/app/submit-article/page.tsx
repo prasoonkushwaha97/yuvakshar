@@ -63,6 +63,7 @@ import confetti from "canvas-confetti";
 
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import { useCms } from "@/store/CmsContext";
+import { ContentRenderer } from "@/components/content/ContentRenderer";
 import { parseMarkdownToHtmlBlocks } from "@/lib/markdown";
 import { 
   serializeBlocksToMarkdown, 
@@ -2373,7 +2374,7 @@ export default function SubmitArticlePage() {
                         </div>
                       ) : (
                         <div className="space-y-2">
-                          <p className="whitespace-pre-line">{aiResult}</p>
+                          <ContentRenderer content={aiResult} className="text-[10px]" />
                           {aiResult && (
                             <button
                               type="button"

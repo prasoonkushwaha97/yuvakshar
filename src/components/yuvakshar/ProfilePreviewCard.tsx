@@ -7,6 +7,7 @@ import { UserPlus, UserMinus, MessageSquare, ExternalLink, ShieldCheck } from "l
 import { useCms } from "@/store/CmsContext";
 import type { Profile } from "@/store/types";
 import GlassCard from "./GlassCard";
+import { RoleBadgeList } from "@/components/ui/RoleBadge";
 
 interface ProfilePreviewWrapperProps {
   userId: string;
@@ -179,11 +180,7 @@ export default function ProfilePreviewWrapper({
                 <p className="text-[10px] text-slate-400 font-mono truncate">
                   @{targetUser.slug || targetUser.id}
                 </p>
-                {targetUser.role && (
-                  <span className="inline-block mt-1 bg-primary/10 text-primary text-[9px] font-bold px-1.5 py-0.5 rounded font-hindi">
-                    {targetUser.role}
-                  </span>
-                )}
+                {(targetUser as any).roles && <div className="mt-1.5"><RoleBadgeList roles={(targetUser as any).roles} /></div>}
               </div>
             </div>
 

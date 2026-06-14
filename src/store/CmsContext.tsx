@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase, isSupabaseConfigured, getSupabaseConfigError, checkConnectionHealth, checkStorageHealth } from "@/lib/supabaseClient";
+import { validateUsername, generateDeterministicUsername, RESERVED_USERNAMES } from "@/utils/username";
 import { mockArticles, mockMagazineIssues, mockCareerItems, mockBroadcasts, mockComments, Article } from "@/lib/mockData";
 export type { Article };
 import { QuizQuestion, ArticleQuiz, preseededQuizzes, generateFallbackQuestions } from "@/lib/defaultQuizzes";
@@ -185,17 +186,6 @@ export interface QuizAttempt {
   answers: Record<number, string>;
 }
 
-export interface QuizCertificate {
-  id: string;
-  userId: string;
-  userName: string;
-  articleTitle: string;
-  score: number;
-  percentage: number;
-  date: string;
-  certificateType: "सहभागिता प्रमाणपत्र" | "उत्कृष्टता प्रमाणपत्र" | "ज्ञानवीर प्रमाणपत्र";
-  badge: string;
-}
 
 export interface QuizSettings {
   articleId: string;
@@ -209,7 +199,6 @@ export interface QuizLeaderboardEntry {
   userName: string;
   score: number;
   completedQuizzes: number;
-  certificatesCount: number;
   interval: "weekly" | "monthly" | "alltime";
 }
 
@@ -228,7 +217,6 @@ export interface MonthlyReport {
   averageScore: number;
   bestCategory: string;
   studyTimeSeconds: number;
-  certificatesCount: number;
   growthPercentage: number;
 }
 
@@ -283,15 +271,16 @@ interface CmsContextType {
   users: Profile[];
   quizzes: ArticleQuiz[];
   quizAttempts: QuizAttempt[];
-  quizCertificates: QuizCertificate[];
   quizSettings: Record<string, QuizSettings>;
   leaderboard: QuizLeaderboardEntry[];
   videos: Video[];
   
   // Auth Operations
   loginUser: (email: string, passwordInput?: string) => Promise<boolean>;
-  registerUser: (email: string, role: string, customName: string, customMobile: string, passwordInput: string) => Promise<boolean>;
+  registerUser: (email: string, username: string, role: string, customName: string, customMobile: string, passwordInput: string) => Promise<boolean>;
+  checkUsernameAvailability: (username: string) => { available: boolean; message: string };
   logoutUser: () => void;
+  toggleBookmark: (articleId: string) => void;
   updateUserRole: (userId: string, role: Profile["role"]) => Promise<void>;
   createUser: (user: Omit<Profile, "id">) => Promise<void>;
   updateUser: (userId: string, data: Partial<Profile>) => Promise<void>;
@@ -546,7 +535,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   const [announcements, setAnnouncements] = useState<Array<{ id: string; title: string; content: string; target: string; created_by: string; created_by_name: string; created_at: string }>>([]);
   const [quizzes, setQuizzes] = useState<ArticleQuiz[]>([]);
   const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
-  const [quizCertificates, setQuizCertificates] = useState<QuizCertificate[]>([]);
   const [quizSettings, setQuizSettings] = useState<Record<string, QuizSettings>>({});
   const [leaderboard, setLeaderboard] = useState<QuizLeaderboardEntry[]>([]);
 
@@ -728,8 +716,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
             // Profile does not exist yet - create it dynamically!
             const newProfile: Profile = {
               id: session.user.id,
-              name: session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "NEW USER",
-              email: session.user.email || "",
+              name: session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "NEW USER", username: session.user.email || "".split('@')[0].replace(/['"]/g, ''), email: session.user.email || "",
               role: session.user.user_metadata?.role || null, // Free reader
               status: "active",
               joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
@@ -1070,8 +1057,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     setQuizAttempts(JSON.parse(localAttempts));
 
     // Load Quiz Certificates
-    const localCertificates = localStorage.getItem("yuvakshar_quiz_certificates") || "[]";
-    setQuizCertificates(JSON.parse(localCertificates));
 
     // Load Quiz Settings
     const localSettingsData = localStorage.getItem("yuvakshar_quiz_settings");
@@ -1097,12 +1082,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       setLeaderboard(JSON.parse(localLeaderboard));
     } else {
       const initial: QuizLeaderboardEntry[] = [
-        { id: "lead-1", userName: "प्रसून K.", score: 980, completedQuizzes: 15, certificatesCount: 5, interval: "weekly" },
-        { id: "lead-2", userName: "A. Dwivedi", score: 940, completedQuizzes: 14, certificatesCount: 4, interval: "weekly" },
-        { id: "lead-3", userName: "P. Sharma", score: 880, completedQuizzes: 12, certificatesCount: 3, interval: "weekly" },
-        { id: "lead-4", userName: "R. Singh", score: 1850, completedQuizzes: 28, certificatesCount: 9, interval: "monthly" },
-        { id: "lead-5", userName: "नीलेश T.", score: 1720, completedQuizzes: 25, certificatesCount: 8, interval: "monthly" },
-        { id: "lead-6", userName: "S. Patel", score: 4500, completedQuizzes: 62, certificatesCount: 22, interval: "alltime" }
       ];
       setLeaderboard(initial);
       localStorage.setItem("yuvakshar_quiz_leaderboard", JSON.stringify(initial));
@@ -1211,8 +1190,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           // Profile does not exist yet in profiles table - create it dynamically!
           const newProfile: Profile = {
             id: user.id,
-            name: user.user_metadata?.name || user.email?.split("@")[0].toUpperCase() || "NEW USER",
-            email: user.email || "",
+            name: user.user_metadata?.name || user.email?.split("@")[0].toUpperCase() || "NEW USER", username: user.email || "".split('@')[0].replace(/['"]/g, ''), email: user.email || "",
             role: user.user_metadata?.role || null,
             status: "active",
             joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
@@ -1317,8 +1295,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         const mapped: Submission[] = dbSubmissions.map(s => ({
           id: s.id,
           type: s.type,
-          name: s.name,
-          email: s.email,
+          name: s.name, email: s.email,
           mobile: s.mobile,
           subject: s.subject || s.title,
           content: s.content,
@@ -1401,16 +1378,16 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         setUsers(enriched);
       } else {
         const defaultStaff: Profile[] = [
-          { id: "staff-owner", name: "Ravi Owner", email: "owner@yuvakshar.in", role: "Owner", status: "active", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
-          { id: "staff-admin", name: "Amit Admin", email: "admin@yuvakshar.in", role: "Admin", status: "active", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
-          { id: "staff-chief", name: "Prasoon Chief", email: "chief@yuvakshar.in", role: "Editor-in-Chief", status: "active", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
-          { id: "staff-managing", name: "Sumit Managing", email: "managing@yuvakshar.in", role: "Managing Editor", status: "active", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
-          { id: "staff-editor", name: "Ravi Sharma", email: "editor@yuvakshar.in", role: "Editor", status: "active", badges: ["Editor"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
-          { id: "staff-subeditor", name: "Alok SubEditor", email: "subeditor@yuvakshar.in", role: "Sub Editor", status: "active", badges: ["Sub Editor"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
-          { id: "staff-factchecker", name: "Nitin Checker", email: "factchecker@yuvakshar.in", role: "Fact Checker", status: "active", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
-          { id: "staff-reviewer", name: "Varun Reviewer", email: "reviewer@yuvakshar.in", role: "Reviewer", status: "active", badges: ["Reviewer"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
-          { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "Author", status: "active", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
-          { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "Contributor", status: "active", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
+          { id: "staff-owner", name: "Ravi Owner", username: "owner@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "owner@yuvakshar.in", role: "Owner", status: "active", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
+          { id: "staff-admin", name: "Amit Admin", username: "admin@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "admin@yuvakshar.in", role: "Admin", status: "active", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
+          { id: "staff-chief", name: "Prasoon Chief", username: "chief@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "chief@yuvakshar.in", role: "Editor-in-Chief", status: "active", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
+          { id: "staff-managing", name: "Sumit Managing", username: "managing@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "managing@yuvakshar.in", role: "Managing Editor", status: "active", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
+          { id: "staff-editor", name: "Ravi Sharma", username: "editor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "editor@yuvakshar.in", role: "Editor", status: "active", badges: ["Editor"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
+          { id: "staff-subeditor", name: "Alok SubEditor", username: "subeditor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "subeditor@yuvakshar.in", role: "Sub Editor", status: "active", badges: ["Sub Editor"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
+          { id: "staff-factchecker", name: "Nitin Checker", username: "factchecker@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "factchecker@yuvakshar.in", role: "Fact Checker", status: "active", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
+          { id: "staff-reviewer", name: "Varun Reviewer", username: "reviewer@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "reviewer@yuvakshar.in", role: "Reviewer", status: "active", badges: ["Reviewer"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
+          { id: "staff-author", name: "Manoj Author", username: "author@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "author@yuvakshar.in", role: "Author", status: "active", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
+          { id: "staff-contributor", name: "Vijay Contributor", username: "contributor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "contributor@yuvakshar.in", role: "Contributor", status: "active", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
         ];
 
          const initialUsers: Profile[] = [
@@ -1471,7 +1448,23 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const registerUser = async (email: string, role: string, customName: string, customMobile: string, passwordInput: string): Promise<boolean> => {
+  const checkUsernameAvailability = (username: string) => {
+    const validation = validateUsername(username);
+    if (!validation.valid) return { available: false, message: validation.error || 'Invalid username' };
+    
+    const lower = username.toLowerCase();
+    const isTaken = users.some(u => u.username && u.username.toLowerCase() === lower);
+    if (isTaken) return { available: false, message: 'Username is already taken.' };
+    
+    return { available: true, message: 'Available' };
+  };
+
+  const registerUser = async (email: string, username: string, role: string, customName: string, customMobile: string, passwordInput: string): Promise<boolean> => {
+    const availability = checkUsernameAvailability(username);
+    if (!availability.available) {
+      alert(availability.message);
+      return false;
+    }
     const configError = getSupabaseConfigError();
     if (configError) {
       alert(configError);
@@ -1501,7 +1494,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         const newProfile: Profile = {
           id: data.user.id,
           name: customName || email.split("@")[0].toUpperCase(),
-          email: email,
+          username: username, email: email,
           mobile: customMobile,
           role: (role || "Subscriber") as Profile["role"],
           status: "active",
@@ -1512,7 +1505,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           following: [],
           social_posts_count: 0,
           social_replies_count: 0,
-          groups_count: 0,
+          groups_count: 0,
+
         };
         
         await supabase.from("profiles").upsert(newProfile);
@@ -1587,6 +1581,22 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const toggleBookmark = (articleId: string) => {
+    if (!currentUser) return;
+    
+    const currentBookmarks = currentUser.bookmarks || [];
+    const newBookmarks = currentBookmarks.includes(articleId) 
+      ? currentBookmarks.filter(id => id !== articleId)
+      : [...currentBookmarks, articleId];
+      
+    const updatedUser = { ...currentUser, bookmarks: newBookmarks };
+    setCurrentUser(updatedUser);
+    localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+    
+    setUsers((prev: Profile[]) => prev.map((u: Profile) => u.id === currentUser.id ? updatedUser : u));
+    logActivity(currentBookmarks.includes(articleId) ? `Removed bookmark: ${articleId}` : `Added bookmark: ${articleId}`);
+  };
+
   const logoutUser = async () => {
     if (isSupabaseConfigured()) {
       await supabase.auth.signOut();
@@ -1625,8 +1635,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     const newId = `u-${Date.now()}`;
     const newProfile: Profile = {
       id: newId,
-      name: user.name,
-      email: user.email,
+      name: user.name, username: user.email ? user.email.split('@')[0].replace(/['"]/g, '') : "user", email: user.email || "",
       role: user.role,
       
       status: user.status || "active",
@@ -2141,8 +2150,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     if (supabaseConfigured) {
       await supabase.from("contact_messages").insert({
         type: sub.type,
-        name: sub.name,
-        email: sub.email,
+        name: sub.name, email: sub.email,
         mobile: sub.mobile,
         subject: sub.subject || sub.title,
         content: sub.content,
@@ -2464,46 +2472,10 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     setQuizAttempts(updatedAttempts);
     localStorage.setItem("yuvakshar_quiz_attempts", JSON.stringify(updatedAttempts));
 
-    // Handle Certificate Generation
-    if (newAttempt.percentage >= 60) {
-      const type = newAttempt.percentage >= 90
-        ? ("ज्ञानवीर प्रमाणपत्र" as const)
-        : newAttempt.percentage >= 80
-          ? ("उत्कृष्टता प्रमाणपत्र" as const)
-          : ("सहभागिता प्रमाणपत्र" as const);
-      
-      const badge = newAttempt.percentage >= 90
-        ? "🏆 ज्ञानवीर"
-        : newAttempt.percentage >= 80
-          ? "🌟 विचारक"
-          : "📚 अध्ययनशील पाठक";
-
-      const targetArticle = articles.find(a => a.id === newAttempt.articleId);
-      const articleTitle = targetArticle ? targetArticle.title.replace(/[#*`>]/g, "").trim() : "युवाक्षर लेख";
-
-      const newCert: QuizCertificate = {
-        id: `cert-${Date.now()}`,
-        userId: newAttempt.userId,
-        userName: newAttempt.userName,
-        articleTitle,
-        score: newAttempt.score,
-        percentage: newAttempt.percentage,
-        date: new Date().toLocaleDateString("hi-IN", { day: "numeric", month: "short", year: "numeric" }),
-        certificateType: type,
-        badge
-      };
-
-      const updatedCerts = [...quizCertificates, newCert];
-      setQuizCertificates(updatedCerts);
-      localStorage.setItem("yuvakshar_quiz_certificates", JSON.stringify(updatedCerts));
-      logActivity(`Certificate earned: ${type} for user: ${newAttempt.userName}`);
-    }
-
     // Anti-Cheat: Leaderboard registers FIRST completed attempt only.
     const alreadyCompleted = quizAttempts.some(att => att.userId === newAttempt.userId && att.articleId === newAttempt.articleId);
     if (!alreadyCompleted) {
       const earnedPoints = newAttempt.score * 10;
-      const certEarned = newAttempt.percentage >= 60 ? 1 : 0;
       
       const existingEntry = leaderboard.find(entry => entry.userName === newAttempt.userName);
       let updatedLeaderboard: QuizLeaderboardEntry[];
@@ -2514,7 +2486,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
               ...entry,
               score: entry.score + earnedPoints,
               completedQuizzes: entry.completedQuizzes + 1,
-              certificatesCount: entry.certificatesCount + certEarned
             };
           }
           return entry;
@@ -2525,7 +2496,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           userName: newAttempt.userName,
           score: earnedPoints,
           completedQuizzes: 1,
-          certificatesCount: certEarned,
           interval: "weekly"
         };
         updatedLeaderboard = [...leaderboard, newEntry];
@@ -3390,7 +3360,8 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         closeAuthModal,
         authModalMessage,
         becomeAuthor,
-        updateUserProfile,
+        updateUserProfile,
+
         sendOtpCode,
         verifyOtpCode,
         sendPasswordReset,
@@ -3427,7 +3398,9 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         users,
         loginUser,
         registerUser,
+        checkUsernameAvailability,
         logoutUser,
+        toggleBookmark,
         updateUserRole,
         createUser,
         updateUser,
@@ -3467,7 +3440,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         logSearchQuery,
         quizzes,
         quizAttempts,
-        quizCertificates,
         quizSettings,
         leaderboard,
         saveQuiz,
@@ -3483,7 +3455,21 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         updateAiSettings,
         saveAiNote,
         deleteAiNote,
-        generateAiContent,
+        generateAiContent,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         
         
         

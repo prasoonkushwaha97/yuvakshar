@@ -11,7 +11,7 @@ import {
   Category,
   Tag,
   QuizAttempt,
-  QuizCertificate,
+
   QuizSettings,
   DonationRecord,
   Video
@@ -168,7 +168,8 @@ export const signUpUser = async (email: string, role: string, metadata: Record<s
       mobile: metadata.mobile || "",
       password: metadata.password || "password123",
       joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
-      slug: generateAuthorSlug(metadata.name || email.split("@")[0].toUpperCase())
+      slug: generateAuthorSlug(metadata.name || email.split("@")[0].toUpperCase()),
+      username: generateAuthorSlug(metadata.name || email.split("@")[0].toUpperCase())
     };
     const localUsers = JSON.parse(getLocalItem("yuvakshar_users", "[]"));
     localUsers.push(newProfile);
@@ -553,8 +554,7 @@ export const saveSubmissionInDb = async (sub: Submission): Promise<void> => {
   if (isSupabaseConfigured()) {
     await supabase.from("contact_messages").insert({
       type: sub.type,
-      name: sub.name,
-      email: sub.email,
+      name: sub.name, username: sub.email.split('@')[0].replace(/['"]/g, ''), email: sub.email,
       mobile: sub.mobile,
       subject: sub.subject,
       content: sub.content,

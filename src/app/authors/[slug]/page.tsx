@@ -66,6 +66,7 @@ export default function AuthorProfile() {
       id: "fallback-" + (slug || "reader"),
       name: derivedName,
       slug: slug || "reader",
+      username: slug || "reader",
       bio: "युवाक्षर का उत्साही पाठक एवं स्वतंत्र चिंतक।",
       role: null,
       status: "active",

@@ -445,7 +445,7 @@ export default function Home() {
               </div>
 
               <Link 
-                href="/dashboard"
+                href="/profile"
                 className="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-1 shadow-md shadow-indigo-600/10"
               >
                 <span>AI अध्ययन साथी का उपयोग करें</span>

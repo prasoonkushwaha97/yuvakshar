@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { stripMarkdown } from "@/lib/markdown";
+import { ContentRenderer } from "@/components/content/ContentRenderer";
 
 interface Message {
   sender: "user" | "ai";
@@ -408,7 +409,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
                           )}
                         </div>
                         
-                        <p className="whitespace-pre-line text-slate-700 dark:text-slate-200 font-light">{assistantResult}</p>
+                        <ContentRenderer content={assistantResult} className="text-[11px]" />
                       </div>
                     )}
                   </div>
@@ -431,7 +432,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
                                 ? "bg-white dark:bg-slate-900 border-slate-200/60 dark:border-slate-800 text-slate-700 dark:text-slate-250"
                                 : "bg-primary/10 border-primary/25 text-slate-850 dark:text-slate-200 font-semibold"
                             }`}>
-                              <p className="whitespace-pre-line font-light">{msg.text}</p>
+                              <ContentRenderer content={msg.text} className="text-[11px]" />
                             </div>
                           </div>
                         );
@@ -514,7 +515,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
                           )}
                         </div>
 
-                        <p className="whitespace-pre-line text-slate-700 dark:text-slate-200 font-light leading-relaxed">{generatedNote}</p>
+                        <ContentRenderer content={generatedNote} className="text-[11px]" />
                       </div>
                     )}
                   </div>

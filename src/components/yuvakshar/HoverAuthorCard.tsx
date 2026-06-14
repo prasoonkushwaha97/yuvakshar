@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { UserPlus, MessageCircle, BookOpen, Users } from "lucide-react";
+import { RoleBadgeList } from "@/components/ui/RoleBadge";
 
 interface AuthorData {
   id: string;
@@ -112,6 +113,7 @@ export default function HoverAuthorCard({ author, children }: HoverAuthorCardPro
               {author.name}
             </Link>
             <div className="text-[11px] text-slate-500 font-mono">@{author.slug || author.id}</div>
+            {(author as any).roles && <div className="mt-2"><RoleBadgeList roles={(author as any).roles} /></div>}
           </div>
 
           <div className="text-xs text-slate-600 dark:text-slate-300 font-hindi mb-4 line-clamp-2">

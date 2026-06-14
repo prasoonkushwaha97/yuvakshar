@@ -27,7 +27,6 @@ export default function StudyProgressTab({ currentUser, getUserReputation }: Stu
   const averageScore = totalAttempts > 0 ? Math.round(userAttempts.reduce((acc, curr) => acc + curr.percentage, 0) / totalAttempts) : 0;
   const bestScore = totalAttempts > 0 ? Math.max(...userAttempts.map(att => att.percentage)) : 0;
   const totalStudyTime = userAttempts.reduce((acc, curr) => acc + curr.durationSeconds, 0);
-  const certificatesCount = cms.quizCertificates.filter(c => c.userId === (currentUser?.id || "anonymous-reader")).length;
 
   // Cognitive Metrics
   const counts = { MCQ: 0, "Fact Recall": 0, Comprehension: 0, Analysis: 0, Application: 0 };
@@ -135,10 +134,7 @@ export default function StudyProgressTab({ currentUser, getUserReputation }: Stu
           <span className="text-[10px] text-slate-400 block uppercase font-serif">कुल समय (मिनट)</span>
           <p className="text-2xl font-bold font-serif text-primary">{Math.round(totalStudyTime / 60)}</p>
         </div>
-        <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-805 p-4 rounded-xl text-center space-y-1">
-          <span className="text-[10px] text-slate-400 block uppercase font-serif">प्रमाणपत्र</span>
-          <p className="text-2xl font-bold font-serif text-primary">{certificatesCount}</p>
-        </div>
+
       </div>
 
       {/* Swadhyaya Daily Streak & Cognitive Skill Rings */}

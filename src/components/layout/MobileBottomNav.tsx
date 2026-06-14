@@ -22,15 +22,12 @@ export default function MobileBottomNav() {
     return null;
   }
 
-  const isEditorial = currentUser && ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Author", "Contributor", "Fact Check Reviewer"].includes(currentUser.role || "");
-  const profileHref = currentUser ? (isEditorial ? "/admin" : "/dashboard") : "/dashboard";
-
   const dynamicNavItems = [
     { href: "/", icon: Home, label: "होम", exact: true },
     { href: "/categories", icon: Newspaper, label: "समाचार", exact: false },
     { href: "/magazine", icon: BookOpen, label: "पत्रिका", exact: false },
     { href: "/community", icon: Users, label: "कम्युनिटी", exact: false },
-    { href: profileHref, icon: User, label: "प्रोफ़ाइल", exact: false, activePrefix: currentUser ? (isEditorial ? "/admin" : "/dashboard") : "/dashboard" },
+    { href: "/profile", icon: User, label: "प्रोफ़ाइल", exact: false, activePrefix: "/profile" },
   ];
 
   const [visible, setVisible] = useState(true);
@@ -161,7 +158,7 @@ export default function MobileBottomNav() {
               </span>
 
               {/* Profile indicator dot when logged in */}
-              {href === profileHref && currentUser && (
+              {href === "/profile" && currentUser && (
                 <span className="absolute top-2.5 right-[calc(50%-14px)] w-2 h-2 bg-green-500 rounded-full border-2 border-white dark:border-background" />
               )}
             </Link>

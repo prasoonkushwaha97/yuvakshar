@@ -41,15 +41,15 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const translateRole = (role?: string | null) => {
   if (role === null) return "à¤¸à¤¦à¤¸à¥à¤¯";
-  if (!role) return "à¤…à¤¤à¤¿à¤¥à¤¿ à¤ªà¤¾à¤ à¤•";
+  if (!role) return "अतिथि पाठक";
   switch (role) {
     case "Owner": return "à¤¸à¥à¤µà¤¾à¤®à¥€";
     case "Admin": return "à¤ªà¥à¤°à¤¶à¤¾à¤¸à¤•";
-    case "Editor-in-Chief": return "à¤ªà¥à¤°à¤§à¤¾à¤¨ à¤¸à¤‚à¤ªà¤¾à¤¦à¤•";
-    case "Managing Editor": return "à¤ªà¥à¤°à¤¬à¤‚à¤§ à¤¸à¤‚à¤ªà¤¾à¤¦à¤•";
-    case "Editor": return "à¤¸à¤‚à¤ªà¤¾à¤¦à¤•";
+    case "Editor-in-Chief": return "à¤ªà¥à¤°à¤§à¤¾à¤¨ संपादक";
+    case "Managing Editor": return "à¤ªà¥à¤°à¤¬à¤‚à¤§ संपादक";
+    case "Editor": return "संपादक";
     case "Fact Check Reviewer": return "à¤¸à¤¤à¥à¤¯à¤¤à¤¾ à¤¸à¤®à¥€à¤•à¥à¤·à¤•";
-    case "Author": return "à¤²à¥‡à¤–à¤•";
+    case "Author": return "लेखक";
     case "Contributor": return "à¤¯à¥‹à¤—à¤¦à¤¾à¤¨à¤•à¤°à¥à¤¤à¤¾";
     default: return role;
   }
@@ -69,9 +69,9 @@ const safeIsoDate = (dateStr?: string) => {
     const year = parseInt(match[3]);
     
     const monthsMap: Record<string, number> = {
-      "à¤œà¤¨à¤µà¤°à¥€": 0, "à¤«à¤¼à¤°à¤µà¤°à¥€": 1, "à¤®à¤¾à¤°à¥à¤š": 2, "à¤…à¤ªà¥à¤°à¥ˆà¤²": 3, "à¤®à¤ˆ": 4, "à¤œà¥‚à¤¨": 5,
-      "à¤œà¥à¤²à¤¾à¤ˆ": 6, "à¤…à¤—à¤¸à¥à¤¤": 7, "à¤¸à¤¿à¤¤à¤‚à¤¬à¤°": 8, "à¤…à¤•à¥à¤Ÿà¥‚à¤¬à¤°": 9, "à¤¨à¤µà¤‚à¤¬à¤°": 10, "à¤¦à¤¿à¤¸à¤‚à¤¬à¤°": 11,
-      "à¤«à¤°à¤µà¤°à¥€": 1, "à¤¸à¤¿à¤¤à¤®à¥à¤¬à¤°": 8, "à¤…à¤•à¥à¤Ÿà¥à¤¬à¤°": 9, "à¤¨à¤®à¥à¤¬à¤°": 10, "à¤¨à¤µà¤®à¥à¤¬à¤°": 10, "à¤¦à¤¿à¤¸à¤®à¥à¤¬à¤°": 11
+      "जनवरी": 0, "फ़रवरी": 1, "à¤®à¤¾à¤°à¥à¤š": 2, "à¤…à¤ªà¥à¤°à¥ˆà¤²": 3, "मई": 4, "जून": 5,
+      "à¤œà¥à¤²à¤¾à¤ˆ": 6, "à¤…à¤—à¤¸à¥à¤¤": 7, "सितंबर": 8, "à¤…à¤•à¥à¤Ÿà¥‚à¤¬à¤°": 9, "नवंबर": 10, "दिसंबर": 11,
+      "फरवरी": 1, "सितम्बर": 8, "à¤…à¤•à¥à¤Ÿà¥à¤¬à¤°": 9, "नम्बर": 10, "नवम्बर": 10, "दिसम्बर": 11
     };
     
     const month = monthsMap[monthHindi] !== undefined ? monthsMap[monthHindi] : 5;
@@ -201,7 +201,7 @@ function EditorialPageContent() {
 
   // Timer complete chime & notification
   const handleTimerComplete = () => {
-    alert("â±ï¸ à¤¸à¥à¤µà¤¾à¤§à¥à¤¯à¤¾à¤¯ à¤¸à¤®à¤¯ à¤ªà¥‚à¤°à¥à¤£ à¤¹à¥à¤†! (Study session completed!)");
+    alert("⏱️ à¤¸à¥à¤µà¤¾à¤§à¥à¤¯à¤¾à¤¯ समय à¤ªà¥‚à¤°à¥à¤£ à¤¹à¥à¤†! (Study session completed!)");
     
     // Play chime sound
     if (timerSettings.sound) {
@@ -226,11 +226,11 @@ function EditorialPageContent() {
     // Trigger local push notification
     if (typeof window !== "undefined" && "Notification" in window) {
       if (Notification.permission === "granted") {
-        new Notification("à¤¯à¥à¤µà¤¾à¤•à¥à¤·à¤° à¤¸à¥à¤µà¤¾à¤§à¥à¤¯à¤¾à¤¯", { body: "à¤¸à¥à¤µà¤¾à¤§à¥à¤¯à¤¾à¤¯ à¤¸à¤®à¤¯ à¤ªà¥‚à¤°à¥à¤£ à¤¹à¥à¤†!" });
+        new Notification("à¤¯à¥à¤µà¤¾à¤•à¥à¤·à¤° à¤¸à¥à¤µà¤¾à¤§à¥à¤¯à¤¾à¤¯", { body: "à¤¸à¥à¤µà¤¾à¤§à¥à¤¯à¤¾à¤¯ समय à¤ªà¥‚à¤°à¥à¤£ à¤¹à¥à¤†!" });
       } else if (Notification.permission !== "denied") {
         Notification.requestPermission().then(permission => {
           if (permission === "granted") {
-            new Notification("à¤¯à¥à¤µà¤¾à¤•à¥à¤·à¤° à¤¸à¥à¤µà¤¾à¤§à¥à¤¯à¤¾à¤¯", { body: "à¤¸à¥à¤µà¤¾à¤§à¥à¤¯à¤¾à¤¯ à¤¸à¤®à¤¯ à¤ªà¥‚à¤°à¥à¤£ à¤¹à¥à¤†!" });
+            new Notification("à¤¯à¥à¤µà¤¾à¤•à¥à¤·à¤° à¤¸à¥à¤µà¤¾à¤§à¥à¤¯à¤¾à¤¯", { body: "à¤¸à¥à¤µà¤¾à¤§à¥à¤¯à¤¾à¤¯ समय à¤ªà¥‚à¤°à¥à¤£ à¤¹à¥à¤†!" });
           }
         });
       }
@@ -320,7 +320,7 @@ function EditorialPageContent() {
       return;
     }
     if (isNaN(mins) || mins < 1 || mins > 720) {
-      setTimerError("à¤•à¥ƒà¤ªà¤¯à¤¾ 1 à¤¸à¥‡ 720 à¤®à¤¿à¤¨à¤Ÿ à¤•à¥‡ à¤¬à¥€à¤š à¤¸à¤®à¤¯ à¤¦à¤°à¥à¤œ à¤•à¤°à¥‡à¤‚");
+      setTimerError("à¤•à¥ƒà¤ªà¤¯à¤¾ 1 à¤¸à¥‡ 720 मिनट à¤•à¥‡ à¤¬à¥€à¤š समय à¤¦à¤°à¥à¤œ à¤•à¤°à¥‡à¤‚");
     } else {
       setTimerError("");
       const secs = mins * 60;
@@ -346,9 +346,9 @@ function EditorialPageContent() {
     const hours = Math.floor(totalSeconds / 3600);
     const mins = Math.floor((totalSeconds % 3600) / 60);
     const secs = totalSeconds % 60;
-    if (hours > 0) return `${hours} à¤˜à¤‚à¤Ÿà¥‡ ${mins} à¤®à¤¿à¤¨à¤Ÿ`;
-    if (mins > 0) return `${mins} à¤®à¤¿à¤¨à¤Ÿ ${secs} à¤¸à¥‡à¤•à¤‚à¤¡`;
-    return `${secs} à¤¸à¥‡à¤•à¤‚à¤¡`;
+    if (hours > 0) return `${hours} घंटे ${mins} मिनट`;
+    if (mins > 0) return `${mins} मिनट ${secs} सेकंड`;
+    return `${secs} सेकंड`;
   };
 
   // Load Highlights and Bookmark status
@@ -456,7 +456,7 @@ function EditorialPageContent() {
     await addComment(article.id, currentUser.name, commentText, replyToId);
     setCommentText("");
     setReplyToId(null);
-    alert("à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€ à¤¦à¤°à¥à¤œ à¤•à¥€ à¤—à¤ˆ! à¤¸à¤®à¥€à¤•à¥à¤·à¤¾ à¤•à¥‡ à¤¬à¤¾à¤¦ à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¿à¤¤ à¤¹à¥‹à¤—à¥€à¥¤");
+    alert("à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€ à¤¦à¤°à¥à¤œ à¤•à¥€ à¤—à¤ˆ! à¤¸à¤®à¥€à¤•à¥à¤·à¤¾ à¤•à¥‡ बाद à¤ªà¥à¤°à¤•à¤¾à¤¶à¤¿à¤¤ à¤¹à¥‹à¤—à¥€à¥¤");
   };
 
   const handleLikeClick = async () => {
@@ -465,7 +465,7 @@ function EditorialPageContent() {
       return;
     }
     await incrementArticleLike(article.id);
-    alert("à¤²à¥‡à¤– à¤•à¥‹ à¤ªà¤¸à¤‚à¤¦ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!");
+    alert("लेख को पसंद किया गया!");
   };
 
   const handleBookmarkClick = () => {
@@ -549,8 +549,8 @@ function EditorialPageContent() {
       }
 
       // 4. Custom Fact Boxes parsing
-      if (html.includes('[à¤®à¤¹à¤¤à¥à¤µà¤ªà¥‚à¤°à¥à¤£ à¤¤à¤¥à¥à¤¯]') || html.includes('[à¤•à¥à¤¯à¤¾ à¤†à¤ª à¤œà¤¾à¤¨à¤¤à¥‡ à¤¹à¥ˆà¤‚?]') || html.includes('[à¤µà¤¿à¤¶à¥‡à¤· à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€]')) {
-        let title = "à¤®à¤¹à¤¤à¥à¤µà¤ªà¥‚à¤°à¥à¤£ à¤¤à¤¥à¥à¤¯";
+      if (html.includes('[à¤®à¤¹à¤¤à¥à¤µà¤ªà¥‚à¤°à¥à¤£ तथ्य]') || html.includes('[à¤•à¥à¤¯à¤¾ à¤†à¤ª à¤œà¤¾à¤¨à¤¤à¥‡ à¤¹à¥ˆà¤‚?]') || html.includes('[à¤µà¤¿à¤¶à¥‡à¤· à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€]')) {
+        let title = "à¤®à¤¹à¤¤à¥à¤µà¤ªà¥‚à¤°à¥à¤£ तथ्य";
         let colorClass = "border-amber-500 bg-amber-50/40 dark:bg-amber-950/15";
         let textColor = "text-amber-600 dark:text-amber-400";
         if (html.includes('[à¤•à¥à¤¯à¤¾ à¤†à¤ª à¤œà¤¾à¤¨à¤¤à¥‡ à¤¹à¥ˆà¤‚?]')) {
@@ -564,7 +564,7 @@ function EditorialPageContent() {
         }
         
         const cleanContent = html
-          .replace('[à¤®à¤¹à¤¤à¥à¤µà¤ªà¥‚à¤°à¥à¤£ à¤¤à¤¥à¥à¤¯]', '')
+          .replace('[à¤®à¤¹à¤¤à¥à¤µà¤ªà¥‚à¤°à¥à¤£ तथ्य]', '')
           .replace('[à¤•à¥à¤¯à¤¾ à¤†à¤ª à¤œà¤¾à¤¨à¤¤à¥‡ à¤¹à¥ˆà¤‚?]', '')
           .replace('[à¤µà¤¿à¤¶à¥‡à¤· à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€]', '');
           
@@ -718,7 +718,7 @@ function EditorialPageContent() {
           className="inline-flex items-center space-x-2 text-xs text-slate-500 hover:text-primary transition-colors font-medium font-serif"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>à¤®à¥à¤–à¥à¤¯ à¤ªà¥ƒà¤·à¥à¤  à¤ªà¤° à¤µà¤¾à¤ªà¤¸ à¤œà¤¾à¤à¤‚</span>
+          <span>à¤®à¥à¤–à¥à¤¯ प॒ष्ठ पर वापस à¤œà¤¾à¤à¤‚</span>
         </Link>
       </div>
 
@@ -740,7 +740,7 @@ function EditorialPageContent() {
           </h1>
           {article.englishTitle && (
             <h2 className="font-sans text-lg md:text-xl text-primary font-medium tracking-wide">
-              â€œ{stripMarkdown(article.englishTitle)}â€
+              â€œ{stripMarkdown(article.englishTitle)}⬝
             </h2>
           )}
           <p className="text-sm md:text-base text-slate-300 font-serif leading-relaxed max-w-3xl font-light">
@@ -748,13 +748,13 @@ function EditorialPageContent() {
           </p>
           
           <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 font-sans pt-2">
-            <span>à¤²à¥‡à¤–à¤•: <ProfilePreviewWrapper userId={article.author}><Link href={`/authors/${generateAuthorSlug(article.author)}`} className="hover:text-primary hover:underline font-bold transition-colors">{article.author}</Link></ProfilePreviewWrapper></span>
+            <span>लेखक: <ProfilePreviewWrapper userId={article.author}><Link href={`/authors/${generateAuthorSlug(article.author)}`} className="hover:text-primary hover:underline font-bold transition-colors">{article.author}</Link></ProfilePreviewWrapper></span>
 
-            <span>â€¢</span>
-            <span>à¤¦à¤¿à¤¨à¤¾à¤‚à¤•: {article.date}</span>
-            <span>â€¢</span>
-            <span>à¤ªà¤ à¤¨ à¤¸à¤®à¤¯: {article.readTime}</span>
-            <span>â€¢</span>
+            <span>⬢</span>
+            <span>दिनांक: {article.date}</span>
+            <span>⬢</span>
+            <span>पठन समय: {article.readTime}</span>
+            <span>⬢</span>
             <span>à¤µà¥à¤¯à¥‚à¤œà¤¼: {article.views || 0}</span>
           </div>
         </div>
@@ -775,7 +775,7 @@ function EditorialPageContent() {
                   <p className="font-bold text-slate-800 dark:text-white leading-none">{article.author}</p>
                 </Link>
               </ProfilePreviewWrapper>
-              <p className="text-[10px] text-slate-400 mt-1">{article.authorRole || "à¤µà¤°à¤¿à¤·à¥à¤  à¤¸à¤‚à¤ªà¤¾à¤¦à¤•"}</p>
+              <p className="text-[10px] text-slate-400 mt-1">{article.authorRole || "वरिष्ठ संपादक"}</p>
             </div>
           </div>
 
@@ -786,7 +786,7 @@ function EditorialPageContent() {
               className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer text-slate-500 hover:text-primary"
             >
               <ThumbsUp className="w-4 h-4" />
-              <span>à¤ªà¤¸à¤‚à¤¦ ({article.likes || 0})</span>
+              <span>पसंद ({article.likes || 0})</span>
             </button>
 
             <button 
@@ -794,13 +794,13 @@ function EditorialPageContent() {
               className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:bg-primary/5 transition-colors cursor-pointer text-slate-500 hover:text-primary"
             >
               {isBookmarked ? <BookmarkCheck className="w-4 h-4 text-primary" /> : <Bookmark className="w-4 h-4" />}
-              <span>{isBookmarked ? "à¤¸à¤¹à¥‡à¤œà¤¾ à¤—à¤¯à¤¾" : "à¤¸à¤¹à¥‡à¤œà¥‡à¤‚ (Bookmark)"}</span>
+              <span>{isBookmarked ? "सहेजा गया" : "सहेजें (Bookmark)"}</span>
             </button>
 
             <button 
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href);
-                alert("à¤²à¥‡à¤– à¤•à¤¾ à¤²à¤¿à¤‚à¤• à¤•à¥à¤²à¤¿à¤ªà¤¬à¥‹à¤°à¥à¤¡ à¤ªà¤° à¤•à¥‰à¤ªà¥€ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!");
+                alert("à¤²à¥‡à¤– à¤•à¤¾ à¤²à¤¿à¤‚à¤• à¤•à¥à¤²à¤¿à¤ªà¤¬à¥‹à¤°à¥à¤¡ पर à¤•à¥‰à¤ªà¥€ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!");
               }}
               className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-primary transition-colors cursor-pointer"
               title="Share Link"
@@ -827,7 +827,7 @@ function EditorialPageContent() {
             </p>
           </div>
 
-          {/* Collapsible Index Accordion (ðŸ“‘ à¤‡à¤¸ à¤²à¥‡à¤– à¤®à¥‡à¤‚) - Hidden for short articles (headings <= 2) */}
+          {/* Collapsible Index Accordion (📄 इस लेख में) - Hidden for short articles (headings <= 2) */}
           {headings.length > 2 && (
             <div className="bg-white dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden max-w-[850px] shadow-sm">
               <button 
@@ -835,8 +835,8 @@ function EditorialPageContent() {
                 className="w-full flex items-center justify-between p-4 font-serif font-bold text-slate-800 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors cursor-pointer"
               >
                 <span className="flex items-center space-x-2">
-                  <span className="text-primary text-base">ðŸ“‘</span>
-                  <span className="text-sm md:text-base">à¤‡à¤¸ à¤²à¥‡à¤– à¤®à¥‡à¤‚</span>
+                  <span className="text-primary text-base">📄</span>
+                  <span className="text-sm md:text-base">इस लेख में</span>
                 </span>
                 <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${isIndexOpen ? "rotate-90 text-primary" : "text-slate-400"}`} />
               </button>
@@ -863,7 +863,7 @@ function EditorialPageContent() {
                               onClick={(e) => scrollToHeading(h.id, e)}
                               className="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors block leading-relaxed hover:underline truncate"
                             >
-                              â€¢ {h.title}
+                              ⬢ {h.title}
                             </a>
                           </li>
                         ))}
@@ -911,11 +911,11 @@ function EditorialPageContent() {
                 </ProfilePreviewWrapper>
 
                 <span className="text-[9px] uppercase tracking-wider font-bold bg-primary/10 border border-primary/20 text-primary px-2.5 py-0.5 rounded-full font-sans mt-1 sm:mt-0">
-                  {article.authorRole || "à¤µà¤°à¤¿à¤·à¥à¤  à¤²à¥‡à¤–à¤•"}
+                  {article.authorRole || "वरिष्ठ लेखक"}
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-serif leading-relaxed font-light">
-                {article.authorBio || "à¤¯à¥à¤µà¤¾à¤•à¥à¤·à¤° à¤¡à¤¿à¤œà¤¿à¤Ÿà¤² à¤¸à¤‚à¤ªà¤¾à¤¦à¤•à¥€à¤¯ à¤®à¤£à¥à¤¡à¤² à¤•à¥‡ à¤ªà¥à¤°à¤®à¥à¤– à¤µà¤¿à¤¶à¥à¤²à¥‡à¤·à¤•à¥¤ à¤°à¤¾à¤·à¥à¤Ÿà¥à¤°à¥€à¤¯ à¤à¤µà¤‚ à¤¸à¤¾à¤®à¤¯à¤¿à¤• à¤µà¤¿à¤·à¤¯à¥‹à¤‚ à¤ªà¤° à¤—à¤¹à¤¨ à¤šà¤¿à¤‚à¤¤à¤¨ à¤”à¤° à¤¨à¤¿à¤·à¥à¤ªà¤•à¥à¤· à¤²à¥‡à¤–à¤¨à¥¤"}
+                {article.authorBio || "à¤¯à¥à¤µà¤¾à¤•à¥à¤·à¤° à¤¡à¤¿à¤œà¤¿à¤Ÿà¤² संपादकà¥€à¤¯ मण्डल à¤•à¥‡ à¤ªà¥à¤°à¤®à¥à¤– à¤µà¤¿à¤¶à¥à¤²à¥‡à¤·à¤•à¥¤ à¤°à¤¾à¤·à¥à¤Ÿà¥à¤°à¥€à¤¯ à¤à¤µà¤‚ à¤¸à¤¾à¤®à¤¯à¤¿à¤• विषयà¥‹à¤‚ पर à¤—à¤¹à¤¨ à¤šà¤¿à¤‚à¤¤à¤¨ à¤”à¤° à¤¨à¤¿à¤·à¥à¤ªà¤•à¥à¤· à¤²à¥‡à¤–à¤¨à¥¤"}
               </p>
             </div>
           </div>
@@ -977,10 +977,10 @@ function EditorialPageContent() {
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border border-indigo-100 dark:border-indigo-900/50 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="space-y-2 text-center md:text-left">
                 <h3 className="text-xl font-black font-hindi text-slate-800 dark:text-white flex items-center justify-center md:justify-start gap-2">
-                  <span>ðŸ›ï¸</span> à¤‡à¤¸ à¤²à¥‡à¤– à¤ªà¤° à¤šà¥Œà¤ªà¤¾à¤² à¤®à¥‡à¤‚ à¤šà¤°à¥à¤šà¤¾ à¤•à¤°à¥‡à¤‚
+                  <span>ðŸ›ï¸</span> à¤‡à¤¸ à¤²à¥‡à¤– पर à¤šà¥Œà¤ªà¤¾à¤² à¤®à¥‡à¤‚ à¤šà¤°à¥à¤šà¤¾ à¤•à¤°à¥‡à¤‚
                 </h3>
                 <p className="text-sm font-hindi text-slate-600 dark:text-slate-400 max-w-md leading-relaxed">
-                  à¤¯à¥à¤µà¤¾à¤•à¥à¤·à¤° à¤šà¥Œà¤ªà¤¾à¤² à¤ªà¤° à¤…à¤¨à¥à¤¯ à¤ªà¤¾à¤ à¤•à¥‹à¤‚, à¤²à¥‡à¤–à¤•à¥‹à¤‚ à¤”à¤° à¤¬à¥à¤¦à¥à¤§à¤¿à¤œà¥€à¤µà¤¿à¤¯à¥‹à¤‚ à¤•à¥‡ à¤¸à¤¾à¤¥ à¤‡à¤¸ à¤µà¤¿à¤·à¤¯ à¤ªà¤° à¤…à¤ªà¤¨à¥‡ à¤µà¤¿à¤šà¤¾à¤° à¤¸à¤¾à¤à¤¾ à¤•à¤°à¥‡à¤‚à¥¤
+                  à¤¯à¥à¤µà¤¾à¤•à¥à¤·à¤° à¤šà¥Œà¤ªà¤¾à¤² पर à¤…à¤¨à¥à¤¯ à¤ªà¤¾à¤ à¤•à¥‹à¤‚, लेखकà¥‹à¤‚ à¤”à¤° à¤¬à¥à¤¦à¥à¤§à¤¿à¤œà¥€à¤µà¤¿à¤¯à¥‹à¤‚ à¤•à¥‡ साथ à¤‡à¤¸ विषय पर à¤…à¤ªà¤¨à¥‡ à¤µà¤¿à¤šà¤¾à¤° à¤¸à¤¾à¤à¤¾ à¤•à¤°à¥‡à¤‚à¥¤
                 </p>
               </div>
               <Link 
@@ -988,7 +988,7 @@ function EditorialPageContent() {
                 className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-bold font-hindi px-6 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 active:scale-95"
               >
                 <MessageSquare className="w-5 h-5" />
-                <span>à¤šà¥Œà¤ªà¤¾à¤² à¤ªà¤° à¤œà¤¾à¤à¤‚</span>
+                <span>à¤šà¥Œà¤ªà¤¾à¤² पर à¤œà¤¾à¤à¤‚</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -997,7 +997,7 @@ function EditorialPageContent() {
           {/* Comments section */}
           <div className="pt-8 border-t border-slate-200 dark:border-slate-800 space-y-6 max-w-[850px]">
             <h3 className="font-serif text-lg font-bold text-slate-850 dark:text-white border-l-2 border-primary pl-2">
-              à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€ à¤µà¤¿à¤®à¤°à¥à¤¶ ({articleComments.length})
+              à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€ विमर्श ({articleComments.length})
             </h3>
 
             {/* Comment Form (Auth Controlled) */}
@@ -1021,7 +1021,7 @@ function EditorialPageContent() {
                   <label className="text-slate-500 font-medium">à¤…à¤ªà¤¨à¥€ à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€ à¤²à¤¿à¤–à¥‡à¤‚</label>
                   <textarea 
                     rows={4}
-                    placeholder="à¤…à¤ªà¤¨à¥‡ à¤µà¤¿à¤šà¤¾à¤° à¤¯à¤¹à¤¾à¤ à¤¸à¤¾à¤à¤¾ à¤•à¤°à¥‡à¤‚..."
+                    placeholder="à¤…à¤ªà¤¨à¥‡ à¤µà¤¿à¤šà¤¾à¤° यहाँ à¤¸à¤¾à¤à¤¾ à¤•à¤°à¥‡à¤‚..."
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-primary text-slate-700 dark:text-slate-200"
@@ -1033,23 +1033,23 @@ function EditorialPageContent() {
                   type="submit"
                   className="bg-primary hover:bg-primary/95 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
                 >
-                  à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€ à¤¸à¤¬à¤®à¤¿à¤Ÿ à¤•à¤°à¥‡à¤‚
+                  à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€ à¤¸à¤¬मिà¤Ÿ à¤•à¤°à¥‡à¤‚
                 </button>
               </form>
             ) : (
               <div className="bg-white dark:bg-slate-900/10 border border-slate-250 dark:border-slate-800 p-6 rounded-2xl flex flex-col items-center justify-center gap-4 text-center">
                 <Lock className="w-8 h-8 text-primary animate-bounce" />
                 <div className="space-y-1">
-                  <h4 className="font-serif text-base font-bold text-slate-800 dark:text-white font-hindi">à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€ à¤µà¤¿à¤®à¤°à¥à¤¶ à¤•à¥‡ à¤²à¤¿à¤ à¤²à¥‰à¤—à¤¿à¤¨ à¤•à¤°à¥‡à¤‚</h4>
+                  <h4 className="font-serif text-base font-bold text-slate-800 dark:text-white font-hindi">à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€ विमर्श à¤•à¥‡ लिए लॉगिन करें</h4>
                   <p className="text-xs text-slate-505 dark:text-slate-400 font-serif leading-relaxed">
-                    à¤µà¥ˆà¤šà¤¾à¤°à¤¿à¤• à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€ à¤µà¤¿à¤®à¤°à¥à¤¶ à¤®à¥‡à¤‚ à¤­à¤¾à¤— à¤²à¥‡à¤¨à¥‡ à¤”à¤° à¤…à¤ªà¤¨à¥‡ à¤µà¤¿à¤šà¤¾à¤° à¤¸à¤¾à¤à¤¾ à¤•à¤°à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤•à¥ƒà¤ªà¤¯à¤¾ à¤ªà¤¹à¤²à¥‡ à¤²à¥‰à¤—à¤¿à¤¨ à¤•à¤°à¥‡à¤‚à¥¤
+                    à¤µà¥ˆà¤šà¤¾à¤°à¤¿à¤• à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€ विमर्श à¤®à¥‡à¤‚ à¤­à¤¾à¤— à¤²à¥‡à¤¨à¥‡ à¤”à¤° à¤…à¤ªà¤¨à¥‡ à¤µà¤¿à¤šà¤¾à¤° à¤¸à¤¾à¤à¤¾ à¤•à¤°à¤¨à¥‡ à¤•à¥‡ लिए à¤•à¥ƒà¤ªà¤¯à¤¾ à¤ªà¤¹à¤²à¥‡ लॉगिन करेंà¥¤
                   </p>
                 </div>
                 <button 
                   onClick={() => openAuthModal(undefined, "Please login or create an account to continue.")}
                   className="bg-primary hover:bg-primary/95 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
                 >
-                  à¤²à¥‰à¤—à¤¿à¤¨ à¤•à¤°à¥‡à¤‚
+                  लॉगिन करें
                 </button>
               </div>
             )}
@@ -1102,7 +1102,7 @@ function EditorialPageContent() {
                         <button 
                           onClick={async () => {
                             await reportComment(c.id);
-                            alert("à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€ à¤°à¤¿à¤ªà¥‹à¤°à¥à¤Ÿ à¤•à¤° à¤¦à¥€ à¤—à¤ˆ à¤¹à¥ˆà¥¤ à¤¸à¤‚à¤ªà¤¾à¤¦à¤• à¤‡à¤¸à¤•à¥€ à¤¸à¤®à¥€à¤•à¥à¤·à¤¾ à¤•à¤°à¥‡à¤‚à¤—à¥‡à¥¤");
+                            alert("à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€ à¤°à¤¿à¤ªà¥‹à¤°à¥à¤Ÿ à¤•à¤° द६ à¤—à¤ˆ à¤¹à¥ˆà¥¤ संपादक à¤‡à¤¸à¤•à¥€ à¤¸à¤®à¥€à¤•à¥à¤·à¤¾ à¤•à¤°à¥‡à¤‚à¤—à¥‡à¥¤");
                           }}
                           className="flex items-center space-x-1 hover:text-red-500 transition-colors cursor-pointer"
                         >
@@ -1160,7 +1160,7 @@ function EditorialPageContent() {
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2">
                 <span className="font-serif font-bold text-primary flex items-center space-x-1">
                   <Highlighter className="w-3.5 h-3.5 animate-pulse" />
-                  <span>à¤¹à¤¾à¤‡à¤²à¤¾à¤‡à¤Ÿ à¤šà¤¯à¤¨</span>
+                  <span>हाइलाइट चयन</span>
                 </span>
                 <button onClick={() => setSelectedText("")} className="text-slate-400 hover:text-primary cursor-pointer">
                   <XIcon className="w-4 h-4" />
@@ -1213,7 +1213,7 @@ function EditorialPageContent() {
                   <span className="text-[10px] uppercase font-bold tracking-widest font-mono">à¤¸à¥à¤µà¤¾à¤§à¥à¤¯à¤¾à¤¯ à¤Ÿà¤¾à¤‡à¤®à¤°</span>
                 </div>
                 <span className="text-[9px] uppercase font-bold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-serif">
-                  {isTimerRunning ? "à¤¸à¤•à¥à¤°à¤¿à¤¯" : "à¤µà¤¿à¤°à¤¾à¤®"}
+                  {isTimerRunning ? "à¤¸à¤•à¥à¤°à¤¿à¤¯" : "विराम"}
                 </span>
               </div>
 
@@ -1249,10 +1249,10 @@ function EditorialPageContent() {
 
                 <div className="space-y-2 w-full text-xs">
                   <div className="space-y-1">
-                    <label className="text-[10px] text-slate-400 font-medium block">à¤¸à¤®à¤¯ à¤¨à¤¿à¤°à¥à¤§à¤¾à¤°à¤¿à¤¤ à¤•à¤°à¥‡à¤‚:</label>
+                    <label className="text-[10px] text-slate-400 font-medium block">समय निर्धारित à¤•à¤°à¥‡à¤‚:</label>
                     <input
                       type="number"
-                      placeholder="à¤®à¤¿à¤¨à¤Ÿ"
+                      placeholder="मिनट"
                       value={customMinutesInput}
                       onChange={(e) => handleSetTime(e.target.value)}
                       disabled={isTimerRunning}
@@ -1271,7 +1271,7 @@ function EditorialPageContent() {
                           onClick={() => adjustTimer(mins)}
                           className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-primary/10 border border-slate-200 dark:border-slate-800 rounded text-[9px] font-bold text-slate-500 hover:text-primary transition-all cursor-pointer font-mono"
                         >
-                          {mins > 0 ? `+${mins}` : mins} à¤®à¤¿.
+                          {mins > 0 ? `+${mins}` : mins} मि.
                         </button>
                       ))}
                     </div>
@@ -1286,27 +1286,27 @@ function EditorialPageContent() {
                   disabled={isTimerRunning || !!timerError || pomodoroTime <= 0}
                   className="bg-primary hover:bg-primary/95 text-white py-2 rounded-lg text-[10px] font-bold transition-all shadow-md cursor-pointer disabled:opacity-50 text-center"
                 >
-                  à¤ªà¥à¤°à¤¾à¤°à¤®à¥à¤­
+                  प्रारम्भ
                 </button>
                 <button
                   onClick={() => setIsTimerRunning(false)}
                   disabled={!isTimerRunning}
                   className="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 py-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer disabled:opacity-50 text-center"
                 >
-                  à¤µà¤¿à¤°à¤¾à¤®
+                  विराम
                 </button>
                 <button
                   onClick={() => setIsTimerRunning(true)}
                   disabled={isTimerRunning || !!timerError}
                   className="border border-primary/30 hover:border-primary bg-primary/5 hover:bg-primary/10 text-primary py-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer disabled:opacity-50 text-center"
                 >
-                  à¤ªà¥à¤¨à¤ƒ à¤ªà¥à¤°à¤¾à¤°à¤®à¥à¤­
+                  पुनऒ प्रारम्भ
                 </button>
                 <button
                   onClick={handleReset}
                   className="border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-primary py-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer text-center"
                 >
-                  à¤°à¥€à¤¸à¥‡à¤Ÿ
+                  रीसेट
                 </button>
               </div>
 
@@ -1314,15 +1314,15 @@ function EditorialPageContent() {
               {timerSettings.statistics && (
                 <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl space-y-2 text-[10px] font-serif leading-none">
                   <div className="flex justify-between items-center text-slate-400">
-                    <span>à¤†à¤œ à¤•à¤¾ à¤…à¤§à¥à¤¯à¤¯à¤¨ à¤¸à¤®à¤¯:</span>
+                    <span>à¤†à¤œ à¤•à¤¾ à¤…à¤§à¥à¤¯à¤¯à¤¨ समय:</span>
                     <span className="font-bold text-slate-700 dark:text-slate-200 font-sans">{formatDuration(todayTime)}</span>
                   </div>
                   <div className="flex justify-between items-center text-slate-400">
-                    <span>à¤‡à¤¸ à¤¸à¤ªà¥à¤¤à¤¾à¤¹ à¤•à¤¾ à¤…à¤§à¥à¤¯à¤¯à¤¨ à¤¸à¤®à¤¯:</span>
+                    <span>à¤‡à¤¸ सप्ताह à¤•à¤¾ à¤…à¤§à¥à¤¯à¤¯à¤¨ समय:</span>
                     <span className="font-bold text-slate-700 dark:text-slate-200 font-sans">{formatDuration(weeklyTime)}</span>
                   </div>
                   <div className="flex justify-between items-center text-slate-400">
-                    <span>à¤‡à¤¸ à¤®à¤¾à¤¹ à¤•à¤¾ à¤…à¤§à¥à¤¯à¤¯à¤¨ à¤¸à¤®à¤¯:</span>
+                    <span>à¤‡à¤¸ माह à¤•à¤¾ à¤…à¤§à¥à¤¯à¤¯à¤¨ समय:</span>
                     <span className="font-bold text-slate-700 dark:text-slate-200 font-sans">{formatDuration(monthlyTime)}</span>
                   </div>
                 </div>
@@ -1367,7 +1367,7 @@ function EditorialPageContent() {
                     
                     {hl.note && (
                       <div className="border-t border-slate-200 dark:border-slate-700 pt-1.5 mt-1.5">
-                        <span className="font-bold text-primary text-[10px]">à¤¨à¥‹à¤Ÿ: </span>
+                        <span className="font-bold text-primary text-[10px]">नोट: </span>
                         <span className="text-slate-550 dark:text-slate-400 font-light">{hl.note}</span>
                       </div>
                     )}
@@ -1424,7 +1424,7 @@ function EditorialPageContent() {
           className="p-2 rounded-full text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
           title="Increase Font Size"
         >
-          <span className="text-[10px] font-bold font-sans">à¤…+</span>
+          <span className="text-[10px] font-bold font-sans">अ+</span>
         </button>
 
         <button
@@ -1432,7 +1432,7 @@ function EditorialPageContent() {
           className="p-2 rounded-full text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
           title="Decrease Font Size"
         >
-          <span className="text-[10px] font-bold font-sans">à¤…-</span>
+          <span className="text-[10px] font-bold font-sans">अ-</span>
         </button>
 
         <button

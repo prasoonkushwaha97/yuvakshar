@@ -1,0 +1,75 @@
+"use server";
+
+import { supabase } from "@/lib/supabaseClient";
+import { hasAnyRole } from "@/lib/rbacService";
+
+export async function getPermissionsMatrix() {
+  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
+  if (!isAuthorized) {
+    throw new Error("Unauthorized to access permissions matrix");
+  }
+
+  // 1. Fetch all roles ordered by rank
+  const { data: rolesData, error: rolesError } = await supabase
+    .from('roles')
+    .select('*');
+
+  if (rolesError || !rolesData) {
+    console.error("Error fetching roles:", rolesError);
+    return { roles: [], permissions: [], matrix: {} };
+  }
+
+  // Define hardcoded rank for sorting (since DB doesn't have rank natively)
+  const ROLE_HIERARCHY_RANK: Record<string, number> = {
+    'founder': 0, 'co_founder': 1, 'super_admin': 2, 'admin': 3,
+    'editor_in_chief': 4, 'editor': 5, 'moderator': 6, 'reviewer': 7,
+  };
+
+  const sortedRoles = rolesData.sort((a, b) => 
+    (ROLE_HIERARCHY_RANK[a.slug] ?? 999) - (ROLE_HIERARCHY_RANK[b.slug] ?? 999)
+  );
+
+  // 2. Fetch all permissions
+  const { data: permissionsData, error: permError } = await supabase
+    .from('permissions')
+    .select('*')
+    .order('resource', { ascending: true })
+    .order('action', { ascending: true });
+
+  if (permError || !permissionsData) {
+    console.error("Error fetching permissions:", permError);
+    return { roles: sortedRoles, permissions: [], matrix: {} };
+  }
+
+  // 3. Fetch role_permissions mapping
+  const { data: rolePermsData, error: rpError } = await supabase
+    .from('role_permissions')
+    .select('role_id, permission_id');
+
+  if (rpError || !rolePermsData) {
+    console.error("Error fetching role_permissions:", rpError);
+    return { roles: sortedRoles, permissions: permissionsData, matrix: {} };
+  }
+
+  // 4. Build Matrix [permission_id][role_id] = boolean
+  const matrix: Record<string, Record<string, boolean>> = {};
+  
+  permissionsData.forEach(p => {
+    matrix[p.id] = {};
+    sortedRoles.forEach(r => {
+      matrix[p.id][r.id] = false;
+    });
+  });
+
+  rolePermsData.forEach(rp => {
+    if (matrix[rp.permission_id]) {
+      matrix[rp.permission_id][rp.role_id] = true;
+    }
+  });
+
+  return {
+    roles: sortedRoles,
+    permissions: permissionsData,
+    matrix
+  };
+}

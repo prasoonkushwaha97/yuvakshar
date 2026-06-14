@@ -32,15 +32,19 @@ import { useCms } from "@/store/CmsContext";
 import MobileSearchOverlay from "@/components/layout/MobileSearchOverlay";
 
 const translateRole = (role?: string | null) => {
-  if (role === null) return "सदस्य";
-  if (!role) return "अतिथि";
+  if (!role || role === "User" || role === "Member") return null;
   switch (role) {
-    case "Owner": return "स्वामी";
+    case "Owner": return "संस्थापक";
+    case "Super Admin": return "मुख्य प्रशासक";
     case "Admin": return "प्रशासक";
     case "Editor-in-Chief": return "प्रधान संपादक";
     case "Managing Editor": return "प्रबंध संपादक";
     case "Editor": return "संपादक";
+    case "Moderator": return "मॉडरेटर";
+    case "Reviewer": return "समीक्षक";
     case "Fact Check Reviewer": return "सत्यता समीक्षक";
+    case "Content Manager": return "सामग्री प्रबंधक";
+    case "Event Coordinator": return "कार्यक्रम समन्वयक";
     case "Author": return "लेखक";
     case "Contributor": return "योगदानकर्ता";
     default: return role;
@@ -49,10 +53,15 @@ const translateRole = (role?: string | null) => {
 
 
 
-export default function Navbar() {
+export interface NavbarProps {
+  showFounderWorkspace?: boolean;
+  showAdminWorkspace?: boolean;
+  showModeratorWorkspace?: boolean;
+}
+
+export default function Navbar({ showFounderWorkspace, showAdminWorkspace, showModeratorWorkspace }: NavbarProps) {
   const pathname = usePathname();
   const { settings, logoutUser, currentUser, magazines, articles, openAuthModal } = useCms();
-  const isEditorial = currentUser && ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Author", "Contributor", "Fact Check Reviewer"].includes(currentUser.role || "");
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
@@ -367,24 +376,24 @@ export default function Navbar() {
                               <p className="font-bold text-slate-800 dark:text-white truncate text-sm leading-tight">
                                 {currentUser.name || "पाठक"}
                               </p>
-                              <div className="flex flex-col gap-1 mt-1">
-                                <span className="text-[9px] text-slate-400 dark:text-slate-500 font-sans tracking-wide">
-                                  {translateRole(currentUser.role)}
-                                </span>
-                              </div>
+                              {translateRole(currentUser.role) && (
+                                <div className="flex flex-col gap-1 mt-1">
+                                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-sans tracking-wide">
+                                    {translateRole(currentUser.role)}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
 
                         <div className="space-y-0.5 px-1">
                           {[
-                            { href: isEditorial ? "/admin?tab=profile" : "/dashboard?tab=profile", icon: User, label: "मेरा प्रोफ़ाइल" },
-                            { href: isEditorial ? "/admin?tab=library" : "/dashboard?tab=study", icon: BookOpen, label: "मेरी पुस्तकालय" },
-                            { href: isEditorial ? "/admin?tab=bookmarks" : "/dashboard?tab=bookmarks", icon: Bookmark, label: "बुकमार्क" },
-                            { href: isEditorial ? "/admin?tab=certificates" : "/dashboard?tab=study", icon: Award, label: "प्रमाणपत्र" },
-                            { href: isEditorial ? "/admin?tab=study-progress" : "/dashboard?tab=study", icon: Activity, label: "अध्ययन प्रगति" },
-                            
-                            { href: isEditorial ? "/admin?tab=settings" : "/dashboard?tab=profile&sub=settings", icon: Settings, label: "सेटिंग्स" },
+                            { href: "/profile", icon: User, label: "मेरा प्रोफ़ाइल" },
+                            { href: "/bookmarks", icon: Bookmark, label: "बुकमार्क" },
+                            { href: "/certificates", icon: Award, label: "प्रमाणपत्र" },
+                            { href: "/literary-journey", icon: Activity, label: "साहित्यिक यात्रा" },
+                            { href: "/settings", icon: Settings, label: "सेटिंग्स" },
                           ].map(({ href, icon: Icon, label }) => (
                             <Link
                               key={href}
@@ -398,31 +407,35 @@ export default function Navbar() {
                           ))}
                         </div>
 
-                        {["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Author", "Contributor", "Fact Check Reviewer"].includes(currentUser.role || "") && (
+                        {(showFounderWorkspace || showAdminWorkspace || showModeratorWorkspace) && (
                           <>
                             <div className="border-t border-slate-100 dark:border-slate-800/80 my-2" />
                             <div className="px-4 py-1 text-[9px] font-sans font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                               संपादकीय एवं प्रबंधन
                             </div>
                             <div className="space-y-0.5 px-1 mt-1">
-                              {["Owner", "Admin"].includes(currentUser.role || "") && (
+                              {showFounderWorkspace && (
+                                <Link href="/founder" onClick={() => setProfileDropdownOpen(false)} className="group flex items-center space-x-2.5 px-3 py-2 text-slate-700 dark:text-slate-350 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-900/40 rounded-xl transition-all font-hindi font-medium">
+                                  <Crown className="w-4 h-4 text-amber-500 group-hover:text-primary transition-colors shrink-0" />
+                                  <span>संस्थापक डैशबोर्ड</span>
+                                </Link>
+                              )}
+                              {showAdminWorkspace && (
                                 <Link href="/admin?tab=dashboard" onClick={() => setProfileDropdownOpen(false)} className="group flex items-center space-x-2.5 px-3 py-2 text-slate-700 dark:text-slate-350 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-900/40 rounded-xl transition-all font-hindi font-medium">
                                   <Shield className="w-4 h-4 text-slate-450 group-hover:text-primary transition-colors shrink-0" />
                                   <span>प्रशासन पैनल</span>
                                 </Link>
                               )}
-                              {["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor"].includes(currentUser.role || "") && (
+                              {showModeratorWorkspace && (
                                 <Link href="/admin" onClick={() => setProfileDropdownOpen(false)} className="group flex items-center space-x-2.5 px-3 py-2 text-slate-700 dark:text-slate-350 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-900/40 rounded-xl transition-all font-hindi font-medium">
                                   <FileEdit className="w-4 h-4 text-slate-450 group-hover:text-primary transition-colors shrink-0" />
                                   <span>संपादकीय डेस्क</span>
                                 </Link>
                               )}
-                              {["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Author", "Contributor"].includes(currentUser.role || "") && (
-                                <Link href="/submit-article" onClick={() => setProfileDropdownOpen(false)} className="group flex items-center space-x-2.5 px-3 py-2 text-slate-700 dark:text-slate-355 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-900/40 rounded-xl transition-all font-hindi font-medium">
-                                  <CheckSquare className="w-4 h-4 text-slate-450 group-hover:text-primary transition-colors shrink-0" />
-                                  <span>लेखक डैशबोर्ड</span>
-                                </Link>
-                              )}
+                              <Link href="/submit-article" onClick={() => setProfileDropdownOpen(false)} className="group flex items-center space-x-2.5 px-3 py-2 text-slate-700 dark:text-slate-355 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-900/40 rounded-xl transition-all font-hindi font-medium">
+                                <CheckSquare className="w-4 h-4 text-slate-450 group-hover:text-primary transition-colors shrink-0" />
+                                <span>लेखक डैशबोर्ड</span>
+                              </Link>
                             </div>
                           </>
                         )}
@@ -511,9 +524,11 @@ export default function Navbar() {
                   </div>
                   <div className="min-w-0">
                     <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{currentUser.name || "पाठक"}</p>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-sans">
-                      {translateRole(currentUser.role)}
-                    </span>
+                    {translateRole(currentUser.role) && (
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-sans block mt-0.5">
+                        {translateRole(currentUser.role)}
+                      </span>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -673,13 +688,12 @@ export default function Navbar() {
               {/* Menu Items */}
               <div className="flex-grow px-3 py-4 space-y-0.5">
                 {[
-                  { href: isEditorial ? "/admin?tab=profile" : "/dashboard?tab=profile", icon: User, label: "मेरा प्रोफ़ाइल" },
-                  { href: isEditorial ? "/admin?tab=library" : "/dashboard?tab=study", icon: BookOpen, label: "मेरी पुस्तकालय" },
-                  { href: isEditorial ? "/admin?tab=bookmarks" : "/dashboard?tab=bookmarks", icon: Bookmark, label: "बुकमार्क" },
-                  { href: isEditorial ? "/admin?tab=certificates" : "/dashboard?tab=study", icon: Award, label: "प्रमाणपत्र" },
-                  { href: isEditorial ? "/admin?tab=study-progress" : "/dashboard?tab=study", icon: Activity, label: "अध्ययन प्रगति" },
-                  
-                  { href: isEditorial ? "/admin?tab=settings" : "/dashboard?tab=profile&sub=settings", icon: Settings, label: "सेटिंग्स" },
+                  { href: "/profile", icon: User, label: "मेरा प्रोफ़ाइल" },
+                  { href: "/dashboard?tab=study", icon: BookOpen, label: "मेरी पुस्तकालय" },
+                  { href: "/bookmarks", icon: Bookmark, label: "बुकमार्क" },
+                  { href: "/certificates", icon: Award, label: "प्रमाणपत्र" },
+                  { href: "/literary-journey", icon: Activity, label: "साहित्यिक यात्रा" },
+                  { href: "/settings", icon: Settings, label: "सेटिंग्स" },
                 ].map(({ href, icon: Icon, label }) => (
                   <Link
                     key={href}
@@ -693,15 +707,31 @@ export default function Navbar() {
                   </Link>
                 ))}
 
-                {["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor"].includes(currentUser.role || "") && (
+                {(showFounderWorkspace || showAdminWorkspace || showModeratorWorkspace) && (
                   <>
                     <div className="border-t border-slate-100 dark:border-slate-800 my-2" />
                     <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest px-4 mb-1">संपादकीय डेस्क</p>
-                    <Link href="/admin" onClick={() => setProfileDropdownOpen(false)} className="flex items-center space-x-3 px-4 py-3.5 min-h-[52px] text-slate-700 dark:text-slate-300 hover:text-primary hover:bg-orange-50/50 rounded-xl transition-all font-hindi font-semibold text-sm">
-                      <Shield className="w-5 h-5 text-slate-400 shrink-0" />
-                      <span>संपादकीय पैनल</span>
-                      <ChevronRight className="w-4 h-4 text-slate-300 ml-auto" />
-                    </Link>
+                    {showFounderWorkspace && (
+                      <Link href="/founder" onClick={() => setProfileDropdownOpen(false)} className="flex items-center space-x-3 px-4 py-3.5 min-h-[52px] text-slate-700 dark:text-slate-300 hover:text-primary hover:bg-orange-50/50 rounded-xl transition-all font-hindi font-semibold text-sm">
+                        <Crown className="w-5 h-5 text-amber-500 shrink-0" />
+                        <span>संस्थापक डैशबोर्ड</span>
+                        <ChevronRight className="w-4 h-4 text-slate-300 ml-auto" />
+                      </Link>
+                    )}
+                    {showAdminWorkspace && (
+                      <Link href="/admin?tab=dashboard" onClick={() => setProfileDropdownOpen(false)} className="flex items-center space-x-3 px-4 py-3.5 min-h-[52px] text-slate-700 dark:text-slate-300 hover:text-primary hover:bg-orange-50/50 rounded-xl transition-all font-hindi font-semibold text-sm">
+                        <Shield className="w-5 h-5 text-slate-400 shrink-0" />
+                        <span>प्रशासन पैनल</span>
+                        <ChevronRight className="w-4 h-4 text-slate-300 ml-auto" />
+                      </Link>
+                    )}
+                    {showModeratorWorkspace && (
+                      <Link href="/admin" onClick={() => setProfileDropdownOpen(false)} className="flex items-center space-x-3 px-4 py-3.5 min-h-[52px] text-slate-700 dark:text-slate-300 hover:text-primary hover:bg-orange-50/50 rounded-xl transition-all font-hindi font-semibold text-sm">
+                        <FileEdit className="w-5 h-5 text-slate-400 shrink-0" />
+                        <span>संपादकीय पैनल</span>
+                        <ChevronRight className="w-4 h-4 text-slate-300 ml-auto" />
+                      </Link>
+                    )}
                   </>
                 )}
               </div>

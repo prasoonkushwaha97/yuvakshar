@@ -9,19 +9,6 @@ import type { MagazineIssue } from "@/store/types";
 
 export default function MagazineLibraryPage() {
   const { magazines } = useCms();
-  const [progress, setProgress] = useState<{ issueId: string; page: number; percentage: number; } | null>(null);
-
-  useEffect(() => {
-    // Load local reading progress
-    const saved = localStorage.getItem("yuvakshar_mag_progress");
-    if (saved) {
-      try {
-        setProgress(JSON.parse(saved));
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }, []);
 
   // Filter out drafts or non-published if we were to enforce it, but we assume magazines are pre-filtered or we just filter here
   const publishedMags = magazines.filter(m => m.status === "Published" || !m.status) as MagazineIssue[];
@@ -34,8 +21,6 @@ export default function MagazineLibraryPage() {
   
   // Extract dynamic categories
   const categories = Array.from(new Set(publishedMags.map(m => m.category).filter(Boolean)));
-
-  const continueReadingMag = progress ? publishedMags.find(m => m.id === progress.issueId) : null;
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#070B14] text-slate-900 dark:text-slate-100 font-hindi selection:bg-primary/20">
@@ -53,34 +38,6 @@ export default function MagazineLibraryPage() {
 
       <main className="max-w-7xl mx-auto px-6 py-12 space-y-20">
         
-        {/* CONTINUE READING WIDGET */}
-        {continueReadingMag && progress && (
-          <section className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center gap-6 relative overflow-hidden group">
-            <div className="w-24 h-32 md:w-32 md:h-44 shrink-0 rounded-lg shadow-md overflow-hidden relative border border-slate-200 dark:border-slate-700">
-               <img src={continueReadingMag.coverImage} alt={continueReadingMag.issue} className="w-full h-full object-cover" />
-            </div>
-            <div className="flex-1 space-y-3 text-center md:text-left">
-               <div className="inline-flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-wider bg-primary/10 px-2.5 py-1 rounded-full">
-                 <PlayCircle className="w-3.5 h-3.5" />
-                 पढ़ना जारी रखें
-               </div>
-               <h3 className="text-2xl font-bold font-serif">{continueReadingMag.issue} - {continueReadingMag.edition}</h3>
-               <p className="text-slate-500 text-sm">पृष्ठ {progress.page + 1} • {progress.percentage}% पूर्ण</p>
-               
-               <div className="w-full md:w-64 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-2">
-                 <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${progress.percentage}%` }} />
-               </div>
-               
-               <div className="pt-2">
-                 <Link href={`/magazine/read/${continueReadingMag.id}`} className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 shadow-md">
-                   पुनः आरंभ करें
-                   <ArrowRight className="w-4 h-4" />
-                 </Link>
-               </div>
-            </div>
-          </section>
-        )}
-
         {/* HERO / FEATURED ISSUE */}
         {featuredIssue && (
           <section>
