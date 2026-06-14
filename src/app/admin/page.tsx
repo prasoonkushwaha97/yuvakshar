@@ -131,14 +131,14 @@ export default function AdminDashboard() {
     deleteQuizQuestion,
     bulkImportQuestions,
     approveDraftQuestion,
-    userMemberships,
-    paymentRecords,
-    coupons,
-    referrals,
-    assignMembershipManually,
-    createCoupon,
-    deleteCoupon,
-    getMembershipAnalytics,
+    
+    
+    
+    
+    
+    
+    
+
     videos,
     saveVideo,
     deleteVideo,
@@ -146,12 +146,12 @@ export default function AdminDashboard() {
   } = cms;
 
   const role = currentUser?.role || "";
-  const isOwnerRole = ["Owner", "संस्थापक"].includes(role);
-  const isAdminRole = ["Owner", "Admin", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक"].includes(role);
-  const isEICRole = ["Owner", "Admin", "Editor-in-Chief", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक"].includes(role);
-  const isManagingEditorRole = ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक", "कार्यकारी संपादक", "प्रबंध संपादक"].includes(role);
-  const isEditorRole = ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक", "कार्यकारी संपादक", "प्रबंध संपादक", "वरिष्ठ संपादक", "संपादक"].includes(role);
-  const isSubEditorRole = ["Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Sub Editor", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक", "कार्यकारी संपादक", "प्रबंध संपादक", "वरिष्ठ संपादक", "संपादक", "सहायक संपादक"].includes(role);
+  const isOwnerRole = ["Owner", "Founder", "संस्थापक"].includes(role);
+  const isAdminRole = ["Owner", "Founder", "Admin", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक"].includes(role);
+  const isEICRole = ["Owner", "Founder", "Admin", "Editor-in-Chief", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक"].includes(role);
+  const isManagingEditorRole = ["Owner", "Founder", "Admin", "Editor-in-Chief", "Managing Editor", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक", "कार्यकारी संपादक", "प्रबंध संपादक"].includes(role);
+  const isEditorRole = ["Owner", "Founder", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक", "कार्यकारी संपादक", "प्रबंध संपादक", "वरिष्ठ संपादक", "संपादक"].includes(role);
+  const isSubEditorRole = ["Owner", "Founder", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Sub Editor", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक", "कार्यकारी संपादक", "प्रबंध संपादक", "वरिष्ठ संपादक", "संपादक", "सहायक संपादक"].includes(role);
 
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -223,19 +223,10 @@ export default function AdminDashboard() {
 
   // Date/Time filter state
   const [timeFilter, setTimeFilter] = useState<"daily" | "weekly" | "monthly" | "yearly">("monthly");
-
-  // Membership Admin Form States
   const [selectedUserId, setSelectedUserId] = useState("");
   const [manualTier, setManualTier] = useState<"Free" | "Premium" | "Patron">("Premium");
   const [manualCycle, setManualCycle] = useState<"Monthly" | "Quarterly" | "Half-Yearly" | "Yearly">("Monthly");
   const [manualDurationDays, setManualDurationDays] = useState(30);
-
-  // Coupon Admin Form States
-  const [couponCodeInput, setCouponCodeInput] = useState("");
-  const [couponType, setCouponType] = useState<"percentage" | "flat">("percentage");
-  const [couponValue, setCouponValue] = useState(10);
-  const [couponExpiry, setCouponExpiry] = useState("");
-  const [couponLimit, setCouponLimit] = useState(100);
 
   const [nameInput, setNameInput] = useState("");
   const [avatarUrlInput, setAvatarUrlInput] = useState("");
@@ -1010,7 +1001,6 @@ export default function AdminDashboard() {
                   { id: "ai-ecosystem", label: "एआई", icon: Sparkles, visible: isAdminRole },
                   { id: "users", label: "उपयोगकर्ता", icon: Users, visible: isAdminRole },
                   { id: "newsletter", label: "न्यूज़लेटर", icon: Mail, visible: isManagingEditorRole },
-                  { id: "memberships", label: "सदस्यता", icon: Crown, visible: isAdminRole },
                   { id: "settings", label: "सेटिंग्स", icon: Settings, visible: true },
                   { id: "appearance", label: "स्वरूप", icon: Palette, visible: isAdminRole },
                   { id: "backups", label: "बैकअप", icon: Download, visible: isAdminRole },
@@ -1068,7 +1058,6 @@ export default function AdminDashboard() {
                   { id: "ai-ecosystem", label: "एआई पारिस्थितिकी तंत्र", icon: Sparkles, visible: isAdminRole },
                   { id: "users", label: "उपयोगकर्ता", icon: Users, visible: isAdminRole },
                   { id: "newsletter", label: "न्यूज़लेटर अभियान", icon: Mail, visible: isManagingEditorRole },
-                  { id: "memberships", label: "सदस्यता प्रबंधन", icon: Crown, visible: isAdminRole },
                   { id: "ads", label: "विज्ञापन प्रबंधक", icon: Globe, visible: isAdminRole },
                   { id: "settings", label: "सेटिंग्स", icon: Settings, visible: true },
                   { id: "appearance", label: "स्वरूप और सेटिंग्स", icon: Palette, visible: isAdminRole },
@@ -1742,7 +1731,7 @@ export default function AdminDashboard() {
                       name: newUserName,
                       email: newUserEmail,
                       role: newUserRole,
-                      membership: null,
+
                       status: "active"
                     });
                     setNewUserName("");
@@ -1785,6 +1774,7 @@ export default function AdminDashboard() {
                     >
                       {isOwnerRole && (
                         <>
+                          <option value="Founder">संस्थापक</option>
                           <option value="Owner">स्वामी</option>
                           <option value="Admin">प्रशासक</option>
                           <option value="Editor-in-Chief">प्रधान संपादक</option>
@@ -1880,6 +1870,7 @@ export default function AdminDashboard() {
                           >
                             {isOwnerRole && (
                               <>
+                                <option value="Founder">Founder</option>
                                 <option value="Owner">Owner</option>
                                 <option value="Admin">Admin</option>
                                 <option value="Editor-in-Chief">Editor-in-Chief</option>
@@ -1991,294 +1982,6 @@ export default function AdminDashboard() {
                   );
                 })}
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 5.5: MEMBERSHIP DESK (सदस्यता प्रबंधन) */}
-        {activeTab === "memberships" && (
-          <div className="space-y-6">
-            <h2 className="font-serif text-2xl font-bold border-l-2 border-primary pl-2 text-slate-900 dark:text-white">युवाक्षर सदस्यता प्रबंधन डेस्क</h2>
-            
-            {/* Analytics Grid */}
-            {(() => {
-              const analytics = getMembershipAnalytics();
-              return (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">कुल सक्रिय सदस्य</span>
-                    <span className="text-2xl font-bold font-serif text-slate-900 dark:text-white mt-2">{analytics.activeMembers}</span>
-                    <span className="text-[9px] text-slate-400 font-mono mt-1 font-bold">प्रीमियम: {analytics.premiumMembers} | संरक्षक: {analytics.patronMembers}</span>
-                  </div>
-                  <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">कुल सदस्यता राजस्व</span>
-                    <span className="text-2xl font-bold font-serif text-primary mt-2">₹{analytics.membershipRevenue}</span>
-                    <span className="text-[9px] text-slate-400 font-mono mt-1 font-bold">सफल भुगतानों से संचित</span>
-                  </div>
-                  <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">रूपांतरण दर (Conversion)</span>
-                    <span className="text-2xl font-bold font-serif text-amber-500 mt-2">{analytics.conversionRate}%</span>
-                    <span className="text-[9px] text-slate-400 font-mono mt-1 font-bold">सक्रिय सदस्य / कुल पंजीकृत</span>
-                  </div>
-                  <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">मंथन दर (Churn Rate)</span>
-                    <span className="text-2xl font-bold font-serif text-red-500 mt-2">{analytics.churnRate}%</span>
-                    <span className="text-[9px] text-slate-400 font-mono mt-1 font-bold">ऑटो-नवीनीकरण दर: {analytics.renewalRate}%</span>
-                  </div>
-                </div>
-              );
-            })()}
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              
-              {/* Left Column: Manual Assignment & Database (Col Span 7) */}
-              <div className="lg:col-span-7 space-y-6">
-                
-                {/* Manual Assignment Card */}
-                <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4">
-                  <h3 className="font-serif font-bold text-sm text-primary">मैन्युअल सदस्यता असाइनमेंट (Manual Override Desk)</h3>
-                  
-                  <form 
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!selectedUserId) {
-                        alert("कृपया उपयोगकर्ता चुनें।");
-                        return;
-                      }
-                      assignMembershipManually(selectedUserId, manualTier, manualCycle, manualDurationDays);
-                      alert("मैन्युअल सदस्यता सफलतापूर्वक असाइन की गई!");
-                      setSelectedUserId("");
-                    }}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs"
-                  >
-                    <div className="space-y-1">
-                      <label className="text-slate-500 font-medium">उपयोगकर्ता का चयन करें (User)</label>
-                      <select
-                        value={selectedUserId}
-                        onChange={(e) => setSelectedUserId(e.target.value)}
-                        className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-855 dark:text-slate-200 focus:outline-none"
-                      >
-                        <option value="">-- उपयोगकर्ता चुनें --</option>
-                        {users.map(u => (
-                          <option key={u.id} value={u.id}>{u.name} ({u.email || "No Email"}) - {u.membership || "Free"}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-slate-500 font-medium">सदस्यता प्रकार (Membership Tier)</label>
-                      <select
-                        value={manualTier}
-                        onChange={(e) => setManualTier(e.target.value as any)}
-                        className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-855 dark:text-slate-200 focus:outline-none"
-                      >
-                        <option value="Free">Free (हटाएं)</option>
-                        <option value="Premium">Premium</option>
-                        <option value="Patron">Patron</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-slate-500 font-medium">भुगतान चक्र (Billing Cycle)</label>
-                      <select
-                        value={manualCycle}
-                        onChange={(e) => setManualCycle(e.target.value as any)}
-                        className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-855 dark:text-slate-200 focus:outline-none"
-                      >
-                        <option value="Monthly">मासिक</option>
-                        <option value="Quarterly">त्रैमासिक</option>
-                        <option value="Half-Yearly">अर्धवार्षिक</option>
-                        <option value="Yearly">वार्षिक</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-slate-500 font-medium">अवधि दिन (Duration in Days)</label>
-                      <input
-                        type="number"
-                        min={1}
-                        value={manualDurationDays}
-                        onChange={(e) => setManualDurationDays(parseInt(e.target.value) || 30)}
-                        className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-855 dark:text-slate-200 focus:outline-none"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="md:col-span-2 bg-primary hover:bg-primary/95 text-white font-bold py-2.5 rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <Crown className="w-4 h-4 text-slate-900" />
-                      <span>मैन्युअल सदस्यता असाइन करें</span>
-                    </button>
-                  </form>
-                </div>
-
-                {/* Subscriptions DB List */}
-                <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4">
-                  <h3 className="font-serif font-bold text-sm text-primary">उपयोगकर्ता सदस्यता डेटाबेस (Subscriptions DB)</h3>
-                  
-                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-950/30">
-                    <table className="w-full text-left border-collapse text-xs">
-                      <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 font-serif">
-                          <th className="p-3 text-slate-700 dark:text-slate-300">नाम</th>
-                          <th className="p-3 text-slate-700 dark:text-slate-300">भूमिका</th>
-                          <th className="p-3 text-slate-700 dark:text-slate-300">सदस्यता</th>
-                          <th className="p-3 text-slate-700 dark:text-slate-300">वैधता तिथि</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                        {users.map((user) => {
-                          const membershipDetail = userMemberships.find(m => m.userId === user.id && m.status === "active");
-                          return (
-                            <tr key={user.id} className="hover:bg-slate-100/30 dark:hover:bg-slate-900/20">
-                              <td className="p-3 font-bold">{user.name}</td>
-                              <td className="p-3 text-slate-500">{translateRole(user.role)}</td>
-                              <td className="p-3">
-                                {user.membership === "Patron" && <span className="text-rose-500 font-bold bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 rounded">Patron</span>}
-                                {user.membership === "Premium" && <span className="text-amber-500 font-bold bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">Premium</span>}
-                                {(user.membership === "Free" || !user.membership) && <span className="text-slate-400 bg-slate-500/10 px-1.5 py-0.5 rounded">Free</span>}
-                              </td>
-                              <td className="p-3 text-slate-500 font-mono">{membershipDetail ? membershipDetail.expiryDate : "स्वतः समाप्त"}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Right Column: Coupon & Promotions Desk (Col Span 5) */}
-              <div className="lg:col-span-5 space-y-6">
-                
-                {/* Add Coupon Card */}
-                <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4">
-                  <h3 className="font-serif font-bold text-sm text-primary">नया कूपन कोड बनाएं (Coupon Desk)</h3>
-                  
-                  <form 
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!couponCodeInput.trim()) {
-                        alert("कृपया कूपन कोड दर्ज करें।");
-                        return;
-                      }
-                      createCoupon({
-                        code: couponCodeInput.trim().toUpperCase(),
-                        discountType: couponType,
-                        value: couponValue,
-                        expiryDate: couponExpiry || new Date(Date.now() + 30*24*60*60*1000).toISOString().split("T")[0],
-                        usageLimit: couponLimit,
-                        usageCount: 0,
-                        isActive: true
-                      });
-                      alert("कूपन सफलतापूर्वक बनाया गया!");
-                      setCouponCodeInput("");
-                    }}
-                    className="space-y-3 text-xs"
-                  >
-                    <div className="space-y-1">
-                      <label className="text-slate-500 font-medium">कूपन कोड (Coupon Code)</label>
-                      <input
-                        type="text"
-                        placeholder="जैसे: AMOD50"
-                        value={couponCodeInput}
-                        onChange={(e) => setCouponCodeInput(e.target.value.toUpperCase())}
-                        className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-855 dark:text-slate-200 focus:outline-none"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-slate-500 font-medium">छूट प्रकार (Type)</label>
-                        <select
-                          value={couponType}
-                          onChange={(e) => setCouponType(e.target.value as any)}
-                          className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-855 dark:text-slate-200 focus:outline-none"
-                        >
-                          <option value="percentage">प्रतिशत (%)</option>
-                          <option value="flat">सपाट राशि (₹)</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-slate-500 font-medium">छूट मूल्य (Value)</label>
-                        <input
-                          type="number"
-                          min={1}
-                          value={couponValue}
-                          onChange={(e) => setCouponValue(parseInt(e.target.value) || 0)}
-                          className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-855 dark:text-slate-200 focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-slate-500 font-medium">समाप्ति तिथि (Expiry)</label>
-                        <input
-                          type="date"
-                          value={couponExpiry}
-                          onChange={(e) => setCouponExpiry(e.target.value)}
-                          className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-855 dark:text-slate-200 focus:outline-none"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-slate-500 font-medium">उपयोग सीमा (Limit)</label>
-                        <input
-                          type="number"
-                          min={1}
-                          value={couponLimit}
-                          onChange={(e) => setCouponLimit(parseInt(e.target.value) || 100)}
-                          className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-855 dark:text-slate-200 focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-full bg-primary hover:bg-primary/95 text-white font-bold py-2.5 rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>कूपन कोड बनाएं</span>
-                    </button>
-                  </form>
-                </div>
-
-                {/* Active Coupons List */}
-                <div className="bg-slate-50/50 dark:bg-[#0F172A]/20 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4">
-                  <h3 className="font-serif font-bold text-sm text-primary">सक्रिय कूपन सूचकांक (Coupons Telemetry)</h3>
-                  
-                  <div className="space-y-3">
-                    {coupons.map((coupon) => (
-                      <div key={coupon.code} className="flex justify-between items-center bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl text-xs">
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono font-bold text-white bg-slate-900 border border-slate-800 px-2 py-0.5 rounded">{coupon.code}</span>
-                            <span className="text-[10px] text-emerald-400 font-bold">
-                              {coupon.discountType === "percentage" ? `${coupon.value}% छूट` : `₹${coupon.value} छूट`}
-                            </span>
-                          </div>
-                          <p className="text-[10px] text-slate-500">वैधता: {coupon.expiryDate} | सीमा: {coupon.usageCount}/{coupon.usageLimit}</p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            if (confirm(`क्या आप वाकई कूपन ${coupon.code} को हटाना चाहते हैं?`)) {
-                              deleteCoupon(coupon.code);
-                              alert("कूपन कोड हटा दिया गया!");
-                            }
-                          }}
-                          className="p-1.5 text-slate-400 hover:text-red-500 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 rounded transition-all cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-
             </div>
           </div>
         )}
@@ -3394,22 +3097,6 @@ export default function AdminDashboard() {
                         </div>
 
                         <div className="flex items-center space-x-3 shrink-0">
-                          {/* Access tier rule */}
-                          <div className="flex items-center space-x-1">
-                            <span className="text-[9px] text-slate-400 font-mono">TIER:</span>
-                            <select
-                              value={cms.aiSettings.accessRules[mod.id] || "Premium"}
-                              onChange={(e) => {
-                                const newRules = { ...cms.aiSettings.accessRules, [mod.id]: e.target.value as any };
-                                cms.updateAiSettings({ accessRules: newRules });
-                              }}
-                              className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 text-[9.5px] font-bold focus:outline-none"
-                            >
-                              <option value="Free">Free (सभी)</option>
-                              <option value="Premium">Premium (प्रीमियम)</option>
-                              <option value="Patron">Patron (पैट्रन)</option>
-                            </select>
-                          </div>
 
                           {/* Enable/Disable Toggle */}
                           <label className="relative inline-flex items-center cursor-pointer">

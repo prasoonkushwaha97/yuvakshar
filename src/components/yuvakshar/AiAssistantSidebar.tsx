@@ -44,7 +44,6 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
     saveAiNote,
     aiNotes,
     aiSettings,
-    canAccessPremiumContent
   } = useCms();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -114,20 +113,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
       return false;
     }
     
-    // Check if the role/membership has premium access
-    const isPremium = canAccessPremiumContent(currentUser);
-    const rule = aiSettings.accessRules[featureName] || "Free";
-    
-    if (rule === "Premium" && !isPremium) {
-      alert("Upgrade to Premium Membership");
-      return false;
-    }
-    
-    if (rule === "Patron" && currentUser.membership !== "Patron") {
-      alert("Upgrade to Patron Membership");
-      return false;
-    }
-
+    // Features are free now
     return true;
   };
 

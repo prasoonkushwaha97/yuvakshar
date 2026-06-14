@@ -31,19 +31,6 @@ import {
 import { useCms } from "@/store/CmsContext";
 import MobileSearchOverlay from "@/components/layout/MobileSearchOverlay";
 
-
-const translateMembership = (mem?: string | null) => {
-  if (!mem || mem === "Free") return "निःशुल्क पाठक";
-  switch (mem) {
-    case "Premium": return "💎 प्रीमियम सदस्य";
-    case "Patron": return "👑 संरक्षक सदस्य";
-    case "Founding": return "🏛️ संस्थापक सदस्य";
-    case "Institutional": return "🏢 संस्थागत सदस्य";
-    case "Lifetime": return "♾️ आजीवन सदस्य";
-    default: return mem;
-  }
-};
-
 const translateRole = (role?: string | null) => {
   if (role === null) return "सदस्य";
   if (!role) return "अतिथि";
@@ -60,25 +47,7 @@ const translateRole = (role?: string | null) => {
   }
 };
 
-const getMembershipBadge = (mem?: string | null) => {
-  if (!mem || mem === "Free") {
-    return { text: "📖 निःशुल्क सदस्य", class: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300" };
-  }
-  switch (mem) {
-    case "Premium":
-      return { text: "⭐ प्रीमियम सदस्य", class: "bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200/40" };
-    case "Patron":
-      return { text: "👑 संरक्षक सदस्य", class: "bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border border-orange-200/40 font-bold" };
-    case "Founding":
-      return { text: "🏛️ संस्थापक सदस्य", class: "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-200/40" };
-    case "Institutional":
-      return { text: "🏢 संस्थागत सदस्य", class: "bg-indigo-100 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200/40" };
-    case "Lifetime":
-      return { text: "♾️ आजीवन सदस्य", class: "bg-purple-100 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border border-purple-200/40" };
-    default:
-      return { text: mem, class: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300" };
-  }
-};
+
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -414,7 +383,7 @@ export default function Navbar() {
                             { href: isEditorial ? "/admin?tab=bookmarks" : "/dashboard?tab=bookmarks", icon: Bookmark, label: "बुकमार्क" },
                             { href: isEditorial ? "/admin?tab=certificates" : "/dashboard?tab=study", icon: Award, label: "प्रमाणपत्र" },
                             { href: isEditorial ? "/admin?tab=study-progress" : "/dashboard?tab=study", icon: Activity, label: "अध्ययन प्रगति" },
-                            /* MEMBERSHIP ARCHIVED: { href: "/membership", icon: Crown, label: "सदस्यता" }, */
+                            
                             { href: isEditorial ? "/admin?tab=settings" : "/dashboard?tab=profile&sub=settings", icon: Settings, label: "सेटिंग्स" },
                           ].map(({ href, icon: Icon, label }) => (
                             <Link
@@ -458,7 +427,7 @@ export default function Navbar() {
                           </>
                         )}
 
-                        {/* MEMBERSHIP ARCHIVED: Upgrade Smart Card removed for membership system archival */}
+                        {}
 
                         <div className="border-t border-slate-100 dark:border-slate-800/80 mt-2 pt-1.5">
                           <button
@@ -709,7 +678,7 @@ export default function Navbar() {
                   { href: isEditorial ? "/admin?tab=bookmarks" : "/dashboard?tab=bookmarks", icon: Bookmark, label: "बुकमार्क" },
                   { href: isEditorial ? "/admin?tab=certificates" : "/dashboard?tab=study", icon: Award, label: "प्रमाणपत्र" },
                   { href: isEditorial ? "/admin?tab=study-progress" : "/dashboard?tab=study", icon: Activity, label: "अध्ययन प्रगति" },
-                  /* MEMBERSHIP ARCHIVED: { href: "/membership", icon: Crown, label: "सदस्यता" }, */
+                  
                   { href: isEditorial ? "/admin?tab=settings" : "/dashboard?tab=profile&sub=settings", icon: Settings, label: "सेटिंग्स" },
                 ].map(({ href, icon: Icon, label }) => (
                   <Link

@@ -68,7 +68,6 @@ export default function AuthorProfile() {
       slug: slug || "reader",
       bio: "युवाक्षर का उत्साही पाठक एवं स्वतंत्र चिंतक।",
       role: null,
-      membership: "Free",
       status: "active",
       location: "भारत",
       joinDate: "जून २०२६",
@@ -661,23 +660,6 @@ export default function AuthorProfile() {
                         <p className="text-[10px] text-slate-450 leading-relaxed mt-0.5">{event.description}</p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </GlassCard>
-            )}
-
-            {/* Professional Memberships */}
-            {author.professional_memberships && author.professional_memberships.length > 0 && (
-              <GlassCard glow="none" className="p-5 space-y-3 font-serif">
-                <h3 className="font-bold text-slate-800 dark:text-white text-xs border-l-2 border-primary pl-2 uppercase tracking-wide">व्यावसायिक सदस्यता</h3>
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {author.professional_memberships.map((member, i) => (
-                    <span 
-                      key={i} 
-                      className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-850 text-slate-600 dark:text-slate-400 text-[10px] font-medium px-2.5 py-1 rounded-lg"
-                    >
-                      {member}
-                    </span>
                   ))}
                 </div>
               </GlassCard>

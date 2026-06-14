@@ -29,55 +29,6 @@ export interface AiSettings {
   accessRules: Record<string, "Free" | "Premium" | "Patron">;
 }
 
-export interface UserMembership {
-  id: string;
-  userId: string;
-  membershipType: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime";
-  status: "active" | "suspended" | "expired" | "cancelled";
-  billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly" | "Free" | "Lifetime" | "One-time";
-  startDate: string;
-  expiryDate: string;
-  autoRenewal: boolean;
-  razorpaySubscriptionId?: string;
-}
-
-export interface PaymentRecord {
-  id: string;
-  userId: string;
-  amount: number;
-  currency: string;
-  status: "success" | "failed" | "refunded";
-  billingCycle: string;
-  membershipType: string;
-  paymentMethod: string;
-  date: string;
-  invoiceUrl?: string;
-  // GST details
-  baseAmount?: number;
-  cgst?: number;
-  sgst?: number;
-  igst?: number;
-  gstin?: string;
-  sacCode?: string;
-}
-
-export interface Coupon {
-  code: string;
-  discountType: "percentage" | "flat";
-  value: number;
-  expiryDate: string;
-  usageLimit: number;
-  usageCount: number;
-  isActive: boolean;
-}
-
-export interface ReferralRecord {
-  id: string;
-  referrerId: string;
-  referredEmail: string;
-  status: "registered" | "purchased" | "pending";
-  date: string;
-}
 
 export interface AiNote {
   id: string;
@@ -200,13 +151,6 @@ export interface SearchAnalytics {
   updated_at: string;
 }
 
-export interface Membership {
-  id: string;
-  user_id: string;
-  type: "Free Reader" | "Registered Reader" | "Premium Member" | "Patron";
-  status: "active" | "expired" | "cancelled";
-  expires_at?: string;
-}
 
 export interface HomepageLayout {
   id: string;
@@ -335,7 +279,7 @@ interface CmsContextType {
   searchLogs: SearchAnalytics[];
   activityLogs: ActivityLog[];
   layouts: HomepageLayout[];
-  memberships: Membership[];
+  
   users: Profile[];
   quizzes: ArticleQuiz[];
   quizAttempts: QuizAttempt[];
@@ -425,7 +369,7 @@ interface CmsContextType {
   authModalMessage: string;
   becomeAuthor: (bio: string, avatarUrl: string, expertise: string) => Promise<void>;
   updateUserProfile: (data: Partial<Profile>) => Promise<void>;
-  updateUserMembership: (userId: string, membership: Profile["membership"]) => Promise<void>;
+  
   sendOtpCode: (email: string) => Promise<boolean>;
   verifyOtpCode: (email: string, token: string) => Promise<boolean>;
   sendPasswordReset: (email: string) => Promise<boolean>;
@@ -437,14 +381,12 @@ interface CmsContextType {
   deletePortfolioItem: (userId: string, itemId: string) => Promise<void>;
   addAchievement: (userId: string, achievement: { title: string; description?: string; year?: string; image_url?: string }) => Promise<void>;
   deleteAchievement: (userId: string, achievementId: string) => Promise<void>;
-  canAccessContent: (user: Profile | null, content: { accessLevel?: "Free" | "Premium" | "Patron" | "Founding" }) => boolean;
   canComment: (user: Profile | null) => boolean;
   canBookmark: (user: Profile | null) => boolean;
   canVote: (user: Profile | null) => boolean;
   canManageArticles: (user: Profile | null) => boolean;
   canPublishArticles: (user: Profile | null, contentType: string) => boolean;
   canAccessAdmin: (user: Profile | null) => boolean;
-  canAccessPremiumContent: (user: Profile | null) => boolean;
 
   // AI Ecosystem States & Operations
   aiSettings: AiSettings;
@@ -454,40 +396,7 @@ interface CmsContextType {
   deleteAiNote: (id: string) => Promise<void>;
   generateAiContent: (prompt: string, featureName: string, customSystemPrompt?: string) => Promise<string>;
 
-  // Membership States & Operations
-  userMemberships: UserMembership[];
-  paymentRecords: PaymentRecord[];
-  coupons: Coupon[];
-  referrals: ReferralRecord[];
-  purchaseMembership: (userId: string, plan: "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime", billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly" | "Lifetime" | "One-time", couponCode?: string) => Promise<boolean>;
-  renewMembership: (userId: string) => Promise<void>;
-  toggleAutoRenewal: (userId: string) => Promise<void>;
-  cancelSubscription: (userId: string) => Promise<void>;
-  validateCoupon: (code: string) => Coupon | null;
-  createCoupon: (coupon: Coupon) => void;
-  deleteCoupon: (code: string) => void;
-  addReferral: (referrerId: string, email: string) => void;
-  assignMembershipManually: (userId: string, type: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime", billingCycle: string, durationDays: number) => Promise<void>;
-  getMembershipAnalytics: () => {
-    totalMembers: number;
-    activeMembers: number;
-    expiredMembers: number;
-    premiumMembers: number;
-    patronMembers: number;
-    foundingMembers: number;
-    institutionalMembers: number;
-    lifetimeMembers: number;
-    membershipRevenue: number;
-    conversionRate: number;
-    churnRate: number;
-    renewalRate: number;
-    upgradeRate: number;
-  };
-  // Donation States & Operations
-  donationHistory: DonationRecord[];
-  submitDonation: (name: string, email: string, amount: number, message?: string) => Promise<boolean>;
-  foundingSeatsRemaining: number;
-  setFoundingSeatsRemaining: React.Dispatch<React.SetStateAction<number>>;
+
   readinessStatuses: {
     dbConnected: boolean;
     storageConnected: boolean;
@@ -628,7 +537,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   const [searchLogs, setSearchLogs] = useState<SearchAnalytics[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [layouts, setLayouts] = useState<HomepageLayout[]>([]);
-  const [memberships, setMemberships] = useState<Membership[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
   const [tasks, setTasks] = useState<OrgTask[]>([]);
   const [verifications, setVerifications] = useState<VerificationRequest[]>([]);
@@ -689,13 +597,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   });
   const [aiNotes, setAiNotes] = useState<AiNote[]>([]);
 
-  // Membership States
-  const [userMemberships, setUserMemberships] = useState<UserMembership[]>([]);
-  const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
-  const [referrals, setReferrals] = useState<ReferralRecord[]>([]);
-  const [donationHistory, setDonationHistory] = useState<DonationRecord[]>([]);
-  const [foundingSeatsRemaining, setFoundingSeatsRemaining] = useState(42);
+  const [ setDonationHistory] = useState<DonationRecord[]>([]);
+  const [ setFoundingSeatsRemaining] = useState(42);
   const [readinessStatuses, setReadinessStatuses] = useState({
     dbConnected: false,
     storageConnected: false,
@@ -828,7 +731,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
               name: session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "NEW USER",
               email: session.user.email || "",
               role: session.user.user_metadata?.role || null, // Free reader
-              membership: "Free",
               status: "active",
               joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
               slug: generateAuthorSlug(session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "user")
@@ -842,7 +744,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
                 email: newProfile.email,
                 name: newProfile.name,
                 role: newProfile.role || 'Subscriber',
-                membership: newProfile.membership,
                 status: newProfile.status,
                 slug: newProfile.slug
               });
@@ -885,57 +786,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [settings.appearance]);
 
-  // Sync reputation events across community components and directory profiles in real-time
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const handleReputationUpdate = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      if (!customEvent.detail) return;
-      const { userId, points } = customEvent.detail;
-      
-      const getTier = (score: number): "Bronze" | "Silver" | "Gold" | "Platinum" => {
-        if (score >= 1200) return "Platinum";
-        if (score >= 600) return "Gold";
-        if (score >= 300) return "Silver";
-        return "Bronze";
-      };
-
-      setUsers(prevUsers => {
-        const nextUsers = prevUsers.map(u => {
-          if (u.id === userId) {
-            const nextScore = (u.reputation_score || 0) + points;
-            return {
-              ...u,
-              reputation_score: nextScore,
-              reputation_tier: getTier(nextScore)
-            };
-          }
-          return u;
-        });
-        localStorage.setItem("yuvakshar_users", JSON.stringify(nextUsers));
-        return nextUsers;
-      });
-
-      if (currentUser && currentUser.id === userId) {
-        setCurrentUser(prevUser => {
-          if (!prevUser) return null;
-          const nextScore = (prevUser.reputation_score || 0) + points;
-          const updatedSelf = {
-            ...prevUser,
-            reputation_score: nextScore,
-            reputation_tier: getTier(nextScore)
-          };
-          localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
-          return updatedSelf;
-        });
-      }
-    };
-
-    window.addEventListener("yuvakshar_reputation_updated", handleReputationUpdate);
-    return () => {
-      window.removeEventListener("yuvakshar_reputation_updated", handleReputationUpdate);
-    };
+    // Reputation system has been removed
   }, [currentUser]);
 
   const enrichUsersList = (rawUsers: Profile[], currentArticlesList: Article[]): Profile[] => {
@@ -972,7 +824,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           orcid_id: user.orcid_id || "0000-0002-1825-0097",
           google_scholar_url: user.google_scholar_url || "https://scholar.google.com/citations?user=prasoon-yuvakshar",
           academic_credentials: user.academic_credentials || ["एम.ए. जनसंचार (माखनलाल चतुर्वेदी विश्वविद्यालय)", "पीएच.डी. हिंदी पत्रकारिता"],
-          professional_memberships: user.professional_memberships || ["भारतीय संपादक गिल्ड", "अखिल भारतीय लेखक संघ"],
           education: user.education || "एम.ए. एवं पीएच.डी. - जनसंचार एवं हिंदी साहित्य",
           academic_background: user.academic_background || "पत्रकारिता और जनसंचार के क्षेत्र में १० से अधिक वर्षों का शैक्षणिक एवं व्यावहारिक अनुभव।",
           research_interests: user.research_interests || "भारतीय लोकतंत्र में स्वतंत्र मीडिया की भूमिका, हिंदी भाषा का डिजिटलीकरण और भाषाई पत्रकारिता का भविष्य।",
@@ -1167,86 +1018,14 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
     // Users
     const localUsers = localStorage.getItem("yuvakshar_users");
-    const defaultStaff: Profile[] = [
-      { id: "staff-owner", name: "Ravi Owner", email: "owner@yuvakshar.in", role: "संस्थापक", department: "संस्थापक", org_id: "YUV-FND-0001", membership: "Patron", status: "active", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
-      { id: "staff-admin", name: "Amit Admin", email: "admin@yuvakshar.in", role: "प्रशासक", department: "प्रशासन", org_id: "YUV-ADM-0002", membership: "Patron", status: "active", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
-      { id: "staff-chief", name: "Prasoon Chief", email: "chief@yuvakshar.in", role: "प्रधान संपादक", department: "संपादकीय", org_id: "YUV-ED-0001", membership: "Patron", status: "active", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
-      { id: "staff-managing", name: "Sumit Managing", email: "managing@yuvakshar.in", role: "कार्यकारी संपादक", department: "संपादकीय", org_id: "YUV-ED-0002", membership: "Premium", status: "active", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
-      { id: "staff-editor", name: "Ravi Sharma", email: "editor@yuvakshar.in", role: "संपादक", department: "संपादकीय", org_id: "YUV-ED-0003", membership: "Premium", status: "active", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
-      { id: "staff-subeditor", name: "Alok SubEditor", email: "subeditor@yuvakshar.in", role: "सहायक संपादक", department: "संपादकीय", org_id: "YUV-ED-0004", membership: "Premium", status: "active", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
-      { id: "staff-factchecker", name: "Nitin Checker", email: "factchecker@yuvakshar.in", role: "प्रूफरीडर", department: "गुणवत्ता", org_id: "YUV-QL-0001", membership: "Premium", status: "active", badges: ["समीक्षक"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
-      { id: "staff-reviewer", name: "Varun Reviewer", email: "reviewer@yuvakshar.in", role: "भाषा समीक्षक", department: "गुणवत्ता", org_id: "YUV-QL-0002", membership: "Premium", status: "active", badges: ["समीक्षक"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
-      { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "संपादक", department: "संपादकीय", org_id: "YUV-ED-0005", membership: "Premium", status: "active", badges: ["लेखक", "कवि"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
-      { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "स्वयंसेवक", department: "स्वयंसेवी", org_id: "YUV-VOL-0001", membership: "Free", status: "active", badges: ["कवि"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
-    ];
     let finalUsers: Profile[] = [];
     if (localUsers) {
       const parsedUsers: Profile[] = JSON.parse(localUsers);
-      let merged = false;
-      defaultStaff.forEach(staff => {
-        const staffEmail = staff.email;
-        if (staffEmail && !parsedUsers.some(u => u.email && u.email.toLowerCase() === staffEmail.toLowerCase())) {
-          parsedUsers.push(staff);
-          merged = true;
-        }
-      });
-      // In case they exist but don't have joinDate, let's update them
-      parsedUsers.forEach(u => {
-        const matching = defaultStaff.find(s => s.id === u.id);
-        if (matching) {
-          if (!u.joinDate) u.joinDate = matching.joinDate;
-          if (!u.dob) u.dob = matching.dob;
-          if (!u.gender) u.gender = matching.gender;
-          if (!u.location) u.location = matching.location;
-          if (!u.department) u.department = matching.department;
-          if (!u.org_id) u.org_id = matching.org_id;
-        }
-      });
-      
-      // Ensure primary Founder account is updated or added
-      const founderIndex = parsedUsers.findIndex(u => u.email && u.email.toLowerCase() === "yuvakshar.editor@gmail.com");
-      if (founderIndex !== -1) {
-        parsedUsers[founderIndex].name = "Founder";
-        parsedUsers[founderIndex].role = "Founder";
-        parsedUsers[founderIndex].password = "@Yuvaksharprasoon9516";
-        parsedUsers[founderIndex].membership = "Patron";
-        if (!parsedUsers[founderIndex].badges) parsedUsers[founderIndex].badges = [];
-        if (!parsedUsers[founderIndex].badges.includes("Founder")) {
-          parsedUsers[founderIndex].badges.push("Founder");
-        }
-        if (!parsedUsers[founderIndex].badges.includes("Primary Owner")) {
-          parsedUsers[founderIndex].badges.push("Primary Owner");
-        }
-      } else {
-        parsedUsers.push({
-          id: "u-1",
-          name: "Founder",
-          email: "yuvakshar.editor@gmail.com",
-          role: "Founder",
-          department: "संस्थापक",
-          org_id: "YUV-FND-0000",
-          membership: "Patron",
-          status: "active",
-          password: "@Yuvaksharprasoon9516",
-          badges: ["Founder", "Primary Owner"],
-          joinDate: "जून २०२६",
-          dob: "1988-08-12",
-          gender: "Male",
-          location: "नई दिल्ली, भारत"
-        });
-      }
-
       finalUsers = enrichUsersList(parsedUsers, loadedArticles);
       localStorage.setItem("yuvakshar_users", JSON.stringify(finalUsers));
       setUsers(finalUsers);
     } else {
-      const initialUsers: Profile[] = [
-        { id: "u-1", name: "Founder", email: "yuvakshar.editor@gmail.com", role: "Founder", department: "संस्थापक", org_id: "YUV-FND-0000", membership: "Patron", status: "active", password: "@Yuvaksharprasoon9516", badges: ["Founder", "Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
-        { id: "u-2", name: "प्रसून कुशवाहा", email: "prasoon.kushwaha@yuvakshar.org", role: "प्रधान संपादक", department: "संपादकीय", org_id: "YUV-ED-0000", membership: "Patron", status: "active", badges: ["सत्यापित साहित्यकार"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
-        { id: "u-3", name: "Guest Author", email: "m.tripathi@gmail.com", role: "संपादक", department: "संपादकीय", org_id: "YUV-ED-0006", membership: "Premium", status: "active", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
-        { id: "u-4", name: "Featured Reader", email: "reader.demo@yuvakshar.org", role: "सदस्य", department: "None", membership: "Free", status: "active", badges: ["लेखक"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "नई दिल्ली, भारत" },
-        ...defaultStaff
-      ];
+      const initialUsers: Profile[] = [];
       finalUsers = enrichUsersList(initialUsers, loadedArticles);
       setUsers(finalUsers);
       localStorage.setItem("yuvakshar_users", JSON.stringify(finalUsers));
@@ -1259,9 +1038,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       // Migrate role from Super Admin to Owner
       if (parsedUser.role === "Super Admin") {
         parsedUser.role = "Owner";
-      }
-      if (parsedUser.membership === undefined) {
-        parsedUser.membership = parsedUser.role ? "Patron" : "Free";
       }
       // Try to find the fully enriched profile from enriched list
       const matchingEnriched = finalUsers.find(u => u.id === parsedUser.id || (u.email && u.email === parsedUser.email));
@@ -1347,84 +1123,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("yuvakshar_ai_notes", JSON.stringify([]));
     }
 
-    // Load Memberships
-    const localMemberships = localStorage.getItem("yuvakshar_memberships");
-    if (localMemberships) {
-      setUserMemberships(JSON.parse(localMemberships));
-    } else {
-      const initial: UserMembership[] = [
-        { id: "mem-1", userId: "u-1", membershipType: "Patron", status: "active", billingCycle: "Yearly", startDate: "2026-01-01", expiryDate: "2027-01-01", autoRenewal: true },
-        { id: "mem-2", userId: "u-2", membershipType: "Patron", status: "active", billingCycle: "Yearly", startDate: "2026-01-01", expiryDate: "2027-01-01", autoRenewal: true },
-        { id: "mem-3", userId: "u-3", membershipType: "Premium", status: "active", billingCycle: "Monthly", startDate: "2026-06-01", expiryDate: "2026-07-01", autoRenewal: true }
-      ];
-      setUserMemberships(initial);
-      localStorage.setItem("yuvakshar_memberships", JSON.stringify(initial));
-    }
-
-    // Load Payments
-    const localPayments = localStorage.getItem("yuvakshar_payments");
-    if (localPayments) {
-      setPaymentRecords(JSON.parse(localPayments));
-    } else {
-      const initial: PaymentRecord[] = [
-        { id: "pay_109283120", userId: "u-3", amount: 49, currency: "INR", status: "success", billingCycle: "Monthly", membershipType: "Premium", paymentMethod: "UPI", date: "2026-06-01", invoiceUrl: "/invoices/pay_109283120.pdf" },
-        { id: "pay_109283121", userId: "u-1", amount: 1999, currency: "INR", status: "success", billingCycle: "Yearly", membershipType: "Patron", paymentMethod: "Credit Card", date: "2026-01-01", invoiceUrl: "/invoices/pay_109283121.pdf" },
-        { id: "pay_109283122", userId: "u-2", amount: 1999, currency: "INR", status: "success", billingCycle: "Yearly", membershipType: "Patron", paymentMethod: "Net Banking", date: "2026-01-01", invoiceUrl: "/invoices/pay_109283122.pdf" }
-      ];
-      setPaymentRecords(initial);
-      localStorage.setItem("yuvakshar_payments", JSON.stringify(initial));
-    }
-
-    // Load Coupons
-    const localCoupons = localStorage.getItem("yuvakshar_coupons");
-    if (localCoupons) {
-      setCoupons(JSON.parse(localCoupons));
-    } else {
-      const initial: Coupon[] = [
-        { code: "YUVAKSHAR10", discountType: "percentage", value: 10, expiryDate: "2027-12-31", usageLimit: 1000, usageCount: 142, isActive: true },
-        { code: "FESTIVAL50", discountType: "percentage", value: 50, expiryDate: "2026-12-31", usageLimit: 500, usageCount: 89, isActive: true },
-        { code: "PATRONFREE", discountType: "percentage", value: 100, expiryDate: "2026-12-31", usageLimit: 100, usageCount: 4, isActive: true },
-        { code: "FLAT100", discountType: "flat", value: 100, expiryDate: "2026-12-31", usageLimit: 200, usageCount: 12, isActive: true }
-      ];
-      setCoupons(initial);
-      localStorage.setItem("yuvakshar_coupons", JSON.stringify(initial));
-    }
-
-    // Load Referrals
-    const localReferrals = localStorage.getItem("yuvakshar_referrals");
-    if (localReferrals) {
-      setReferrals(JSON.parse(localReferrals));
-    } else {
-      const initial: ReferralRecord[] = [
-        { id: "ref-1", referrerId: "u-1", referredEmail: "test1@gmail.com", status: "purchased", date: "2026-06-02" },
-        { id: "ref-2", referrerId: "u-1", referredEmail: "test2@gmail.com", status: "registered", date: "2026-06-05" },
-        { id: "ref-3", referrerId: "u-3", referredEmail: "friend@yahoo.com", status: "pending", date: "2026-06-10" }
-      ];
-      setReferrals(initial);
-      localStorage.setItem("yuvakshar_referrals", JSON.stringify(initial));
-    }
-
-    // Load Donations
-    const localDonations = localStorage.getItem("yuvakshar_donations");
-    if (localDonations) {
-      setDonationHistory(JSON.parse(localDonations));
-    } else {
-      const initial: DonationRecord[] = [
-        { id: "don_1", name: "अमित कुमार", email: "amit@gmail.com", amount: 500, message: "स्वतंत्र पत्रकारिता को बढ़ावा दें।", date: "2026-06-05" },
-        { id: "don_2", name: "सुचित्रा सेन", email: "suchitra@yahoo.com", amount: 1000, message: "उत्कृष्ट कार्य!", date: "2026-06-08" }
-      ];
-      setDonationHistory(initial);
-      localStorage.setItem("yuvakshar_donations", JSON.stringify(initial));
-    }
-
-    // Load Founding Seats
-    const localSeats = localStorage.getItem("yuvakshar_founding_seats");
-    if (localSeats) {
-      setFoundingSeatsRemaining(parseInt(localSeats));
-    } else {
-      setFoundingSeatsRemaining(42);
-      localStorage.setItem("yuvakshar_founding_seats", "42");
-    }
 
     // Load Videos
     const localVideos = localStorage.getItem("yuvakshar_videos");
@@ -1516,7 +1214,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
             name: user.user_metadata?.name || user.email?.split("@")[0].toUpperCase() || "NEW USER",
             email: user.email || "",
             role: user.user_metadata?.role || null,
-            membership: "Free",
             status: "active",
             joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
             slug: generateAuthorSlug(user.user_metadata?.name || user.email?.split("@")[0].toUpperCase() || "user")
@@ -1529,7 +1226,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
               email: newProfile.email,
               name: newProfile.name,
               role: newProfile.role || 'Subscriber',
-              membership: newProfile.membership,
               status: newProfile.status,
               slug: newProfile.slug
             });
@@ -1705,16 +1401,16 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         setUsers(enriched);
       } else {
         const defaultStaff: Profile[] = [
-          { id: "staff-owner", name: "Ravi Owner", email: "owner@yuvakshar.in", role: "Owner", membership: "Patron", status: "active", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
-          { id: "staff-admin", name: "Amit Admin", email: "admin@yuvakshar.in", role: "Admin", membership: "Patron", status: "active", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
-          { id: "staff-chief", name: "Prasoon Chief", email: "chief@yuvakshar.in", role: "Editor-in-Chief", membership: "Patron", status: "active", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
-          { id: "staff-managing", name: "Sumit Managing", email: "managing@yuvakshar.in", role: "Managing Editor", membership: "Premium", status: "active", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
-          { id: "staff-editor", name: "Ravi Sharma", email: "editor@yuvakshar.in", role: "Editor", membership: "Premium", status: "active", badges: ["Editor"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
-          { id: "staff-subeditor", name: "Alok SubEditor", email: "subeditor@yuvakshar.in", role: "Sub Editor", membership: "Premium", status: "active", badges: ["Sub Editor"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
-          { id: "staff-factchecker", name: "Nitin Checker", email: "factchecker@yuvakshar.in", role: "Fact Checker", membership: "Premium", status: "active", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
-          { id: "staff-reviewer", name: "Varun Reviewer", email: "reviewer@yuvakshar.in", role: "Reviewer", membership: "Premium", status: "active", badges: ["Reviewer"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
-          { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "Author", membership: "Premium", status: "active", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
-          { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "Contributor", membership: "Free", status: "active", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
+          { id: "staff-owner", name: "Ravi Owner", email: "owner@yuvakshar.in", role: "Owner", status: "active", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
+          { id: "staff-admin", name: "Amit Admin", email: "admin@yuvakshar.in", role: "Admin", status: "active", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
+          { id: "staff-chief", name: "Prasoon Chief", email: "chief@yuvakshar.in", role: "Editor-in-Chief", status: "active", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
+          { id: "staff-managing", name: "Sumit Managing", email: "managing@yuvakshar.in", role: "Managing Editor", status: "active", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
+          { id: "staff-editor", name: "Ravi Sharma", email: "editor@yuvakshar.in", role: "Editor", status: "active", badges: ["Editor"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
+          { id: "staff-subeditor", name: "Alok SubEditor", email: "subeditor@yuvakshar.in", role: "Sub Editor", status: "active", badges: ["Sub Editor"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
+          { id: "staff-factchecker", name: "Nitin Checker", email: "factchecker@yuvakshar.in", role: "Fact Checker", status: "active", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
+          { id: "staff-reviewer", name: "Varun Reviewer", email: "reviewer@yuvakshar.in", role: "Reviewer", status: "active", badges: ["Reviewer"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
+          { id: "staff-author", name: "Manoj Author", email: "author@yuvakshar.in", role: "Author", status: "active", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
+          { id: "staff-contributor", name: "Vijay Contributor", email: "contributor@yuvakshar.in", role: "Contributor", status: "active", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
         ];
 
          const initialUsers: Profile[] = [
@@ -1808,7 +1504,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           email: email,
           mobile: customMobile,
           role: (role || "Subscriber") as Profile["role"],
-          membership: "Free",
           status: "active",
           joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
           slug: generateAuthorSlug(customName || email.split("@")[0]),
@@ -1817,10 +1512,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           following: [],
           social_posts_count: 0,
           social_replies_count: 0,
-          groups_count: 0,
-          reading_streak: 0,
-          reputation_score: 0,
-          reputation_tier: "Bronze"
+          groups_count: 0,
         };
         
         await supabase.from("profiles").upsert(newProfile);
@@ -1936,7 +1628,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       name: user.name,
       email: user.email,
       role: user.role,
-      membership: user.membership,
+      
       status: user.status || "active",
       password: user.password,
       mobile: user.mobile,
@@ -3017,11 +2709,11 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         const supabaseData: any = {};
         const dbFields = [
           "email", "name", "mobile", "display_name", "bio", "avatar_url", 
-          "role", "membership", "status", "social_links", "badges", 
+          "role", "status", "social_links", "badges", 
           "slug", "cover_banner", "designation", "current_role", 
           "verification_badge", "institution", "expertise_tags", 
           "orcid_id", "google_scholar_url", "academic_credentials", 
-          "professional_memberships", "education", "academic_background", 
+          "education", "academic_background", 
           "research_interests", "professional_experience", "social_contributions", 
           "publications_list", "reputation_score", "reputation_tier"
         ];
@@ -3150,25 +2842,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
       }
     }
-  };
-
-  const updateUserMembership = async (userId: string, membership: Profile["membership"]) => {
-    const targetUser = users.find(u => u.id === userId);
-    if (!targetUser) return;
-    const updatedUsers = users.map(u => u.id === userId ? { ...u, membership } : u);
-    setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
-    
-    if (currentUser && currentUser.id === userId) {
-      const updatedSelf = { ...currentUser, membership };
-      setCurrentUser(updatedSelf);
-      localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
-    }
-    logActivity(`Updated user membership for ${targetUser.email} to ${membership}`);
-  };
-
-  const canAccessContent = (user: Profile | null, content: { accessLevel?: "Free" | "Premium" | "Patron" | "Founding" }) => {
-    return true;
   };
 
   const canComment = (user: Profile | null) => {
@@ -3592,10 +3265,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
     ].includes(user.role);
   };
 
-  const canAccessPremiumContent = (user: Profile | null) => {
-    return canAccessContent(user, { accessLevel: "Premium" });
-  };
-
   function mapFeatureToModule(feature: string): string {
     if (feature.startsWith("notes_")) return "noteGenerator";
     switch (feature) {
@@ -3707,360 +3376,10 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
     }
   };
 
-  // Membership Operations
-  const validateCoupon = (code: string): Coupon | null => {
-    const coupon = coupons.find(c => c.code.toUpperCase() === code.toUpperCase() && c.isActive);
-    if (!coupon) return null;
-    const now = new Date();
-    const expiry = new Date(coupon.expiryDate);
-    if (now > expiry) return null;
-    if (coupon.usageCount >= coupon.usageLimit) return null;
-    return coupon;
-  };
 
-  const createCoupon = (newCoupon: Coupon) => {
-    setCoupons(prev => {
-      const updated = [...prev.filter(c => c.code !== newCoupon.code), newCoupon];
-      localStorage.setItem("yuvakshar_coupons", JSON.stringify(updated));
-      return updated;
-    });
-    logActivity(`Created new coupon: ${newCoupon.code}`);
-  };
 
-  const deleteCoupon = (code: string) => {
-    setCoupons(prev => {
-      const updated = prev.filter(c => c.code !== code);
-      localStorage.setItem("yuvakshar_coupons", JSON.stringify(updated));
-      return updated;
-    });
-    logActivity(`Deleted coupon: ${code}`);
-  };
 
-  const addReferral = (referrerId: string, email: string) => {
-    const newRef: ReferralRecord = {
-      id: "ref-" + Date.now(),
-      referrerId,
-      referredEmail: email,
-      status: "pending",
-      date: new Date().toISOString().split("T")[0]
-    };
-    setReferrals(prev => {
-      const updated = [newRef, ...prev];
-      localStorage.setItem("yuvakshar_referrals", JSON.stringify(updated));
-      return updated;
-    });
-    logActivity(`Referral invitation sent to ${email}`);
-  };
 
-  const purchaseMembership = async (
-    userId: string,
-    plan: "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime",
-    billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly" | "Lifetime" | "One-time",
-    couponCode?: string
-  ): Promise<boolean> => {
-    const prices = {
-      Premium: { Monthly: 49, Quarterly: 129, "Half-Yearly": 249, Yearly: 499, "Lifetime": 499, "One-time": 499 },
-      Patron: { Monthly: 199, Quarterly: 549, "Half-Yearly": 999, Yearly: 1999, "Lifetime": 1999, "One-time": 1999 },
-      Founding: { Monthly: 250, Quarterly: 699, "Half-Yearly": 1299, Yearly: 2500, "Lifetime": 2500, "One-time": 2500 },
-      Institutional: { Monthly: 999, Quarterly: 2799, "Half-Yearly": 4999, Yearly: 9999, "Lifetime": 9999, "One-time": 9999 },
-      Lifetime: { Monthly: 15000, Quarterly: 15000, "Half-Yearly": 15000, Yearly: 15000, "Lifetime": 15000, "One-time": 15000 }
-    };
-    
-    const planPrices = prices[plan] || prices.Premium;
-    let basePrice = (planPrices as any)[billingCycle] || (planPrices as any)["Yearly"] || 0;
-    
-    if (couponCode) {
-      const coupon = validateCoupon(couponCode);
-      if (coupon) {
-        if (coupon.discountType === "percentage") {
-          basePrice = Math.max(0, basePrice - (basePrice * coupon.value) / 100);
-        } else {
-          basePrice = Math.max(0, basePrice - coupon.value);
-        }
-        setCoupons(prev => {
-          const updated = prev.map(c => c.code === coupon.code ? { ...c, usageCount: c.usageCount + 1 } : c);
-          localStorage.setItem("yuvakshar_coupons", JSON.stringify(updated));
-          return updated;
-        });
-      }
-    }
-
-    const now = new Date();
-    let durationDays = 30;
-    if (billingCycle === "Quarterly") durationDays = 90;
-    else if (billingCycle === "Half-Yearly") durationDays = 180;
-    else if (billingCycle === "Yearly") durationDays = 365;
-    else if (billingCycle === "Lifetime" || billingCycle === "One-time") durationDays = 36500; // 100 years
-    
-    const expiry = new Date();
-    expiry.setDate(now.getDate() + durationDays);
-
-    const membershipId = "mem-" + Date.now();
-    const newMembership: UserMembership = {
-      id: membershipId,
-      userId,
-      membershipType: plan,
-      status: "active",
-      billingCycle: billingCycle as any,
-      startDate: now.toISOString().split("T")[0],
-      expiryDate: expiry.toISOString().split("T")[0],
-      autoRenewal: plan !== "Lifetime",
-      razorpaySubscriptionId: "sub_" + Math.random().toString(36).substring(2, 12)
-    };
-
-    setUserMemberships(prev => {
-      const updated = [newMembership, ...prev.filter(m => m.userId !== userId)];
-      localStorage.setItem("yuvakshar_memberships", JSON.stringify(updated));
-      return updated;
-    });
-
-    await updateUserMembership(userId, plan);
-
-    // Decrement founding seats remaining if plan is Founding
-    if (plan === "Founding") {
-      setFoundingSeatsRemaining(prev => {
-        const nextSeats = Math.max(0, prev - 1);
-        localStorage.setItem("yuvakshar_founding_seats", nextSeats.toString());
-        return nextSeats;
-      });
-    }
-
-    const paymentId = "pay_" + Math.random().toString(36).substring(2, 10);
-    
-    // Calculate GST Details (18% GST inclusive)
-    const baseAmount = parseFloat((basePrice / 1.18).toFixed(2));
-    const cgst = parseFloat((baseAmount * 0.09).toFixed(2));
-    const sgst = parseFloat((baseAmount * 0.09).toFixed(2));
-
-    const newPayment: PaymentRecord = {
-      id: paymentId,
-      userId,
-      amount: basePrice,
-      currency: "INR",
-      status: "success",
-      billingCycle,
-      membershipType: plan,
-      paymentMethod: "UPI",
-      date: now.toISOString().split("T")[0],
-      invoiceUrl: `/invoices/${paymentId}.pdf`,
-      baseAmount,
-      cgst,
-      sgst,
-      gstin: "09AABCY1234D1Z5",
-      sacCode: "998431"
-    };
-
-    setPaymentRecords(prev => {
-      const updated = [newPayment, ...prev];
-      localStorage.setItem("yuvakshar_payments", JSON.stringify(updated));
-      return updated;
-    });
-
-    // Referral Rewards Engine: Credit 45 days if this purchase is referred by someone
-    if (currentUser) {
-      setReferrals(prevRefs => {
-        const updated = prevRefs.map(ref => {
-          if (currentUser.email && ref.referredEmail.toLowerCase() === currentUser.email.toLowerCase() && (ref.status === "pending" || ref.status === "registered")) {
-            // Found reference. Credit 45 days extension to referrer!
-            setTimeout(() => {
-              setUsers(prevUsers => {
-                const newU = prevUsers.map(u => {
-                  if (u.id === ref.referrerId) {
-                    return {
-                      ...u,
-                      referralRewardsEarned: (u.referralRewardsEarned || 0) + 45
-                    };
-                  }
-                  return u;
-                });
-                localStorage.setItem("yuvakshar_users", JSON.stringify(newU));
-                return newU;
-              });
-
-              setUserMemberships(prevMems => {
-                const newM = prevMems.map(m => {
-                  if (m.userId === ref.referrerId && m.status === "active") {
-                    const exp = new Date(m.expiryDate);
-                    exp.setDate(exp.getDate() + 45);
-                    return {
-                      ...m,
-                      expiryDate: exp.toISOString().split("T")[0]
-                    };
-                  }
-                  return m;
-                });
-                localStorage.setItem("yuvakshar_memberships", JSON.stringify(newM));
-                return newM;
-              });
-            }, 50);
-            return { ...ref, status: "purchased" as const };
-          }
-          return ref;
-        });
-        localStorage.setItem("yuvakshar_referrals", JSON.stringify(updated));
-        return updated;
-      });
-    }
-
-    logActivity(`Membership purchased: ${plan} (${billingCycle}) by user ${userId}`);
-    return true;
-  };
-
-  const renewMembership = async (userId: string) => {
-    const existing = userMemberships.find(m => m.userId === userId);
-    if (!existing) return;
-
-    const prices = {
-      Premium: { Monthly: 49, Quarterly: 129, "Half-Yearly": 249, Yearly: 499 },
-      Patron: { Monthly: 199, Quarterly: 549, "Half-Yearly": 999, Yearly: 1999 }
-    };
-    const price = existing.membershipType === "Free" 
-      ? 0 
-      : (prices[existing.membershipType as "Premium" | "Patron"]?.[existing.billingCycle as "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly"] || 0);
-
-    const now = new Date();
-    const currentExpiry = new Date(existing.expiryDate);
-    const baseDate = currentExpiry > now ? currentExpiry : now;
-    
-    let durationDays = 30;
-    if (existing.billingCycle === "Quarterly") durationDays = 90;
-    else if (existing.billingCycle === "Half-Yearly") durationDays = 180;
-    else if (existing.billingCycle === "Yearly") durationDays = 365;
-
-    baseDate.setDate(baseDate.getDate() + durationDays);
-
-    const updated = userMemberships.map(m => m.userId === userId ? {
-      ...m,
-      status: "active" as const,
-      expiryDate: baseDate.toISOString().split("T")[0]
-    } : m);
-    setUserMemberships(updated);
-    localStorage.setItem("yuvakshar_memberships", JSON.stringify(updated));
-
-    const paymentId = "pay_" + Math.random().toString(36).substring(2, 10);
-    const newPayment: PaymentRecord = {
-      id: paymentId,
-      userId,
-      amount: price,
-      currency: "INR",
-      status: "success",
-      billingCycle: existing.billingCycle,
-      membershipType: existing.membershipType,
-      paymentMethod: "UPI",
-      date: now.toISOString().split("T")[0],
-      invoiceUrl: `/invoices/${paymentId}.pdf`
-    };
-
-    setPaymentRecords(prev => {
-      const updated = [newPayment, ...prev];
-      localStorage.setItem("yuvakshar_payments", JSON.stringify(updated));
-      return updated;
-    });
-
-    logActivity(`Membership renewed for user: ${userId}`);
-  };
-
-  const toggleAutoRenewal = async (userId: string) => {
-    const updated = userMemberships.map(m => m.userId === userId ? {
-      ...m,
-      autoRenewal: !m.autoRenewal
-    } : m);
-    setUserMemberships(updated);
-    localStorage.setItem("yuvakshar_memberships", JSON.stringify(updated));
-    logActivity(`Toggled auto-renewal for user: ${userId}`);
-  };
-
-  const cancelSubscription = async (userId: string) => {
-    const updated = userMemberships.map(m => m.userId === userId ? {
-      ...m,
-      status: "cancelled" as const,
-      autoRenewal: false
-    } : m);
-    setUserMemberships(updated);
-    localStorage.setItem("yuvakshar_memberships", JSON.stringify(updated));
-    await updateUserMembership(userId, "Free");
-    logActivity(`Cancelled subscription for user: ${userId}`);
-  };
-
-  const assignMembershipManually = async (userId: string, type: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime", billingCycle: string, durationDays: number) => {
-    const now = new Date();
-    const expiry = new Date();
-    expiry.setDate(now.getDate() + durationDays);
-
-    const newMembership: UserMembership = {
-      id: "mem-manual-" + Date.now(),
-      userId,
-      membershipType: type,
-      status: type === "Free" ? ("cancelled" as const) : ("active" as const),
-      billingCycle: type === "Free" ? ("Free" as const) : (billingCycle as any),
-      startDate: now.toISOString().split("T")[0],
-      expiryDate: type === "Free" ? now.toISOString().split("T")[0] : expiry.toISOString().split("T")[0],
-      autoRenewal: false
-    };
-
-    setUserMemberships(prev => {
-      const updated = [newMembership, ...prev.filter(m => m.userId !== userId)];
-      localStorage.setItem("yuvakshar_memberships", JSON.stringify(updated));
-      return updated;
-    });
-
-    await updateUserMembership(userId, type);
-    logActivity(`Manual membership assignment: ${type} for user: ${userId}`);
-  };
-
-  const submitDonation = async (name: string, email: string, amount: number, message?: string): Promise<boolean> => {
-    const newDonation: DonationRecord = {
-      id: "don_" + Date.now(),
-      userId: currentUser?.id || null,
-      name,
-      email,
-      amount,
-      message: message || "",
-      date: new Date().toISOString().split("T")[0]
-    };
-    
-    setDonationHistory(prev => {
-      const updated = [newDonation, ...prev];
-      localStorage.setItem("yuvakshar_donations", JSON.stringify(updated));
-      return updated;
-    });
-
-    logActivity(`Donation submitted: ₹${amount} by ${name}`);
-    return true;
-  };
-
-  const getMembershipAnalytics = () => {
-    const active = userMemberships.filter(m => m.status === "active" && m.membershipType !== "Free");
-    const totalRevenue = paymentRecords.filter(p => p.status === "success").reduce((acc, curr) => acc + curr.amount, 0);
-    const expiredCount = userMemberships.filter(m => m.status === "expired" || m.status === "cancelled").length;
-    
-    const premiumCount = active.filter(m => m.membershipType === "Premium").length;
-    const patronCount = active.filter(m => m.membershipType === "Patron").length;
-    const foundingCount = active.filter(m => m.membershipType === "Founding").length;
-    const institutionalCount = active.filter(m => m.membershipType === "Institutional").length;
-    const lifetimeCount = active.filter(m => m.membershipType === "Lifetime").length;
-    
-    const conversionRate = Math.round((active.length / Math.max(1, users.length)) * 100);
-    const churnRate = Math.round((expiredCount / Math.max(1, active.length + expiredCount)) * 100);
-    const renewalRate = Math.round((active.filter(m => m.autoRenewal).length / Math.max(1, active.length)) * 100);
-    const upgradeRate = Math.round(((patronCount + foundingCount) / Math.max(1, active.length)) * 100);
-
-    return {
-      totalMembers: users.length,
-      activeMembers: active.length,
-      expiredMembers: expiredCount,
-      premiumMembers: premiumCount,
-      patronMembers: patronCount,
-      foundingMembers: foundingCount,
-      institutionalMembers: institutionalCount,
-      lifetimeMembers: lifetimeCount,
-      membershipRevenue: totalRevenue,
-      conversionRate,
-      churnRate,
-      renewalRate,
-      upgradeRate
-    };
-  };
 
   return (
     <CmsContext.Provider
@@ -4071,8 +3390,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         closeAuthModal,
         authModalMessage,
         becomeAuthor,
-        updateUserProfile,
-        updateUserMembership,
+        updateUserProfile,
         sendOtpCode,
         verifyOtpCode,
         sendPasswordReset,
@@ -4083,14 +3401,12 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         deletePortfolioItem,
         addAchievement,
         deleteAchievement,
-        canAccessContent,
         canComment,
         canBookmark,
         canVote,
         canManageArticles,
         canPublishArticles,
         canAccessAdmin,
-        canAccessPremiumContent,
         supabaseConfigured,
         currentUser,
         authLoading,
@@ -4108,7 +3424,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         searchLogs,
         activityLogs,
         layouts,
-        memberships,
         users,
         loginUser,
         registerUser,
@@ -4168,25 +3483,11 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         updateAiSettings,
         saveAiNote,
         deleteAiNote,
-        generateAiContent,
-        userMemberships,
-        paymentRecords,
-        coupons,
-        referrals,
-        purchaseMembership,
-        renewMembership,
-        toggleAutoRenewal,
-        cancelSubscription,
-        validateCoupon,
-        createCoupon,
-        deleteCoupon,
-        addReferral,
-        assignMembershipManually,
-        getMembershipAnalytics,
-        donationHistory,
-        submitDonation,
-        foundingSeatsRemaining,
-        setFoundingSeatsRemaining,
+        generateAiContent,
+        
+        
+        
+        
         tasks,
         verifications,
         orgAuditLogs,

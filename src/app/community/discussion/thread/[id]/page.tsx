@@ -206,8 +206,6 @@ export default function DiscussionThreadPage() {
   }
 
   const threadAuthor = users.find(u => u.id === thread.user_id || u.name === thread.user_name);
-  const threadAuthorReputation = threadAuthor?.reputation_score || 120;
-
   const acceptedAnswer = comments.find(c => c.is_accepted_answer || c.id === thread.best_answer_id);
   const remainingComments = comments.filter(c => c.id !== thread.best_answer_id && !c.is_accepted_answer);
 
@@ -228,8 +226,7 @@ export default function DiscussionThreadPage() {
         {/* Author header */}
         <div className="flex items-center justify-between text-[10px] text-slate-400 font-serif">
           <div className="flex items-center space-x-2">
-            <span className="font-bold text-slate-700 dark:text-slate-300 font-hindi">{thread.user_name} द्वारा शुरू</span>
-            <span className="text-amber-500 font-bold">⭐ {threadAuthorReputation}</span>
+                <span className="font-bold text-slate-700 dark:text-slate-200 font-hindi">{thread.user_name}</span>
           </div>
           <span className="font-mono">{new Date(thread.created_at).toLocaleString("hi-IN")}</span>
         </div>
@@ -315,8 +312,6 @@ export default function DiscussionThreadPage() {
               if (comment.id === thread.best_answer_id || comment.is_accepted_answer) return null;
               
               const commentAuthor = users.find(u => u.id === comment.user_id || u.name === comment.user_name);
-              const commentReputation = commentAuthor?.reputation_score || 120;
-
               return (
                 <div key={comment.id} className="space-y-3.5 p-4 rounded-xl hover:bg-slate-50/50 dark:hover:bg-slate-900/10 transition-all border border-slate-150/40 dark:border-slate-800/40 bg-white dark:bg-slate-900/10">
                   
@@ -324,7 +319,6 @@ export default function DiscussionThreadPage() {
                   <div className="flex items-center justify-between text-[10px] text-slate-400 font-serif">
                     <div className="flex items-center space-x-2">
                       <span className="font-bold text-slate-700 dark:text-slate-350 font-hindi">{comment.user_name}</span>
-                      <span className="text-amber-500 font-bold">⭐ {commentReputation}</span>
                     </div>
                     <span className="font-mono">{new Date(comment.created_at).toLocaleString("hi-IN")}</span>
                   </div>
@@ -387,14 +381,11 @@ export default function DiscussionThreadPage() {
                     <div className="pl-4 border-l border-slate-200 dark:border-slate-800 space-y-3 pt-2 mt-2">
                       {comment.replies.map(reply => {
                         const replyAuthor = users.find(u => u.id === reply.user_id || u.name === reply.user_name);
-                        const replyReputation = replyAuthor?.reputation_score || 120;
-
                         return (
                           <div key={reply.id} className="space-y-2 p-2.5 bg-slate-50/50 dark:bg-slate-950/20 rounded-lg">
                             <div className="flex justify-between items-center text-[9px] text-slate-400 font-serif">
                               <div className="flex items-center space-x-1.5">
                                 <span className="font-bold text-slate-700 dark:text-slate-300 font-hindi">{reply.user_name}</span>
-                                <span className="text-amber-500">⭐ {replyReputation}</span>
                               </div>
                               <span className="font-mono">{new Date(reply.created_at).toLocaleDateString("hi-IN")}</span>
                             </div>

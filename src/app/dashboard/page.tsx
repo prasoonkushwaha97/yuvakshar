@@ -58,24 +58,24 @@ export default function DashboardPage() {
   const { 
     currentUser, 
     openAuthModal, 
-    updateUserMembership, 
+     
     articles, 
     aiNotes, 
     deleteAiNote,
     quizAttempts,
     quizCertificates,
     quizzes,
-    userMemberships,
-    paymentRecords,
-    referrals,
-    addReferral,
-    toggleAutoRenewal,
-    cancelSubscription,
+    
+    
+    
+    
+    
+    
     submissions,
     authLoading
   } = useCms();
 
-  const [activeTab, setActiveTab] = useState<"study" | "notes" | "author" | "membership" | "profile" | "submissions" | "bookmarks" | "notifications">("study");
+  const [activeTab, setActiveTab] = useState<"study" | "notes" | "author" | "profile" | "submissions" | "bookmarks" | "notifications">("study");
   const [profileSubTab, setProfileSubTab] = useState<"edit" | "settings">("edit");
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const [bookmarkedArticles, setBookmarkedArticles] = useState<Article[]>([]);
@@ -153,16 +153,7 @@ export default function DashboardPage() {
     setBookmarkedArticles(prev => prev.filter(art => art.id !== id));
   };
 
-  // Streak Tracker Config
-  const streakProgress = [
-    { day: "सोम", active: true },
-    { day: "मंगल", active: true },
-    { day: "बुध", active: true },
-    { day: "गुरु", active: true },
-    { day: "शुक्र", active: true },
-    { day: "शनि", active: false },
-    { day: "रवि", active: false }
-  ];
+  
 
   // Recommendations based on user categories
   const recommendedArticles = articles.filter(art => !bookmarks.includes(art.id)).slice(0, 3);
@@ -304,20 +295,9 @@ export default function DashboardPage() {
             <span>प्रोफ़ाइल सेटिंग्स (Settings)</span>
           </Link>
 
-          {/* Streak Counter Visual Badge */}
-          <div className="flex items-center space-x-3 bg-white dark:bg-slate-900 border border-amber-500/30 rounded-2xl px-5 py-2.5 shadow-[0_0_15px_rgba(234,88,12,0.08)]">
-            <div className="p-1.5 rounded-full bg-primary/10 text-primary animate-pulse">
-              <Flame className="w-6 h-6 fill-current" />
-            </div>
-            <div>
-              <div className="text-[10px] text-slate-400 font-bold font-sans uppercase">अध्ययन निरंतरता</div>
-              <div className="text-sm font-serif font-bold text-primary">{streak} दिन सक्रिय</div>
-            </div>
-          </div>
+          
         </div>
       </div>
-
-      {/* MEMBERSHIP ARCHIVED: Membership Info Card — hidden, preserved for future reactivation */}
 
       {/* Tabs Navigation */}
       <div className="flex overflow-x-auto border-b border-slate-200 dark:border-slate-800 justify-start space-x-2 pb-px text-xs font-bold font-serif mb-8 scrollbar-none">
@@ -387,17 +367,7 @@ export default function DashboardPage() {
           <Bell className="w-4 h-4" />
           <span>६. सूचनाएं</span>
         </button>
-        <button
-          onClick={() => setActiveTab("membership")}
-          className={`pb-3 px-4 transition-all border-b-2 cursor-pointer flex items-center space-x-1.5 shrink-0 ${
-            activeTab === "membership"
-              ? "border-primary text-primary"
-              : "border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-          }`}
-        >
-          <Crown className="w-4 h-4" />
-          <span>७. सदस्यता व रेफ़रल</span>
-        </button>
+        
         {isAuthorOrEditor && (
           <button
             onClick={() => setActiveTab("author")}
@@ -502,8 +472,6 @@ export default function DashboardPage() {
                   <Brain className="w-5 h-5 text-amber-500 animate-pulse" />
                   <h3 className="font-serif text-sm font-bold">एआई ज्ञान रिपोर्ट (AI Knowledge Report)</h3>
                 </div>
-
-                {/* MEMBERSHIP ARCHIVED: Premium lock overlay removed — AI Knowledge Report is now freely accessible to all logged-in users */}
 
                 {/* Report Content */}
                 <div className="space-y-6">
@@ -1006,381 +974,14 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* TAB 4: MEMBERSHIP DESK (सदस्यता एवं रेफ़रल) */}
-          {activeTab === "membership" && currentUser && (
-            <div className="space-y-6">
-              
-              {/* Active Plan Card */}
-              {(() => {
-                const currentPlan = userMemberships.find(m => m.userId === currentUser.id && m.status === "active");
-                return (
-                  <GlassCard glow={currentPlan?.membershipType === "Patron" ? "saffron" : currentPlan?.membershipType === "Premium" ? "gold" : "none"} className="p-6 space-y-4">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-1">
-                        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">आपकी सदस्यता (Membership Details)</p>
-                        <h3 className="font-serif text-lg font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                          {currentPlan?.membershipType === "Patron" ? <Gem className="w-5 h-5 text-rose-500" /> : currentPlan?.membershipType === "Premium" ? <Crown className="w-5 h-5 text-amber-500" /> : <Lock className="w-4 h-4 text-slate-400" />}
-                          <span>युवाक्षर {currentPlan?.membershipType === "Premium" ? "प्रीमियम सदस्य" : currentPlan?.membershipType === "Patron" ? "संरक्षक (Patron) सदस्य" : "निःशुल्क पाठक (Free)"}</span>
-                        </h3>
-                      </div>
-                      {currentPlan ? (
-                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full text-[10px] font-bold">सक्रिय</span>
-                      ) : (
-                        <span className="bg-slate-500/10 text-slate-400 border border-slate-500/20 px-2.5 py-0.5 rounded-full text-[10px] font-bold">निःशुल्क</span>
-                      )}
-                    </div>
-
-                    {currentPlan ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono border-t border-slate-100 dark:border-slate-800/80 pt-4">
-                        <div>
-                          <p className="text-slate-500">प्रारंभ तिथि:</p>
-                          <p className="text-slate-800 dark:text-slate-200 font-bold">{currentPlan.startDate}</p>
-                        </div>
-                        <div>
-                          <p className="text-slate-500">समाप्ति तिथि (Expiry Date):</p>
-                          <p className="text-slate-800 dark:text-slate-200 font-bold">{currentPlan.expiryDate}</p>
-                        </div>
-                        <div>
-                          <p className="text-slate-500">भुगतान चक्र (Billing Cycle):</p>
-                          <p className="text-slate-800 dark:text-slate-200 font-bold">{currentPlan.billingCycle}</p>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-slate-500">स्वचालित नवीनीकरण (Auto-Renew):</p>
-                            <p className="text-slate-800 dark:text-slate-200 font-bold">{currentPlan.autoRenewal ? "हाँ (सक्रिय)" : "नहीं (बंद)"}</p>
-                          </div>
-                          <button
-                            onClick={() => {
-                              toggleAutoRenewal(currentUser.id);
-                              alert("ऑटो-रिन्यूअल स्थिति अपडेट की गई!");
-                            }}
-                            className="p-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer"
-                          >
-                            {currentPlan.autoRenewal ? <ToggleRight className="w-8 h-8 text-primary" /> : <ToggleLeft className="w-8 h-8 text-slate-400" />}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-slate-500 font-serif leading-relaxed">
-                        आप वर्तमान में एक निःशुल्क पाठक हैं। विशेष प्रीमियम लेखों, डिजिटल मासिक पत्रिका, अध्ययन नोट्स और अन्य सुविधाओं का लाभ उठाने के लिए अपग्रेड करें।
-                      </p>
-                    )}
-
-                    <div className="pt-2 flex flex-wrap gap-3">
-                      {!currentPlan && (
-                        <Link
-                          href="/membership"
-                          className="bg-primary hover:bg-primary/95 text-white font-bold py-2.5 px-6 rounded-xl text-xs transition-all shadow-md cursor-pointer flex items-center space-x-1"
-                        >
-                          <Crown className="w-4 h-4" />
-                          <span>प्रीमियम में अपग्रेड करें (₹49 से शुरू)</span>
-                        </Link>
-                      )}
-                      {currentPlan && (
-                        <>
-                          <Link
-                            href="/membership"
-                            className="bg-primary hover:bg-primary/95 text-white font-bold py-2.5 px-6 rounded-xl text-xs transition-all shadow-md cursor-pointer flex items-center space-x-1"
-                          >
-                            <RefreshCw className="w-3.5 h-3.5" />
-                            <span>सदस्यता बदलें / अपग्रेड करें</span>
-                          </Link>
-                          <button
-                            onClick={() => {
-                              if (confirm("क्या आप वाकई अपनी सक्रिय सदस्यता रद्द करना चाहते हैं?")) {
-                                cancelSubscription(currentUser.id);
-                                alert("आपकी सदस्यता रद्द कर दी गई है और समाप्त होने तक सक्रिय रहेगी।");
-                              }
-                            }}
-                            className="bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 py-2.5 px-6 rounded-xl text-xs font-semibold cursor-pointer transition-all"
-                          >
-                            सदस्यता रद्द करें
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </GlassCard>
-                );
-              })()}
-
-              {/* Referral Center */}
-              <GlassCard glow="gold" className="p-6 space-y-5">
-                <div className="flex items-center space-x-2 text-primary border-b border-primary/10 pb-3">
-                  <Share2 className="w-4 h-4 text-amber-500" />
-                  <h3 className="font-serif text-sm font-bold">रेफ़रल कार्यक्रम (Referral Center)</h3>
-                </div>
-
-                <p className="text-xs text-slate-500 font-serif leading-relaxed">
-                  अपने दोस्तों को युवाक्षर की सदस्यता के लिए आमंत्रित करें। जब आपका मित्र आपके आमंत्रण से जुड़कर कोई भी भुगतान योजना खरीदेगा, तो आप दोनों को <strong>₹50 कैशबैक</strong> प्राप्त होगा!
-                </p>
-
-                {/* Invite Form */}
-                <form 
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    if (!friendEmail.trim() || !friendEmail.includes("@")) {
-                      setRefErrorMsg("कृपया एक मान्य ईमेल पता दर्ज करें।");
-                      setRefSuccessMsg("");
-                      return;
-                    }
-                    addReferral(currentUser.id, friendEmail.trim());
-                    setRefSuccessMsg(`सफलतापूर्वक ${friendEmail} को आमंत्रण भेजा गया!`);
-                    setRefErrorMsg("");
-                    setFriendEmail("");
-                  }}
-                  className="space-y-2"
-                >
-                  <label className="block text-[11px] font-medium text-slate-400">दोस्त का ईमेल दर्ज करें</label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="email"
-                      placeholder="friend@email.com"
-                      value={friendEmail}
-                      onChange={(e) => setFriendEmail(e.target.value)}
-                      className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-primary"
-                    />
-                    <button
-                      type="submit"
-                      className="bg-primary hover:bg-primary/95 text-white px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all flex items-center gap-1.5"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>आमंत्रित करें</span>
-                    </button>
-                  </div>
-                  {refErrorMsg && <p className="text-[10px] text-red-400">{refErrorMsg}</p>}
-                  {refSuccessMsg && <p className="text-[10px] text-emerald-400">{refSuccessMsg}</p>}
-                </form>
-
-                {/* Referral Code Box */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950 border border-slate-800 p-4 rounded-2xl text-xs">
-                  <div>
-                    <span className="text-slate-500">आपका रेफ़रल कोड:</span>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <span className="font-mono font-bold text-white bg-slate-900 px-2.5 py-1 rounded border border-slate-800">
-                        YUV-{currentUser.id.substring(0, 5).toUpperCase()}
-                      </span>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(`YUV-${currentUser.id.substring(0, 5).toUpperCase()}`);
-                          alert("रेफ़रल कोड कॉपी किया गया!");
-                        }}
-                        className="p-1 rounded text-slate-400 hover:text-primary cursor-pointer hover:bg-slate-900"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-slate-500">आपका रेफ़रल लिंक:</span>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <span className="font-mono text-white truncate bg-slate-900 px-2.5 py-1 rounded border border-slate-800 block max-w-[150px]">
-                        https://yuvakshar.org/membership?ref=YUV-{currentUser.id.substring(0, 5).toUpperCase()}
-                      </span>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(`https://yuvakshar.org/membership?ref=YUV-${currentUser.id.substring(0, 5).toUpperCase()}`);
-                          alert("रेफ़रल लिंक कॉपी किया गया!");
-                        }}
-                        className="p-1 rounded text-slate-400 hover:text-primary cursor-pointer hover:bg-slate-900"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Referrals Invited List */}
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold font-serif text-slate-800 dark:text-white">आमंत्रित मित्रों की सूची (Referrals Tracker)</h4>
-                  {(() => {
-                    const myRefs = referrals.filter(r => r.referrerId === currentUser.id);
-                    if (myRefs.length === 0) {
-                      return <p className="text-[10px] text-slate-500">अभी तक आपने किसी को आमंत्रित नहीं किया है।</p>;
-                    }
-                    return (
-                      <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950">
-                        <table className="w-full text-left border-collapse text-[10px] md:text-xs">
-                          <thead>
-                            <tr className="border-b border-slate-800 bg-slate-900 font-serif">
-                              <th className="p-3 text-slate-400">दोस्त का ईमेल</th>
-                              <th className="p-3 text-slate-400">दिनांक</th>
-                              <th className="p-3 text-slate-400">स्थिति</th>
-                              <th className="p-3 text-slate-400">रिवॉर्ड</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-800/60">
-                            {myRefs.map((ref) => (
-                              <tr key={ref.id} className="hover:bg-slate-900/50">
-                                <td className="p-3 font-mono text-slate-350">{ref.referredEmail}</td>
-                                <td className="p-3 text-slate-400">{ref.date}</td>
-                                <td className="p-3">
-                                  {ref.status === "pending" && <span className="text-amber-500 font-bold bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">पेंडिंग</span>}
-                                  {ref.status === "registered" && <span className="text-blue-400 font-bold bg-blue-500/10 border border-blue-500/20 px-1.5 py-0.5 rounded">रजिस्टर्ड</span>}
-                                  {ref.status === "purchased" && <span className="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">सफल</span>}
-                                </td>
-                                <td className="p-3">
-                                  {ref.status === "purchased" ? (
-                                    <span className="text-emerald-400 font-bold">₹50 संचित</span>
-                                  ) : (
-                                    <span className="text-slate-500">—</span>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })()}
-                </div>
-              </GlassCard>
-
-              {/* Payment History Card */}
-              <GlassCard glow="none" className="p-6 space-y-4">
-                <div className="flex items-center space-x-2 text-primary border-b border-primary/10 pb-3">
-                  <FileText className="w-4 h-4" />
-                  <h3 className="font-serif text-sm font-bold">भुगतान एवं बिल इतिहास (Payment & Invoice History)</h3>
-                </div>
-
-                {(() => {
-                  const myPayments = paymentRecords.filter(p => p.userId === currentUser.id);
-                  if (myPayments.length === 0) {
-                    return <p className="text-xs text-slate-500">अभी तक कोई भुगतान रिकॉर्ड नहीं मिला।</p>;
-                  }
-                  
-                  const printInvoiceFromRecord = (record: any) => {
-                    const printWindow = window.open("", "_blank");
-                    if (!printWindow) return;
-                    
-                    printWindow.document.write(`
-                      <html>
-                        <head>
-                          <title>युवाक्षर सदस्यता रसीद (Yuvakshar Subscription Invoice)</title>
-                          <style>
-                            body { font-family: 'Noto Sans Devanagari', sans-serif; padding: 40px; color: #1e293b; }
-                            .header { border-bottom: 2px solid #ea580c; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-                            .logo { font-size: 24px; font-weight: bold; color: #ea580c; }
-                            .title { font-size: 20px; font-weight: bold; }
-                            .details-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                            .details-table th, .details-table td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
-                            .details-table th { background-color: #f8fafc; }
-                            .total { font-weight: bold; color: #ea580c; font-size: 18px; }
-                            .footer { margin-top: 50px; font-size: 12px; color: #64748b; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; }
-                          </style>
-                        </head>
-                        <body>
-                          <div class="header">
-                            <div>
-                              <div class="logo">युवाक्षर (Yuvakshar)</div>
-                              <div>लेखन, चिंतन और परिवर्तन</div>
-                            </div>
-                            <div class="title">सदस्यता चालान (INVOICE)</div>
-                          </div>
-                          <h3>चालान विवरण:</h3>
-                          <p><strong>लेनदेन आईडी (Transaction ID):</strong> ${record.id}</p>
-                          <p><strong>दिनांक (Date):</strong> ${record.date}</p>
-                          <p><strong>ग्राहक का नाम (Customer Name):</strong> ${currentUser?.name}</p>
-                          <p><strong>ईमेल (Email):</strong> ${currentUser?.email}</p>
-                          
-                          <table class="details-table">
-                            <thead>
-                              <tr>
-                                <th>विवरण (Description)</th>
-                                <th>अवधि (Billing Cycle)</th>
-                                <th>कुल राशि (Total Paid)</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td>युवाक्षर ${record.membershipType === "Premium" ? "प्रीमियम सदस्यता" : "संरक्षक सदस्यता"}</td>
-                                <td>${record.billingCycle === "Monthly" ? "मासिक" : record.billingCycle === "Quarterly" ? "त्रैमासिक" : record.billingCycle === "Half-Yearly" ? "अर्धवार्षिक" : "वार्षिक"}</td>
-                                <td class="total">₹${record.amount}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                          
-                          <div class="footer">
-                            यह एक कंप्यूटर जनित रसीद है और इसके लिए हस्ताक्षर की आवश्यकता नहीं है। युवाक्षर को समर्थन देने के लिए धन्यवाद।
-                          </div>
-                          <script>window.print();</script>
-                        </body>
-                      </html>
-                    `);
-                    printWindow.document.close();
-                  };
-
-                  return (
-                    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-[#0f172a]/20">
-                      <table className="w-full text-left border-collapse text-xs">
-                        <thead>
-                          <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 font-serif">
-                            <th className="p-3 text-slate-700 dark:text-slate-300">लेनदेन आईडी</th>
-                            <th className="p-3 text-slate-700 dark:text-slate-300">योजना</th>
-                            <th className="p-3 text-slate-700 dark:text-slate-300">चक्र</th>
-                            <th className="p-3 text-slate-700 dark:text-slate-300">राशि</th>
-                            <th className="p-3 text-slate-700 dark:text-slate-300">तिथि</th>
-                            <th className="p-3 text-slate-700 dark:text-slate-300">बिल (Invoice)</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                          {myPayments.map((record) => (
-                            <tr key={record.id} className="hover:bg-slate-100/30 dark:hover:bg-slate-900/20">
-                              <td className="p-3 font-mono text-slate-500">{record.id}</td>
-                              <td className="p-3 font-bold">{record.membershipType}</td>
-                              <td className="p-3">{record.billingCycle}</td>
-                              <td className="p-3 text-primary font-bold">₹{record.amount}</td>
-                              <td className="p-3">{record.date}</td>
-                              <td className="p-3">
-                                {record.status === "success" ? (
-                                  <button
-                                    onClick={() => printInvoiceFromRecord(record)}
-                                    className="flex items-center space-x-1 text-[10px] bg-slate-800 hover:bg-slate-700 text-white font-medium px-2 py-1 rounded border border-slate-750 cursor-pointer"
-                                  >
-                                    <Download className="w-3 h-3" />
-                                    <span>रसीद</span>
-                                  </button>
-                                ) : (
-                                  <span className="text-red-400 font-bold">विफल</span>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  );
-                })()}
-              </GlassCard>
-
-            </div>
-          )}
+          
 
         </div>
 
         {/* RIGHT BLOCK: Recommendations & Streak (Col Span 4) */}
         <aside className="lg:col-span-4 space-y-6">
           
-          {/* Week Streak Tracker (glowing dots) */}
-          <GlassCard glow="saffron">
-            <h3 className="font-serif text-sm font-bold text-primary mb-4">स्वाध्याय ट्रैकर (Habits)</h3>
-            <div className="flex justify-between items-center">
-              {streakProgress.map((day, idx) => (
-                <div key={idx} className="flex flex-col items-center space-y-1">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center border text-[9px] font-mono font-bold ${
-                    day.active 
-                      ? "bg-primary/20 border-primary text-primary shadow-[0_0_8px_rgba(234,88,12,0.4)]" 
-                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
-                  }`}>
-                    {day.day[0]}
-                  </div>
-                  <span className="text-[8px] font-mono text-slate-400 font-bold">{day.day}</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-[10px] text-slate-400 mt-4 font-serif leading-relaxed">
-              निरंतर अध्ययन सूचकांक सक्रिय है! अध्ययन साथी के साथ रोज़ाना कम से कम एक लेख पढ़ने से आपकी ज्ञान रिपोर्ट उन्नत होती है।
-            </p>
-          </GlassCard>
+          
 
           {/* Bookmarked Articles list */}
           <GlassCard glow="none" className="space-y-4">

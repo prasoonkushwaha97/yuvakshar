@@ -35,7 +35,6 @@ export interface Profile {
   id: string;
   name: string;
   role: "Founder" | "संस्थापक" | "सह-संस्थापक" | "प्रधान प्रशासक" | "प्रशासक" | "प्रधान संपादक" | "कार्यकारी संपादक" | "वरिष्ठ संपादक" | "संपादक" | "सहायक संपादक" | "समुदाय प्रबंधक" | "समुदाय मॉडरेटर" | "समूह व्यवस्थापक" | "समूह मॉडरेटर" | "प्रूफरीडर" | "भाषा समीक्षक" | "कार्यक्रम समन्वयक" | "चुनौती समन्वयक" | "प्रमाणपत्र प्रबंधक" | "स्वयंसेवक" | "प्रशिक्षु" | "सदस्य" | "Owner" | "Admin" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Sub Editor" | "Fact Checker" | "Reviewer" | "Author" | "Contributor" | "Fact Check Reviewer" | null;
-  membership: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime" | null;
   status: "active" | "suspended" | "pending" | "Draft" | "Pending Approval" | "Approved" | "Rejected" | "Resigned";
   password?: string;
   department?: string; // Hindi department identifier
@@ -59,7 +58,6 @@ export interface Profile {
   gender?: string;
   location?: string;
   joinDate?: string;
-  referralRewardsEarned?: number;
   articlesReadCount?: number;
   totalReadingTime?: number;
   categoryStats?: Record<string, number>;
@@ -75,15 +73,12 @@ export interface Profile {
   orcid_id?: string;
   google_scholar_url?: string;
   academic_credentials?: string[];
-  professional_memberships?: string[];
   education?: string;
   academic_background?: string;
   research_interests?: string;
   professional_experience?: string;
   social_contributions?: string;
   publications_list?: string;
-  reputation_score?: number;
-  reputation_tier?: "Bronze" | "Silver" | "Gold" | "Platinum";
   timeline?: Array<{ id: string; title: string; description: string; date: string; type?: string }>;
   portfolio?: Array<{ id: string; name: string; url: string; type: "book" | "research_paper" | "report" | "white_paper" | "resume" | "other"; is_public: boolean }>;
   achievements?: Array<{ id: string; title: string; description?: string; year?: string; image_url?: string }>;
@@ -92,7 +87,6 @@ export interface Profile {
   social_posts_count?: number;
   social_replies_count?: number;
   groups_count?: number;
-  reading_streak?: number;
   featured?: boolean;
   publicVisibility?: boolean;
 }
@@ -218,53 +212,6 @@ export interface QuizLeaderboardEntry {
 }
 
 // ─── Membership ────────────────────────────────────────────────────────────
-export interface UserMembership {
-  id: string;
-  userId: string;
-  plan: "Free" | "Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime";
-  billingCycle: "Monthly" | "Quarterly" | "Half-Yearly" | "Yearly" | "Lifetime" | "One-time";
-  startDate: string;
-  endDate?: string;
-  autoRenewal: boolean;
-  status: "active" | "expired" | "cancelled";
-  couponApplied?: string;
-  discountAmount?: number;
-}
-
-export interface PaymentRecord {
-  id: string;
-  userId: string;
-  amount: number;
-  currency: string;
-  plan: string;
-  billingCycle: string;
-  status: "success" | "failed" | "pending" | "refunded";
-  transactionId?: string;
-  date: string;
-  couponApplied?: string;
-  discountAmount?: number;
-}
-
-export interface Coupon {
-  code: string;
-  discountType: "percentage" | "fixed";
-  discountValue: number;
-  validFor: ("Premium" | "Patron" | "Founding" | "Institutional" | "Lifetime")[];
-  expiryDate: string;
-  usageLimit?: number;
-  usageCount: number;
-  isActive: boolean;
-  createdBy: string;
-}
-
-export interface ReferralRecord {
-  id: string;
-  referrerId: string;
-  referredEmail: string;
-  status: "pending" | "converted";
-  rewardGranted: boolean;
-  date: string;
-}
 
 // ─── Other ─────────────────────────────────────────────────────────────────
 export interface Category {
@@ -357,14 +304,6 @@ export interface DonationRecord {
   amount: number;
   message?: string;
   date: string;
-}
-
-export interface Membership {
-  id: string;
-  user_id: string;
-  type: "Free Reader" | "Registered Reader" | "Premium Member" | "Patron";
-  status: "active" | "expired" | "cancelled";
-  expires_at?: string;
 }
 
 export interface GeneralSettings {

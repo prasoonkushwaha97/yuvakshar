@@ -13,10 +13,7 @@ import {
   QuizAttempt,
   QuizCertificate,
   QuizSettings,
-  ReferralRecord,
-  PaymentRecord,
   DonationRecord,
-  UserMembership,
   Video
 } from "@/store/types";
 
@@ -168,7 +165,6 @@ export const signUpUser = async (email: string, role: string, metadata: Record<s
       email,
       role: role as any,
       status: "active",
-      membership: "Free",
       mobile: metadata.mobile || "",
       password: metadata.password || "password123",
       joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),

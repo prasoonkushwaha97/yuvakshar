@@ -55,9 +55,7 @@ export default function SocialProfilePage() {
             following: match.following || [],
             social_posts_count: match.social_posts_count || 0,
             social_replies_count: match.social_replies_count || 0,
-            groups_count: match.groups_count || 0,
-            reading_streak: match.reading_streak || 0,
-            reputation_tier: (match.reputation_tier || "Bronze") as any
+            groups_count: match.groups_count || 0
           };
           setProfile(socialProfile);
           
@@ -333,10 +331,10 @@ export default function SocialProfilePage() {
                 </div>
                 <div>
                   <span className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-hindi">प्रतिष्ठा स्तर</span>
-                  <span className="block text-[10px] text-slate-500 font-mono mt-0.5">{profile.reputation_tier || "Beginner"}</span>
+                  <span className="block text-[10px] text-slate-500 font-mono mt-0.5">Beginner</span>
                 </div>
               </div>
-              <span className="text-sm font-bold text-amber-600">{profile.reputation_score || 0}</span>
+              <span className="text-sm font-bold text-amber-600">0</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -349,7 +347,7 @@ export default function SocialProfilePage() {
                   <span className="block text-[10px] text-slate-500 font-mono mt-0.5">लगातार पठन</span>
                 </div>
               </div>
-              <span className="text-sm font-bold text-orange-600">{profile.reading_streak || 0} दिन</span>
+              <span className="text-sm font-bold text-orange-600">0 दिन</span>
             </div>
           </div>
 

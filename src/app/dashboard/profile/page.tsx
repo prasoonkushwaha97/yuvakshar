@@ -71,7 +71,6 @@ export default function ProfileDashboardEditor() {
   const [orcidId, setOrcidId] = useState(currentUser?.orcid_id || "");
   const [googleScholarUrl, setGoogleScholarUrl] = useState(currentUser?.google_scholar_url || "");
   const [academicCredentials, setAcademicCredentials] = useState(currentUser?.academic_credentials?.join(", ") || "");
-  const [professionalMemberships, setProfessionalMemberships] = useState(currentUser?.professional_memberships?.join(", ") || "");
 
   // Social Links
   const [twitter, setTwitter] = useState(currentUser?.social_links?.twitter || "");
@@ -107,7 +106,6 @@ export default function ProfileDashboardEditor() {
       setOrcidId(currentUser.orcid_id || "");
       setGoogleScholarUrl(currentUser.google_scholar_url || "");
       setAcademicCredentials(currentUser.academic_credentials?.join(", ") || "");
-      setProfessionalMemberships(currentUser.professional_memberships?.join(", ") || "");
       setTwitter(currentUser.social_links?.twitter || "");
       setFacebook(currentUser.social_links?.facebook || "");
       setLinkedin(currentUser.social_links?.linkedin || "");
@@ -139,7 +137,6 @@ export default function ProfileDashboardEditor() {
       google_scholar_url: googleScholarUrl,
       expertise_tags: expertiseTags.split(",").map(t => t.trim()).filter(Boolean),
       academic_credentials: academicCredentials.split(",").map(c => c.trim()).filter(Boolean),
-      professional_memberships: professionalMemberships.split(",").map(m => m.trim()).filter(Boolean),
       social_links: {
         twitter,
         facebook,
@@ -220,7 +217,6 @@ export default function ProfileDashboardEditor() {
     google_scholar_url: googleScholarUrl,
     expertise_tags: expertiseTags.split(",").map(t => t.trim()).filter(Boolean),
     academic_credentials: academicCredentials.split(",").map(c => c.trim()).filter(Boolean),
-    professional_memberships: professionalMemberships.split(",").map(m => m.trim()).filter(Boolean),
     social_links: { twitter, facebook, linkedin, youtube }
   };
 
@@ -479,16 +475,7 @@ export default function ProfileDashboardEditor() {
                       />
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-slate-455 block font-medium">व्यावसायिक सदस्यता (Memberships) - कोमा से पृथक करें</label>
-                      <input 
-                        type="text" 
-                        value={professionalMemberships}
-                        onChange={(e) => setProfessionalMemberships(e.target.value)}
-                        placeholder="उदा. अखिल भारतीय लेखक संघ, एडिटर गिल्ड"
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl p-2.5 focus:outline-none"
-                      />
-                    </div>
+
                   </div>
                 )}
               </GlassCard>

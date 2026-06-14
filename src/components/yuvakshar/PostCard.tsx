@@ -60,7 +60,7 @@ export default function PostCard({
   const hasVoted = post.poll_votes && currentUser && currentUser.id in post.poll_votes;
   const voteTotal = post.poll_votes ? Object.keys(post.poll_votes).length : 0;
   const badge = getPostTypeBadge(post.post_type);
-  const reputation = authorProfile?.reputation_score || 120;
+  const reputation = 0 || 120;
 
   const hoverUserId = authorProfile?.id || post.user_id;
 
