@@ -285,7 +285,7 @@ interface CmsContextType {
   registerUser: (email: string, username: string, role: string, customName: string, customMobile: string, passwordInput: string) => Promise<boolean>;
   checkUsernameAvailability: (username: string) => { available: boolean; message: string };
   logoutUser: () => void;
-  toggleBookmark: (articleId: string) => void;
+  toggleBookmark: (articleId: string) => Promise<void>;
   updateUserRole: (userId: string, role: Profile["role"]) => Promise<void>;
   createUser: (user: Omit<Profile, "id">) => Promise<void>;
   updateUser: (userId: string, data: Partial<Profile>) => Promise<void>;
@@ -378,9 +378,10 @@ interface CmsContextType {
   canComment: (user: Profile | null) => boolean;
   canBookmark: (user: Profile | null) => boolean;
   canVote: (user: Profile | null) => boolean;
-  canManageArticles: (user: Profile | null) => boolean;
-  canPublishArticles: (user: Profile | null, contentType: string) => boolean;
-  canAccessAdmin: (user: Profile | null) => boolean;
+  canManageArticles: () => boolean;
+  canPublishArticles: (contentType: string) => boolean;
+  canAccessAdmin: () => boolean;
+  getResolvedUserRole: (userId: string) => Promise<string>;
 
   // AI Ecosystem States & Operations
   aiSettings: AiSettings;
@@ -766,6 +767,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
           setCurrentUserPermissions(permsArray);
             
           if (profile) {
+            const { data: dbBms } = await supabase.from("bookmarks").select("article_id").eq("user_id", profile.id);
+            profile.bookmarks = dbBms ? dbBms.map((b: any) => b.article_id).filter(Boolean) : [];
+
             if (profile.role !== highestRole) {
               await supabase.from("profiles").update({ role: highestRole }).eq("id", profile.id);
             }
@@ -1602,8 +1606,44 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const toggleBookmark = (articleId: string) => {
+  const toggleBookmark = async (articleId: string) => {
     if (!currentUser) return;
+    
+    if (isSupabaseConfigured()) {
+      try {
+        const currentBookmarks = currentUser.bookmarks || [];
+        const isBookmarked = currentBookmarks.includes(articleId);
+        
+        if (isBookmarked) {
+          await supabase
+            .from("bookmarks")
+            .delete()
+            .eq("user_id", currentUser.id)
+            .eq("article_id", articleId);
+            
+          const newBookmarks = currentBookmarks.filter(id => id !== articleId);
+          const updatedUser = { ...currentUser, bookmarks: newBookmarks };
+          setCurrentUser(updatedUser);
+          localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+        } else {
+          await supabase
+            .from("bookmarks")
+            .insert({
+              user_id: currentUser.id,
+              article_id: articleId
+            });
+            
+          const newBookmarks = [...currentBookmarks, articleId];
+          const updatedUser = { ...currentUser, bookmarks: newBookmarks };
+          setCurrentUser(updatedUser);
+          localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+        }
+        logActivity(isBookmarked ? `Removed bookmark: ${articleId}` : `Added bookmark: ${articleId}`);
+      } catch (err) {
+        console.error("Error toggling bookmark:", err);
+      }
+      return;
+    }
     
     const currentBookmarks = currentUser.bookmarks || [];
     const newBookmarks = currentBookmarks.includes(articleId) 
@@ -1646,9 +1686,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if ((user.role === "Editor-in-Chief" || user.role === "Managing Editor" || user.role === "Editor" || 
-         user.role === "प्रधान संपादक" || user.role === "कार्यकारी संपादक" || 
-         user.role === "संपादक" || user.role === "वरिष्ठ संपादक" || user.role === null) && !isAdmin(performerRole)) {
+    if ((user.role === "Editor-in-Chief" || user.role === "Managing Editor" || user.role === "Editor" || user.role === null) && !isAdmin(performerRole)) {
       alert("त्रुटि: केवल Owner या Admin ही संपादकीय नेतृत्व या पाठक खाते बना सकते हैं!");
       return;
     }
@@ -1689,13 +1727,15 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (isOwner(targetUser.role) && !isOwner(performerRole)) {
+    const targetUserRole = await getResolvedUserRole(userId);
+
+    if (isOwner(targetUserRole) && !isOwner(performerRole)) {
       alert("त्रुटि: आप Owner का विवरण संशोधित नहीं कर सकते!");
       return;
     }
 
-    if (isOwner(targetUser.role)) {
-      if (data.role && data.role !== targetUser.role) {
+    if (isOwner(targetUserRole)) {
+      if (data.role && data.role !== targetUserRole) {
         alert("त्रुटि: संस्थापक (Founder) को पदावनत (demote) नहीं किया जा सकता है!");
         return;
       }
@@ -1705,7 +1745,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    if (data.role && data.role !== targetUser.role) {
+    if (data.role && data.role !== targetUserRole) {
       if (userId === currentUser?.id) {
         alert("त्रुटि: आप स्वयं की भूमिका नहीं बदल सकते (Self-promotion blocked)!");
         return;
@@ -1749,12 +1789,14 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (isOwner(targetUser.role)) {
+    const targetUserRole = await getResolvedUserRole(userId);
+
+    if (isOwner(targetUserRole)) {
       alert("त्रुटि: Owner/संस्थापक को हटाया नहीं जा सकता!");
       return;
     }
 
-    if (isAdmin(targetUser.role) && !isOwner(performerRole)) {
+    if (isAdmin(targetUserRole) && !isOwner(performerRole)) {
       alert("त्रुटि: केवल Owner/संस्थापक ही Admin को हटा सकता है!");
       return;
     }
@@ -1820,7 +1862,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (targetUser.role === "Owner" && performerRole !== "Owner") {
+    const targetUserRole = await getResolvedUserRole(userId);
+
+    if (targetUserRole === "Owner" && performerRole !== "Owner") {
       alert("त्रुटि: आप Owner का पासवर्ड रीसेट नहीं कर सकते!");
       return;
     }
@@ -3217,43 +3261,78 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
     });
   };
 
-  const canManageArticles = (user: Profile | null) => {
-    if (!user || !user.role) return false;
-    return [
-      "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक",
-      "कार्यकारी संपादक", "वरिष्ठ संपादक", "संपादक", "सहायक संपादक",
-      "Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Author"
-    ].includes(user.role);
-  };
+  const getResolvedUserRole = async (userId: string): Promise<string> => {
+    const localUser = users.find(u => u.id === userId);
+    const email = localUser?.email || "";
 
-  const canPublishArticles = (user: Profile | null, contentType: string) => {
-    if (!user || !user.role) return false;
-    
-    const hasPublishingRole = [
-      "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक",
-      "कार्यकारी संपादक", "वरिष्ठ संपादक", "संपादक",
-      "Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor"
-    ].includes(user.role);
-    if (!hasPublishingRole) return false;
-
-    const isSpecialContent = ["Editorial", "Special Report", "Research Report"].includes(contentType);
-    if (isSpecialContent) {
-      return ["संस्थापक", "प्रधान संपादक", "Owner", "Editor-in-Chief"].includes(user.role);
+    if (email === 'prasoonkushwaha9754@gmail.com') {
+      return "Owner";
     }
 
-    return true;
+    try {
+      const { data: roleData, error } = await supabase
+        .from('user_roles')
+        .select(`
+          roles (
+            name
+          )
+        `)
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error("Error in getResolvedUserRole:", error);
+        return localUser?.role || "Member";
+      }
+
+      const ROLE_PRIORITY = ['Founder', 'Admin', 'Moderator', 'Editor', 'Author', 'Member'];
+      let highestRole = "Member";
+      let highestIndex = ROLE_PRIORITY.length;
+
+      if (roleData && roleData.length > 0) {
+        for (const item of roleData) {
+          const r = Array.isArray(item.roles) ? item.roles[0] : item.roles;
+          if (r && r.name) {
+            const idx = ROLE_PRIORITY.indexOf(r.name);
+            if (idx !== -1 && idx < highestIndex) {
+              highestIndex = idx;
+              highestRole = r.name;
+            }
+          }
+        }
+      } else {
+        if (localUser?.role) {
+          if (isOwner(localUser.role)) return "Owner";
+          if (isAdmin(localUser.role)) return "Admin";
+          if (isEditor(localUser.role)) return "Editor";
+          if (isSubEditor(localUser.role)) return "Author";
+          return "Member";
+        }
+      }
+
+      if (highestRole === "Founder") {
+        return "Owner";
+      }
+      return highestRole;
+    } catch (e) {
+      console.error(e);
+      return localUser?.role || "Member";
+    }
   };
 
-  const canAccessAdmin = (user: Profile | null) => {
-    if (!user || !user.role) return false;
-    if (user.role === "सदस्य") return false;
-    return [
-      "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक",
-      "कार्यकारी संपादक", "वरिष्ठ संपादक", "संपादक", "सहायक संपादक", "समुदाय प्रबंधक",
-      "समुदाय मॉडरेटर", "समूह व्यवस्थापक", "समूह मॉडरेटर", "प्रूफरीडर", "भाषा समीक्षक",
-      "कार्यक्रम समन्वयक", "चुनौती समन्वयक", "प्रमाणपत्र प्रबंधक", "स्वयंसेवक", "प्रशिक्षु",
-      "Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Fact Check Reviewer", "Author"
-    ].includes(user.role);
+  const canManageArticles = () => {
+    return hasRole("Founder") || hasRole("Owner") || hasRole("Admin") || hasRole("Editor-in-Chief") || hasRole("Managing Editor") || hasRole("Editor") || hasRole("Author");
+  };
+
+  const canPublishArticles = (contentType: string) => {
+    const isSpecialContent = ["Editorial", "Special Report", "Research Report"].includes(contentType);
+    if (isSpecialContent) {
+      return hasRole("Founder") || hasRole("Owner") || hasRole("Editor-in-Chief");
+    }
+    return hasRole("Founder") || hasRole("Owner") || hasRole("Admin") || hasRole("Editor-in-Chief") || hasRole("Managing Editor") || hasRole("Editor");
+  };
+
+  const canAccessAdmin = () => {
+    return currentUserRoles.some(r => !["Subscriber", "Member", "User", "सदस्य"].includes(r));
   };
 
   function mapFeatureToModule(feature: string): string {
@@ -3418,6 +3497,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         canManageArticles,
         canPublishArticles,
         canAccessAdmin,
+        getResolvedUserRole,
         supabaseConfigured,
         authLoading,
         settings,

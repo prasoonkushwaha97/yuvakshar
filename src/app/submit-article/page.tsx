@@ -139,7 +139,7 @@ const ContentEditable = ({ html, onChange, className, placeholder, onFocus, onBl
 };
 
 export default function SubmitArticlePage() {
-  const { currentUser, submitPublicArticle, openAuthModal, becomeAuthor, generateAiContent } = useCms();
+  const { currentUser, submitPublicArticle, openAuthModal, becomeAuthor, generateAiContent, hasRole } = useCms();
 
   // Active Workspace Tab: 'compose' | 'preview' | 'track'
   const [activeTab, setActiveTab] = useState<"compose" | "preview" | "track">("compose");
@@ -1250,7 +1250,7 @@ export default function SubmitArticlePage() {
           </p>
         </div>
 
-        {currentUser && currentUser.role === null && (
+        {currentUser && hasRole("Member") && !hasRole("Author") && !hasRole("Editor") && !hasRole("Admin") && !hasRole("Founder") && !hasRole("Owner") && (
           <button
             onClick={() => setShowAuthorConversionModal(true)}
             className="bg-gradient-to-r from-amber-500 to-primary text-white font-bold py-2.5 px-6 rounded-full text-xs transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center space-x-1.5 animate-pulse"

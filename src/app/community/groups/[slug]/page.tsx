@@ -40,7 +40,7 @@ import { useParams } from "next/navigation";
 export default function GroupDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
-  const { currentUser, users } = useCms();
+  const { currentUser, users, hasRole } = useCms();
 
   // States
   const [group, setGroup] = useState<CommunityGroup | null>(null);
@@ -274,7 +274,7 @@ export default function GroupDetailPage() {
   // Roles verification
   const userMemberObj = groupMembers.find(m => m.user_id === currentUser?.id);
   const userRoleInGroup = userMemberObj?.role || (group.owner_id === currentUser?.id ? "Owner" : null);
-  const isModerator = ["Owner", "Admin", "Moderator"].includes(userRoleInGroup || "") || currentUser?.role === "Admin";
+  const isModerator = ["Owner", "Admin", "Moderator"].includes(userRoleInGroup || "") || hasRole("Admin");
 
   const isReadingClub = group.category === "Reading Club";
 

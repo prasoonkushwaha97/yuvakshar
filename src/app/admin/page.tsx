@@ -144,13 +144,12 @@ export default function AdminDashboard() {
     setFeaturedVideo
   } = cms;
 
-  const role = currentUser?.role || "";
-  const isOwnerRole = ["Owner", "Founder", "संस्थापक"].includes(role);
-  const isAdminRole = ["Owner", "Founder", "Admin", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक"].includes(role);
-  const isEICRole = ["Owner", "Founder", "Admin", "Editor-in-Chief", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक"].includes(role);
-  const isManagingEditorRole = ["Owner", "Founder", "Admin", "Editor-in-Chief", "Managing Editor", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक", "कार्यकारी संपादक", "प्रबंध संपादक"].includes(role);
-  const isEditorRole = ["Owner", "Founder", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक", "कार्यकारी संपादक", "प्रबंध संपादक", "वरिष्ठ संपादक", "संपादक"].includes(role);
-  const isSubEditorRole = ["Owner", "Founder", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Sub Editor", "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक", "कार्यकारी संपादक", "प्रबंध संपादक", "वरिष्ठ संपादक", "संपादक", "सहायक संपादक"].includes(role);
+  const isOwnerRole = cms.hasRole("Founder") || cms.hasRole("Owner");
+  const isAdminRole = isOwnerRole || cms.hasRole("Admin");
+  const isEICRole = isAdminRole || cms.hasRole("Editor-in-Chief");
+  const isManagingEditorRole = isEICRole || cms.hasRole("Managing Editor");
+  const isEditorRole = isManagingEditorRole || cms.hasRole("Editor");
+  const isSubEditorRole = isEditorRole || cms.hasRole("Sub Editor");
 
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -357,7 +356,7 @@ export default function AdminDashboard() {
   // Adjust active tab for general readers to profile if they are on dashboard by default
   useEffect(() => {
     if (currentUser) {
-      const isAdmin = cms.canAccessAdmin(currentUser);
+      const isAdmin = cms.canAccessAdmin();
       if (!isAdmin && activeTab === "dashboard") {
         setActiveTab("profile");
       }
@@ -662,7 +661,7 @@ export default function AdminDashboard() {
     }
 
     if (finalStatus === "Published") {
-      const allowed = cms.canPublishArticles(currentUser, contentType || "");
+      const allowed = cms.canPublishArticles(contentType || "");
       if (!allowed) {
         finalStatus = "Pending Review";
         alert("संपादकीय नीति: खोजी रिपोर्ट (Investigative/Special Reports) और संपादकीय (Editorials) को सीधे प्रकाशित करने की अनुमति केवल प्रधान संपादक (Editor-in-Chief) या स्वामी (Owner) को है। आलेख समीक्षा (Pending Review) में सुरक्षित कर दिया गया है।");
@@ -869,7 +868,7 @@ export default function AdminDashboard() {
   }
 
   const canAccessTab = (tab: string) => {
-    return cms.canAccessAdmin(currentUser); // Administrative tabs require editor/admin roles
+    return cms.canAccessAdmin(); // Administrative tabs require editor/admin roles
   };
 
   if (!canAccessTab(activeTab)) {
@@ -937,7 +936,7 @@ export default function AdminDashboard() {
 
           {/* Logged in Role Badge */}
           <span className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider bg-primary/10 border border-primary/20 text-primary rounded-full">
-            {currentUser?.role || "Editor"}
+            {cms.getDisplayRole() || "Editor"}
           </span>
 
           {/* Profile Menu Avatar */}
@@ -967,7 +966,7 @@ export default function AdminDashboard() {
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-bold font-serif text-slate-800 dark:text-white truncate">{currentUser?.name}</p>
-                <span className="text-[9px] text-slate-400 uppercase tracking-widest">{currentUser?.role || "सदस्य"}</span>
+                <span className="text-[9px] text-slate-400 uppercase tracking-widest">{cms.getDisplayRole() || "सदस्य"}</span>
               </div>
               <button
                 onClick={logoutUser}
@@ -983,7 +982,7 @@ export default function AdminDashboard() {
                   { id: "dashboard", label: "डैशबोर्ड", icon: BarChart3, visible: isManagingEditorRole },
                   { id: "video-management", label: "वीडियो", icon: VideoIcon, visible: isSubEditorRole },
                   { id: "magazines", label: "पत्रिका", icon: BookOpen, visible: isEICRole },
-                  { id: "articles", label: "लेख", icon: FileEdit, visible: cms.canManageArticles(currentUser) },
+                  { id: "articles", label: "लेख", icon: FileEdit, visible: cms.canManageArticles() },
                   { id: "assignments", label: "कार्य", icon: Calendar, visible: isEditorRole },
                   { id: "comments", label: "टिप्पणी", icon: MessageSquare, visible: isManagingEditorRole },
                   { id: "quiz-management", label: "क्विज़", icon: Trophy, visible: isManagingEditorRole },
@@ -1024,7 +1023,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-xs font-bold font-serif">{currentUser?.name}</p>
-                <span className="text-[10px] text-slate-400 uppercase tracking-widest">{currentUser?.role}</span>
+                <span className="text-[10px] text-slate-400 uppercase tracking-widest">{cms.getDisplayRole()}</span>
               </div>
             </div>
 
@@ -1034,7 +1033,7 @@ export default function AdminDashboard() {
                   { id: "dashboard", label: "डैशबोर्ड", icon: BarChart3, visible: isManagingEditorRole },
                   { id: "video-management", label: "वीडियो डेस्क", icon: VideoIcon, visible: isSubEditorRole },
                   { id: "magazines", label: "पत्रिका प्रबंधन", icon: BookOpen, visible: isEICRole },
-                  { id: "articles", label: "लेख व समाचार", icon: FileEdit, visible: cms.canManageArticles(currentUser) },
+                  { id: "articles", label: "लेख व समाचार", icon: FileEdit, visible: cms.canManageArticles() },
                   { id: "assignments", label: "संपादकीय कार्य", icon: Calendar, visible: isEditorRole },
                   { id: "comments", label: "टिप्पणी नियंत्रण", icon: MessageSquare, visible: isManagingEditorRole },
                   { id: "quiz-management", label: "ज्ञान एवं अध्ययन प्रबंधन", icon: Trophy, visible: isManagingEditorRole },
@@ -1693,7 +1692,7 @@ export default function AdminDashboard() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2 className="font-serif text-2xl font-bold border-l-2 border-primary pl-2">उपयोगकर्ता एवं भूमिका प्रबंधन (User Roles Management)</h2>
               <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-lg text-xs font-mono font-bold">
-                आपकी भूमिका: {currentUser?.role}
+                आपकी भूमिका: {cms.getDisplayRole()}
               </span>
             </div>
             

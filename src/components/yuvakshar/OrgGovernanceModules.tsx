@@ -25,7 +25,7 @@ const translateRole = (role?: string | null) => {
 
 // ─── 1. CANDIDATE MANAGEMENT ──────────────────────────────────────────────
 export function CandidateManagement({ currentUser }: { currentUser: Profile }) {
-  const { users, createCandidate, approveCandidate, rejectCandidate } = useCms();
+  const { users, createCandidate, approveCandidate, rejectCandidate, hasRole } = useCms();
   
   // Form states
   const [name, setName] = useState("");
@@ -38,7 +38,7 @@ export function CandidateManagement({ currentUser }: { currentUser: Profile }) {
   const [district, setDistrict] = useState("");
   const [state, setState] = useState("");
 
-  const isAuthorized = currentUser && ["संस्थापक", "Owner", "प्रधान प्रशासक"].includes(currentUser.role || "");
+  const isAuthorized = currentUser && (hasRole("Founder") || hasRole("Owner") || hasRole("Admin"));
 
   if (!isAuthorized) {
     return (
@@ -287,7 +287,7 @@ export function CandidateManagement({ currentUser }: { currentUser: Profile }) {
 
 // ─── 2. VERIFICATION QUEUE ────────────────────────────────────────────────
 export function VerificationQueue({ currentUser }: { currentUser: Profile }) {
-  const { verifications, processVerification } = useCms();
+  const { verifications, processVerification, hasRole } = useCms();
   const [notes, setNotes] = useState<Record<string, string>>({});
 
   const pendingList = verifications.filter(v => v.status === "Pending");
@@ -309,12 +309,9 @@ export function VerificationQueue({ currentUser }: { currentUser: Profile }) {
               // Governance checks
               let hasPermission = false;
               if (isSahityakar) {
-                hasPermission = ["संस्थापक", "सह-संस्थापक", "Owner", "Co-Owner"].includes(currentUser.role || "");
+                hasPermission = hasRole("Founder") || hasRole("Owner");
               } else {
-                hasPermission = [
-                  "संस्थापक", "सह-संस्थापक", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक",
-                  "Owner", "Admin", "Editor-in-Chief"
-                ].includes(currentUser.role || "");
+                hasPermission = hasRole("Founder") || hasRole("Owner") || hasRole("Admin") || hasRole("Editor-in-Chief");
               }
 
               return (
@@ -400,7 +397,7 @@ export function VerificationQueue({ currentUser }: { currentUser: Profile }) {
 
 // ─── 3. TASK BOARD ────────────────────────────────────────────────────────
 export function TaskBoard({ currentUser }: { currentUser: Profile }) {
-  const { tasks, assignTask, updateTaskStatus, users } = useCms();
+  const { tasks, assignTask, updateTaskStatus, users, hasRole } = useCms();
 
   // Task form states
   const [title, setTitle] = useState("");
@@ -413,7 +410,7 @@ export function TaskBoard({ currentUser }: { currentUser: Profile }) {
   // Filter state
   const [statusFilter, setStatusFilter] = useState<string>("All");
 
-  const teamMembers = users.filter(u => u.role !== null && u.role !== "सदस्य" && u.status === "active");
+  const teamMembers = users.filter(u => u.role !== null && u.role !== "\u0938\u0926\u0938\u094d\u092f" && u.role !== "Subscriber" as any && u.status === "active");
 
   const handleAssign = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -483,7 +480,7 @@ export function TaskBoard({ currentUser }: { currentUser: Profile }) {
   return (
     <div className="space-y-6">
       {/* Assign Task Section */}
-      {["संस्थापक", "सह-संस्थापक", "Owner", "Admin", "प्रधान प्रशासक", "प्रशासक", "प्रधान संपादक", "कार्यकारी संपादक", "वरिष्ठ संपादक", "संपादक", "Managing Editor", "Editor-in-Chief"].includes(currentUser.role || "") && (
+      {currentUser && (hasRole("Founder") || hasRole("Owner") || hasRole("Admin") || hasRole("Editor-in-Chief") || hasRole("Managing Editor") || hasRole("Editor")) && (
         <GlassCard glow="saffron" className="p-5 space-y-4">
           <h3 className="font-serif font-bold text-sm text-primary">नए कार्य का आवंटन (Assign Task)</h3>
           <form onSubmit={handleAssign} className="space-y-3 text-xs">

@@ -14,7 +14,7 @@ import {
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import HoverUserCard from "@/components/yuvakshar/HoverUserCard";
 import { CommunityPost } from "@/lib/communityService";
-import { Profile } from "@/store/CmsContext";
+import { Profile, useCms } from "@/store/CmsContext";
 
 interface PostCardProps {
   post: CommunityPost;
@@ -56,6 +56,7 @@ export default function PostCard({
   onConvert,
   renderContentWithHashtags
 }: PostCardProps) {
+  const { hasRole } = useCms();
   
   const hasVoted = post.poll_votes && currentUser && currentUser.id in post.poll_votes;
   const voteTotal = post.poll_votes ? Object.keys(post.poll_votes).length : 0;
@@ -248,7 +249,7 @@ export default function PostCard({
         </div>
 
         {/* Convert to Article Draft (Admin/Editor/Author role check) */}
-        {onConvert && currentUser && ["Admin", "Owner", "Editor", "Author", "Contributor"].includes(currentUser.role || "") && (
+        {onConvert && currentUser && (hasRole("Admin") || hasRole("Owner") || hasRole("Editor") || hasRole("Author") || hasRole("Contributor")) && (
           <button
             onClick={() => onConvert(post)}
             className="hidden sm:flex items-center space-x-1.5 text-[11px] text-primary hover:bg-primary/10 px-2 py-1.5 rounded-lg transition-colors font-bold cursor-pointer font-hindi"

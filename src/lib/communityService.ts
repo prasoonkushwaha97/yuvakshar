@@ -353,6 +353,21 @@ export const fetchGroups = async (): Promise<CommunityGroup[]> => {
  * Fetch all members of a Group
  */
 export const fetchGroupMembers = async (groupId: string): Promise<CommunityGroupMember[]> => {
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from("community_members")
+      .select("*")
+      .eq("community_id", groupId);
+    if (!error && data) {
+      return data.map(m => ({
+        id: m.id,
+        group_id: m.community_id,
+        user_id: m.user_id,
+        role: m.role as any,
+        joined_at: m.joined_at
+      }));
+    }
+  }
   initializeCommunityData();
   return getLocalStorageItem<CommunityGroupMember[]>("yuvakshar_c_group_members", []);
 };
@@ -361,6 +376,16 @@ export const fetchGroupMembers = async (groupId: string): Promise<CommunityGroup
  * Check if user is a member of a Group
  */
 export const isUserGroupMember = async (groupId: string, userId: string): Promise<boolean> => {
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from("community_members")
+      .select("id")
+      .eq("community_id", groupId)
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .maybeSingle();
+    if (!error) return !!data;
+  }
   initializeCommunityData();
   const members = getLocalStorageItem<CommunityGroupMember[]>("yuvakshar_c_group_members", []);
   return members.some(m => m.group_id === groupId && m.user_id === userId);
@@ -370,6 +395,37 @@ export const isUserGroupMember = async (groupId: string, userId: string): Promis
  * Join or leave a Group
  */
 export const toggleGroupMembership = async (groupId: string, userId: string): Promise<boolean> => {
+  if (isSupabaseConfigured()) {
+    const { data: existing, error: checkError } = await supabase
+      .from("community_members")
+      .select("*")
+      .eq("community_id", groupId)
+      .eq("user_id", userId)
+      .maybeSingle();
+      
+    if (!checkError) {
+      if (existing) {
+        // Leave group
+        const { error } = await supabase
+          .from("community_members")
+          .delete()
+          .eq("community_id", groupId)
+          .eq("user_id", userId);
+        return error ? true : false; // return false for left
+      } else {
+        // Join group
+        const { error } = await supabase
+          .from("community_members")
+          .insert({
+            community_id: groupId,
+            user_id: userId,
+            role: "member",
+            status: "active"
+          });
+        return error ? false : true; // return true for joined
+      }
+    }
+  }
   initializeCommunityData();
   const members = getLocalStorageItem<CommunityGroupMember[]>("yuvakshar_c_group_members", []);
   const existingIdx = members.findIndex(m => m.group_id === groupId && m.user_id === userId);
@@ -462,16 +518,49 @@ export const saveReadingProgress = async (
  */
 export const fetchPosts = async (groupId?: string): Promise<CommunityPost[]> => {
   if (isSupabaseConfigured()) {
-    let query = supabase.from("community_posts").select("*").order("created_at", { ascending: false });
-    if (groupId) query = query.eq("group_id", groupId);
+    let query = supabase
+      .from("community_posts")
+      .select(`
+        *,
+        profiles:user_id (
+          name,
+          avatar_url,
+          role
+        ),
+        likesCount:community_post_likes(user_id),
+        commentsCount:community_comments(id)
+      `)
+      .order("created_at", { ascending: false });
+      
+    if (groupId) {
+      query = query.eq("group_id", groupId);
+    }
+    
     const { data, error } = await query;
     if (!error && data) {
-      // Mock formatting usernames for DB fetches
-      return data.map(p => ({
-        ...p,
-        user_name: p.title ? "डॉ. विकास शर्मा" : "अमित कुमार", // Fallback names
-        likesCount: p.likes?.length || 0,
-        commentsCount: 2
+      return data.map((p: any) => ({
+        id: p.id,
+        user_id: p.user_id,
+        user_name: p.profiles?.name || "अपरिचित यूज़र",
+        user_avatar: p.profiles?.avatar_url || "",
+        user_rank: p.profiles?.role || "Member",
+        group_id: p.group_id,
+        title: p.title,
+        content: p.content,
+        post_type: p.post_type,
+        media_url: p.media_url,
+        poll_question: p.poll_question,
+        poll_options: p.poll_options,
+        poll_votes: p.poll_votes,
+        link_url: p.link_url,
+        forum_category: p.forum_category,
+        is_pinned: p.is_pinned,
+        is_locked: p.is_locked,
+        is_solved: p.is_solved,
+        best_answer_id: p.best_answer_id,
+        created_at: p.created_at,
+        likesCount: p.likesCount ? p.likesCount.length : 0,
+        commentsCount: p.commentsCount ? p.commentsCount.length : 0
       }));
     }
   }
@@ -493,6 +582,64 @@ export const createPost = async (
   type: CommunityPost["post_type"] = "text",
   extraData?: Partial<CommunityPost>
 ): Promise<CommunityPost> => {
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase.from("community_posts").insert({
+        user_id: userId,
+        content,
+        post_type: type,
+        group_id: extraData?.group_id || null,
+        title: extraData?.title || null,
+        media_url: extraData?.media_url || null,
+        poll_question: extraData?.poll_question || null,
+        poll_options: extraData?.poll_options || null,
+        poll_votes: extraData?.poll_votes || {},
+        link_url: extraData?.link_url || null,
+        forum_category: extraData?.forum_category || "General",
+        is_pinned: extraData?.is_pinned || false,
+        is_locked: extraData?.is_locked || false,
+        is_solved: extraData?.is_solved || false
+      }).select(`
+        *,
+        profiles:user_id (
+          name,
+          avatar_url,
+          role
+        )
+      `).single();
+      
+      if (!error && data) {
+        return {
+          id: data.id,
+          user_id: data.user_id,
+          user_name: data.profiles?.name || userName,
+          user_avatar: data.profiles?.avatar_url || "",
+          user_rank: data.profiles?.role || "Member",
+          group_id: data.group_id,
+          title: data.title,
+          content: data.content,
+          post_type: data.post_type,
+          media_url: data.media_url,
+          poll_question: data.poll_question,
+          poll_options: data.poll_options,
+          poll_votes: data.poll_votes,
+          link_url: data.link_url,
+          forum_category: data.forum_category,
+          is_pinned: data.is_pinned,
+          is_locked: data.is_locked,
+          is_solved: data.is_solved,
+          created_at: data.created_at,
+          likesCount: 0,
+          commentsCount: 0
+        };
+      } else if (error) {
+        console.error("Supabase post insert failed:", error);
+      }
+    } catch (e) {
+      console.error("Supabase post insert failed, using local storage:", e);
+    }
+  }
+
   const newPost: CommunityPost = {
     id: `post-${Date.now()}`,
     user_id: userId,
@@ -509,27 +656,6 @@ export const createPost = async (
     commentsCount: 0,
     ...extraData
   };
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase.from("community_posts").insert({
-        user_id: userId,
-        content,
-        post_type: type,
-        group_id: extraData?.group_id || null,
-        title: extraData?.title || null,
-        poll_question: extraData?.poll_question || null,
-        poll_options: extraData?.poll_options || null,
-        link_url: extraData?.link_url || null,
-        forum_category: extraData?.forum_category || null
-      }).select().single();
-      if (!error && data) {
-        return { ...newPost, id: data.id };
-      }
-    } catch (e) {
-      console.error("Supabase post insert failed, using local storage:", e);
-    }
-  }
 
   initializeCommunityData();
   const posts = getLocalStorageItem("yuvakshar_c_posts", mockPosts);
@@ -558,6 +684,46 @@ export const deletePost = async (postId: string): Promise<boolean> => {
  * Like / Unlike a Post
  */
 export const toggleLikePost = async (postId: string, userId: string): Promise<number> => {
+  if (isSupabaseConfigured()) {
+    const { data: existingLike, error: checkError } = await supabase
+      .from("community_post_likes")
+      .select("*")
+      .eq("post_id", postId)
+      .eq("user_id", userId)
+      .maybeSingle();
+      
+    if (!checkError) {
+      if (existingLike) {
+        await supabase.from("community_post_likes").delete().eq("post_id", postId).eq("user_id", userId);
+      } else {
+        await supabase.from("community_post_likes").insert({ post_id: postId, user_id: userId });
+        
+        // Notification
+        try {
+          const { data: postData } = await supabase.from("community_posts").select("user_id, content").eq("id", postId).single();
+          if (postData && postData.user_id !== userId) {
+            await supabase.from("notifications").insert({
+              user_id: postData.user_id,
+              event_type: "like",
+              title: "आपकी पोस्ट को पसंद किया गया",
+              message: `किसी ने आपकी पोस्ट '${postData.content.substring(0, 30)}...' को पसंद किया।`,
+              sender_id: userId,
+              related_id: postId
+            });
+          }
+        } catch (e) {
+          console.error("Failed to send like notification:", e);
+        }
+      }
+      
+      const { count, error: countError } = await supabase
+        .from("community_post_likes")
+        .select("*", { count: "exact", head: true })
+        .eq("post_id", postId);
+      if (!countError) return count || 0;
+    }
+  }
+
   initializeCommunityData();
   const posts = getLocalStorageItem("yuvakshar_c_posts", mockPosts);
   let updatedCount = 0;
@@ -585,6 +751,55 @@ export const toggleLikePost = async (postId: string, userId: string): Promise<nu
  * Fetch comments and replies for a Post
  */
 export const fetchComments = async (postId: string): Promise<CommunityComment[]> => {
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from("community_comments")
+      .select(`
+        *,
+        profiles:user_id (
+          name,
+          avatar_url
+        ),
+        likes:community_comment_likes(user_id)
+      `)
+      .eq("post_id", postId)
+      .order("created_at", { ascending: true });
+      
+    if (!error && data) {
+      const commentMap: Record<string, CommunityComment> = {};
+      const roots: CommunityComment[] = [];
+      
+      data.forEach((c: any) => {
+        commentMap[c.id] = {
+          id: c.id,
+          post_id: c.post_id,
+          parent_id: c.parent_id,
+          user_id: c.user_id,
+          user_name: c.profiles?.name || "अपरिचित यूज़र",
+          user_avatar: c.profiles?.avatar_url || "",
+          content: c.content,
+          is_accepted_answer: c.is_accepted_answer,
+          likesCount: c.likes ? c.likes.length : 0,
+          created_at: c.created_at,
+          replies: [],
+          reply_to_name: c.reply_to_name || undefined,
+          reply_to_content: c.reply_to_content || undefined
+        };
+      });
+      
+      data.forEach((c: any) => {
+        const mapped = commentMap[c.id];
+        if (c.parent_id && commentMap[c.parent_id]) {
+          commentMap[c.parent_id].replies?.push(mapped);
+        } else {
+          roots.push(mapped);
+        }
+      });
+      
+      return roots;
+    }
+  }
+
   initializeCommunityData();
   const comments = getLocalStorageItem("yuvakshar_c_comments", mockComments);
   return comments.filter(c => c.post_id === postId);
@@ -602,6 +817,66 @@ export const addComment = async (
   replyToName?: string | null,
   replyToContent?: string | null
 ): Promise<CommunityComment> => {
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from("community_comments")
+      .insert({
+        post_id: postId,
+        parent_id: parentId || null,
+        user_id: userId,
+        content,
+        reply_to_name: replyToName || null,
+        reply_to_content: replyToContent || null
+      })
+      .select(`
+        *,
+        profiles:user_id (
+          name,
+          avatar_url
+        )
+      `)
+      .single();
+      
+    if (!error && data) {
+      try {
+        const targetUserId = parentId 
+          ? (await supabase.from("community_comments").select("user_id").eq("id", parentId).single()).data?.user_id
+          : (await supabase.from("community_posts").select("user_id").eq("id", postId).single()).data?.user_id;
+          
+        if (targetUserId && targetUserId !== userId) {
+          await supabase.from("notifications").insert({
+            user_id: targetUserId,
+            event_type: parentId ? "reply" : "comment",
+            title: parentId ? "आपकी टिप्पणी का उत्तर मिला" : "आपकी पोस्ट पर टिप्पणी की गई",
+            message: `${userName} ने कहा: "${content.substring(0, 30)}..."`,
+            sender_id: userId,
+            related_id: postId
+          });
+        }
+      } catch (e) {
+        console.error("Failed to send comment notification:", e);
+      }
+      
+      return {
+        id: data.id,
+        post_id: data.post_id,
+        parent_id: data.parent_id,
+        user_id: data.user_id,
+        user_name: data.profiles?.name || userName,
+        user_avatar: data.profiles?.avatar_url || "",
+        content: data.content,
+        is_accepted_answer: data.is_accepted_answer,
+        likesCount: 0,
+        created_at: data.created_at,
+        replies: [],
+        reply_to_name: data.reply_to_name || undefined,
+        reply_to_content: data.reply_to_content || undefined
+      };
+    } else {
+      console.error("Supabase insert comment failed:", error);
+    }
+  }
+
   const newComment: CommunityComment = {
     id: `comm-${Date.now()}`,
     post_id: postId,
@@ -649,6 +924,29 @@ export const addComment = async (
  * Like / Unlike a Comment
  */
 export const toggleLikeComment = async (commentId: string, userId: string): Promise<number> => {
+  if (isSupabaseConfigured()) {
+    const { data: existingLike, error: checkError } = await supabase
+      .from("community_comment_likes")
+      .select("*")
+      .eq("comment_id", commentId)
+      .eq("user_id", userId)
+      .maybeSingle();
+      
+    if (!checkError) {
+      if (existingLike) {
+        await supabase.from("community_comment_likes").delete().eq("comment_id", commentId).eq("user_id", userId);
+      } else {
+        await supabase.from("community_comment_likes").insert({ comment_id: commentId, user_id: userId });
+      }
+      
+      const { count, error: countError } = await supabase
+        .from("community_comment_likes")
+        .select("*", { count: "exact", head: true })
+        .eq("comment_id", commentId);
+      if (!countError) return count || 0;
+    }
+  }
+
   initializeCommunityData();
   const comments = getLocalStorageItem<CommunityComment[]>("yuvakshar_c_comments", mockComments);
   let updatedCount = 0;

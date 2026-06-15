@@ -69,7 +69,7 @@ function EventCountdown({ eventDate }: { eventDate: string }) {
 }
 
 export default function EventsPage() {
-  const { currentUser } = useCms();
+  const { currentUser, hasRole } = useCms();
   const [events, setEvents] = useState<CommunityEvent[]>([
     { 
       id: "evt-1", 
@@ -205,7 +205,7 @@ export default function EventsPage() {
           <span>साहित्यिक एवं शैक्षणिक कार्यक्रम (Events)</span>
         </div>
         
-        {currentUser && ["Admin", "Owner", "Editor", "Author"].includes(currentUser.role || "") && (
+        {currentUser && (hasRole("Admin") || hasRole("Owner") || hasRole("Editor") || hasRole("Author")) && (
           <button
             onClick={() => setShowEventForm(!showEventForm)}
             className="bg-primary hover:bg-primary/95 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center space-x-1.5 cursor-pointer font-hindi"

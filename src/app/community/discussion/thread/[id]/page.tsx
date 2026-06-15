@@ -31,7 +31,7 @@ import ProfilePreviewWrapper from "@/components/yuvakshar/ProfilePreviewCard";
 export default function DiscussionThreadPage() {
   const params = useParams();
   const threadId = params.id as string;
-  const { currentUser, users } = useCms();
+  const { currentUser, users, hasRole } = useCms();
 
   // States
   const [thread, setThread] = useState<CommunityPost | null>(null);
@@ -144,7 +144,7 @@ export default function DiscussionThreadPage() {
   // Mark Best Answer Workflow
   const handleAcceptAnswer = async (comment: CommunityComment) => {
     if (!currentUser || !thread) return;
-    if (thread.user_id !== currentUser.id && currentUser.role !== "Admin") {
+    if (thread.user_id !== currentUser.id && !hasRole("Admin")) {
       alert("केवल धागा शुरू करने वाले लेखक ही 'सर्वश्रेष्ठ उत्तर' का चयन कर सकते हैं।");
       return;
     }
@@ -365,7 +365,7 @@ export default function DiscussionThreadPage() {
                     </div>
 
                     {/* Mark as Best Answer */}
-                    {currentUser && (thread.user_id === currentUser.id || currentUser.role === "Admin") && !thread.is_solved && (
+                    {currentUser && (thread.user_id === currentUser.id || hasRole("Admin")) && !thread.is_solved && (
                       <button
                         onClick={() => handleAcceptAnswer(comment)}
                         className="text-green-600 hover:text-green-700 font-bold font-hindi flex items-center space-x-1 cursor-pointer"

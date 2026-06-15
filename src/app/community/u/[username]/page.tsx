@@ -187,7 +187,7 @@ export default function SocialProfilePage() {
   }
 
   const isOwnProfile = currentUser?.id === profile.id;
-  const isEditorialRole = profile.role && ["Founder", "Editor", "Author", "Contributor", "संपादक", "संस्थापक", "वरिष्ठ संपादक"].some(r => profile.role!.includes(r));
+  const isEditorialRole = profile.role && ["Founder", "Owner", "Admin", "Editor-in-Chief", "Managing Editor", "Editor", "Author", "Contributor"].includes(profile.role);
 
   // Filter timeline based on tabs
   const displayTimeline = timeline.filter(event => {

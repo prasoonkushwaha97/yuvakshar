@@ -99,6 +99,7 @@ function EditorialPageContent() {
     currentUser,
     openAuthModal,
     users,
+    getDisplayRole
   } = useCms();
 
   // Load target article or fallback to first article
@@ -1013,7 +1014,7 @@ function EditorialPageContent() {
                   </div>
                   <div>
                     <p className="font-bold text-slate-800 dark:text-white leading-none">{currentUser.name}</p>
-                    <p className="text-[9px] text-slate-400 mt-1">{translateRole(currentUser.role)}</p>
+                    <p className="text-[9px] text-slate-400 mt-1">{getDisplayRole()}</p>
                   </div>
                 </div>
 
