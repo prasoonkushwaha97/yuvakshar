@@ -31,25 +31,7 @@ import {
 import { useCms } from "@/store/CmsContext";
 import MobileSearchOverlay from "@/components/layout/MobileSearchOverlay";
 
-const translateRole = (role?: string | null) => {
-  if (!role || role === "User" || role === "Member") return null;
-  switch (role) {
-    case "Owner": return "संस्थापक";
-    case "Super Admin": return "मुख्य प्रशासक";
-    case "Admin": return "प्रशासक";
-    case "Editor-in-Chief": return "प्रधान संपादक";
-    case "Managing Editor": return "प्रबंध संपादक";
-    case "Editor": return "संपादक";
-    case "Moderator": return "मॉडरेटर";
-    case "Reviewer": return "समीक्षक";
-    case "Fact Check Reviewer": return "सत्यता समीक्षक";
-    case "Content Manager": return "सामग्री प्रबंधक";
-    case "Event Coordinator": return "कार्यक्रम समन्वयक";
-    case "Author": return "लेखक";
-    case "Contributor": return "योगदानकर्ता";
-    default: return role;
-  }
-};
+
 
 
 
@@ -61,7 +43,7 @@ export interface NavbarProps {
 
 export default function Navbar({ showFounderWorkspace, showAdminWorkspace, showModeratorWorkspace }: NavbarProps) {
   const pathname = usePathname();
-  const { settings, logoutUser, currentUser, magazines, articles, openAuthModal } = useCms();
+  const { settings, logoutUser, currentUser, magazines, articles, openAuthModal, getDisplayRole } = useCms();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
@@ -350,7 +332,7 @@ export default function Navbar({ showFounderWorkspace, showAdminWorkspace, showM
                       {currentUser.name || "पाठक"}
                     </span>
                     <span className="text-[9px] text-slate-500 dark:text-slate-400 font-sans tracking-wide mt-0.5">
-                      {translateRole(currentUser.role)}
+                      {getDisplayRole()}
                     </span>
                   </div>
                   <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
@@ -376,10 +358,10 @@ export default function Navbar({ showFounderWorkspace, showAdminWorkspace, showM
                               <p className="font-bold text-slate-800 dark:text-white truncate text-sm leading-tight">
                                 {currentUser.name || "पाठक"}
                               </p>
-                              {translateRole(currentUser.role) && (
+                              {getDisplayRole() && (
                                 <div className="flex flex-col gap-1 mt-1">
                                   <span className="text-[9px] text-slate-400 dark:text-slate-500 font-sans tracking-wide">
-                                    {translateRole(currentUser.role)}
+                                    {getDisplayRole()}
                                   </span>
                                 </div>
                               )}
@@ -524,9 +506,9 @@ export default function Navbar({ showFounderWorkspace, showAdminWorkspace, showM
                   </div>
                   <div className="min-w-0">
                     <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{currentUser.name || "पाठक"}</p>
-                    {translateRole(currentUser.role) && (
+                    {getDisplayRole() && (
                       <span className="text-[10px] text-slate-500 dark:text-slate-400 font-sans block mt-0.5">
-                        {translateRole(currentUser.role)}
+                        {getDisplayRole()}
                       </span>
                     )}
                   </div>
@@ -679,7 +661,7 @@ export default function Navbar({ showFounderWorkspace, showAdminWorkspace, showM
                   <p className="font-bold text-base text-slate-800 dark:text-white truncate">{currentUser.name || "पाठक"}</p>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 font-sans font-semibold">
-                      {translateRole(currentUser.role)}
+                      {getDisplayRole()}
                     </span>
                   </div>
                 </div>

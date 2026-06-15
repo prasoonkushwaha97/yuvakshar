@@ -249,6 +249,11 @@ interface CmsContextType {
   supabaseConfigured: boolean;
   currentUser: Profile | null;
   authLoading: boolean;
+  resolvedRole: string | null;
+  currentUserRoles: string[];
+  hasRole: (role: string) => boolean;
+  hasPermission: (permission: string) => boolean;
+  getDisplayRole: () => string | null;
   settings: {
     general: GeneralSettings;
     appearance: AppearanceSettings;
@@ -508,6 +513,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   const [supabaseConfigured, setSupabaseConfigured] = useState(false);
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [resolvedRole, setResolvedRole] = useState<string | null>(null);
+  const [currentUserRoles, setCurrentUserRoles] = useState<string[]>([]);
+  const [currentUserPermissions, setCurrentUserPermissions] = useState<string[]>([]);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authCallback, setAuthCallback] = useState<(() => void) | null>(null);
   const [authModalMessage, setAuthModalMessage] = useState("");
@@ -709,23 +717,59 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
             .eq("id", session.user.id)
             .single();
 
-          // Load the user's actual role from user_roles -> roles
+          // Load the user's actual role from user_roles -> roles -> permissions
           const { data: roleData } = await supabase
             .from('user_roles')
-            .select('roles(name)')
+            .select('role_id, roles(name, slug)')
             .eq('user_id', session.user.id);
             
-          let actualRole = "Subscriber";
+          const rolesArray: string[] = [];
+          let highestRole = "Member";
+          const ROLE_PRIORITY = ['Founder', 'Admin', 'Moderator', 'Editor', 'Author', 'Member'];
+          let highestIndex = ROLE_PRIORITY.length;
+          
           if (session.user.email === 'prasoonkushwaha9754@gmail.com') {
-             actualRole = "Founder";
+             highestRole = "Founder";
+             rolesArray.push("Founder", "Admin");
+             highestIndex = 0;
           }
+          
           if (roleData && roleData.length > 0) {
-            const roleObj = Array.isArray(roleData[0].roles) ? roleData[0].roles[0] : roleData[0].roles;
-            if (roleObj && roleObj.name) actualRole = roleObj.name;
+             for (const item of roleData) {
+               const r = Array.isArray(item.roles) ? item.roles[0] : item.roles;
+               if (r && r.name) {
+                 rolesArray.push(r.name);
+                 const idx = ROLE_PRIORITY.indexOf(r.name);
+                 if (idx !== -1 && idx < highestIndex) {
+                   highestIndex = idx;
+                   highestRole = r.name;
+                 }
+               }
+             }
           }
+          
+          // Fetch permissions
+          const permsArray: string[] = [];
+          if (roleData && roleData.length > 0) {
+             const roleIds = roleData.map(r => r.role_id);
+             const { data: permData } = await supabase.from('role_permissions').select('permissions(slug)').in('role_id', roleIds);
+             if (permData) {
+               for (const item of permData) {
+                 const p = Array.isArray(item.permissions) ? item.permissions[0] : item.permissions;
+                 if (p && p.slug) permsArray.push(p.slug);
+               }
+             }
+          }
+          
+          setResolvedRole(highestRole);
+          setCurrentUserRoles(rolesArray);
+          setCurrentUserPermissions(permsArray);
             
           if (profile) {
-            profile.role = actualRole; // Sync highest privilege role
+            if (profile.role !== highestRole) {
+              await supabase.from("profiles").update({ role: highestRole }).eq("id", profile.id);
+            }
+            profile.role = highestRole as any; // Legacy sync
             setCurrentUser(profile);
             localStorage.setItem("yuvakshar_session_user", JSON.stringify(profile));
           } else {
@@ -733,7 +777,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
             const newProfile: Profile = {
               id: session.user.id,
               name: session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "NEW USER", username: session.user.email || "".split('@')[0].replace(/['"]/g, ''), email: session.user.email || "",
-              role: actualRole as any,
+              role: highestRole as any,
               status: "active",
               joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
               slug: generateAuthorSlug(session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "user")
@@ -746,7 +790,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
                 id: newProfile.id,
                 email: newProfile.email,
                 name: newProfile.name,
-                role: actualRole,
+                role: highestRole,
                 status: newProfile.status,
                 slug: newProfile.slug
               });
@@ -1196,45 +1240,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
   async function loadDataFromSupabase() {
     try {
-      // load auth profile
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-        if (profile) {
-          setCurrentUser(profile);
-        } else {
-          // Profile does not exist yet in profiles table - create it dynamically!
-          const newProfile: Profile = {
-            id: user.id,
-            name: user.user_metadata?.name || user.email?.split("@")[0].toUpperCase() || "NEW USER", username: user.email || "".split('@')[0].replace(/['"]/g, ''), email: user.email || "",
-            role: user.user_metadata?.role || null,
-            status: "active",
-            joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
-            slug: generateAuthorSlug(user.user_metadata?.name || user.email?.split("@")[0].toUpperCase() || "user")
-          };
-          
-          const { error: insertError } = await supabase
-            .from("profiles")
-            .insert({
-              id: newProfile.id,
-              email: newProfile.email,
-              name: newProfile.name,
-              role: newProfile.role || 'Subscriber',
-              status: newProfile.status,
-              slug: newProfile.slug
-            });
-            
-          if (!insertError) {
-            setCurrentUser(newProfile);
-            localStorage.setItem("yuvakshar_session_user", JSON.stringify(newProfile));
-          } else {
-            console.error("Error inserting profile in loadDataFromSupabase:", insertError.message);
-            setCurrentUser(newProfile);
-            localStorage.setItem("yuvakshar_session_user", JSON.stringify(newProfile));
-          }
-        }
-      }
-
       // Load site settings
       const { data: dbSettings } = await supabase.from("site_settings").select("*");
       if (dbSettings && dbSettings.length > 0) {
@@ -1623,7 +1628,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const createUser = async (user: Omit<Profile, "id">) => {
-    const performerRole = currentUser?.role;
+    const performerRole = resolvedRole;
     
     // Authorization check
     if (!performerRole || !isManagingEditor(performerRole)) {
@@ -1675,7 +1680,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateUser = async (userId: string, data: Partial<Profile>) => {
-    const performerRole = currentUser?.role;
+    const performerRole = resolvedRole;
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
@@ -1735,7 +1740,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteUser = async (userId: string) => {
-    const performerRole = currentUser?.role;
+    const performerRole = resolvedRole;
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
@@ -1768,7 +1773,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const transferOwnership = async (targetUserId: string) => {
-    const performerRole = currentUser?.role;
+    const performerRole = resolvedRole;
     if (performerRole !== "Owner") {
       alert("त्रुटि: केवल Owner ही स्वामित्व स्थानांतरित कर सकता है!");
       return;
@@ -1806,7 +1811,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const resetUserPassword = async (userId: string) => {
-    const performerRole = currentUser?.role;
+    const performerRole = resolvedRole;
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
@@ -1922,7 +1927,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         category: article.category || "विविध",
         section: article.section || "article",
         author: article.author || currentUser?.name || "युवाक्षर संपादक",
-        authorRole: currentUser?.role || "लेखक",
+        authorRole: "लेखक",
         coverImage: article.coverImage || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
         date: article.date || now,
         readTime: article.readTime || `${Math.max(1, Math.ceil((article.content?.split(" ").length || 100) / 150))} मिनट`,
@@ -3367,9 +3372,28 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
 
 
 
+  const hasRole = (role: string) => {
+    if (currentUser?.email === 'prasoonkushwaha9754@gmail.com') return true;
+    return currentUserRoles.includes(role);
+  };
+  const hasPermission = (permission: string) => {
+    if (currentUser?.email === 'prasoonkushwaha9754@gmail.com') return true;
+    return currentUserPermissions.includes(permission);
+  };
+  const getDisplayRole = () => {
+    if (!resolvedRole || ['Subscriber', 'User', 'Member', 'सदस्य'].includes(resolvedRole)) return null;
+    return resolvedRole;
+  };
+
   return (
     <CmsContext.Provider
       value={{
+        currentUser,
+        resolvedRole,
+        currentUserRoles,
+        hasRole,
+        hasPermission,
+        getDisplayRole,
         authModalOpen,
         setAuthModalOpen,
         openAuthModal,
@@ -3395,7 +3419,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         canPublishArticles,
         canAccessAdmin,
         supabaseConfigured,
-        currentUser,
         authLoading,
         settings,
         articles,

@@ -180,3 +180,24 @@ export const hasPermission = async (permissionSlug: string): Promise<boolean> =>
   const permissions = await getCurrentUserPermissions();
   return permissions.some(p => p.slug === permissionSlug);
 };
+
+// 5. Role Resolution Helper
+const ROLE_PRIORITY = ['Founder', 'Admin', 'Moderator', 'Editor', 'Author', 'Member'];
+
+export const getHighestRole = (roles: { name: string }[]): string => {
+  if (!roles || roles.length === 0) return 'Member';
+  
+  let highestIndex = ROLE_PRIORITY.length;
+  let highestRole = 'Member';
+  
+  for (const role of roles) {
+    // Exact match
+    const index = ROLE_PRIORITY.indexOf(role.name);
+    if (index !== -1 && index < highestIndex) {
+      highestIndex = index;
+      highestRole = role.name;
+    }
+  }
+  
+  return highestRole;
+};
