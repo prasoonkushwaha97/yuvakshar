@@ -1,4 +1,5 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 console.log("SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL);
 console.log("SUPABASE_KEY_EXISTS", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
@@ -33,16 +34,9 @@ if (process.env.NODE_ENV !== "production" && !isSupabaseConfigured()) {
   console.warn("⚠️ [Supabase] Environment variables missing or invalid. Check .env.local");
 }
 
-export const supabase: SupabaseClient = createClient(
+export const supabase: SupabaseClient = createBrowserClient(
   isSupabaseConfigured() ? supabaseUrl : "https://unconfigured.supabase.co",
-  isSupabaseConfigured() ? supabaseAnonKey : "unconfigured-anon-key",
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  }
+  isSupabaseConfigured() ? supabaseAnonKey : "unconfigured-anon-key"
 );
 
 /**
