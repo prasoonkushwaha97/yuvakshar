@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 export function middleware(req: NextRequest) {
   // Verify authentication only by checking for the presence of a Supabase auth cookie.
   // This acts as a lightweight Edge guard before hitting server-side RBAC logic.
-  const hasAuthCookie = req.cookies.getAll().some(c => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'));
+  const hasAuthCookie = req.cookies.getAll().some(c => c.name.startsWith('sb-') && c.name.includes('-auth-token'));
   
   if (!hasAuthCookie) {
     const loginUrl = new URL('/login', req.url);
