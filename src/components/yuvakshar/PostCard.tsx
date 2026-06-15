@@ -9,11 +9,14 @@ import {
   Bookmark, 
   FileEdit,
   FileText,
-  MoreHorizontal
+  MoreHorizontal,
+  Trash2,
+  X,
+  Check
 } from "lucide-react";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import HoverUserCard from "@/components/yuvakshar/HoverUserCard";
-import { CommunityPost } from "@/lib/communityService";
+import { CommunityPost, deletePost, updatePost } from "@/lib/communityService";
 import { Profile, useCms } from "@/store/CmsContext";
 
 interface PostCardProps {
@@ -27,6 +30,8 @@ interface PostCardProps {
   onPollVote: (postId: string, optionIdx: number) => void;
   onConvert?: (post: CommunityPost) => void;
   renderContentWithHashtags: (text: string) => React.ReactNode;
+  onDelete?: (postId: string) => void;
+  onEdit?: (postId: string, updatedPost: CommunityPost) => void;
 }
 
 const getPostTypeBadge = (type: string) => {
@@ -54,7 +59,9 @@ export default function PostCard({
   onShare,
   onPollVote,
   onConvert,
-  renderContentWithHashtags
+  renderContentWithHashtags,
+  onDelete,
+  onEdit
 }: PostCardProps) {
   const { hasRole } = useCms();
   
@@ -73,6 +80,52 @@ export default function PostCard({
     setIsLikedOpt(!isLikedOpt);
     setLikesCountOpt(prev => isLikedOpt ? prev - 1 : prev + 1);
     onLike(post.id);
+  };
+
+  const [showMenu, setShowMenu] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(post.title || "");
+  const [editContent, setEditContent] = useState(post.content);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const canManage = currentUser && (
+    currentUser.id === post.user_id || 
+    hasRole("Admin") || 
+    hasRole("Owner") || 
+    hasRole("Founder") ||
+    hasRole("Super Admin")
+  );
+
+  const canEdit = currentUser && currentUser.id === post.user_id;
+
+  const handleDelete = async () => {
+    if (!confirm("क्या आप वाकई इस पोस्ट को हटाना चाहते हैं?")) return;
+    try {
+      const success = await deletePost(post.id);
+      if (success) {
+        if (onDelete) onDelete(post.id);
+        alert("पोस्ट सफलतापूर्वक हटा दी गई है।");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editContent.trim()) return;
+    setIsSaving(true);
+    try {
+      const updated = await updatePost(post.id, { title: editTitle, content: editContent });
+      if (updated) {
+        if (onEdit) onEdit(post.id, updated);
+        setIsEditing(false);
+        alert("पोस्ट सफलतापूर्वक अपडेट हो गई है।");
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -137,23 +190,89 @@ export default function PostCard({
           <span className={`hidden sm:inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.class} font-hindi`}>
             {badge.text}
           </span>
-          <button className="p-1 text-slate-400 hover:text-primary transition-colors">
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
+          {canManage && (
+            <div className="relative">
+              <button 
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-1 text-slate-400 hover:text-primary transition-colors cursor-pointer"
+                aria-label="Actions"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+              {showMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                  <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg py-1 z-50 text-xs font-hindi">
+                    {canEdit && (
+                      <button
+                        onClick={() => { setIsEditing(true); setShowMenu(false); }}
+                        className="w-full text-left px-3 py-2 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                      >
+                        <FileEdit className="w-3.5 h-3.5" />
+                        <span>संपादित करें</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { handleDelete(); setShowMenu(false); }}
+                      className="w-full text-left px-3 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>हटाएं</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Post Title */}
-      {post.title && (
-        <h3 className="font-serif text-[15px] font-bold text-slate-900 dark:text-white font-hindi leading-snug">
-          {post.title}
-        </h3>
-      )}
+      {isEditing ? (
+        <div className="space-y-3 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200/50 dark:border-slate-800/40">
+          <input 
+            type="text"
+            placeholder="शीर्षक (वैकल्पिक)..."
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-hindi focus:outline-none focus:border-primary"
+          />
+          <textarea
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            rows={4}
+            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs font-hindi focus:outline-none focus:border-primary"
+          />
+          <div className="flex justify-end space-x-2 text-xs">
+            <button
+              onClick={() => setIsEditing(false)}
+              className="px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer flex items-center gap-1.5"
+            >
+              <X className="w-3 h-3" /> रद्द करें
+            </button>
+            <button
+              onClick={handleSaveEdit}
+              disabled={isSaving || !editContent.trim()}
+              className="px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary/95 cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+            >
+              {isSaving ? "सहेज रहा है..." : <><Check className="w-3 h-3" /> सहेजें</>}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Post Title */}
+          {post.title && (
+            <h3 className="font-serif text-[15px] font-bold text-slate-900 dark:text-white font-hindi leading-snug">
+              {post.title}
+            </h3>
+          )}
 
-      {/* Post Content */}
-      <p className="text-[13px] sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-hindi whitespace-pre-wrap">
-        {renderContentWithHashtags(post.content)}
-      </p>
+          {/* Post Content */}
+          <p className="text-[13px] sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-hindi whitespace-pre-wrap">
+            {renderContentWithHashtags(post.content)}
+          </p>
+        </>
+      )}
 
       {/* Render Poll type */}
       {post.post_type === "poll" && post.poll_question && post.poll_options && (

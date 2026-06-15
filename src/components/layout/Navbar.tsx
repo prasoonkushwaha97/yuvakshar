@@ -41,9 +41,24 @@ export interface NavbarProps {
   showModeratorWorkspace?: boolean;
 }
 
-export default function Navbar({ showFounderWorkspace, showAdminWorkspace, showModeratorWorkspace }: NavbarProps) {
+export default function Navbar({ 
+  showFounderWorkspace: propsShowFounderWorkspace, 
+  showAdminWorkspace: propsShowAdminWorkspace, 
+  showModeratorWorkspace: propsShowModeratorWorkspace 
+}: NavbarProps) {
   const pathname = usePathname();
-  const { settings, logoutUser, currentUser, magazines, articles, openAuthModal, getDisplayRole } = useCms();
+  const { settings, logoutUser, currentUser, magazines, articles, openAuthModal, getDisplayRole, hasRole } = useCms();
+
+  const isFounder = hasRole("Founder") || hasRole("founder");
+  const isCoFounder = hasRole("Co-Founder") || hasRole("co_founder");
+  const isSuperAdmin = hasRole("Super Admin") || hasRole("super_admin");
+  const isAdmin = hasRole("Admin") || hasRole("admin");
+  const isEditorInChief = hasRole("Editor-in-Chief") || hasRole("editor_in_chief");
+  const isModerator = hasRole("Moderator") || hasRole("moderator");
+
+  const showFounderWorkspace = propsShowFounderWorkspace !== undefined ? propsShowFounderWorkspace : isFounder;
+  const showAdminWorkspace = propsShowAdminWorkspace !== undefined ? propsShowAdminWorkspace : (isFounder || isCoFounder || isSuperAdmin || isAdmin);
+  const showModeratorWorkspace = propsShowModeratorWorkspace !== undefined ? propsShowModeratorWorkspace : (isFounder || isCoFounder || isSuperAdmin || isAdmin || isEditorInChief || isModerator);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
@@ -277,10 +292,10 @@ export default function Navbar({ showFounderWorkspace, showAdminWorkspace, showM
 
                   {link.hasDropdown && (
                     <div className="absolute top-full left-0 bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 py-2 w-44 rounded-b-xl shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50">
-                      <Link href="/category/literature/poetry" className="block px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">कविता</Link>
-                      <Link href="/category/literature/story" className="block px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">कहानी</Link>
-                      <Link href="/category/literature/memoir" className="block px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">संस्मरण</Link>
-                      <Link href="/category/literature/review" className="block px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">पुस्तक समीक्षा</Link>
+                      <Link href="/category/literature?sub=poetry" className="block px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">कविता</Link>
+                      <Link href="/category/literature?sub=story" className="block px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">कहानी</Link>
+                      <Link href="/category/literature?sub=memoir" className="block px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">संस्मरण</Link>
+                      <Link href="/category/literature?sub=review" className="block px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">पुस्तक समीक्षा</Link>
                     </div>
                   )}
                 </div>
@@ -560,10 +575,10 @@ export default function Navbar({ showFounderWorkspace, showAdminWorkspace, showM
                                 className="overflow-hidden pl-12 pr-4 py-1 space-y-0.5"
                               >
                                 {[
-                                  { href: "/category/literature/poetry", label: "कविता" },
-                                  { href: "/category/literature/story", label: "कहानी" },
-                                  { href: "/category/literature/memoir", label: "संस्मरण" },
-                                  { href: "/category/literature/review", label: "पुस्तक समीक्षा" },
+                                  { href: "/category/literature?sub=poetry", label: "कविता" },
+                                  { href: "/category/literature?sub=story", label: "कहानी" },
+                                  { href: "/category/literature?sub=memoir", label: "संस्मरण" },
+                                  { href: "/category/literature?sub=review", label: "पुस्तक समीक्षा" },
                                 ].map(sub => (
                                   <Link key={sub.href} href={sub.href} onClick={() => handleMobileMenuToggle(false)} className="block px-3 py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-primary rounded-lg">
                                     {sub.label}

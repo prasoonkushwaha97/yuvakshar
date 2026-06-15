@@ -129,24 +129,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-import { hasAnyRole } from "@/lib/rbacService";
-
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isFounder = await hasAnyRole(['founder']);
-  const isCoFounder = await hasAnyRole(['co_founder']);
-  const isSuperAdmin = await hasAnyRole(['super_admin']);
-  const isAdmin = await hasAnyRole(['admin']);
-  const isEditorInChief = await hasAnyRole(['editor_in_chief']);
-  const isModerator = await hasAnyRole(['moderator']);
-
-  const showFounderWorkspace = isFounder;
-  const showAdminWorkspace = isFounder || isCoFounder || isSuperAdmin || isAdmin;
-  const showModeratorWorkspace = isFounder || isCoFounder || isSuperAdmin || isAdmin || isEditorInChief || isModerator;
-
   return (
     <html lang="hi" className={`h-full scroll-smooth ${notoSansDeva.variable} ${notoSerifDeva.variable} ${hindFont.variable} ${muktaFont.variable} ${interFont.variable}`}>
       <body className="min-h-full flex flex-col bg-white text-[#0F172A] dark:bg-[#0A0F1D] dark:text-slate-200 font-sans antialiased pb-16 lg:pb-0">
@@ -158,11 +145,7 @@ export default async function RootLayout({
             </div>
 
             {/* Navigation bar */}
-            <Navbar 
-              showFounderWorkspace={showFounderWorkspace}
-              showAdminWorkspace={showAdminWorkspace}
-              showModeratorWorkspace={showModeratorWorkspace}
-            />
+            <Navbar />
             
             {/* Global Auth Modal */}
             <AuthModal />

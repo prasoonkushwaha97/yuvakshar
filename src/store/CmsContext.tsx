@@ -771,9 +771,15 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
             profile.bookmarks = dbBms ? dbBms.map((b: any) => b.article_id).filter(Boolean) : [];
 
             if (profile.role !== highestRole) {
-              await supabase.from("profiles").update({ role: highestRole }).eq("id", profile.id);
+              const payload = { role: highestRole };
+              console.log("PROFILE UPDATE PAYLOAD", payload);
+              await supabase.from("profiles").update(payload).eq("id", profile.id);
             }
             profile.role = highestRole as any; // Legacy sync
+            // Augment profile with auth email (profiles table has no email column)
+            if (!profile.email && session.user.email) {
+              profile.email = session.user.email;
+            }
             setCurrentUser(profile);
             localStorage.setItem("yuvakshar_session_user", JSON.stringify(profile));
           } else {
@@ -788,16 +794,17 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
             };
             
             // Write to database
+            const payload = {
+              id: newProfile.id,
+              name: newProfile.name,
+              role: highestRole,
+              status: newProfile.status,
+              slug: newProfile.slug
+            };
+            console.log("PROFILE UPDATE PAYLOAD", payload);
             const { error: insertError } = await supabase
               .from("profiles")
-              .insert({
-                id: newProfile.id,
-                email: newProfile.email,
-                name: newProfile.name,
-                role: highestRole,
-                status: newProfile.status,
-                slug: newProfile.slug
-              });
+              .insert(payload);
               
             if (!insertError) {
               setCurrentUser(newProfile);
@@ -1534,7 +1541,27 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
         };
         
-        await supabase.from("profiles").upsert(newProfile);
+        const allowed = [
+          "id", "name", "role", "status", "bio", "avatar_url", "social_links", "badges",
+          "views_count", "slug", "cover_banner", "designation", "current_role",
+          "verification_badge", "institution", "expertise_tags", "orcid_id",
+          "google_scholar_url", "academic_credentials", "education",
+          "academic_background", "research_interests", "professional_experience",
+          "social_contributions", "publications_list", "reputation_score",
+          "reputation_tier", "public_visibility"
+        ];
+        const filteredProfile: any = {};
+        allowed.forEach(key => {
+          if ((newProfile as any)[key] !== undefined) {
+            filteredProfile[key] = (newProfile as any)[key];
+          }
+        });
+        if (newProfile.publicVisibility !== undefined) {
+          filteredProfile.public_visibility = newProfile.publicVisibility;
+        }
+
+        console.log("PROFILE UPDATE PAYLOAD", filteredProfile);
+        await supabase.from("profiles").upsert(filteredProfile);
       }
 
       alert("पंजीकरण सफल! कृपया अपने ईमेल में पुष्टिकरण लिंक की जांच करें।");
@@ -2743,7 +2770,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       try {
         const supabaseData: any = {};
         const dbFields = [
-          "email", "name", "mobile", "display_name", "bio", "avatar_url", 
+          "name", "bio", "avatar_url", 
           "role", "status", "social_links", "badges", 
           "slug", "cover_banner", "designation", "current_role", 
           "verification_badge", "institution", "expertise_tags", 
@@ -2762,6 +2789,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         if (data.publicVisibility !== undefined) {
           supabaseData.public_visibility = data.publicVisibility;
         }
+
+        console.log("PROFILE UPDATE PAYLOAD", supabaseData);
 
         const { error } = await supabase
           .from("profiles")
@@ -3266,7 +3295,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
     const email = localUser?.email || "";
 
     if (email === 'prasoonkushwaha9754@gmail.com') {
-      return "Owner";
+      return "Founder";
     }
 
     try {
@@ -3309,9 +3338,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         }
       }
 
-      if (highestRole === "Founder") {
-        return "Owner";
-      }
       return highestRole;
     } catch (e) {
       console.error(e);

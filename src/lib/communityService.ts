@@ -681,6 +681,103 @@ export const deletePost = async (postId: string): Promise<boolean> => {
 };
 
 /**
+ * Update / Edit a Post
+ */
+export const updatePost = async (
+  postId: string,
+  updates: Partial<CommunityPost>
+): Promise<CommunityPost | null> => {
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("community_posts")
+        .update({
+          title: updates.title,
+          content: updates.content,
+          post_type: updates.post_type,
+          media_url: updates.media_url,
+          poll_question: updates.poll_question,
+          poll_options: updates.poll_options,
+          poll_votes: updates.poll_votes,
+          link_url: updates.link_url,
+          forum_category: updates.forum_category,
+          is_pinned: updates.is_pinned,
+          is_locked: updates.is_locked,
+          is_solved: updates.is_solved,
+          best_answer_id: updates.best_answer_id,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", postId)
+        .select(`
+          *,
+          profiles:user_id (
+            name,
+            avatar_url,
+            role
+          )
+        `)
+        .single();
+        
+      if (!error && data) {
+        // Fetch likes and comments count
+        const { count: likesCount } = await supabase
+          .from("community_post_likes")
+          .select("*", { count: "exact", head: true })
+          .eq("post_id", postId);
+        const { count: commentsCount } = await supabase
+          .from("community_comments")
+          .select("*", { count: "exact", head: true })
+          .eq("post_id", postId);
+
+        return {
+          id: data.id,
+          user_id: data.user_id,
+          user_name: data.profiles?.name || updates.user_name || "अपरिचित यूज़र",
+          user_avatar: data.profiles?.avatar_url || "",
+          user_rank: data.profiles?.role || "Member",
+          group_id: data.group_id,
+          title: data.title,
+          content: data.content,
+          post_type: data.post_type,
+          media_url: data.media_url,
+          poll_question: data.poll_question,
+          poll_options: data.poll_options,
+          poll_votes: data.poll_votes,
+          link_url: data.link_url,
+          forum_category: data.forum_category,
+          is_pinned: data.is_pinned,
+          is_locked: data.is_locked,
+          is_solved: data.is_solved,
+          created_at: data.created_at,
+          likesCount: likesCount || 0,
+          commentsCount: commentsCount || 0
+        };
+      } else if (error) {
+        console.error("Supabase post update failed:", error);
+      }
+    } catch (e) {
+      console.error("Supabase post update failed, using local storage:", e);
+    }
+  }
+
+  // Local Storage Fallback
+  initializeCommunityData();
+  const posts = getLocalStorageItem("yuvakshar_c_posts", mockPosts);
+  let updatedPost: CommunityPost | null = null;
+  const updated = posts.map(p => {
+    if (p.id === postId) {
+      updatedPost = { ...p, ...updates, id: p.id };
+      return updatedPost;
+    }
+    return p;
+  });
+  if (updatedPost) {
+    setLocalStorageItem("yuvakshar_c_posts", updated);
+  }
+  return updatedPost;
+};
+
+/**
  * Like / Unlike a Post
  */
 export const toggleLikePost = async (postId: string, userId: string): Promise<number> => {

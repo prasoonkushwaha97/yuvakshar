@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { 
   Search, 
   Calendar, 
@@ -39,9 +39,11 @@ const categorySlugMap: Record<string, string> = {
   "patrika": "पत्रिका"
 };
 
-export default function CategoryDetailPage() {
+function CategoryDetailPageContent() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = params.slug as string;
+  const sub = searchParams.get("sub");
   const { articles } = useCms();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("latest");
@@ -71,16 +73,30 @@ export default function CategoryDetailPage() {
 
   useEffect(() => {
     if (categoryName) {
-      document.title = `${categoryName} | युवाक्षर`;
+      const subTitle = sub ? ` - ${sub === "poetry" ? "कविता" : sub === "story" ? "कहानी" : sub === "memoir" ? "संस्मरण" : sub === "review" ? "समीक्षा" : sub}` : "";
+      document.title = `${categoryName}${subTitle} | युवाक्षर`;
     }
-  }, [categoryName]);
+  }, [categoryName, sub]);
 
   const filteredArticles = articles.filter(art => {
     const matchesCategory = art.category === categoryName || art.category.toLowerCase() === slug.toLowerCase();
+    
+    let matchesSub = true;
+    if (sub) {
+      const subTagMap: Record<string, string> = {
+        "poetry": "कविता",
+        "story": "कहानी",
+        "memoir": "संस्मरण",
+        "review": "समीक्षा"
+      };
+      const targetTag = subTagMap[sub.toLowerCase()] || sub;
+      matchesSub = art.tags.some(t => t.toLowerCase() === targetTag.toLowerCase() || t.toLowerCase() === sub.toLowerCase());
+    }
+
     const matchesSearch = art.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           art.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           art.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
+    return matchesCategory && matchesSub && matchesSearch;
   });
 
   const sortedArticles = [...filteredArticles].sort((a, b) => {
@@ -103,7 +119,17 @@ export default function CategoryDetailPage() {
         <div className="flex items-center space-x-1.5 font-medium">
           <Link href="/" className="hover:text-primary transition-colors">मुख्य पृष्ठ</Link>
           <span className="text-slate-400">/</span>
-          <span className="text-foreground dark:text-slate-200 font-semibold">{categoryName}</span>
+          {sub ? (
+            <>
+              <Link href={`/category/${slug}`} className="hover:text-primary transition-colors">{categoryName}</Link>
+              <span className="text-slate-400">/</span>
+              <span className="text-foreground dark:text-slate-200 font-semibold">
+                {sub === "poetry" ? "कविता" : sub === "story" ? "कहानी" : sub === "memoir" ? "संस्मरण" : sub === "review" ? "समीक्षा" : sub}
+              </span>
+            </>
+          ) : (
+            <span className="text-foreground dark:text-slate-200 font-semibold">{categoryName}</span>
+          )}
         </div>
         <Link href="/" className="inline-flex items-center space-x-1 hover:text-primary transition-colors font-medium">
           <ArrowLeft className="w-3.5 h-3.5" />
@@ -224,5 +250,17 @@ export default function CategoryDetailPage() {
       </div>
 
     </div>
+  );
+}
+
+export default function CategoryDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1D] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <CategoryDetailPageContent />
+    </Suspense>
   );
 }

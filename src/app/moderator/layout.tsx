@@ -2,6 +2,8 @@ import { ReactNode } from 'react';
 import { redirect } from 'next/navigation';
 import { hasAnyRole } from '@/lib/rbacService';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ModeratorLayout({ children }: { children: ReactNode }) {
   // Server-side authorization check for the Moderator workspace
   // Allowed roles: founder, co_founder, super_admin, admin, editor_in_chief, moderator

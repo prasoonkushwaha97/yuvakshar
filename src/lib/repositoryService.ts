@@ -321,9 +321,30 @@ export const fetchProfilesFromDb = async (fallback: Profile[]): Promise<Profile[
 export const updateProfileInDb = async (profile: Profile): Promise<{ success: boolean; data?: Profile; error?: string }> => {
   if (isSupabaseConfigured()) {
     try {
+      const allowed = [
+        "id", "name", "role", "status", "bio", "avatar_url", "social_links", "badges",
+        "views_count", "slug", "cover_banner", "designation", "current_role",
+        "verification_badge", "institution", "expertise_tags", "orcid_id",
+        "google_scholar_url", "academic_credentials", "education",
+        "academic_background", "research_interests", "professional_experience",
+        "social_contributions", "publications_list", "reputation_score",
+        "reputation_tier", "public_visibility"
+      ];
+      const filtered: any = {};
+      allowed.forEach(key => {
+        if ((profile as any)[key] !== undefined) {
+          filtered[key] = (profile as any)[key];
+        }
+      });
+      if (profile.publicVisibility !== undefined) {
+        filtered.public_visibility = profile.publicVisibility;
+      }
+
+      console.log("PROFILE UPDATE PAYLOAD", filtered);
+
       const { data, error } = await supabase
         .from("profiles")
-        .upsert(profile)
+        .upsert(filtered)
         .select()
         .single();
       if (error) return { success: false, error: error.message };

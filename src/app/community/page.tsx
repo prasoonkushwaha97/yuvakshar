@@ -202,6 +202,16 @@ function CommunityFeedPageContent() {
     alert(`पोस्ट '${post.title || "बिना शीर्षक की पोस्ट"}' को सफलतापूर्वक लेख ड्राफ्ट में बदल दिया गया है!\nसंपादकीय टीम द्वारा समीक्षा के बाद इसे प्रकाशित किया जाएगा।`);
   };
 
+  // Handle Delete Post from Feed State
+  const handleDeletePost = (postId: string) => {
+    setPosts(prev => prev.filter(p => p.id !== postId));
+  };
+
+  // Handle Edit Post from Feed State
+  const handleEditPost = (postId: string, updatedPost: CommunityPost) => {
+    setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+  };
+
   // Parse hashtags into clickable links
   const renderContentWithHashtags = (content: string) => {
     const parts = content.split(/(\s+)/);
@@ -405,6 +415,8 @@ function CommunityFeedPageContent() {
                 onPollVote={handlePollVote}
                 onConvert={convertPostToArticle}
                 renderContentWithHashtags={renderContentWithHashtags}
+                onDelete={handleDeletePost}
+                onEdit={handleEditPost}
               />
             );
           })

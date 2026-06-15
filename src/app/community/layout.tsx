@@ -6,11 +6,12 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { 
   Home, Users, MessageSquare, Calendar, Bell, Trophy, BookOpen, 
   Search, Bookmark, Plus, MessageCircle, Clock, Settings, ArrowLeft,
-  TrendingUp, FileText, ChevronRight
+  TrendingUp, FileText, ChevronRight, X, Check
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
 import { 
-  initializeCommunityData, fetchChallenges, fetchPosts, CommunityChallenge, CommunityPost 
+  initializeCommunityData, fetchChallenges, fetchPosts, CommunityChallenge, CommunityPost, fetchGroups, createPost
 } from "@/lib/communityService";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import confetti from "canvas-confetti";
@@ -60,6 +61,87 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
   // Create Post Modal State
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createPostType, setCreatePostType] = useState<"text" | "poetry" | "thought" | "poll" | "image" | "event" | "challenge">("text");
+
+  // Form states for Create Post Modal
+  const [formTitle, setFormTitle] = useState("");
+  const [formContent, setFormContent] = useState("");
+  const [formGroupId, setFormGroupId] = useState("");
+  const [formMediaUrl, setFormMediaUrl] = useState("");
+  const [formPollQuestion, setFormPollQuestion] = useState("");
+  const [formPollOptions, setFormPollOptions] = useState(["", ""]);
+  const [formLinkUrl, setFormLinkUrl] = useState("");
+  const [formForumCategory, setFormForumCategory] = useState("General");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availableGroups, setAvailableGroups] = useState<any[]>([]);
+
+  useEffect(() => {
+    const loadGroups = async () => {
+      try {
+        const groupsList = await fetchGroups();
+        setAvailableGroups(groupsList);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    loadGroups();
+  }, []);
+
+  const handleCreatePostSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) {
+      alert("पोस्ट करने के लिए कृपया पहले लॉगिन करें।");
+      return;
+    }
+    if (!formContent.trim()) {
+      alert("कृपया सामग्री लिखें।");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const extra: any = {};
+      if (formGroupId) extra.group_id = formGroupId;
+      if (formTitle.trim()) extra.title = formTitle;
+      if (formMediaUrl.trim()) extra.media_url = formMediaUrl;
+      if (formLinkUrl.trim()) extra.link_url = formLinkUrl;
+      
+      if (createPostType === "poll") {
+        extra.poll_question = formPollQuestion;
+        extra.poll_options = formPollOptions.filter(opt => opt.trim() !== "");
+        extra.poll_votes = {};
+      }
+      
+      extra.forum_category = formForumCategory;
+
+      const newPost = await createPost(
+        currentUser.id,
+        currentUser.name || "लेखक",
+        formContent,
+        createPostType as any,
+        extra
+      );
+
+      // Trigger feed refresh by dispatching the custom event
+      window.dispatchEvent(new CustomEvent("yuvakshar:postCreated", { detail: newPost }));
+
+      // Reset form
+      setFormTitle("");
+      setFormContent("");
+      setFormGroupId("");
+      setFormMediaUrl("");
+      setFormPollQuestion("");
+      setFormPollOptions(["", ""]);
+      setFormLinkUrl("");
+      setCreateModalOpen(false);
+
+      alert("आपकी पोस्ट चौपाल पर प्रकाशित कर दी गई है!");
+    } catch (err) {
+      console.error("Error creating post:", err);
+      alert("पोस्ट बनाने में त्रुटि हुई।");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Dynamic show/hide bottom nav on scroll
   const [showBottomNav, setShowBottomNav] = useState(true);
@@ -341,6 +423,200 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
       </div>
+
+      {/* ─── CREATE POST MODAL ─── */}
+      <AnimatePresence>
+        {createModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setCreateModalOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-lg bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col max-h-[90vh] text-slate-800 dark:text-slate-200 font-hindi"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+                <span className="font-serif font-black text-base md:text-lg text-primary flex items-center gap-2">
+                  <span>🏛️</span>
+                  <span>नई चौपाल प्रविष्टि ({createPostType === 'poetry' ? 'कविता' : createPostType === 'thought' ? 'विचार' : createPostType === 'poll' ? 'मतदान' : 'लेख'})</span>
+                </span>
+                <button 
+                  type="button"
+                  onClick={() => setCreateModalOpen(false)}
+                  className="p-1.5 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-slate-500 cursor-pointer bg-transparent"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleCreatePostSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
+                
+                {/* Select Group / Channel */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider">चौपाल समूह चुनें</label>
+                  <select 
+                    value={formGroupId}
+                    onChange={(e) => setFormGroupId(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-800 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-xs"
+                  >
+                    <option value="">सार्वजनिक चौपाल (Public Feed)</option>
+                    {availableGroups.map(g => (
+                      <option key={g.id} value={g.id}>{g.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Select Post Type */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider">प्रकार</label>
+                  <div className="flex flex-wrap gap-1.5 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
+                    {[
+                      { id: "text", name: "📝 लेख" },
+                      { id: "poetry", name: "✍️ कविता" },
+                      { id: "thought", name: "💭 विचार" },
+                      { id: "poll", name: "❓ मतदान" },
+                      { id: "image", name: "🖼️ चित्र" }
+                    ].map(t => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setCreatePostType(t.id as any)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          createPostType === t.id
+                            ? "bg-white dark:bg-slate-950 text-slate-800 dark:text-white shadow-sm"
+                            : "text-slate-450 hover:text-slate-500"
+                        }`}
+                      >
+                        {t.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Title */}
+                {createPostType !== "thought" && (
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider">शीर्षक (वैकल्पिक)</label>
+                    <input
+                      type="text"
+                      placeholder="पोस्ट का शीर्षक..."
+                      value={formTitle}
+                      onChange={(e) => setFormTitle(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-850 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-xs"
+                    />
+                  </div>
+                )}
+
+                {/* Media URL for Image Attachment */}
+                {createPostType === "image" && (
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider">चित्र यूआरएल (Image URL)</label>
+                    <input
+                      type="text"
+                      placeholder="https://example.com/image.jpg"
+                      value={formMediaUrl}
+                      onChange={(e) => setFormMediaUrl(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-850 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-xs font-mono"
+                    />
+                  </div>
+                )}
+
+                {/* Poll Inputs */}
+                {createPostType === "poll" && (
+                  <div className="space-y-3 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/50 dark:border-slate-800/40">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider">मतदान का सवाल</label>
+                      <input
+                        type="text"
+                        placeholder="जैसे: आपकी पसंदीदा विधा क्या है?"
+                        value={formPollQuestion}
+                        onChange={(e) => setFormPollQuestion(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-950 border border-slate-250 dark:border-slate-850 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-xs"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider flex justify-between">
+                        <span>विकल्प (Options)</span>
+                        <button
+                          type="button"
+                          onClick={() => setFormPollOptions([...formPollOptions, ""])}
+                          className="text-primary hover:underline font-bold text-[10px] bg-transparent border-none cursor-pointer"
+                        >
+                          + नया विकल्प
+                        </button>
+                      </label>
+                      {formPollOptions.map((opt, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            placeholder={`विकल्प ${idx + 1}...`}
+                            value={opt}
+                            onChange={(e) => {
+                              const updated = [...formPollOptions];
+                              updated[idx] = e.target.value;
+                              setFormPollOptions(updated);
+                            }}
+                            className="flex-grow bg-white dark:bg-slate-950 border border-slate-250 dark:border-slate-850 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-primary text-xs"
+                          />
+                          {formPollOptions.length > 2 && (
+                            <button
+                              type="button"
+                              onClick={() => setFormPollOptions(formPollOptions.filter((_, i) => i !== idx))}
+                              className="text-red-500 hover:text-red-600 font-bold text-xs bg-transparent border-none cursor-pointer"
+                            >
+                              X
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Content Textarea */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider">विचार/सामग्री</label>
+                  <textarea
+                    rows={6}
+                    placeholder="विचारों को आवाज़ दीजिए..."
+                    value={formContent}
+                    onChange={(e) => setFormContent(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-850 rounded-xl p-4 outline-none focus:ring-2 focus:ring-primary text-xs leading-relaxed"
+                  />
+                </div>
+
+                {/* Buttons */}
+                <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setCreateModalOpen(false)}
+                    className="px-5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-855 transition-colors text-xs cursor-pointer font-bold bg-transparent"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !formContent.trim()}
+                    className="px-6 py-2.5 bg-primary text-white rounded-xl hover:bg-primary/95 transition-all text-xs cursor-pointer font-bold disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    {isSubmitting ? "प्रकाशित हो रहा है..." : <><Check className="w-3.5 h-3.5" /> प्रकाशित करें</>}
+                  </button>
+                </div>
+
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
