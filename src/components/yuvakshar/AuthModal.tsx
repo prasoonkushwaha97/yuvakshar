@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   X, Phone, Mail, Lock, Key, ShieldCheck, User, 
@@ -13,6 +14,7 @@ import GlassCard from "./GlassCard";
 import confetti from "canvas-confetti";
 
 export default function AuthModal() {
+  const router = useRouter();
   const { 
     authModalOpen, 
     closeAuthModal, 
@@ -119,6 +121,7 @@ export default function AuthModal() {
       setSuccessMessage("Google से सफलतापूर्वक लॉगिन हुआ!");
       setTimeout(() => {
         setSuccessMessage("");
+        router.refresh();
         closeAuthModal();
         const params = new URLSearchParams(window.location.search);
         const redirectTo = params.get("redirect_to");
@@ -231,6 +234,7 @@ export default function AuthModal() {
         setSuccessMessage("");
         setOtpSent(false);
         setEmailOtp("");
+        router.refresh();
         closeAuthModal();
         const params = new URLSearchParams(window.location.search);
         const redirectTo = params.get("redirect_to");
@@ -275,7 +279,8 @@ export default function AuthModal() {
           setSuccessMessage("");
           setEmail("");
           setPassword("");
-          closeAuthModal();
+          router.refresh();
+        closeAuthModal();
           const params = new URLSearchParams(window.location.search);
           const redirectTo = params.get("redirect_to");
           if (redirectTo) window.location.href = redirectTo;
@@ -347,7 +352,8 @@ export default function AuthModal() {
           setMobile("");
           setPassword("");
           setConfirmPassword("");
-          closeAuthModal();
+          router.refresh();
+        closeAuthModal();
           const params = new URLSearchParams(window.location.search);
           const redirectTo = params.get("redirect_to");
           if (redirectTo) window.location.href = redirectTo;

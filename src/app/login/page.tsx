@@ -14,7 +14,8 @@ function LoginContent() {
   useEffect(() => {
     if (currentUser) {
       const redirectTo = searchParams.get("redirect_to") || "/";
-      window.location.href = redirectTo;
+      router.refresh();
+      router.replace(redirectTo);
     } else {
       openAuthModal(undefined, "कृपया आगे बढ़ने के लिए लॉगिन करें।");
     }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Home, 
@@ -47,6 +47,7 @@ export default function Navbar({
   showModeratorWorkspace: propsShowModeratorWorkspace 
 }: NavbarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { settings, logoutUser, currentUser, magazines, articles, openAuthModal, getDisplayRole, hasRole } = useCms();
 
   const isFounder = hasRole("Founder") || hasRole("founder");
@@ -441,7 +442,7 @@ export default function Navbar({
 
                         <div className="border-t border-slate-100 dark:border-slate-800/80 mt-2 pt-1.5">
                           <button
-                            onClick={() => { logoutUser(); setProfileDropdownOpen(false); }}
+                            onClick={async () => { await logoutUser(); setProfileDropdownOpen(false); router.refresh(); }}
                             className="w-full text-left px-4 py-2 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all cursor-pointer font-hindi font-bold flex items-center space-x-2"
                           >
                             <LogOut className="w-4 h-4 shrink-0" />
@@ -616,7 +617,7 @@ export default function Navbar({
 
                 {currentUser && (
                   <button
-                    onClick={() => { logoutUser(); handleMobileMenuToggle(false); }}
+                    onClick={async () => { await logoutUser(); handleMobileMenuToggle(false); router.refresh(); }}
                     className="w-full flex items-center justify-center gap-2 py-3 border border-red-200/50 dark:border-red-900/30 bg-red-50/50 dark:bg-red-950/10 rounded-xl text-sm text-red-500 dark:text-red-400 font-bold transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
@@ -736,7 +737,7 @@ export default function Navbar({
               {/* Logout */}
               <div className="px-4 pb-8 pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0">
                 <button
-                  onClick={() => { logoutUser(); setProfileDropdownOpen(false); }}
+                  onClick={async () => { await logoutUser(); setProfileDropdownOpen(false); router.refresh(); }}
                   className="w-full flex items-center justify-center gap-2 py-3.5 border border-red-200/50 dark:border-red-900/30 bg-red-50/50 dark:bg-red-950/10 rounded-xl text-sm text-red-500 dark:text-red-400 font-bold"
                 >
                   <LogOut className="w-4 h-4" />
