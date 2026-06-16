@@ -96,9 +96,9 @@ export async function getFounderDashboardStats() {
         if (!roleName && ur.roles && Array.isArray(ur.roles)) roleName = ur.roles[0]?.name;
         if (!roleName && ur.roles) roleName = ur.roles.name;
 
-        if (roleName === 'Founder') founders++;
-        else if (roleName === 'Admin') admins++;
-        else if (roleName === 'Editor') editors++;
+        if (roleName === 'Founder' || roleName === 'Co-Founder') founders++;
+        else if (roleName === 'Admin' || roleName === 'Super Admin') admins++;
+        else if (roleName === 'Editor' || roleName === 'Editor-in-Chief') editors++;
         else if (roleName === 'Moderator') moderators++;
         else if (roleName === 'Reviewer') reviewers++;
       });
