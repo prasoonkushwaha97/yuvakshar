@@ -124,6 +124,7 @@ export default function AuthModal() {
         const redirectTo = params.get("redirect_to");
         if (redirectTo) window.location.href = redirectTo;
         else if (window.location.pathname === "/login") window.location.href = "/";
+          else window.location.reload();
       }, 1500);
     } else {
       triggerShake();
@@ -235,6 +236,7 @@ export default function AuthModal() {
         const redirectTo = params.get("redirect_to");
         if (redirectTo) window.location.href = redirectTo;
         else if (window.location.pathname === "/login") window.location.href = "/";
+          else window.location.reload();
       }, 1500);
     } else {
       triggerShake();
@@ -278,6 +280,7 @@ export default function AuthModal() {
           const redirectTo = params.get("redirect_to");
           if (redirectTo) window.location.href = redirectTo;
           else if (window.location.pathname === "/login") window.location.href = "/";
+          else window.location.reload();
         }, 1500);
       } else {
         triggerShake();
@@ -349,6 +352,7 @@ export default function AuthModal() {
           const redirectTo = params.get("redirect_to");
           if (redirectTo) window.location.href = redirectTo;
           else if (window.location.pathname === "/login") window.location.href = "/";
+          else window.location.reload();
         }, 1500);
       } else {
         triggerShake();
