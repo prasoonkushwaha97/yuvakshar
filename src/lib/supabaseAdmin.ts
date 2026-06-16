@@ -11,10 +11,11 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 let cachedClient: any = null;
 
 const getAdminClient = () => {
+  if (!supabaseServiceKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for administrative database operations but was not provided in the environment variables.");
+  }
   if (!cachedClient) {
-    // Fallback if service role key is missing (e.g. at build time or local dev)
-    const keyToUse = supabaseServiceKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy-key";
-    cachedClient = createClient(supabaseUrl, keyToUse, {
+    cachedClient = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false

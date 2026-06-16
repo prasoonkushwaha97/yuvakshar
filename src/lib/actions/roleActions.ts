@@ -1,7 +1,7 @@
 "use server";
 
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { getCurrentUser, getCurrentUserRoles, FOUNDER_EMAIL, Role } from '@/lib/rbacService';
+import { getCurrentUser, getCurrentUserRoles, FOUNDER_EMAIL, Role, hasAnyRole } from '@/lib/rbacService';
 
 // Define the exact role hierarchy for management enforcement
 // Lower number means higher authority.
@@ -63,11 +63,22 @@ async function canManageTargetUser(actorRank: number, targetUserId: string): Pro
  * Get all available roles from the database.
  */
 export async function getRolesList(): Promise<Role[]> {
+  console.log("[DIAGNOSTICS] getRolesList server action initiated");
+  
+  // Check authorization
+  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
+  if (!isAuthorized) {
+    console.warn("[DIAGNOSTICS] getRolesList: Unauthorized access attempt");
+    throw new Error("Unauthorized to access roles list");
+  }
+
   const { data, error } = await supabaseAdmin.from('roles').select('*');
   if (error) {
-    console.error("Error fetching roles from DB:", error.message);
+    console.error("[DIAGNOSTICS] getRolesList: Supabase query error:", error);
     return [];
   }
+  
+  console.log(`[DIAGNOSTICS] getRolesList: Successfully returning ${data?.length || 0} roles from database`);
   return data || [];
 }
 
