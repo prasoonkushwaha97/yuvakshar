@@ -36,7 +36,7 @@ export async function getAdminUsersList(): Promise<AdminUserRecord[]> {
   }
 
   // 3. Fetch user roles in a single batch query
-  const userIds = authData.users.map(u => u.id);
+  const userIds = authData.users.map((u: any) => u.id);
   
   const { data: roleData, error: roleError } = await supabaseAdmin
     .from('user_roles')
@@ -69,7 +69,7 @@ export async function getAdminUsersList(): Promise<AdminUserRecord[]> {
   }
 
   // 4. Sanitize and combine data
-  return authData.users.map(u => ({
+  return authData.users.map((u: any) => ({
     id: u.id,
     email: u.email || "",
     username: u.user_metadata?.username || u.email?.split("@")[0] || "user",

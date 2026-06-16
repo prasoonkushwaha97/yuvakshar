@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/lib/supabaseClient";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { hasAnyRole } from "@/lib/rbacService";
 
 export async function getRoleGovernanceData() {
@@ -10,7 +10,7 @@ export async function getRoleGovernanceData() {
   }
 
   // Fetch all roles
-  const { data: roles, error: rolesError } = await supabase
+  const { data: roles, error: rolesError } = await supabaseAdmin
     .from('roles')
     .select('*');
 
@@ -20,7 +20,7 @@ export async function getRoleGovernanceData() {
   }
 
   // Fetch member counts from user_roles
-  const { data: countsData, error: countsError } = await supabase
+  const { data: countsData, error: countsError } = await supabaseAdmin
     .from('user_roles')
     .select('role_id');
 
@@ -30,7 +30,7 @@ export async function getRoleGovernanceData() {
 
   const countsMap: Record<string, number> = {};
   if (countsData) {
-    countsData.forEach(row => {
+    countsData.forEach((row: any) => {
       countsMap[row.role_id] = (countsMap[row.role_id] || 0) + 1;
     });
   }
@@ -40,9 +40,9 @@ export async function getRoleGovernanceData() {
     'editor_in_chief': 4, 'editor': 5, 'moderator': 6, 'reviewer': 7,
   };
 
-  return roles.map(r => ({
+  return roles.map((r: any) => ({
     ...r,
     rank: ROLE_HIERARCHY_RANK[r.slug] ?? 999,
     member_count: countsMap[r.id] || 0
-  })).sort((a, b) => a.rank - b.rank);
+  })).sort((a: any, b: any) => a.rank - b.rank);
 }

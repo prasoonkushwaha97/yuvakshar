@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/lib/supabaseClient";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { hasAnyRole } from "@/lib/rbacService";
 
 export async function getPermissionsMatrix() {
@@ -10,7 +10,7 @@ export async function getPermissionsMatrix() {
   }
 
   // 1. Fetch all roles ordered by rank
-  const { data: rolesData, error: rolesError } = await supabase
+  const { data: rolesData, error: rolesError } = await supabaseAdmin
     .from('roles')
     .select('*');
 
@@ -25,12 +25,12 @@ export async function getPermissionsMatrix() {
     'editor_in_chief': 4, 'editor': 5, 'moderator': 6, 'reviewer': 7,
   };
 
-  const sortedRoles = rolesData.sort((a, b) => 
+  const sortedRoles = rolesData.sort((a: any, b: any) => 
     (ROLE_HIERARCHY_RANK[a.slug] ?? 999) - (ROLE_HIERARCHY_RANK[b.slug] ?? 999)
   );
 
   // 2. Fetch all permissions
-  const { data: permissionsData, error: permError } = await supabase
+  const { data: permissionsData, error: permError } = await supabaseAdmin
     .from('permissions')
     .select('*')
     .order('resource', { ascending: true })
@@ -42,7 +42,7 @@ export async function getPermissionsMatrix() {
   }
 
   // 3. Fetch role_permissions mapping
-  const { data: rolePermsData, error: rpError } = await supabase
+  const { data: rolePermsData, error: rpError } = await supabaseAdmin
     .from('role_permissions')
     .select('role_id, permission_id');
 
@@ -54,14 +54,14 @@ export async function getPermissionsMatrix() {
   // 4. Build Matrix [permission_id][role_id] = boolean
   const matrix: Record<string, Record<string, boolean>> = {};
   
-  permissionsData.forEach(p => {
+  permissionsData.forEach((p: any) => {
     matrix[p.id] = {};
-    sortedRoles.forEach(r => {
+    sortedRoles.forEach((r: any) => {
       matrix[p.id][r.id] = false;
     });
   });
 
-  rolePermsData.forEach(rp => {
+  rolePermsData.forEach((rp: any) => {
     if (matrix[rp.permission_id]) {
       matrix[rp.permission_id][rp.role_id] = true;
     }
