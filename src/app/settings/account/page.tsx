@@ -5,7 +5,7 @@ import { useCms } from "@/store/CmsContext";
 import { User, AlertCircle, CheckCircle2, RotateCw } from "lucide-react";
 
 export default function AccountSettingsPage() {
-  const { currentUser, updateUser, checkUsernameAvailability } = useCms();
+  const { currentUser, updateUserProfile, checkUsernameAvailability } = useCms();
   
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -52,7 +52,7 @@ export default function AccountSettingsPage() {
         updates.username_changed_at = new Date().toISOString();
       }
 
-      await updateUser(currentUser.id, updates);
+      await updateUserProfile(updates);
       
       setIsSuccess(true);
       setTimeout(() => setIsSuccess(false), 3000);

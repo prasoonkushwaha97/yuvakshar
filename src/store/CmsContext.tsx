@@ -53,6 +53,7 @@ export interface DonationRecord {
 
 import { Profile, OrgTask, VerificationRequest, OrgAuditLog, RoleTransfer, PrivateMessage, Magazine, MagazineIssue } from "./types";
 export type { Profile, OrgTask, VerificationRequest, OrgAuditLog, RoleTransfer, PrivateMessage, Magazine, MagazineIssue };
+import { mapDbProfileToProfile } from "@/lib/repositoryService";
 
 export interface Video {
   id: string;
@@ -712,11 +713,13 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         try {
           // Fetch user profile from Supabase profiles table
-          const { data: profile } = await supabase
+          const { data: dbProfile } = await supabase
             .from("profiles")
             .select("*")
             .eq("id", session.user.id)
             .single();
+
+          let profile = dbProfile ? mapDbProfileToProfile(dbProfile) : null;
 
           // Load the user's actual role from user_roles -> roles -> permissions
           const { data: roleData } = await supabase
@@ -1406,7 +1409,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       // Load Users Profiles
       const { data: dbUsers } = await supabase.from("profiles").select("*");
       if (dbUsers && dbUsers.length > 0) {
-        const enriched = enrichUsersList(dbUsers, loadedArticles);
+        const mappedUsers = dbUsers.map(mapDbProfileToProfile);
+        const enriched = enrichUsersList(mappedUsers, loadedArticles);
         setUsers(enriched);
       } else {
         const defaultStaff: Profile[] = [
@@ -1510,6 +1514,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         options: {
           data: {
             name: customName,
+            username: username,
             mobile: customMobile,
             role: role || "Subscriber"
           }
@@ -1541,24 +1546,35 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
 
         };
         
-        const allowed = [
+        const dbFields = [
           "id", "name", "role", "status", "bio", "avatar_url", "social_links", "badges",
-          "views_count", "slug", "cover_banner", "designation", "current_role",
-          "verification_badge", "institution", "expertise_tags", "orcid_id",
-          "google_scholar_url", "academic_credentials", "education",
-          "academic_background", "research_interests", "professional_experience",
-          "social_contributions", "publications_list", "reputation_score",
-          "reputation_tier", "public_visibility"
+          "views_count"
         ];
         const filteredProfile: any = {};
-        allowed.forEach(key => {
+        dbFields.forEach(key => {
           if ((newProfile as any)[key] !== undefined) {
             filteredProfile[key] = (newProfile as any)[key];
           }
         });
+        
+        const customFields = [
+          "username", "username_changed_at", "previous_username", "slug", "cover_banner",
+          "designation", "current_role", "verification_badge", "institution", "expertise_tags",
+          "orcid_id", "google_scholar_url", "academic_credentials", "education",
+          "academic_background", "research_interests", "professional_experience",
+          "social_contributions", "publications_list", "reputation_score", "reputation_tier"
+        ];
+        
+        const currentSocialLinks = { ...(newProfile.social_links || {}) } as any;
+        customFields.forEach(field => {
+          if ((newProfile as any)[field] !== undefined) {
+            currentSocialLinks[field] = (newProfile as any)[field];
+          }
+        });
         if (newProfile.publicVisibility !== undefined) {
-          filteredProfile.public_visibility = newProfile.publicVisibility;
+          currentSocialLinks.public_visibility = newProfile.publicVisibility;
         }
+        filteredProfile.social_links = currentSocialLinks;
 
         console.log("PROFILE UPDATE PAYLOAD", filteredProfile);
         await supabase.from("profiles").upsert(filteredProfile);
@@ -2525,6 +2541,73 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateUserProfile = async (data: Partial<Profile>) => {
+    if (!currentUser) return;
+    
+    if (isSupabaseConfigured()) {
+      try {
+        const supabaseData: any = {};
+        const dbFields = [
+          "name", "bio", "avatar_url", "role", "status", "social_links", "badges", "views_count"
+        ];
+        
+        dbFields.forEach(field => {
+          if (field in data) {
+            supabaseData[field] = (data as any)[field];
+          }
+        });
+        
+        // Handle custom fields serialization into social_links
+        const customFields = [
+          "username", "username_changed_at", "previous_username", "slug", "cover_banner",
+          "designation", "current_role", "verification_badge", "institution", "expertise_tags",
+          "orcid_id", "google_scholar_url", "academic_credentials", "education",
+          "academic_background", "research_interests", "professional_experience",
+          "social_contributions", "publications_list", "reputation_score", "reputation_tier"
+        ];
+        
+        const currentSocialLinks = { ...(currentUser.social_links || {}) } as any;
+        let socialLinksUpdated = false;
+        
+        customFields.forEach(field => {
+          if (field in data) {
+            currentSocialLinks[field] = (data as any)[field];
+            socialLinksUpdated = true;
+          }
+        });
+        
+        if (data.publicVisibility !== undefined) {
+          currentSocialLinks.public_visibility = data.publicVisibility;
+          socialLinksUpdated = true;
+        }
+        
+        if (socialLinksUpdated) {
+          supabaseData.social_links = currentSocialLinks;
+        }
+
+        console.log("PROFILE UPDATE PAYLOAD", supabaseData);
+
+        const { error } = await supabase
+          .from("profiles")
+          .update(supabaseData)
+          .eq("id", currentUser.id);
+          
+        if (error) {
+          console.error("Failed to update profile in Supabase:", error.message);
+        }
+      } catch (err) {
+        console.error("updateUserProfile Supabase error:", err);
+      }
+    }
+
+    const updatedUser = { ...currentUser, ...data };
+    setCurrentUser(updatedUser);
+    localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+    const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
+    setUsers(updatedUsers);
+    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  };
+
   // 13. Audit logs internal helper
   const logActivity = (action: string, details = {}) => {
     const newLog: ActivityLog = {
@@ -2763,55 +2846,6 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
   };
 
-  const updateUserProfile = async (data: Partial<Profile>) => {
-    if (!currentUser) return;
-    
-    if (isSupabaseConfigured()) {
-      try {
-        const supabaseData: any = {};
-        const dbFields = [
-          "name", "bio", "avatar_url", 
-          "role", "status", "social_links", "badges", 
-          "slug", "cover_banner", "designation", "current_role", 
-          "verification_badge", "institution", "expertise_tags", 
-          "orcid_id", "google_scholar_url", "academic_credentials", 
-          "education", "academic_background", 
-          "research_interests", "professional_experience", "social_contributions", 
-          "publications_list", "reputation_score", "reputation_tier"
-        ];
-        
-        dbFields.forEach(field => {
-          if (field in data) {
-            supabaseData[field] = (data as any)[field];
-          }
-        });
-        
-        if (data.publicVisibility !== undefined) {
-          supabaseData.public_visibility = data.publicVisibility;
-        }
-
-        console.log("PROFILE UPDATE PAYLOAD", supabaseData);
-
-        const { error } = await supabase
-          .from("profiles")
-          .update(supabaseData)
-          .eq("id", currentUser.id);
-          
-        if (error) {
-          console.error("Failed to update profile in Supabase:", error.message);
-        }
-      } catch (err) {
-        console.error("updateUserProfile Supabase error:", err);
-      }
-    }
-
-    const updatedUser = { ...currentUser, ...data };
-    setCurrentUser(updatedUser);
-    localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
-  };
 
   // Author Ecosystem 2.0 Actions
   const followAuthor = async (authorId: string, followerId: string) => {

@@ -194,7 +194,7 @@ export const signInUser = async (email: string, passwordInput: string): Promise<
         .single();
         
       if (profileError) return { success: false, error: profileError.message };
-      return { success: true, user: profile };
+      return { success: true, user: mapDbProfileToProfile(profile) };
     } catch (err: any) {
       return { success: false, error: err.message };
     }
@@ -305,12 +305,47 @@ export const incrementArticleLikesInDb = async (id: string): Promise<void> => {
 
 // ─── PROFILEPersistence (Author extensions) ─────────────────────────────────
 
+export const mapDbProfileToProfile = (dbProfile: any): Profile => {
+  if (!dbProfile) return dbProfile;
+  const profile = { ...dbProfile };
+  const custom = dbProfile.social_links || {};
+  
+  const customFields = [
+    "username", "username_changed_at", "previous_username", "slug", "cover_banner",
+    "designation", "current_role", "verification_badge", "institution", "expertise_tags",
+    "orcid_id", "google_scholar_url", "academic_credentials", "education",
+    "academic_background", "research_interests", "professional_experience",
+    "social_contributions", "publications_list", "reputation_score", "reputation_tier"
+  ];
+  
+  customFields.forEach(field => {
+    if (custom[field] !== undefined && profile[field] === undefined) {
+      profile[field] = custom[field];
+    }
+  });
+
+  if (custom.public_visibility !== undefined && profile.publicVisibility === undefined) {
+    profile.publicVisibility = custom.public_visibility;
+  } else if (dbProfile.public_visibility !== undefined && profile.publicVisibility === undefined) {
+    profile.publicVisibility = dbProfile.public_visibility;
+  }
+  
+  if (!profile.username) {
+    profile.username = profile.name ? profile.name.toLowerCase().replace(/[^a-z0-9_]/g, "") : profile.id;
+  }
+  if (!profile.slug) {
+    profile.slug = profile.username;
+  }
+
+  return profile;
+};
+
 export const fetchProfilesFromDb = async (fallback: Profile[]): Promise<Profile[]> => {
   if (isSupabaseConfigured()) {
     try {
       const { data, error } = await supabase.from("profiles").select("*");
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapDbProfileToProfile);
     } catch (err) {
       console.warn("Falling back to local profiles:", err);
     }
@@ -323,12 +358,7 @@ export const updateProfileInDb = async (profile: Profile): Promise<{ success: bo
     try {
       const allowed = [
         "id", "name", "role", "status", "bio", "avatar_url", "social_links", "badges",
-        "views_count", "slug", "cover_banner", "designation", "current_role",
-        "verification_badge", "institution", "expertise_tags", "orcid_id",
-        "google_scholar_url", "academic_credentials", "education",
-        "academic_background", "research_interests", "professional_experience",
-        "social_contributions", "publications_list", "reputation_score",
-        "reputation_tier", "public_visibility"
+        "views_count"
       ];
       const filtered: any = {};
       allowed.forEach(key => {
@@ -336,8 +366,30 @@ export const updateProfileInDb = async (profile: Profile): Promise<{ success: bo
           filtered[key] = (profile as any)[key];
         }
       });
+
+      const customFields = [
+        "username", "username_changed_at", "previous_username", "slug", "cover_banner",
+        "designation", "current_role", "verification_badge", "institution", "expertise_tags",
+        "orcid_id", "google_scholar_url", "academic_credentials", "education",
+        "academic_background", "research_interests", "professional_experience",
+        "social_contributions", "publications_list", "reputation_score", "reputation_tier"
+      ];
+      
+      const currentSocialLinks = { ...(profile.social_links || {}) } as any;
+      let socialLinksUpdated = false;
+      customFields.forEach(field => {
+        if ((profile as any)[field] !== undefined) {
+          currentSocialLinks[field] = (profile as any)[field];
+          socialLinksUpdated = true;
+        }
+      });
       if (profile.publicVisibility !== undefined) {
-        filtered.public_visibility = profile.publicVisibility;
+        currentSocialLinks.public_visibility = profile.publicVisibility;
+        socialLinksUpdated = true;
+      }
+      
+      if (socialLinksUpdated) {
+        filtered.social_links = currentSocialLinks;
       }
 
       console.log("PROFILE UPDATE PAYLOAD", filtered);
@@ -348,7 +400,7 @@ export const updateProfileInDb = async (profile: Profile): Promise<{ success: bo
         .select()
         .single();
       if (error) return { success: false, error: error.message };
-      return { success: true, data };
+      return { success: true, data: mapDbProfileToProfile(data) };
     } catch (err: any) {
       return { success: false, error: err.message };
     }
