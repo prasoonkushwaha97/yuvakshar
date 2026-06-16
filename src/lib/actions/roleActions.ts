@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/utils/supabase/server';
 import { getCurrentUser, getCurrentUserRoles, FOUNDER_EMAIL, Role } from '@/lib/rbacService';
 
 // Define the exact role hierarchy for management enforcement
@@ -49,6 +49,7 @@ function canManageTargetRole(actorRank: number, targetRoleSlug: string): boolean
 async function canManageTargetUser(actorRank: number, targetUserId: string): Promise<boolean> {
   if (actorRank === 0) return true;
   
+  const supabase = await createClient();
   const { data } = await supabase.from('user_roles').select('roles(slug)').eq('user_id', targetUserId);
   const targetRoles = data?.map((d: any) => Array.isArray(d.roles) ? d.roles[0]?.slug : d.roles?.slug).filter(Boolean) || [];
   
@@ -57,6 +58,19 @@ async function canManageTargetUser(actorRank: number, targetUserId: string): Pro
   const targetHighestRank = Math.min(...targetRoles.map(slug => ROLE_HIERARCHY_RANK[slug] ?? 999));
   
   return actorRank < targetHighestRank;
+}
+
+/**
+ * Get all available roles from the database.
+ */
+export async function getRolesList(): Promise<Role[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('roles').select('*');
+  if (error) {
+    console.error("Error fetching roles from DB:", error.message);
+    return [];
+  }
+  return data || [];
 }
 
 /**
@@ -73,6 +87,8 @@ export async function assignRole(targetUserId: string, roleId: string, notes?: s
   
   const actorRoles = await getCurrentUserRoles();
   const actorRank = await getHighestRank(actorRoles, actor.email);
+
+  const supabase = await createClient();
 
   // 1. Verify target role exists
   const { data: roleData, error: roleError } = await supabase.from('roles').select('*').eq('id', roleId).single();
@@ -139,6 +155,8 @@ export async function removeRole(targetUserId: string, roleId: string, notes?: s
   const actorRoles = await getCurrentUserRoles();
   const actorRank = await getHighestRank(actorRoles, actor.email);
 
+  const supabase = await createClient();
+
   // 1. Verify target role exists
   const { data: roleData } = await supabase.from('roles').select('*').eq('id', roleId).single();
   if (!roleData) return { success: false, error: 'Target role does not exist.' };
@@ -186,10 +204,12 @@ export async function promoteRole(targetUserId: string, newRoleId: string, oldRo
   const removeRes = await removeRole(targetUserId, oldRoleId, 'Promotion removal');
   if (!removeRes.success) {
     // rollback assignment if removal fails (ideally in a transaction, but standard supabase JS client doesn't support transactions easily without RPC)
+    const supabase = await createClient();
     await supabase.from('user_roles').delete().eq('user_id', targetUserId).eq('role_id', newRoleId);
     return removeRes;
   }
   
+  const supabase = await createClient();
   await supabase.from('role_assignment_logs').insert({
     user_id: targetUserId,
     role_id: newRoleId,
@@ -211,10 +231,12 @@ export async function demoteRole(targetUserId: string, newRoleId: string, oldRol
   
   const removeRes = await removeRole(targetUserId, oldRoleId, 'Demotion removal');
   if (!removeRes.success) {
+    const supabase = await createClient();
     await supabase.from('user_roles').delete().eq('user_id', targetUserId).eq('role_id', newRoleId);
     return removeRes;
   }
   
+  const supabase = await createClient();
   await supabase.from('role_assignment_logs').insert({
     user_id: targetUserId,
     role_id: newRoleId,

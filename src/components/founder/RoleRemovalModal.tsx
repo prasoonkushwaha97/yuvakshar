@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
-import { removeRole } from "@/lib/actions/roleActions";
+import { removeRole, getRolesList } from "@/lib/actions/roleActions";
 import { toast } from "sonner";
 import { RoleBadge } from "@/components/ui/RoleBadge";
 
@@ -29,8 +29,24 @@ interface Props {
 export function RoleRemovalModal({ open, onOpenChange, targetUserId, targetUserName, roleToRemoveId, onSuccess }: Props) {
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
+  const [dbRoles, setDbRoles] = useState<{ id: string; slug: string; name: string }[]>([]);
 
-  const targetRole = ALL_ROLES.find(r => r.id === roleToRemoveId);
+  useEffect(() => {
+    async function loadRoles() {
+      try {
+        const roles = await getRolesList();
+        setDbRoles(roles);
+      } catch (err) {
+        console.error("Failed to load roles from DB:", err);
+      }
+    }
+    if (open) {
+      loadRoles();
+    }
+  }, [open]);
+
+  const dbRole = dbRoles.find(dr => dr.id === roleToRemoveId);
+  const targetRole = dbRole ? ALL_ROLES.find(r => r.slug === dbRole.slug) : undefined;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

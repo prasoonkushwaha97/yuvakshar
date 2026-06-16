@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
-import { assignRole } from "@/lib/actions/roleActions";
+import { assignRole, getRolesList } from "@/lib/actions/roleActions";
 import { toast } from "sonner";
 import { RoleBadge } from "@/components/ui/RoleBadge";
 
@@ -29,6 +29,21 @@ interface Props {
 export function RoleAssignmentModal({ open, onOpenChange, targetUserId, targetUserName, currentRoles, onSuccess }: Props) {
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [dbRoles, setDbRoles] = useState<{ id: string; slug: string; name: string }[]>([]);
+
+  useEffect(() => {
+    async function loadRoles() {
+      try {
+        const roles = await getRolesList();
+        setDbRoles(roles);
+      } catch (err) {
+        console.error("Failed to load roles from DB:", err);
+      }
+    }
+    if (open) {
+      loadRoles();
+    }
+  }, [open]);
 
   const currentHighestRank = currentRoles.length > 0 
     ? Math.min(...currentRoles.map(r => ALL_ROLES.find(ar => ar.slug === r.slug)?.rank ?? 999))
@@ -36,7 +51,8 @@ export function RoleAssignmentModal({ open, onOpenChange, targetUserId, targetUs
     
   const currentHighestRole = ALL_ROLES.find(r => r.rank === currentHighestRank);
   
-  const targetRole = ALL_ROLES.find(r => r.id === selectedRoleId);
+  const dbSelectedRole = dbRoles.find(dr => dr.id === selectedRoleId);
+  const targetRole = dbSelectedRole ? ALL_ROLES.find(r => r.slug === dbSelectedRole.slug) : undefined;
   
   const resultingRank = targetRole ? Math.min(currentHighestRank, targetRole.rank) : currentHighestRank;
   const resultingRole = ALL_ROLES.find(r => r.rank === resultingRank);
@@ -50,6 +66,7 @@ export function RoleAssignmentModal({ open, onOpenChange, targetUserId, targetUs
       const res = await assignRole(targetUserId, selectedRoleId, `Assigned by admin via UI`);
       if (res.success) {
         toast.success(`Role assigned to ${targetUserName} successfully!`);
+        setSelectedRoleId("");
         onOpenChange(false);
         if (onSuccess) onSuccess();
       } else {
@@ -99,9 +116,11 @@ export function RoleAssignmentModal({ open, onOpenChange, targetUserId, targetUs
             <option value="">-- Choose a Role --</option>
             {ALL_ROLES.map(role => {
               const isAlreadyAssigned = currentRoles.some(cr => cr.slug === role.slug);
+              const dbRole = dbRoles.find(dr => dr.slug === role.slug);
+              const realId = dbRole ? dbRole.id : role.id;
               return (
-                <option key={role.id} value={role.id} disabled={isAlreadyAssigned}>
-                  {role.name} {isAlreadyAssigned ? "(Already Assigned)" : ""}
+                <option key={role.slug} value={realId} disabled={isAlreadyAssigned || !dbRole}>
+                  {role.name} {isAlreadyAssigned ? "(Already Assigned)" : ""} {!dbRole ? "(Loading...)" : ""}
                 </option>
               );
             })}
