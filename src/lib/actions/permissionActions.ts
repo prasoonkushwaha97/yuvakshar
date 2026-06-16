@@ -35,8 +35,8 @@ export async function getPermissionsMatrix() {
   const { data: permissionsData, error: permError } = await supabaseAdmin
     .from('permissions')
     .select('*')
-    .order('resource', { ascending: true })
-    .order('action', { ascending: true });
+    .order('category', { ascending: true })
+    .order('name', { ascending: true });
 
   if (permError || !permissionsData) {
     console.error("[DIAGNOSTICS] getPermissionsMatrix: Error fetching permissions:", permError);

@@ -45,11 +45,11 @@ export default function AuditCenterPage() {
       
       let matchesDate = true;
       if (dateRange === "today") {
-        matchesDate = new Date(log.created_at).toDateString() === new Date().toDateString();
+        matchesDate = new Date(log.performed_at).toDateString() === new Date().toDateString();
       } else if (dateRange === "7days") {
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        matchesDate = new Date(log.created_at) >= sevenDaysAgo;
+        matchesDate = new Date(log.performed_at) >= sevenDaysAgo;
       }
 
       return matchesSearch && matchesAction && matchesDate;
@@ -63,7 +63,7 @@ export default function AuditCenterPage() {
     const csvContent = [
       headers.join(","),
       ...filteredLogs.map(log => [
-        new Date(log.created_at).toISOString(),
+        new Date(log.performed_at).toISOString(),
         log.action,
         `"${log.target_user_details?.name || 'Unknown'}"`,
         `"${log.target_user_details?.email || 'Unknown'}"`,
@@ -195,7 +195,7 @@ export default function AuditCenterPage() {
                       {log.performed_by_details?.name || 'System'}
                     </td>
                     <td className="px-6 py-4 text-right text-slate-500 text-xs">
-                      {new Date(log.created_at).toLocaleString()}
+                      {new Date(log.performed_at).toLocaleString()}
                     </td>
                   </tr>
                 ))

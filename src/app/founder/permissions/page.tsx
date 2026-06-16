@@ -28,13 +28,13 @@ export default function PermissionsCenterPage() {
     fetchMatrix();
   }, []);
 
-  // Group permissions by resource for cleaner rendering
-  const permissionsByResource: Record<string, any[]> = {};
+  // Group permissions by category for cleaner rendering
+  const permissionsByCategory: Record<string, any[]> = {};
   permissions.forEach(p => {
-    if (!permissionsByResource[p.resource]) {
-      permissionsByResource[p.resource] = [];
+    if (!permissionsByCategory[p.category]) {
+      permissionsByCategory[p.category] = [];
     }
-    permissionsByResource[p.resource].push(p);
+    permissionsByCategory[p.category].push(p);
   });
 
   return (
@@ -63,7 +63,7 @@ export default function PermissionsCenterPage() {
               <thead className="bg-slate-50 dark:bg-[#1E293B] border-b border-slate-200 dark:border-slate-800">
                 <tr>
                   <th className="px-6 py-4 sticky left-0 bg-slate-50 dark:bg-[#1E293B] z-10 w-64 border-r border-slate-200 dark:border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                    <div className="font-semibold text-slate-700 dark:text-slate-300">Resource / Action</div>
+                    <div className="font-semibold text-slate-700 dark:text-slate-300">Category / Permission</div>
                   </th>
                   {roles.map(role => (
                     <th key={role.id} className="px-4 py-4 text-center min-w-[120px]">
@@ -78,23 +78,23 @@ export default function PermissionsCenterPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                {Object.entries(permissionsByResource).map(([resource, perms]) => (
-                  <React.Fragment key={resource}>
-                    {/* Resource Header Row */}
+                {Object.entries(permissionsByCategory).map(([category, perms]) => (
+                  <React.Fragment key={category}>
+                    {/* Category Header Row */}
                     <tr className="bg-slate-50/50 dark:bg-[#1E293B]/50">
                       <td 
                         colSpan={roles.length + 1} 
                         className="px-6 py-2 sticky left-0 font-bold text-xs uppercase tracking-widest text-primary bg-slate-50/50 dark:bg-[#1E293B]/50"
                       >
-                        {resource}
+                        {category}
                       </td>
                     </tr>
-                    {/* Actions Rows */}
+                    {/* Permissions Rows */}
                     {perms.map(perm => (
                       <tr key={perm.id} className="hover:bg-slate-50 dark:hover:bg-[#1E293B]/30 transition-colors">
                         <td className="px-6 py-3 sticky left-0 bg-white dark:bg-[#0F172A] z-10 border-r border-slate-200 dark:border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
                           <div className="flex flex-col">
-                            <span className="font-medium text-slate-700 dark:text-slate-200">{perm.action}</span>
+                            <span className="font-medium text-slate-700 dark:text-slate-200">{perm.name}</span>
                             {perm.description && (
                               <span className="text-[10px] text-slate-400 truncate max-w-[200px]" title={perm.description}>
                                 {perm.description}

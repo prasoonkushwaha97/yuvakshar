@@ -11,9 +11,9 @@ export async function getAuditLogsForUser(userId: string) {
 
   const { data, error } = await supabaseAdmin
     .from('role_assignment_logs')
-    .select('id, action, notes, created_at, roles(id, name, slug), performed_by_user:performed_by(id)')
+    .select('id, action, notes, performed_at, roles(id, name, slug), performed_by_user:performed_by(id)')
     .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .order('performed_at', { ascending: false });
 
   if (error) {
     console.error("Error fetching audit logs:", error);
@@ -31,8 +31,8 @@ export async function getGlobalAuditLogs() {
 
   const { data, error } = await supabaseAdmin
     .from('role_assignment_logs')
-    .select('id, action, notes, created_at, roles(id, name, slug), target_user:user_id, performed_by_user:performed_by')
-    .order('created_at', { ascending: false })
+    .select('id, action, notes, performed_at, roles(id, name, slug), target_user:user_id, performed_by_user:performed_by')
+    .order('performed_at', { ascending: false })
     .limit(500);
 
   if (error || !data) {
