@@ -58,3 +58,61 @@ export async function getSystemMetrics() {
     openReports: reportsCount,
   };
 }
+
+export async function getFounderDashboardStats() {
+  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
+  if (!isAuthorized) {
+    throw new Error("Unauthorized to access founder dashboard stats");
+  }
+
+  const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
+
+  let totalUsers = 0;
+  try {
+    const { data } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1 });
+    totalUsers = (data as any)?.total || 0;
+  } catch (e) {
+    console.error("Failed to fetch total users count:", e);
+  }
+
+  let founders = 0;
+  let admins = 0;
+  let editors = 0;
+  let moderators = 0;
+  let reviewers = 0;
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('user_roles')
+      .select(`
+        role_id,
+        roles!inner ( name )
+      `);
+      
+    if (!error && data) {
+      data.forEach((ur: any) => {
+        let roleName = ur.roles?.name;
+        if (Array.isArray(roleName)) roleName = roleName[0]?.name; // defensive check
+        if (!roleName && ur.roles && Array.isArray(ur.roles)) roleName = ur.roles[0]?.name;
+        if (!roleName && ur.roles) roleName = ur.roles.name;
+
+        if (roleName === 'Founder') founders++;
+        else if (roleName === 'Admin') admins++;
+        else if (roleName === 'Editor') editors++;
+        else if (roleName === 'Moderator') moderators++;
+        else if (roleName === 'Reviewer') reviewers++;
+      });
+    }
+  } catch (e) {
+    console.error("Failed to fetch roles count:", e);
+  }
+
+  return {
+    totalUsers,
+    founders,
+    admins,
+    editors,
+    moderators,
+    reviewers,
+  };
+}
