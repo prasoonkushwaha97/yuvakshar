@@ -187,8 +187,8 @@ export async function acceptInvitation(token: string) {
 }
 
 export async function removeMember(communityId: string, targetUserId: string) {
-  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
-  if (!isAuthorized) throw new Error("Unauthorized action.");
+  const isPlatformAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  if (!isPlatformAuthorized) throw new Error("Unauthorized action.");
 
   const isAuthorized = await hasCommunityRole(communityId, ['owner', 'moderator']);
   if (!isAuthorized) throw new Error("Unauthorized to remove members.");
