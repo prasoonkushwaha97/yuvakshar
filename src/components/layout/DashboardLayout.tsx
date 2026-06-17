@@ -95,7 +95,7 @@ export default function DashboardLayout({ children, role }: DashboardLayoutProps
       title: "System",
       roles: ["founder"],
       items: [
-        { label: "Settings", href: `/${role}/settings`, icon: Settings },
+        { label: "Settings", href: `/${role}/system`, icon: Settings },
         { label: "Analytics", href: `/${role}/analytics`, icon: LineChart },
         { label: "Monitoring", href: `/${role}/monitoring`, icon: Server },
       ]
