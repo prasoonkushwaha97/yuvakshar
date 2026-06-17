@@ -1,6 +1,7 @@
 "use server";
 
 import { supabase } from "@/lib/supabaseClient";
+import { hasAnyRole } from "@/lib/rbacService";
 
 export async function createNotification(
   userId: string,
