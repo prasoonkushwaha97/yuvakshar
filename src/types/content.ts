@@ -90,8 +90,92 @@ export interface Article {
     id: string;
     name: string;
   } | null;
-  editor?: {
+    editor?: {
     id: string;
     name: string;
   } | null;
+}
+
+export type MagazineStatus = 'draft' | 'in_production' | 'ready_for_publish' | 'scheduled' | 'published' | 'archived';
+
+export interface MagazineIssue {
+  id: string;
+  title: string;
+  slug: string;
+  cover_image?: string;
+  volume?: number;
+  issue_number?: number;
+  month?: number;
+  year?: number;
+  editorial_note?: string;
+  status: MagazineStatus;
+  published_at?: string;
+  created_by?: string;
+  updated_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MagazineSection {
+  id: string;
+  issue_id: string;
+  title: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface MagazineIssueArticle {
+  issue_id: string;
+  article_id: string;
+  section_id?: string;
+  sort_order: number;
+  added_by?: string;
+  created_at: string;
+  article?: Article;
+}
+
+export interface ReviewNote {
+  id: string;
+  article_id: string;
+  reviewer_id: string;
+  parent_id?: string;
+  note: string;
+  decision?: 'approve' | 'request_changes' | 'reject' | null;
+  created_at: string;
+  updated_at: string;
+  reviewer?: {
+    id: string;
+    name: string;
+    avatar_url: string;
+  };
+  replies?: ReviewNote[];
+}
+
+export interface ArticleAssignment {
+  id: string;
+  article_id: string;
+  user_id: string;
+  role_type: 'reviewer' | 'editor' | 'fact_checker';
+  assigned_by?: string;
+  created_at: string;
+  user?: {
+    id: string;
+    name: string;
+    avatar_url: string;
+  };
+}
+
+export interface WorkflowHistory {
+  id: string;
+  article_id: string;
+  old_status?: ArticleStatus;
+  new_status: ArticleStatus;
+  actor_id: string;
+  notes?: string;
+  created_at: string;
+  actor?: {
+    id: string;
+    name: string;
+    avatar_url: string;
+  };
 }
