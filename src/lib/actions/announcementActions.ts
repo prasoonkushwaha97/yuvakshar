@@ -28,7 +28,10 @@ export async function createAnnouncement(
   isPinned: boolean,
   expiresAt: string | null
 ) {
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
+  if (!isAuthorized) throw new Error("Only Founders can create platform announcements.");
   if (!isAuthorized) throw new Error("Only Founders can create platform announcements.");
 
   const { data: authData } = await supabase.auth.getUser();
@@ -65,7 +68,10 @@ export async function createAnnouncement(
 }
 
 export async function updateAnnouncementStatus(id: string, newStatus: 'draft' | 'published' | 'archived') {
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
+  if (!isAuthorized) throw new Error("Unauthorized");
   if (!isAuthorized) throw new Error("Unauthorized");
 
   const updatePayload: any = { status: newStatus };

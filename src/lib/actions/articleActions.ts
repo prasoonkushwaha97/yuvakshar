@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { hasAnyRole } from "@/lib/rbacService";
 import { revalidatePath } from "next/cache";
 import { logGovernanceAction } from "./governanceAuditActions";
 import { Article, ArticleStatus } from "@/types/content";
@@ -81,6 +82,9 @@ export async function getArticleBySlug(slug: string) {
 }
 
 export async function createArticle(data: Partial<Article>) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
   const supabase = await createClient();
   
   // Enforce server-side logic
@@ -105,6 +109,9 @@ export async function createArticle(data: Partial<Article>) {
 }
 
 export async function updateArticle(id: string, data: Partial<Article>) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
   const supabase = await createClient();
   
   const updateData = { ...data, updated_at: new Date().toISOString() };
@@ -127,6 +134,9 @@ export async function updateArticle(id: string, data: Partial<Article>) {
 }
 
 export async function deleteArticle(id: string) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
   const supabase = await createClient();
   
   const { error } = await supabase
@@ -158,6 +168,9 @@ export async function bulkDeleteArticles(ids: string[]) {
 }
 
 export async function updateArticleStatus(id: string, status: ArticleStatus) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
   const supabase = await createClient();
   
   const updateData: any = { status, updated_at: new Date().toISOString() };

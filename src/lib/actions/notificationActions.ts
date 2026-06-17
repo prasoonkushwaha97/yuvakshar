@@ -8,6 +8,9 @@ export async function createNotification(
   title: string,
   message: string
 ) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
   const { error } = await supabase
     .from('notifications')
     .insert([{

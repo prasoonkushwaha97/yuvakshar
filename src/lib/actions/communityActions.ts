@@ -36,6 +36,9 @@ export async function isCommunityOwner(communityId: string) {
  * MUTATIONS
  */
 export async function createCommunity(name: string, description: string) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
   const { data: authData } = await supabase.auth.getUser();
   if (!authData?.user) throw new Error("Unauthorized");
   
@@ -184,6 +187,9 @@ export async function acceptInvitation(token: string) {
 }
 
 export async function removeMember(communityId: string, targetUserId: string) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
   const isAuthorized = await hasCommunityRole(communityId, ['owner', 'moderator']);
   if (!isAuthorized) throw new Error("Unauthorized to remove members.");
 

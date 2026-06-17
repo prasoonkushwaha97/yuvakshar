@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { hasAnyRole } from "@/lib/rbacService";
 import { revalidatePath } from "next/cache";
 import { logGovernanceAction } from "./governanceAuditActions";
 
@@ -84,6 +85,9 @@ export async function getCategories() {
 }
 
 export async function createCategory(data: Partial<Category>) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getUser();
   const userId = authData?.user?.id;
@@ -121,6 +125,9 @@ export async function createCategory(data: Partial<Category>) {
 }
 
 export async function updateCategory(id: string, data: Partial<Category>) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getUser();
   const userId = authData?.user?.id;
@@ -154,6 +161,9 @@ export async function updateCategory(id: string, data: Partial<Category>) {
 }
 
 export async function deleteCategory(id: string) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getUser();
   if (!authData?.user) throw new Error("Unauthorized");
