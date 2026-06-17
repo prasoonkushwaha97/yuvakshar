@@ -13,6 +13,7 @@ export type AdminUserRecord = {
   last_sign_in_at?: string;
   status?: string;
   roles: { id: string; name: string; slug: string }[];
+  article_count?: number;
 };
 
 export async function getAdminUsersList(): Promise<AdminUserRecord[]> {
@@ -131,4 +132,55 @@ export async function deleteUser(userId: string): Promise<{ success: boolean; er
   }
 
   return { success: true };
+}
+
+export async function getAuthorsList(): Promise<AdminUserRecord[]> {
+  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin', 'editor']);
+  if (!isAuthorized) throw new Error("Unauthorized to access authors list");
+
+  // Fetch users with Author role
+  const { data: roleData, error: roleError } = await supabaseAdmin
+    .from('user_roles')
+    .select(`
+      user_id,
+      roles!inner(name)
+    `)
+    .ilike('roles.name', 'Author');
+
+  if (roleError) throw new Error("Failed to retrieve authors");
+  if (!roleData || roleData.length === 0) return [];
+
+  const authorIds = roleData.map((r: any) => r.user_id);
+
+  // Fetch article counts
+  const { data: articleData, error: articleError } = await supabaseAdmin
+    .from('articles')
+    .select('author_id')
+    .in('author_id', authorIds);
+
+  const counts: Record<string, number> = {};
+  if (articleData) {
+    articleData.forEach((a: any) => {
+      counts[a.author_id] = (counts[a.author_id] || 0) + 1;
+    });
+  }
+
+  // Fetch profiles
+  const { data: profiles, error: profilesError } = await supabaseAdmin
+    .from('profiles')
+    .select('id, email, username, full_name, avatar_url, created_at')
+    .in('id', authorIds);
+
+  if (profilesError) throw new Error("Failed to retrieve profiles");
+
+  return (profiles || []).map((p: any) => ({
+    id: p.id,
+    email: p.email || "",
+    username: p.username || "user",
+    name: p.full_name || p.username || "User",
+    avatar_url: p.avatar_url || "",
+    created_at: p.created_at,
+    roles: [{ id: 'author', name: 'Author', slug: 'author' }],
+    article_count: counts[p.id] || 0
+  }));
 }

@@ -264,3 +264,37 @@ export async function demoteRole(targetUserId: string, newRoleId: string, oldRol
   
   return { success: true };
 }
+
+export async function assignAuthorRoleByEmail(email: string): Promise<ActionResponse> {
+  const actor = await getCurrentUser();
+  if (!actor) return { success: false, error: 'Unauthenticated.' };
+
+  // Get user by email via admin API
+  const { data: usersData, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
+  if (usersError || !usersData.users) return { success: false, error: 'Failed to search users.' };
+  
+  const targetUser = usersData.users.find((u: any) => u.email === email);
+  if (!targetUser) return { success: false, error: 'User with this email not found.' };
+
+  // Get Author role ID
+  const { data: roleData } = await supabaseAdmin
+    .from('roles')
+    .select('id')
+    .ilike('name', 'Author')
+    .single();
+
+  if (!roleData) return { success: false, error: 'Author role not found in system.' };
+
+  return assignRole(targetUser.id, roleData.id, 'Onboarded via Author Pipeline');
+}
+
+export async function removeAuthorRoleByUserId(userId: string): Promise<ActionResponse> {
+  const { data: roleData } = await supabaseAdmin
+    .from('roles')
+    .select('id')
+    .ilike('name', 'Author')
+    .single();
+
+  if (!roleData) return { success: false, error: 'Author role not found in system.' };
+  return removeRole(userId, roleData.id, 'Revoked via Author Pipeline');
+}

@@ -82,7 +82,7 @@ export async function getArticleBySlug(slug: string) {
 }
 
 export async function createArticle(data: Partial<Article>) {
-  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   const supabase = await createClient();
@@ -109,7 +109,7 @@ export async function createArticle(data: Partial<Article>) {
 }
 
 export async function updateArticle(id: string, data: Partial<Article>) {
-  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   const supabase = await createClient();
@@ -134,7 +134,7 @@ export async function updateArticle(id: string, data: Partial<Article>) {
 }
 
 export async function deleteArticle(id: string) {
-  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   const supabase = await createClient();
@@ -153,6 +153,9 @@ export async function deleteArticle(id: string) {
 }
 
 export async function bulkDeleteArticles(ids: string[]) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
   const supabase = await createClient();
   
   const { error } = await supabase
@@ -167,11 +170,48 @@ export async function bulkDeleteArticles(ids: string[]) {
   return { success: true };
 }
 
-export async function updateArticleStatus(id: string, status: ArticleStatus) {
-  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+export async function updateArticleStatus(id: string, status: ArticleStatus | string) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   const supabase = await createClient();
+  
+  const { data: currentArticle } = await supabase.from("articles").select("status").eq("id", id).single();
+  const current_status = currentArticle?.status;
+  
+  const isFounder = await hasAnyRole(['founder', 'co_founder']);
+  
+  if (!isFounder) {
+    const allowedTransitions: Record<string, string[]> = {
+      "draft": ["in_review"],
+      "in_review": ["fact_check", "draft"],
+      "review": ["fact_check", "draft"],
+      "fact_check": ["editor_review", "in_review", "review"],
+      "editor_review": ["scheduled", "draft"],
+      "scheduled": ["published", "editor_review"],
+      "published": ["archived"],
+      "archived": ["published"]
+    };
+    
+    const normalizedCurrent = current_status?.toLowerCase() || 'draft';
+    const normalizedAttempt = status.toLowerCase();
+    
+    const allowed = allowedTransitions[normalizedCurrent] || [];
+    if (!allowed.includes(normalizedAttempt)) {
+      const { data: authData } = await supabase.auth.getUser();
+      await logGovernanceAction(
+        "workflow_violation",
+        "article",
+        id,
+        {
+          current_status,
+          attempted_status: status,
+          actor: authData.user?.email || authData.user?.id
+        }
+      );
+      throw new Error(`Invalid workflow transition from ${current_status} to ${status}`);
+    }
+  }
   
   const updateData: any = { status, updated_at: new Date().toISOString() };
   if (status === "published") {
