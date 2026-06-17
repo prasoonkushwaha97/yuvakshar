@@ -175,7 +175,23 @@ export async function removeRole(targetUserId: string, roleId: string, notes?: s
     return { success: false, error: 'Hierarchy Violation: You do not have authority to modify this user.' };
   }
 
-  // 3. Execute Removal
+  // 3. Execution Protection for Founder
+  if (roleData.slug === 'founder') {
+    if (actor.id === targetUserId && actor.email !== FOUNDER_EMAIL) {
+      return { success: false, error: 'You cannot remove your own founder role.' };
+    }
+    
+    // Check if they are the last founder
+    const { count } = await supabaseAdmin.from('user_roles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role_id', roleId);
+      
+    if (count !== null && count <= 1) {
+      return { success: false, error: 'Cannot remove the last remaining founder.' };
+    }
+  }
+
+  // 4. Execute Removal
   const { error: deleteError } = await supabaseAdmin.from('user_roles')
     .delete()
     .eq('user_id', targetUserId)

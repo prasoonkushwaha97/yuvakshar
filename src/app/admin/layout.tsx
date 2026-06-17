@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { redirect } from 'next/navigation';
 import { hasAnyRole } from '@/lib/rbacService';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,8 +16,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div className="admin-workspace-layout min-h-screen bg-background">
+    <DashboardLayout role="admin">
       {children}
-    </div>
+    </DashboardLayout>
   );
 }

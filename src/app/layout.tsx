@@ -143,9 +143,6 @@ export default async function RootLayout({
             <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[10px] md:text-xs font-serif py-1.5 px-4 text-center select-none shadow-sm relative z-[60] tracking-wide">
               युवाक्षर बीटा संस्करण (Yuvakshar Beta Version) — कुछ सुविधाएँ अभी विकास के अधीन हैं।
             </div>
-
-            {/* Navigation bar */}
-            <Navbar />
             
             {/* Global Auth Modal */}
             <AuthModal />
@@ -154,12 +151,6 @@ export default async function RootLayout({
             <main className="flex-grow pt-0">
               {children}
             </main>
-
-            {/* Global Dynamic Footer */}
-            <Footer />
-
-            {/* Mobile Bottom Navigation Bar */}
-            <MobileBottomNav />
             
             {/* Notifications */}
             <ToastProvider />

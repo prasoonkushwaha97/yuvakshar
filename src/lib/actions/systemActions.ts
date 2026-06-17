@@ -64,47 +64,54 @@ export async function getFounderDashboardStats() {
 
   let totalUsers = 0;
   try {
-    const { data } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1 });
-    totalUsers = (data as any)?.total || 0;
+    const { count } = await supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true });
+    totalUsers = count || 0;
   } catch (e) {
     console.error("Failed to fetch total users count:", e);
   }
 
-  let founders = 0;
-  let admins = 0;
-  let editors = 0;
-  let moderators = 0;
-  let reviewers = 0;
-
+  let totalArticles = 0;
+  let pendingReviews = 0;
   try {
-    const { data, error } = await supabaseAdmin
-      .from('user_roles')
-      .select('role_id, roles!inner(name)');
-      
-    if (!error && data) {
-      data.forEach((ur: any) => {
-        let roleName = ur.roles?.name;
-        if (Array.isArray(roleName)) roleName = roleName[0]?.name;
-        if (!roleName && ur.roles && Array.isArray(ur.roles)) roleName = ur.roles[0]?.name;
-        if (!roleName && ur.roles) roleName = ur.roles.name;
-
-        if (roleName === 'Founder' || roleName === 'Co-Founder') founders++;
-        else if (roleName === 'Admin' || roleName === 'Super Admin') admins++;
-        else if (roleName === 'Editor' || roleName === 'Editor-in-Chief') editors++;
-        else if (roleName === 'Moderator') moderators++;
-        else if (roleName === 'Reviewer') reviewers++;
-      });
-    }
+    const { count: articles } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true });
+    totalArticles = articles || 0;
+    
+    const { count: pending } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).eq('status', 'in_review');
+    pendingReviews = pending || 0;
   } catch (e) {
-    console.error("Failed to fetch roles count:", e);
+    console.error("Failed to fetch articles count:", e);
+  }
+
+  let totalCommunities = 0;
+  try {
+    const { count } = await supabaseAdmin.from('communities').select('*', { count: 'exact', head: true });
+    totalCommunities = count || 0;
+  } catch (e) {
+    console.error("Failed to fetch communities count:", e);
+  }
+
+  let totalComments = 0;
+  try {
+    const { count } = await supabaseAdmin.from('comments').select('*', { count: 'exact', head: true });
+    totalComments = count || 0;
+  } catch (e) {
+    console.error("Failed to fetch comments count:", e);
+  }
+
+  let totalAuditEvents = 0;
+  try {
+    const { count } = await supabaseAdmin.from('role_assignment_logs').select('*', { count: 'exact', head: true });
+    totalAuditEvents = count || 0;
+  } catch (e) {
+    console.error("Failed to fetch audit events count:", e);
   }
 
   return {
     totalUsers,
-    founders,
-    admins,
-    editors,
-    moderators,
-    reviewers,
+    totalArticles,
+    totalCommunities,
+    totalComments,
+    totalAuditEvents,
+    pendingReviews,
   };
 }

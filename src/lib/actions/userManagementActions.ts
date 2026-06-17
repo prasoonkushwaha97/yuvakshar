@@ -10,6 +10,8 @@ export type AdminUserRecord = {
   name: string;
   avatar_url: string;
   created_at: string;
+  last_sign_in_at?: string;
+  status?: string;
   roles: { id: string; name: string; slug: string }[];
 };
 
@@ -76,6 +78,57 @@ export async function getAdminUsersList(): Promise<AdminUserRecord[]> {
     name: u.user_metadata?.name || u.email?.split("@")[0] || "User",
     avatar_url: u.user_metadata?.avatar_url || "",
     created_at: u.created_at,
+    last_sign_in_at: u.last_sign_in_at || undefined,
+    status: u.banned_until ? "suspended" : "active",
     roles: rolesMap[u.id] || []
   }));
+}
+
+export async function suspendUser(userId: string): Promise<{ success: boolean; error?: string }> {
+  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
+  if (!isAuthorized) return { success: false, error: 'Unauthorized' };
+
+  // Verify target is not a founder
+  const { data: roleData } = await supabaseAdmin.from('user_roles')
+    .select('roles(slug)')
+    .eq('user_id', userId);
+    
+  if (roleData && roleData.some((r: any) => r.roles?.slug === 'founder')) {
+    return { success: false, error: 'Cannot suspend a Founder account.' };
+  }
+
+  // Set ban_duration to roughly 10 years (effectively suspended)
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+    ban_duration: '87600h'
+  });
+
+  if (error) {
+    console.error("Error suspending user:", error);
+    return { success: false, error: 'Failed to suspend user' };
+  }
+
+  return { success: true };
+}
+
+export async function deleteUser(userId: string): Promise<{ success: boolean; error?: string }> {
+  const isAuthorized = await hasAnyRole(['founder', 'co_founder']);
+  if (!isAuthorized) return { success: false, error: 'Only founders can delete users' };
+
+  // Verify target is not a founder
+  const { data: roleData } = await supabaseAdmin.from('user_roles')
+    .select('roles(slug)')
+    .eq('user_id', userId);
+    
+  if (roleData && roleData.some((r: any) => r.roles?.slug === 'founder')) {
+    return { success: false, error: 'Cannot delete a Founder account.' };
+  }
+
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+
+  if (error) {
+    console.error("Error deleting user:", error);
+    return { success: false, error: 'Failed to delete user' };
+  }
+
+  return { success: true };
 }
