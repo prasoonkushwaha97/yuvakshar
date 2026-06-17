@@ -10,12 +10,16 @@ export default function FounderSidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const navLinks = [
-    { href: '/founder', label: 'Dashboard' },
-    { href: '/founder/users', label: 'Users' },
+    { href: '/founder', label: 'Dashboard Overview' },
+    { href: '/founder/users', label: 'User Governance' },
     { href: '/founder/roles', label: 'Roles' },
     { href: '/founder/permissions', label: 'Permissions' },
     { href: '/founder/audit', label: 'Audit Logs' },
-    { href: '/founder/system', label: 'System' },
+    { href: '/founder/revenue', label: 'Revenue' },
+    { href: '/founder/memberships', label: 'Membership Oversight' },
+    { href: '/founder/analytics', label: 'Platform Analytics' },
+    { href: '/founder/system', label: 'System Settings' },
+    { href: '/founder/emergency', label: 'Emergency Controls' },
   ];
 
   return (

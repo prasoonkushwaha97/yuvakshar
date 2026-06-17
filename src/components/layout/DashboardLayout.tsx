@@ -19,11 +19,11 @@ import { toast } from "sonner";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  role: "founder" | "admin" | "editor" | "moderator";
+  role: "founder" | "admin" | "editorial" | "author"; // Maps to the workspace
 }
 
-export default function DashboardLayout({ children, role }: DashboardLayoutProps) {
-  const { currentUser } = useCms();
+export default function DashboardLayout({ children, role: workspace }: DashboardLayoutProps) {
+  const { currentUser, currentUserRoles } = useCms();
   const pathname = usePathname();
   const router = useRouter();
   
@@ -46,61 +46,78 @@ export default function DashboardLayout({ children, role }: DashboardLayoutProps
     }
   };
 
-  // Define navigation sections
-  const navSections = [
-    {
-      title: "Dashboard",
-      items: [
-        { label: "Overview", href: `/${role}`, icon: LayoutDashboard, roles: ["founder", "admin", "editor", "moderator"] },
-      ]
-    },
-    {
-      title: "Content Management",
-      roles: ["founder", "admin", "editor"],
-      items: [
-        { label: "Articles", href: `/${role}/articles`, icon: FileText },
-        { label: "Categories", href: `/${role}/categories`, icon: Layers },
-        { label: "Magazine", href: `/${role}/magazine`, icon: BookOpen },
-        { label: "Videos", href: `/${role}/videos`, icon: Video },
-      ]
-    },
-    {
-      title: "Editorial",
-      roles: ["founder", "admin", "editor"],
-      items: [
-        { label: "Reviews", href: `/${role}/reviews`, icon: CheckSquare },
-        { label: "Workflow", href: `/${role}/workflow`, icon: Activity },
-      ]
-    },
-    {
-      title: "Community",
-      roles: ["founder", "admin", "moderator"],
-      items: [
-        { label: "Authors", href: `/${role}/authors`, icon: User },
-        { label: "Communities", href: `/${role}/communities`, icon: UsersRound },
-        { label: "Comments", href: `/${role}/comments`, icon: MessageSquare },
-      ]
-    },
-    {
-      title: "Governance",
-      roles: ["founder", "admin"],
-      items: [
-        { label: "Users", href: `/${role}/users`, icon: Users },
-        { label: "Roles", href: `/${role}/roles`, icon: Shield, roles: ["founder"] },
-        { label: "Permissions", href: `/${role}/permissions`, icon: Key, roles: ["founder"] },
-        { label: "Audit Logs", href: `/${role}/audit`, icon: ClipboardList, roles: ["founder"] },
-      ]
-    },
-    {
-      title: "System",
-      roles: ["founder"],
-      items: [
-        { label: "Settings", href: `/${role}/system`, icon: Settings },
-        { label: "Analytics", href: `/${role}/analytics`, icon: LineChart },
-        { label: "Monitoring", href: `/${role}/monitoring`, icon: Server },
-      ]
+  // Define navigation sections for the specific workspace
+  // They are only visible if the user possesses one of the required roles
+  const getWorkspaceNav = () => {
+    switch (workspace) {
+      case "founder":
+        return [
+          {
+            title: "Governance",
+            items: [
+              { label: "Dashboard Overview", href: "/founder", icon: LayoutDashboard },
+              { label: "User Governance", href: "/founder/users", icon: Users },
+              { label: "Roles", href: "/founder/roles", icon: Shield },
+              { label: "Permissions", href: "/founder/permissions", icon: Key },
+              { label: "Audit Logs", href: "/founder/audit", icon: ClipboardList },
+            ]
+          },
+          {
+            title: "Oversight",
+            items: [
+              { label: "Platform Analytics", href: "/founder/analytics", icon: LineChart },
+              { label: "System Settings", href: "/founder/system", icon: Settings },
+            ]
+          }
+        ];
+      case "admin":
+        return [
+          {
+            title: "Operations",
+            items: [
+              { label: "Admin Dashboard", href: "/admin", icon: LayoutDashboard },
+              { label: "Users", href: "/admin/users", icon: Users, roles: ["admin"] },
+              { label: "Communities", href: "/admin/communities", icon: UsersRound, roles: ["admin", "moderator"] },
+              { label: "Comments", href: "/admin/comments", icon: MessageSquare, roles: ["admin", "moderator"] },
+              { label: "Moderation", href: "/admin/moderation", icon: Shield, roles: ["admin", "moderator"] },
+              { label: "Reports", href: "/admin/reports", icon: ClipboardList, roles: ["admin", "moderator"] },
+            ]
+          }
+        ];
+      case "editorial":
+        return [
+          {
+            title: "Publishing",
+            items: [
+              { label: "Editorial Desk", href: "/editorial", icon: LayoutDashboard },
+              { label: "Articles", href: "/editorial/articles", icon: FileText, roles: ["editor_in_chief", "managing_editor", "editor"] },
+              { label: "Categories", href: "/editorial/categories", icon: Layers, roles: ["editor_in_chief"] },
+              { label: "Magazine", href: "/editorial/magazine", icon: BookOpen, roles: ["editor_in_chief"] },
+              { label: "Reviews", href: "/editorial/reviews", icon: CheckSquare, roles: ["editor_in_chief", "editor"] },
+              { label: "Workflow", href: "/editorial/workflow", icon: Activity, roles: ["editor_in_chief", "managing_editor", "editor"] },
+              { label: "Assignments", href: "/editorial/assignments", icon: ClipboardList, roles: ["editor_in_chief", "managing_editor"] },
+              { label: "Publishing Queue", href: "/editorial/queue", icon: CheckSquare, roles: ["editor_in_chief", "managing_editor"] },
+              { label: "Fact Check Queue", href: "/editorial/fact-check", icon: Shield, roles: ["fact_checker"] },
+            ]
+          }
+        ];
+      case "author":
+        return [
+          {
+            title: "Author Workspace",
+            items: [
+              { label: "My Articles", href: "/author", icon: LayoutDashboard },
+              { label: "Drafts", href: "/author/drafts", icon: FileText },
+              { label: "Review Notes", href: "/author/reviews", icon: MessageSquare },
+            ]
+          }
+        ];
+      default:
+        return [];
     }
-  ];
+  };
+
+  const navSections = getWorkspaceNav();
 
   if (!mounted) return <div className="min-h-screen bg-slate-50 dark:bg-slate-900" />;
 
@@ -133,11 +150,11 @@ export default function DashboardLayout({ children, role }: DashboardLayoutProps
 
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
           {navSections.map((section, idx) => {
-            // Filter section by role
-            if (section.roles && !section.roles.includes(role)) return null;
-
-            // Filter items inside section
-            const visibleItems = section.items.filter(item => !item.roles || item.roles.includes(role));
+            // Filter items inside section based on currentUserRoles
+            const visibleItems = section.items.filter(item => {
+              if (!item.roles) return true; // Accessible to everyone in this workspace
+              return item.roles.some((r: string) => currentUserRoles.includes(r) || currentUserRoles.includes('founder') || currentUserRoles.includes('co_founder') || currentUserRoles.includes('super_admin'));
+            });
             if (visibleItems.length === 0) return null;
 
             return (
@@ -217,7 +234,7 @@ export default function DashboardLayout({ children, role }: DashboardLayoutProps
                 </div>
                 <div className="hidden sm:flex flex-col items-start text-left">
                   <span className="text-sm font-medium leading-none mb-1">{currentUser?.name || "Admin"}</span>
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wider leading-none">{role}</span>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider leading-none">{workspace}</span>
                 </div>
                 <ChevronDown className="w-4 h-4 text-slate-400 hidden sm:block" />
               </button>

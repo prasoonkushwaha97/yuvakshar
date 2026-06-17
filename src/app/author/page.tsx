@@ -1,19 +1,19 @@
 import React from "react";
-import { Users, ShieldAlert, MessageSquare } from "lucide-react";
+import { FileText, MessageSquare, Award } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 
-export default function AdminDashboardPage() {
+export default function AuthorDashboardPage() {
   const statCards = [
-    { label: "Total Users", value: 0, icon: Users, color: "text-blue-500" },
-    { label: "Pending Reports", value: 0, icon: ShieldAlert, color: "text-red-500" },
-    { label: "Flagged Comments", value: 0, icon: MessageSquare, color: "text-pink-500" },
+    { label: "My Articles", value: 0, icon: FileText, color: "text-blue-500" },
+    { label: "Review Notes", value: 0, icon: MessageSquare, color: "text-pink-500" },
+    { label: "Certificates", value: 0, icon: Award, color: "text-amber-500" },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Admin Operations</h2>
+        <h2 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Author Workspace</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {statCards.map((stat, idx) => (
             <div key={idx} className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">

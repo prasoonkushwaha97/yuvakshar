@@ -5,16 +5,16 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminLayout({ children }: { children: ReactNode }) {
-  // Server-side authorization check for the Admin workspace
-  const isAuthorized = await hasAnyRole(['admin', 'moderator']);
+export default async function EditorialLayout({ children }: { children: ReactNode }) {
+  // Server-side authorization check for the Editorial workspace
+  const isAuthorized = await hasAnyRole(['editor_in_chief', 'managing_editor', 'editor', 'fact_checker']);
   
   if (!isAuthorized) {
     redirect('/unauthorized');
   }
 
   return (
-    <DashboardLayout role="admin">
+    <DashboardLayout role="editorial">
       {children}
     </DashboardLayout>
   );

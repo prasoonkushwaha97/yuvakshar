@@ -17,5 +17,5 @@ export function middleware(req: NextRequest) {
 
 // Apply middleware strictly to protected workspaces
 export const config = {
-  matcher: ['/founder/:path*', '/admin/:path*', '/moderator/:path*'],
+  matcher: ['/founder/:path*', '/admin/:path*', '/editorial/:path*', '/author/:path*'],
 };
