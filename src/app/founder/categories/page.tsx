@@ -1,18 +1,15 @@
 import React from "react";
-import { Construction } from "lucide-react";
+import { getCategories } from "@/lib/actions/categoryActions";
+import CategoryManager from "@/components/founder/categories/CategoryManager";
 
-export default function CategoriesPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function CategoriesPage() {
+  const categories = await getCategories();
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-        <Construction className="w-8 h-8 text-primary" />
-      </div>
-      <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-        Categories Management
-      </h1>
-      <p className="text-slate-500 max-w-md">
-        This module is currently under construction. Check back soon for updates to the Categories workflow.
-      </p>
+    <div className="p-6 max-w-7xl mx-auto">
+      <CategoryManager initialCategories={categories} />
     </div>
   );
 }

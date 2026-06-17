@@ -87,7 +87,8 @@ ALTER TABLE public.community_post_likes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.community_comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.community_comment_likes ENABLE ROW LEVEL SECURITY;
 
--- 10. RLS Policies
+-- 10. RLS Policies                                                                                    
+DROP POLICY IF EXISTS "Public read community_posts" ON public.community_posts;
 CREATE POLICY "Public read community_posts" ON public.community_posts FOR SELECT USING (true);
 CREATE POLICY "Auth manage community_posts" ON public.community_posts FOR ALL USING (auth.uid() = user_id);
 

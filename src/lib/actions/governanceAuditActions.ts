@@ -3,12 +3,11 @@
 import { supabase } from "@/lib/supabaseClient";
 
 export async function logGovernanceAction(
-  actionType: string,
-  entityType: 'rbac' | 'moderation' | 'editorial' | 'community' | 'announcement',
-  entityId?: string,
-  details: Record<string, any> = {}
+  action: string,
+  entity_type: string,
+  entity_id: string | null = null,
+  metadata: Record<string, any> = {}
 ) {
-  // Get currently authenticated user to act as actor_id
   const { data: authData, error: authError } = await supabase.auth.getUser();
   
   if (authError || !authData?.user) {
@@ -16,22 +15,36 @@ export async function logGovernanceAction(
     return false;
   }
 
-  const actor_id = authData.user.id;
+  const user_id = authData.user.id;
+  
+  // Try to fetch user name from profiles if needed
+  let user_name = "Unknown User";
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name')
+    .eq('id', user_id)
+    .single();
+    
+  if (profile?.name) {
+    user_name = profile.name;
+  }
 
   const { error } = await supabase
     .from('governance_audit_logs')
     .insert([{
-      actor_id,
-      action_type: actionType,
-      entity_type: entityType,
-      entity_id: entityId || null,
-      details
+      actor_id: user_id,
+      action_type: action,
+      entity_type: entity_type,
+      entity_id: entity_id,
+      details: {
+        user_name,
+        ...metadata
+      }
     }]);
 
   if (error) {
-    console.error("Governance Audit Error: Failed to insert log:", error);
+    console.error("Failed to insert governance audit log:", error);
     return false;
   }
-
   return true;
 }

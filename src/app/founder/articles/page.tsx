@@ -1,18 +1,47 @@
 import React from "react";
-import { Construction } from "lucide-react";
+import { getArticles } from "@/lib/actions/articleActions";
+import { getCategories } from "@/lib/actions/categoryActions";
+import { contentAnalyticsService } from "@/lib/contentAnalyticsService";
+import ArticleManager from "@/components/founder/articles/ArticleManager";
 
-export default function ArticlesPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function ArticlesPage({
+  searchParams
+}: {
+  searchParams: { page?: string; limit?: string; sortBy?: string; sortOrder?: string; status?: string; search?: string }
+}) {
+  const page = searchParams.page ? parseInt(searchParams.page) : 1;
+  const limit = searchParams.limit ? parseInt(searchParams.limit) : 10;
+  
+  const filters = {
+    status: searchParams.status,
+    search: searchParams.search
+  };
+  
+  const options = {
+    page,
+    limit,
+    sortBy: searchParams.sortBy || 'created_at',
+    sortOrder: (searchParams.sortOrder || 'desc') as 'asc' | 'desc'
+  };
+
+  const [articlesResponse, stats, categories] = await Promise.all([
+    getArticles(filters, options),
+    contentAnalyticsService.getArticleAnalytics(),
+    getCategories()
+  ]);
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-        <Construction className="w-8 h-8 text-primary" />
-      </div>
-      <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-        Articles Management
-      </h1>
-      <p className="text-slate-500 max-w-md">
-        This module is currently under construction. Check back soon for updates to the Articles workflow.
-      </p>
+    <div className="p-6 max-w-[1400px] mx-auto">
+      <ArticleManager 
+        initialArticles={articlesResponse.data}
+        totalCount={articlesResponse.count}
+        currentPage={page}
+        currentLimit={limit}
+        stats={stats}
+        categories={categories}
+      />
     </div>
   );
 }
