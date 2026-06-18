@@ -53,20 +53,44 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
       case "founder":
         return [
           {
+            title: "Content Management",
+            items: [
+              { label: "Articles", href: "/editorial/articles", icon: FileText },
+              { label: "Categories", href: "/editorial/categories", icon: Layers },
+              { label: "Magazine", href: "/editorial/magazine", icon: BookOpen },
+              { label: "Videos", href: "/founder/videos", icon: Video },
+            ]
+          },
+          {
+            title: "Editorial",
+            items: [
+              { label: "Reviews", href: "/editorial/reviews", icon: CheckSquare },
+              { label: "Workflow", href: "/editorial/workflow", icon: Activity },
+            ]
+          },
+          {
+            title: "Community",
+            items: [
+              { label: "Authors", href: "/founder/authors", icon: User },
+              { label: "Communities", href: "/admin/communities", icon: UsersRound },
+              { label: "Comments", href: "/admin/comments", icon: MessageSquare },
+            ]
+          },
+          {
             title: "Governance",
             items: [
-              { label: "Dashboard Overview", href: "/founder", icon: LayoutDashboard },
-              { label: "User Governance", href: "/founder/users", icon: Users },
+              { label: "Users", href: "/founder/users", icon: Users },
               { label: "Roles", href: "/founder/roles", icon: Shield },
               { label: "Permissions", href: "/founder/permissions", icon: Key },
               { label: "Audit Logs", href: "/founder/audit", icon: ClipboardList },
             ]
           },
           {
-            title: "Oversight",
+            title: "System",
             items: [
-              { label: "Platform Analytics", href: "/founder/analytics", icon: LineChart },
-              { label: "System Settings", href: "/founder/system", icon: Settings },
+              { label: "Analytics", href: "/founder/analytics", icon: LineChart },
+              { label: "Monitoring", href: "/founder/monitoring", icon: Server },
+              { label: "Settings", href: "/founder/system", icon: Settings },
             ]
           }
         ];

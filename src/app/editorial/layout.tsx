@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function EditorialLayout({ children }: { children: ReactNode }) {
   // Server-side authorization check for the Editorial workspace
-  const isAuthorized = await hasAnyRole(['editor_in_chief', 'managing_editor', 'editor', 'fact_checker']);
+  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'editor_in_chief', 'managing_editor', 'editor', 'fact_checker']);
   
   if (!isAuthorized) {
     redirect('/unauthorized');

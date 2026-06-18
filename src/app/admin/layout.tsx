@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   // Server-side authorization check for the Admin workspace
-  const isAuthorized = await hasAnyRole(['admin', 'moderator']);
+  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'admin', 'moderator']);
   
   if (!isAuthorized) {
     redirect('/unauthorized');
