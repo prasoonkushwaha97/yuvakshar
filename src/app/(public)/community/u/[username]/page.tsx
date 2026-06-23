@@ -60,7 +60,8 @@ export default function SocialProfilePage() {
           setProfile(socialProfile);
           
           if (currentUser) {
-            setIsFollowingState(isUserFollowing(currentUser.id, match.id));
+            const isFollow = await isUserFollowing(currentUser.id, match.id);
+            setIsFollowingState(isFollow);
           }
 
           const events = await getUserSocialTimeline(match.id);

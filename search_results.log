@@ -1,0 +1,355 @@
+Searching src...
+Found in: src\app\(public)\category\[slug]\page.tsx
+  55: const saved = localStorage.getItem("yuvakshar_bookmarks");
+  69: localStorage.setItem("yuvakshar_bookmarks", JSON.stringify(updated));
+Found in: src\app\(public)\community\authors\[username]\page.tsx
+  79: const saved = localStorage.getItem("yuvakshar_c_post_bookmarks");
+  126: const savedCollections = localStorage.getItem(`yuvakshar_collections_${match.id}`);
+  148: localStorage.setItem(`yuvakshar_collections_${match.id}`, JSON.stringify(preseeded));
+  310: localStorage.setItem(`yuvakshar_collections_${author.id}`, JSON.stringify(updated));
+  401: localStorage.setItem("yuvakshar_c_post_bookmarks", JSON.stringify(updated));
+Found in: src\app\(public)\community\bookmarks\page.tsx
+  28: // 1. Load bookmarked article IDs from localStorage
+  30: const savedArts = localStorage.getItem("yuvakshar_bookmarks");
+  38: // Simulating some saved posts in localStorage key yuvakshar_c_post_bookmarks
+  40: const savedPostsKeys = localStorage.getItem("yuvakshar_c_post_bookmarks");
+  48: localStorage.setItem("yuvakshar_c_post_bookmarks", JSON.stringify(defaultSaved.map(p => p.id)));
+  66: localStorage.setItem("yuvakshar_bookmarks", JSON.stringify(updated));
+  75: localStorage.setItem("yuvakshar_c_post_bookmarks", JSON.stringify(updated.map(p => p.id)));
+Found in: src\app\(public)\community\events\page.tsx
+  116: const saved = localStorage.getItem("yuvakshar_c_events");
+  120: localStorage.setItem("yuvakshar_c_events", JSON.stringify(events));
+  128: localStorage.setItem("yuvakshar_c_events", JSON.stringify(items));
+Found in: src\app\(public)\community\groups\[slug]\page.tsx
+  79: const savedMembers = localStorage.getItem("yuvakshar_c_group_members");
+  92: localStorage.setItem("yuvakshar_c_group_members", JSON.stringify([...allSavedMembers, ...members]));
+  97: const savedAnn = localStorage.getItem(`yuvakshar_announcements_${match.id}`);
+  103: localStorage.setItem(`yuvakshar_announcements_${match.id}`, JSON.stringify(defaults));
+  133: const savedMembers = localStorage.getItem("yuvakshar_c_group_members");
+  147: localStorage.setItem("yuvakshar_c_group_members", JSON.stringify(members));
+  232: localStorage.setItem(`yuvakshar_announcements_${group.id}`, JSON.stringify(updated));
+  241: localStorage.setItem(`yuvakshar_announcements_${group.id}`, JSON.stringify(updated));
+  255: localStorage.setItem("yuvakshar_c_posts", JSON.stringify(updated));
+Found in: src\app\(public)\community\knowledge-hub\page.tsx
+  51: const saved = localStorage.getItem("yuvakshar_c_resources");
+  59: localStorage.setItem("yuvakshar_c_resources", JSON.stringify(items));
+Found in: src\app\(public)\community\messages\page.tsx
+  68: // Initialize chats from localStorage or fallback mock
+  70: const saved = localStorage.getItem("yuvakshar_chat_threads");
+  194: localStorage.setItem("yuvakshar_chat_threads", JSON.stringify(mockThreads));
+  209: // Save threads to localStorage helper
+  212: localStorage.setItem("yuvakshar_chat_threads", JSON.stringify(updated));
+Found in: src\app\(public)\community\page.tsx
+  70: const savedMembers = localStorage.getItem("yuvakshar_c_group_members");
+  73: const savedBookmarked = localStorage.getItem("yuvakshar_c_post_bookmarks");
+  76: const savedHashtags = localStorage.getItem("yuvakshar_followed_hashtags");
+  116: const currentSaved = localStorage.getItem("yuvakshar_c_posts");
+  118: localStorage.setItem("yuvakshar_c_posts", JSON.stringify([newPost, ...postsList]));
+  148: localStorage.setItem("yuvakshar_c_posts", JSON.stringify(updatedPosts));
+  187: localStorage.setItem("yuvakshar_c_post_bookmarks", JSON.stringify(updated));
+Found in: src\app\(public)\community\u\[username]\page.tsx
+  36: const saved = localStorage.getItem("yuvakshar_c_post_bookmarks");
+  134: localStorage.setItem("yuvakshar_c_post_bookmarks", JSON.stringify(updated));
+Found in: src\app\(public)\contact\page.tsx
+  105: const savedDraft = localStorage.getItem("yuvakshar_contact_draft");
+  123: localStorage.setItem("yuvakshar_contact_draft", JSON.stringify(draftData));
+  138: localStorage.removeItem("yuvakshar_contact_draft");
+  150: localStorage.removeItem("yuvakshar_contact_draft");
+  212: // Clear inputs and localStorage draft
+  218: localStorage.removeItem("yuvakshar_contact_draft");
+Found in: src\app\(public)\current-affairs\page.tsx
+  29: const saved = localStorage.getItem("yuvakshar_bookmarks");
+  43: localStorage.setItem("yuvakshar_bookmarks", JSON.stringify(updated));
+Found in: src\app\(public)\magazine\read\[issue]\page.tsx
+  39: const saved = localStorage.getItem("yuvakshar_mag_progress");
+  55: localStorage.setItem("yuvakshar_mag_progress", JSON.stringify({
+Found in: src\app\(public)\search\page.tsx
+  30: const saved = localStorage.getItem("yuvakshar_bookmarks");
+  62: localStorage.setItem("yuvakshar_bookmarks", JSON.stringify(updated));
+Found in: src\app\(public)\submit-article\page.tsx
+  306: const history = localStorage.getItem("yuvakshar_draft_history");
+  310: const subs = localStorage.getItem("yuvakshar_submitted_articles");
+  319: localStorage.setItem("yuvakshar_submitted_articles", JSON.stringify(demoSubs));
+  323: const autosaved = localStorage.getItem("yuvakshar_autosave_draft");
+  337: const storedGoal = localStorage.getItem("yuvakshar_word_goal");
+  344: const lastWriteStr = localStorage.getItem("yuvakshar_last_write_date");
+  345: const streakStr = localStorage.getItem("yuvakshar_writing_streak");
+  366: localStorage.setItem("yuvakshar_writing_streak", streakVal.toString());
+  373: localStorage.setItem("yuvakshar_last_write_date", todayStr);
+  390: localStorage.setItem("yuvakshar_autosave_draft", JSON.stringify(draftData));
+  402: localStorage.setItem("yuvakshar_draft_history", JSON.stringify(updatedHistory));
+  1139: localStorage.setItem("yuvakshar_submitted_articles", JSON.stringify(updatedList));
+  1146: localStorage.removeItem("yuvakshar_autosave_draft");
+  1178: localStorage.setItem("yuvakshar_word_goal", parsed.toString());
+  1292: localStorage.removeItem("yuvakshar_autosave_draft");
+Found in: src\app\(public)\workspace\page.tsx
+  20: import { mockArticles, Article } from "@/lib/mockData";
+  51: const savedCards = localStorage.getItem("yuvakshar_flashcards");
+  61: localStorage.setItem("yuvakshar_flashcards", JSON.stringify(defaults));
+  66: mockArticles.forEach(art => {
+  67: const savedHl = localStorage.getItem(`yuvakshar_highlights_${art.id}`);
+  88: localStorage.setItem("yuvakshar_flashcards", JSON.stringify(updated));
+  93: mockArticles.forEach(art => {
+  94: localStorage.removeItem(`yuvakshar_highlights_${art.id}`);
+Found in: src\components\layout\MobileSearchOverlay.tsx
+  43: const saved = localStorage.getItem(RECENT_SEARCHES_KEY);
+  70: localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+  77: localStorage.removeItem(RECENT_SEARCHES_KEY);
+Found in: src\components\layout\Navbar.tsx
+  87: const savedTheme = localStorage.getItem("yuvashar_theme") as "light" | "dark" ||
+  88: localStorage.getItem("yuvakshar_theme") as "light" | "dark" || "light";
+  102: localStorage.setItem("yuvakshar_theme", newTheme);
+Found in: src\components\yuvakshar\ArticleQuiz.tsx
+  304: const local = localStorage.getItem("yuvakshar_quiz_attempts_offline");
+Found in: src\components\yuvakshar\AuthModal.tsx
+  76: const savedSlots = localStorage.getItem("yuvakshar_founding_slots");
+  80: localStorage.setItem("yuvakshar_founding_slots", currentSlots.toString());
+Found in: src\lib\communityService.ts
+  293: const getLocalStorageItem = <T>(key: string, fallback: T): T => {
+  295: const item = localStorage.getItem(key);
+  299: const setLocalStorageItem = <T>(key: string, value: T): void => {
+  301: localStorage.setItem(key, JSON.stringify(value));
+  305: // Initialize localStorage data on client
+  308: if (!localStorage.getItem("yuvakshar_c_groups")) setLocalStorageItem("yuvakshar_c_groups", mockGroups);
+  309: if (!localStorage.getItem("yuvakshar_c_posts")) setLocalStorageItem("yuvakshar_c_posts", mockPosts);
+  310: if (!localStorage.getItem("yuvakshar_c_comments")) setLocalStorageItem("yuvakshar_c_comments", mockComments);
+  311: if (!localStorage.getItem("yuvakshar_c_events")) setLocalStorageItem("yuvakshar_c_events", mockEvents);
+  312: if (!localStorage.getItem("yuvakshar_c_challenges")) setLocalStorageItem("yuvakshar_c_challenges", mockChallenges);
+  313: if (!localStorage.getItem("yuvakshar_c_conversations")) setLocalStorageItem("yuvakshar_c_conversations", mockConversations);
+  314: if (!localStorage.getItem("yuvakshar_c_messages")) setLocalStorageItem("yuvakshar_c_messages", mockMessages);
+  315: if (!localStorage.getItem("yuvakshar_c_notifications")) setLocalStorageItem("yuvakshar_c_notifications", mockNotifications);
+  317: if (!localStorage.getItem("yuvakshar_c_group_members")) {
+  325: setLocalStorageItem("yuvakshar_c_group_members", defaultMembers);
+  328: if (!localStorage.getItem("yuvakshar_c_reading_progress")) {
+  334: setLocalStorageItem("yuvakshar_c_reading_progress", defaultProgress);
+  349: return getLocalStorageItem("yuvakshar_c_groups", mockGroups);
+  372: return getLocalStorageItem<CommunityGroupMember[]>("yuvakshar_c_group_members", []);
+  390: const members = getLocalStorageItem<CommunityGroupMember[]>("yuvakshar_c_group_members", []);
+  430: const members = getLocalStorageItem<CommunityGroupMember[]>("yuvakshar_c_group_members", []);
+  447: setLocalStorageItem("yuvakshar_c_group_members", members);
+  450: const groups = getLocalStorageItem<CommunityGroup[]>("yuvakshar_c_groups", mockGroups);
+  461: setLocalStorageItem("yuvakshar_c_groups", updatedGroups);
+  470: const logs = getLocalStorageItem<CommunityReadingProgress[]>("yuvakshar_c_reading_progress", []);
+  486: const logs = getLocalStorageItem<CommunityReadingProgress[]>("yuvakshar_c_reading_progress", []);
+  508: setLocalStorageItem("yuvakshar_c_reading_progress", logs);
+  568: const posts = getLocalStorageItem("yuvakshar_c_posts", mockPosts);
+  661: const posts = getLocalStorageItem("yuvakshar_c_posts", mockPosts);
+  662: setLocalStorageItem("yuvakshar_c_posts", [newPost, ...posts]);
+  678: const posts = getLocalStorageItem("yuvakshar_c_posts", mockPosts);
+  679: setLocalStorageItem("yuvakshar_c_posts", posts.filter(p => p.id !== postId));
+  765: const posts = getLocalStorageItem("yuvakshar_c_posts", mockPosts);
+  775: setLocalStorageItem("yuvakshar_c_posts", updated);
+  825: const posts = getLocalStorageItem("yuvakshar_c_posts", mockPosts);
+  836: setLocalStorageItem("yuvakshar_c_posts", updated);
+  901: const comments = getLocalStorageItem("yuvakshar_c_comments", mockComments);
+  993: const comments = getLocalStorageItem("yuvakshar_c_comments", mockComments);
+  1002: setLocalStorageItem("yuvakshar_c_comments", updated);
+  1004: setLocalStorageItem("yuvakshar_c_comments", [...comments, newComment]);
+  1008: const posts = getLocalStorageItem("yuvakshar_c_posts", mockPosts);
+  1009: setLocalStorageItem("yuvakshar_c_posts", posts.map(p => {
+  1048: const comments = getLocalStorageItem<CommunityComment[]>("yuvakshar_c_comments", mockComments);
+  1069: setLocalStorageItem("yuvakshar_c_comments", updated);
+  1088: const history = getLocalStorageItem<CommunityReputationHistory[]>("yuvakshar_c_reputation_hist", []);
+  1096: setLocalStorageItem("yuvakshar_c_reputation_hist", history);
+  1106: const userStr = localStorage.getItem("yuvakshar_session_user");
+  1114: localStorage.setItem("yuvakshar_session_user", JSON.stringify(user));
+  1122: const usersStr = localStorage.getItem("yuvakshar_users");
+  1137: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedList));
+  1154: const events = getLocalStorageItem("yuvakshar_c_events", mockEvents);
+  1155: setLocalStorageItem("yuvakshar_c_events", events.map(e => {
+  1173: return getLocalStorageItem("yuvakshar_c_conversations", mockConversations);
+  1181: const messages = getLocalStorageItem("yuvakshar_c_messages", mockMessages);
+  1205: const messages = getLocalStorageItem("yuvakshar_c_messages", mockMessages);
+  1206: setLocalStorageItem("yuvakshar_c_messages", [...messages, newMsg]);
+  1209: const conversations = getLocalStorageItem("yuvakshar_c_conversations", mockConversations);
+  1210: setLocalStorageItem("yuvakshar_c_conversations", conversations.map(c => {
+  1229: return getLocalStorageItem("yuvakshar_c_notifications", mockNotifications);
+  1237: const nots = getLocalStorageItem("yuvakshar_c_notifications", mockNotifications);
+  1238: setLocalStorageItem("yuvakshar_c_notifications", nots.map(n => ({ ...n, is_read: true })));
+  1246: return getLocalStorageItem("yuvakshar_c_challenges", mockChallenges);
+  1260: const submissions = getLocalStorageItem<CommunityChallengeSubmission[]>("yuvakshar_c_challenge_subs", []);
+  1272: setLocalStorageItem("yuvakshar_c_challenge_subs", submissions);
+  1284: const submissions = getLocalStorageItem<CommunityChallengeSubmission[]>("yuvakshar_c_challenge_subs", []);
+  1302: const posts = getLocalStorageItem<CommunityPost[]>("yuvakshar_c_posts", mockPosts)
+  1305: const groups = getLocalStorageItem<CommunityGroup[]>("yuvakshar_c_groups", mockGroups)
+  1308: const events = getLocalStorageItem<CommunityEvent[]>("yuvakshar_c_events", mockEvents)
+  1311: const challenges = getLocalStorageItem<CommunityChallenge[]>("yuvakshar_c_challenges", mockChallenges)
+  1327: const followGraph = JSON.parse(localStorage.getItem("yuvakshar_social_graph") || "{}");
+  1337: localStorage.setItem("yuvakshar_social_graph", JSON.stringify(followGraph));
+  1346: const followGraph = JSON.parse(localStorage.getItem("yuvakshar_social_graph") || "{}");
+  1355: const posts = getLocalStorageItem<CommunityPost[]>("yuvakshar_c_posts", mockPosts)
+  1358: const comments = getLocalStorageItem<CommunityComment[]>("yuvakshar_c_comments", mockComments)
+Found in: src\lib\mockData.ts
+  140: export const mockArticles: Article[] = [
+Found in: src\lib\repositoryService.ts
+  26: * Helper to safely get item from localStorage
+  30: return localStorage.getItem(key) || fallback;
+  34: * Helper to safely set item in localStorage
+  38: localStorage.setItem(key, value);
+Found in: src\store\CmsContext.tsx
+  6: import { mockArticles, mockMagazineIssues, mockCareerItems, mockBroadcasts, mockComments, Article } from "@/lib/mockData";
+  699: loadDataFromLocalStorage();
+  787: localStorage.setItem("yuvakshar_session_user", JSON.stringify(profile));
+  814: localStorage.setItem("yuvakshar_session_user", JSON.stringify(newProfile));
+  819: localStorage.setItem("yuvakshar_session_user", JSON.stringify(newProfile));
+  830: localStorage.removeItem("yuvakshar_session_user");
+  958: function loadDataFromLocalStorage() {
+  960: const localSettings = localStorage.getItem("yuvakshar_settings");
+  963: const localIcons = localStorage.getItem("yuvakshar_site_icons");
+  967: const localArticles = localStorage.getItem("yuvakshar_articles");
+  972: loadedArticles = parsed.length > 0 ? parsed : mockArticles;
+  974: loadedArticles = mockArticles;
+  975: localStorage.setItem("yuvakshar_articles", JSON.stringify(mockArticles));
+  980: const localMagazines = localStorage.getItem("yuvakshar_magazines");
+  985: localStorage.setItem("yuvakshar_magazines", JSON.stringify(mockMagazineIssues));
+  989: const localSubmissions = localStorage.getItem("yuvakshar_submissions") || "[]";
+  993: const localComments = localStorage.getItem("yuvakshar_comments");
+  998: localStorage.setItem("yuvakshar_comments", JSON.stringify(mockComments));
+  1002: const localSubscribers = localStorage.getItem("yuvakshar_subscribers");
+  1007: localStorage.setItem("yuvakshar_subscribers", JSON.stringify([]));
+  1011: const localCampaigns = localStorage.getItem("yuvakshar_campaigns") || "[]";
+  1015: const localAds = localStorage.getItem("yuvakshar_ads");
+  1024: localStorage.setItem("yuvakshar_ads", JSON.stringify(initial));
+  1028: const localAssignments = localStorage.getItem("yuvakshar_assignments") || "[]";
+  1032: const localSearchLogs = localStorage.getItem("yuvakshar_search_logs") || "[]";
+  1036: const localLayouts = localStorage.getItem("yuvakshar_layouts");
+  1052: localStorage.setItem("yuvakshar_layouts", JSON.stringify([initial]));
+  1056: const localActivityLogs = localStorage.getItem("yuvakshar_activity_logs") || "[]";
+  1060: const localCategories = localStorage.getItem("yuvakshar_categories");
+  1077: localStorage.setItem("yuvakshar_categories", JSON.stringify(initial));
+  1081: const localUsers = localStorage.getItem("yuvakshar_users");
+  1086: localStorage.setItem("yuvakshar_users", JSON.stringify(finalUsers));
+  1092: localStorage.setItem("yuvakshar_users", JSON.stringify(finalUsers));
+  1096: const savedUser = localStorage.getItem("yuvakshar_session_user");
+  1106: localStorage.setItem("yuvakshar_session_user", JSON.stringify(enrichedSelf));
+  1111: const localQuizzes = localStorage.getItem("yuvakshar_quizzes");
+  1116: const allArticles = mockArticles;
+  1125: localStorage.setItem("yuvakshar_quizzes", JSON.stringify(initialQuizzes));
+  1130: const localAttempts = localStorage.getItem("yuvakshar_quiz_attempts") || "[]";
+  1136: const localSettingsData = localStorage.getItem("yuvakshar_quiz_settings");
+  1141: mockArticles.forEach(art => {
+  1150: localStorage.setItem("yuvakshar_quiz_settings", JSON.stringify(initial));
+  1154: const localLeaderboard = localStorage.getItem("yuvakshar_quiz_leaderboard");
+  1161: localStorage.setItem("yuvakshar_quiz_leaderboard", JSON.stringify(initial));
+  1165: const localAiSettings = localStorage.getItem("yuvakshar_ai_settings");
+  1169: localStorage.setItem("yuvakshar_ai_settings", JSON.stringify(aiSettings));
+  1172: const localAiNotes = localStorage.getItem("yuvakshar_ai_notes");
+  1176: localStorage.setItem("yuvakshar_ai_notes", JSON.stringify([]));
+  1181: const localVideos = localStorage.getItem("yuvakshar_videos");
+  1186: localStorage.setItem("yuvakshar_videos", JSON.stringify(initialMockVideos));
+  1190: const localTasks = localStorage.getItem("yuvakshar_tasks");
+  1200: localStorage.setItem("yuvakshar_tasks", JSON.stringify(initial));
+  1204: const localVerifications = localStorage.getItem("yuvakshar_verifications");
+  1213: localStorage.setItem("yuvakshar_verifications", JSON.stringify(initial));
+  1217: const localOrgAuditLogs = localStorage.getItem("yuvakshar_org_audit_logs");
+  1226: localStorage.setItem("yuvakshar_org_audit_logs", JSON.stringify(initial));
+  1230: const localRoleTransfers = localStorage.getItem("yuvakshar_role_transfers");
+  1238: localStorage.setItem("yuvakshar_role_transfers", JSON.stringify(initial));
+  1242: const localPrivateMessages = localStorage.getItem("yuvakshar_private_messages");
+  1251: localStorage.setItem("yuvakshar_private_messages", JSON.stringify(initial));
+  1272: // Load Articles — fall back to mockArticles if DB table is empty
+  1274: const loadedArticles = dbArticles && dbArticles.length > 0 ? dbArticles : mockArticles;
+  1437: loadDataFromLocalStorage();
+  1670: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+  1682: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+  1698: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+  1709: localStorage.removeItem("yuvakshar_session_user");
+  1752: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  1808: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  1813: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+  1849: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  1881: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  1886: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+  1918: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  1943: localStorage.setItem("yuvakshar_settings", JSON.stringify(updatedSettings));
+  1962: localStorage.setItem("yuvakshar_site_icons", JSON.stringify(updatedValue));
+  1979: localStorage.removeItem("yuvakshar_site_icons");
+  2033: localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
+  2045: localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
+  2106: localStorage.setItem("yuvakshar_videos", JSON.stringify(updated));
+  2114: localStorage.setItem("yuvakshar_videos", JSON.stringify(updated));
+  2124: localStorage.setItem("yuvakshar_videos", JSON.stringify(updated));
+  2158: localStorage.setItem("yuvakshar_magazines", JSON.stringify(updated));
+  2170: localStorage.setItem("yuvakshar_magazines", JSON.stringify(updated));
+  2181: localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
+  2205: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedProfile));
+  2209: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  2220: localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
+  2244: localStorage.setItem("yuvakshar_assignments", JSON.stringify(updated));
+  2271: localStorage.setItem("yuvakshar_submissions", JSON.stringify(updated));
+  2285: localStorage.setItem("yuvakshar_submissions", JSON.stringify(updated));
+  2315: localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+  2326: localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+  2337: localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+  2348: localStorage.setItem("yuvakshar_ads", JSON.stringify(updated));
+  2359: localStorage.setItem("yuvakshar_ads", JSON.stringify(updated));
+  2373: localStorage.setItem("yuvakshar_subscribers", JSON.stringify(updated));
+  2384: localStorage.setItem("yuvakshar_subscribers", JSON.stringify(updated));
+  2415: localStorage.setItem("yuvakshar_campaigns", JSON.stringify(updated));
+  2445: localStorage.setItem("yuvakshar_layouts", JSON.stringify(updated));
+  2461: localStorage.setItem("yuvakshar_layouts", JSON.stringify(updated));
+  2500: if (parsed.articles) localStorage.setItem("yuvakshar_articles", JSON.stringify(parsed.articles));
+  2501: if (parsed.magazines) localStorage.setItem("yuvakshar_magazines", JSON.stringify(parsed.magazines));
+  2502: if (parsed.submissions) localStorage.setItem("yuvakshar_submissions", JSON.stringify(parsed.submissions));
+  2503: if (parsed.comments) localStorage.setItem("yuvakshar_comments", JSON.stringify(parsed.comments));
+  2504: if (parsed.subscribers) localStorage.setItem("yuvakshar_subscribers", JSON.stringify(parsed.subscribers));
+  2505: if (parsed.campaigns) localStorage.setItem("yuvakshar_campaigns", JSON.stringify(parsed.campaigns));
+  2506: if (parsed.settings) localStorage.setItem("yuvakshar_settings", JSON.stringify(parsed.settings));
+  2540: localStorage.setItem("yuvakshar_search_logs", JSON.stringify(updated));
+  2605: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+  2608: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  2625: localStorage.setItem("yuvakshar_activity_logs", JSON.stringify(updated));
+  2635: localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updated));
+  2648: localStorage.setItem("yuvakshar_quiz_attempts", JSON.stringify(updatedAttempts));
+  2679: localStorage.setItem("yuvakshar_quiz_leaderboard", JSON.stringify(updatedLeaderboard));
+  2707: localStorage.setItem("yuvakshar_quiz_settings", JSON.stringify(updatedSettings));
+  2716: localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+  2737: localStorage.setItem("yuvakshar_quiz_settings", JSON.stringify(updatedSettings));
+  2757: localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+  2772: localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+  2792: localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+  2812: localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+  2843: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+  2846: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  2854: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  2861: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+  2870: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  2875: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+  2883: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  2888: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+  2896: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  2901: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+  2909: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  2914: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+  2922: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  2927: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+  2935: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  2940: localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+  2960: const localNots = localStorage.getItem("yuvakshar_c_notifications");
+  2974: localStorage.setItem("yuvakshar_c_notifications", JSON.stringify(nots));
+  2994: localStorage.setItem("yuvakshar_org_audit_logs", JSON.stringify(updated));
+  3006: localStorage.setItem("yuvakshar_tasks", JSON.stringify(updated));
+  3041: localStorage.setItem("yuvakshar_tasks", JSON.stringify(updated));
+  3059: localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+  3109: localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+  3121: localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+  3155: const savedTransfers = localStorage.getItem("yuvakshar_role_transfers");
+  3159: localStorage.setItem("yuvakshar_role_transfers", JSON.stringify(transfers));
+  3176: localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+  3182: localStorage.setItem("yuvakshar_session_user", JSON.stringify(self));
+  3214: localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+  3230: localStorage.setItem("yuvakshar_verifications", JSON.stringify(updatedReqs));
+  3244: localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+  3257: localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+  3280: localStorage.setItem("yuvakshar_private_messages", JSON.stringify(updated));
+  3300: localStorage.setItem("yuvakshar_private_messages", JSON.stringify(updated));
+  3311: localStorage.setItem("yuvakshar_announcements", JSON.stringify(updated));
+  3433: localStorage.setItem("yuvakshar_ai_settings", JSON.stringify(updated));
+  3446: localStorage.setItem("yuvakshar_ai_notes", JSON.stringify(updated));
+  3454: localStorage.setItem("yuvakshar_ai_notes", JSON.stringify(updated));
+  3480: localStorage.setItem("yuvakshar_ai_settings", JSON.stringify(updated));
+Found in: src\store\LanguageContext.tsx
+  178: const savedLocale = localStorage.getItem("yuvakshar_locale") as Locale;
+  186: localStorage.setItem("yuvakshar_locale", newLocale);
+Searching supabase...
+Done.

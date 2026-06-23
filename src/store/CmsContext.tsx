@@ -3,7 +3,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase, isSupabaseConfigured, getSupabaseConfigError, checkConnectionHealth, checkStorageHealth } from "@/lib/supabaseClient";
 import { validateUsername, generateDeterministicUsername, RESERVED_USERNAMES } from "@/utils/username";
-import { mockArticles, mockMagazineIssues, mockCareerItems, mockBroadcasts, mockComments, Article } from "@/lib/mockData";
+
+import { Article } from "./types";
 export type { Article };
 import { QuizQuestion, ArticleQuiz, preseededQuizzes, generateFallbackQuestions } from "@/lib/defaultQuizzes";
 import { callOpenAi, callGemini } from "@/lib/aiService";
@@ -274,6 +275,8 @@ interface CmsContextType {
   activityLogs: ActivityLog[];
   layouts: HomepageLayout[];
   
+  homepageSections: any[];
+  navigation: any[];
   users: Profile[];
   quizzes: ArticleQuiz[];
   quizAttempts: QuizAttempt[];
@@ -510,7 +513,19 @@ const isManagingEditor = (role?: string | null) => role === "Managing Editor" ||
 const isEditor = (role?: string | null) => role === "Editor" || role === "संपादक" || role === "वरिष्ठ संपादक" || isManagingEditor(role);
 const isSubEditor = (role?: string | null) => role === "Sub Editor" || role === "सहायक संपादक" || isEditor(role);
 
-export function CmsProvider({ children }: { children: React.ReactNode }) {
+export function CmsProvider({ 
+  children,
+  initialSettings,
+  initialNavigation,
+  initialHomepageSections,
+  initialAds
+}: { 
+  children: React.ReactNode,
+  initialSettings?: any,
+  initialNavigation?: any,
+  initialHomepageSections?: any[],
+  initialAds?: any[]
+}) {
   const [videos, setVideos] = useState<Video[]>([]);
   const [supabaseConfigured, setSupabaseConfigured] = useState(false);
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
@@ -521,16 +536,58 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authCallback, setAuthCallback] = useState<(() => void) | null>(null);
   const [authModalMessage, setAuthModalMessage] = useState("");
-  
+
+  // Production defaults — never crash if DB is empty
+  const DEFAULT_SETTINGS = {
+    general: {
+      site_name: "युवाक्षर",
+      tagline: "लेखन, चिंतन और परिवर्तन",
+      primary_email: "yuvakshar.editor@gmail.com",
+      editorial_email: "yuvakshar.editor@gmail.com",
+      support_email: "yuvakshar.editor@gmail.com",
+      newsletter_email: "yuvakshar.editor@gmail.com",
+      notification_email: "yuvakshar.editor@gmail.com",
+    },
+    appearance: {
+      primary_color: "#EA580C",
+      secondary_color: "#0F172A",
+      background_color: "#FFFFFF",
+      logo_url: "/yuvakshar_logo_official.png",
+      favicon_url: "/favicon.ico",
+      font_headlines: "Noto Serif Devanagari",
+      font_body: "Noto Sans Devanagari",
+    },
+    footer: {
+      copyright_text: "© 2026 Yuvakshar. Designed for India's youth vanguard.",
+      links: [
+        { name: "हमारे बारे में", href: "/about" },
+        { name: "संपर्क", href: "/contact" },
+        { name: "गोपनीयता नीति", href: "/privacy-policy" },
+        { name: "नियम और शर्तें", href: "/terms-and-conditions" },
+        { name: "संपादकीय नीति", href: "/editorial-policy" }
+      ],
+    },
+  };
+
+  // Deep-merge: DB values always override defaults; missing sub-objects never crash
+  const [settings, setSettings] = useState<any>({
+    general: { ...DEFAULT_SETTINGS.general, ...(initialSettings?.general || {}) },
+    appearance: { ...DEFAULT_SETTINGS.appearance, ...(initialSettings?.appearance || {}) },
+    footer: { ...DEFAULT_SETTINGS.footer, ...(initialSettings?.footer || {}) },
+  });
+
+  const [navigation, setNavigation] = useState<any[]>(initialNavigation || []);
+  const [homepageSections, setHomepageSections] = useState<any[]>(initialHomepageSections || []);
+
   // Database States
   const [articles, setArticles] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
-  const [magazines, setMagazines] = useState<MagazineIssue[]>(mockMagazineIssues);
+  const [magazines, setMagazines] = useState<MagazineIssue[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [assignments, setAssignments] = useState<EditorialAssignment[]>([]);
-  const [ads, setAds] = useState<Ad[]>([]);
+  const [ads, setAds] = useState<Ad[]>(initialAds || []);
   const [subscribers, setSubscribers] = useState<string[]>([]);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [searchLogs, setSearchLogs] = useState<SearchAnalytics[]>([]);
@@ -595,8 +652,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
   });
   const [aiNotes, setAiNotes] = useState<AiNote[]>([]);
 
-  const [ setDonationHistory] = useState<DonationRecord[]>([]);
-  const [ setFoundingSeatsRemaining] = useState(42);
+  const [donationHistory, setDonationHistory] = useState<DonationRecord[]>([]);
+  const [foundingSeatsRemaining, setFoundingSeatsRemaining] = useState(42);
   const [readinessStatuses, setReadinessStatuses] = useState({
     dbConnected: false,
     storageConnected: false,
@@ -610,36 +667,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     analyticsActive: false,
   });
 
-  const [settings, setSettings] = useState({
-    general: {
-      site_name: "युवाक्षर",
-      tagline: "लेखन, चिंतन और परिवर्तन",
-      primary_email: "yuvakshar.editor@gmail.com",
-      editorial_email: "yuvakshar.editor@gmail.com",
-      support_email: "yuvakshar.editor@gmail.com",
-      newsletter_email: "yuvakshar.editor@gmail.com",
-      notification_email: "yuvakshar.editor@gmail.com",
-    },
-    appearance: {
-      primary_color: "#EA580C",
-      secondary_color: "#0F172A",
-      background_color: "#FFFFFF",
-      logo_url: "",
-      favicon_url: "",
-      font_headlines: "Noto Serif Devanagari",
-      font_body: "Noto Sans Devanagari",
-    },
-    footer: {
-      copyright_text: "© 2026 Yuvakshar. Designed for India's youth vanguard.",
-      links: [
-        { name: "हमारे बारे में", href: "/about" },
-        { name: "संपर्क", href: "/contact" },
-        { name: "गोपनीयता नीति", href: "/privacy-policy" },
-        { name: "नियम और शर्तें", href: "/terms-and-conditions" },
-        { name: "संपादकीय नीति", href: "/editorial-policy" }
-      ],
-    },
-  });
+
 
   const [siteIcons, setSiteIcons] = useState<Record<string, string> | null>(null);
 
@@ -660,10 +688,16 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         db = await checkConnectionHealth();
         storage = await checkStorageHealth();
         try {
-          const { data } = await supabase.auth.getSession();
-          auth = !!data;
+          const { data, error } = await supabase.auth.getSession();
+          if (error) {
+            console.warn("Session check error:", error.message);
+            auth = false;
+          } else {
+            auth = !!data?.session;
+          }
           rls = db; // RLS is configured in PostgreSQL schema
-        } catch {
+        } catch (error) {
+          console.warn("Session check caught error:", error);
           auth = false;
         }
       }
@@ -969,10 +1003,10 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     if (localArticles) {
       const parsed = JSON.parse(localArticles);
       // Use saved articles if they exist (even 1), otherwise fall back to mock data
-      loadedArticles = parsed.length > 0 ? parsed : mockArticles;
+      loadedArticles = parsed.length > 0 ? parsed : [];
     } else {
-      loadedArticles = mockArticles;
-      localStorage.setItem("yuvakshar_articles", JSON.stringify(mockArticles));
+      loadedArticles = [];
+      localStorage.setItem("yuvakshar_articles", JSON.stringify([]));
     }
     setArticles(loadedArticles);
 
@@ -981,8 +1015,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     if (localMagazines && JSON.parse(localMagazines).length >= 3) {
       setMagazines(JSON.parse(localMagazines));
     } else {
-      setMagazines(mockMagazineIssues);
-      localStorage.setItem("yuvakshar_magazines", JSON.stringify(mockMagazineIssues));
+      setMagazines([]);
+      localStorage.setItem("yuvakshar_magazines", JSON.stringify([]));
     }
 
     // Submissions
@@ -994,8 +1028,8 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     if (localComments && JSON.parse(localComments).length >= 8) {
       setComments(JSON.parse(localComments));
     } else {
-      setComments(mockComments as Comment[]);
-      localStorage.setItem("yuvakshar_comments", JSON.stringify(mockComments));
+      setComments([] as Comment[]);
+      localStorage.setItem("yuvakshar_comments", JSON.stringify([]));
     }
 
     // Subscribers
@@ -1113,7 +1147,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
     if (localQuizzes) {
       initialQuizzes = JSON.parse(localQuizzes);
     } else {
-      const allArticles = mockArticles;
+      const allArticles: any[] = [];
       initialQuizzes = allArticles.map(art => {
         const preseeded = preseededQuizzes[art.id];
         if (preseeded) {
@@ -1138,7 +1172,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       setQuizSettings(JSON.parse(localSettingsData));
     } else {
       const initial: Record<string, QuizSettings> = {};
-      mockArticles.forEach(art => {
+      ([] as any[]).forEach(art => {
         initial[art.id] = {
           articleId: art.id,
           isEnabled: true,
@@ -1259,7 +1293,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       if (dbSettings && dbSettings.length > 0) {
         const parsed: any = {};
         dbSettings.forEach(s => { parsed[s.key] = s.value; });
-        setSettings(prev => ({
+        setSettings((prev: any) => ({
           general: parsed.general_settings || prev.general,
           appearance: parsed.appearance_settings || prev.appearance,
           footer: parsed.footer_settings || prev.footer
@@ -1269,9 +1303,9 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // Load Articles — fall back to mockArticles if DB table is empty
+      // Load Articles — fall back to [] if DB table is empty
       const { data: dbArticles } = await supabase.from("articles").select("*").order("created_at", { ascending: false });
-      const loadedArticles = dbArticles && dbArticles.length > 0 ? dbArticles : mockArticles;
+      const loadedArticles = dbArticles && dbArticles.length > 0 ? dbArticles : [];
       setArticles(loadedArticles);
 
       // Load Categories
@@ -1313,7 +1347,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       if (dbMagazines && dbMagazines.length > 0) {
         setMagazines(dbMagazines);
       } else {
-        setMagazines(mockMagazineIssues);
+        setMagazines([]);
       }
 
       // Load Comments
@@ -1321,7 +1355,7 @@ export function CmsProvider({ children }: { children: React.ReactNode }) {
       if (dbComments && dbComments.length > 0) {
         setComments(dbComments);
       } else {
-        setComments(mockComments as Comment[]);
+        setComments([] as Comment[]);
       }
 
       // Load submissions
@@ -3569,6 +3603,8 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         submissions,
         assignments,
         ads,
+        homepageSections,
+        navigation,
         subscribers,
         campaigns,
         searchLogs,

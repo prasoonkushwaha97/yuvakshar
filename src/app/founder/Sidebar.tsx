@@ -18,7 +18,12 @@ export default function FounderSidebar() {
     { href: '/founder/revenue', label: 'Revenue' },
     { href: '/founder/memberships', label: 'Membership Oversight' },
     { href: '/founder/analytics', label: 'Platform Analytics' },
-    { href: '/founder/system', label: 'System Settings' },
+    { href: '/founder/cms/settings', label: 'Global Settings' },
+    { href: '/founder/cms/navigation', label: 'Navigation Menu' },
+    { href: '/founder/cms/homepage', label: 'Homepage Layout' },
+    { href: '/founder/cms/ads', label: 'Advertisements' },
+    { href: '/founder/cms/seo', label: 'SEO Settings' },
+    { href: '/founder/system', label: 'System Operations' },
     { href: '/founder/emergency', label: 'Emergency Controls' },
   ];
 

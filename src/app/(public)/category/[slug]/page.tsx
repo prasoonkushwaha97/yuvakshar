@@ -90,12 +90,12 @@ function CategoryDetailPageContent() {
         "review": "समीक्षा"
       };
       const targetTag = subTagMap[sub.toLowerCase()] || sub;
-      matchesSub = art.tags.some(t => t.toLowerCase() === targetTag.toLowerCase() || t.toLowerCase() === sub.toLowerCase());
+      matchesSub = (art.tags || []).some((t: string) => t.toLowerCase() === targetTag.toLowerCase() || t.toLowerCase() === sub.toLowerCase());
     }
 
     const matchesSearch = art.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           art.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          art.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+                          (art.tags || []).some((t: string) => t.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSub && matchesSearch;
   });
 
@@ -213,7 +213,7 @@ function CategoryDetailPageContent() {
 
                 <div className="p-6 pt-0 border-t border-border mt-auto flex items-center justify-between">
                   <div className="flex space-x-1 overflow-hidden max-w-[70%]">
-                    {art.tags.slice(0, 2).map((t, idx) => (
+                    {(art.tags || []).slice(0, 2).map((t: string, idx: number) => (
                       <span key={idx} className="text-[9px] text-slate-400 font-mono bg-slate-50 dark:bg-slate-900/50 px-2 py-0.5 rounded border border-border shrink-0">
                         #{t}
                       </span>

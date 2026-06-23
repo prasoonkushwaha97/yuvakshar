@@ -29,7 +29,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
       if (match) {
         setUser(match);
         if (currentUser) {
-          setIsFollowing(isUserFollowing(currentUser.id, match.id));
+          isUserFollowing(currentUser.id, match.id).then(setIsFollowing);
         }
       }
     }

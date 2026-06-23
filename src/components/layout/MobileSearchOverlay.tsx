@@ -14,15 +14,6 @@ const trendingTopics = [
   "डिजिटल इंडिया", "महिला सशक्तिकरण", "UPSC तैयारी", "कविता संग्रह"
 ];
 
-const quickCategories = [
-  { label: "📰 समाचार", href: "/category/news" },
-  { label: "💬 विचार", href: "/category/opinion" },
-  { label: "✍️ साहित्य", href: "/category/literature" },
-  { label: "🎓 शिक्षा", href: "/category/education" },
-  { label: "📖 पत्रिका", href: "/magazine" },
-  { label: "🎬 वीडियो", href: "/category/video" },
-];
-
 interface MobileSearchOverlayProps {
   open: boolean;
   onClose: () => void;
@@ -30,11 +21,16 @@ interface MobileSearchOverlayProps {
 
 export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverlayProps) {
   const router = useRouter();
-  const { articles } = useCms();
+  const { articles, categories } = useCms();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  const quickCategories = categories.slice(0, 6).map(c => ({
+    label: c.name,
+    href: `/category/${c.slug}`
+  }));
 
   useEffect(() => {
     if (open) {

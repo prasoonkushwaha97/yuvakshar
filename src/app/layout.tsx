@@ -129,19 +129,72 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+import { getSiteSettings, getNavigationMenus, getHomepageSections, getAdvertisements } from "@/lib/actions/globalSettingsActions";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Fetch dynamic platform data
+  const siteSettings = await getSiteSettings();
+  const navigationMenus = await getNavigationMenus();
+  const homepageSections = await getHomepageSections();
+  const advertisements = await getAdvertisements();
+
+  // Production defaults — used when site_settings table is empty or a key is missing
+  const SETTINGS_DEFAULTS = {
+    general: {
+      site_name: "युवाक्षर",
+      tagline: "लेखन, चिंतन और परिवर्तन",
+      primary_email: "yuvakshar.editor@gmail.com",
+      editorial_email: "yuvakshar.editor@gmail.com",
+      support_email: "yuvakshar.editor@gmail.com",
+      newsletter_email: "yuvakshar.editor@gmail.com",
+      notification_email: "yuvakshar.editor@gmail.com",
+    },
+    appearance: {
+      primary_color: "#EA580C",
+      secondary_color: "#0F172A",
+      background_color: "#FFFFFF",
+      logo_url: "/yuvakshar_logo_official.png",
+      favicon_url: "/favicon.ico",
+      font_headlines: "Noto Serif Devanagari",
+      font_body: "Noto Sans Devanagari",
+    },
+    footer: {
+      copyright_text: "© 2026 Yuvakshar. Designed for India's youth vanguard.",
+      links: [
+        { name: "हमारे बारे में", href: "/about" },
+        { name: "संपर्क", href: "/contact" },
+        { name: "गोपनीयता नीति", href: "/privacy-policy" },
+        { name: "नियम और शर्तें", href: "/terms-and-conditions" },
+        { name: "संपादकीय नीति", href: "/editorial-policy" }
+      ],
+    },
+  };
+
+  // Convert settings array to object for easier consumption
+  const settingsObj = siteSettings.reduce((acc: any, curr: any) => {
+    acc[curr.key] = curr.value;
+    return acc;
+  }, {});
+
+  // Deep-merge: DB values override defaults; missing keys fall back to defaults
+  const mergedSettings = {
+    general: { ...SETTINGS_DEFAULTS.general, ...(settingsObj.general_settings || settingsObj.general || {}) },
+    appearance: { ...SETTINGS_DEFAULTS.appearance, ...(settingsObj.appearance_settings || settingsObj.appearance || {}) },
+    footer: { ...SETTINGS_DEFAULTS.footer, ...(settingsObj.footer_settings || settingsObj.footer || {}) },
+  };
+
   return (
     <html lang="hi" className={`h-full scroll-smooth ${notoSansDeva.variable} ${notoSerifDeva.variable} ${hindFont.variable} ${muktaFont.variable} ${interFont.variable}`}>
       <body className="min-h-full flex flex-col bg-white text-[#0F172A] dark:bg-[#0A0F1D] dark:text-slate-200 font-sans antialiased pb-16 lg:pb-0">
-        <CmsProvider>
+        <CmsProvider initialSettings={mergedSettings} initialNavigation={navigationMenus} initialHomepageSections={homepageSections} initialAds={advertisements}>
           <LanguageProvider>
             {/* Global Beta Banner */}
             <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[10px] md:text-xs font-serif py-1.5 px-4 text-center select-none shadow-sm relative z-[60] tracking-wide">
-              युवाक्षर बीटा संस्करण (Yuvakshar Beta Version) — कुछ सुविधाएँ अभी विकास के अधीन हैं।
+              {settingsObj?.general?.tagline || "युवाक्षर बीटा संस्करण (Yuvakshar Beta Version) — कुछ सुविधाएँ अभी विकास के अधीन हैं।"}
             </div>
             
             {/* Global Auth Modal */}
@@ -160,3 +213,4 @@ export default async function RootLayout({
     </html>
   );
 }
+

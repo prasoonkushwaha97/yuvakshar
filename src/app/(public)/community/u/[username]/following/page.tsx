@@ -39,9 +39,9 @@ export default function FollowingPage() {
 
         if (currentUser) {
           const initialFollowStates: Record<string, boolean> = {};
-          followingProfiles.forEach((f: Profile) => {
-            initialFollowStates[f.id] = isUserFollowing(currentUser.id, f.id);
-          });
+          await Promise.all(followingProfiles.map(async (f: Profile) => {
+            initialFollowStates[f.id] = await isUserFollowing(currentUser.id, f.id);
+          }));
           setFollowStates(initialFollowStates);
         }
       }

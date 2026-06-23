@@ -1,21 +1,20 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
+import { updateSession } from '@/utils/supabase/middleware';
 
-export function middleware(req: NextRequest) {
-  // Verify authentication only by checking for the presence of a Supabase auth cookie.
-  // This acts as a lightweight Edge guard before hitting server-side RBAC logic.
-  const hasAuthCookie = req.cookies.getAll().some(c => c.name.startsWith('sb-') && c.name.includes('-auth-token'));
-  
-  if (!hasAuthCookie) {
-    const loginUrl = new URL('/login', req.url);
-    loginUrl.searchParams.set('redirect_to', req.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  return NextResponse.next();
+export async function middleware(request: NextRequest) {
+  // updateSession handles refreshing the Auth token and protecting routes
+  return await updateSession(request);
 }
 
-// Apply middleware strictly to protected workspaces
 export const config = {
-  matcher: ['/founder/:path*', '/admin/:path*', '/editorial/:path*', '/author/:path*'],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 };

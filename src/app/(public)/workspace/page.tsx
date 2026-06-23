@@ -17,7 +17,8 @@ import {
   Eye
 } from "lucide-react";
 
-import { mockArticles, Article } from "@/lib/mockData";
+import { Article } from "@/store/types";
+import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 
 interface Flashcard {
@@ -38,6 +39,7 @@ interface ConsolidatedNote {
 }
 
 export default function WorkspacePage() {
+  const { articles } = useCms();
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [notes, setNotes] = useState<ConsolidatedNote[]>([]);
   const [mounted, setMounted] = useState(false);
@@ -63,7 +65,7 @@ export default function WorkspacePage() {
 
     // Consolidate highlights from all articles
     const compiledNotes: ConsolidatedNote[] = [];
-    mockArticles.forEach(art => {
+    articles.forEach(art => {
       const savedHl = localStorage.getItem(`yuvakshar_highlights_${art.id}`);
       if (savedHl) {
         const highlightsList = JSON.parse(savedHl);
@@ -90,7 +92,7 @@ export default function WorkspacePage() {
 
   const clearAllNotes = () => {
     if (confirm("Are you sure you want to clear your compiled highlights from all articles? This resets your study notes.")) {
-      mockArticles.forEach(art => {
+      articles.forEach(art => {
         localStorage.removeItem(`yuvakshar_highlights_${art.id}`);
       });
       setNotes([]);

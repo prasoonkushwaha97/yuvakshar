@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Zap, ChevronRight } from "lucide-react";
 
+import { useCms } from "@/store/CmsContext";
+
 interface TickerItem {
   id: string;
   category: string;
@@ -12,19 +14,31 @@ interface TickerItem {
   isImportant?: boolean;
 }
 
-const mockTickerItems: TickerItem[] = [
-  { id: "1", category: "Nation Building", headline: "Cabinet approves National Youth Innovation & Entrepreneurship Grid.", href: "/editorial", isImportant: true },
-  { id: "2", category: "Digital Sovereignty", headline: "Understanding the nuances of India's new data privacy & AI regulation architecture.", href: "/editorial" },
-  { id: "3", category: "Global Strategy", headline: "Rethinking multipolarity: How the Global South is shaping 21st-century commerce.", href: "/editorial" },
-  { id: "4", category: "Active Civics", headline: "Empowering Panchayats: The quiet digital revolution in rural governance.", href: "/editorial" },
-  { id: "5", category: "Magazine Special", headline: "May Issue: 'AI & The New Indian Statecraft' is now open for reading.", href: "/magazine", isImportant: true },
-];
-
 export default function LiveNewsTicker() {
   const [isPaused, setIsPaused] = useState(false);
+  const { articles } = useCms();
+
+  const tickerItems: TickerItem[] = articles.slice(0, 5).map(art => ({
+    id: art.id,
+    category: art.category,
+    headline: art.title,
+    href: `/category/${art.category}`,
+    isImportant: true,
+  }));
+
+  // Fallback if no articles
+  if (tickerItems.length === 0) {
+    tickerItems.push({
+      id: "placeholder",
+      category: "News",
+      headline: "Welcome to Yuvakshar",
+      href: "/",
+      isImportant: true
+    });
+  }
 
   // Duplicate items for seamless infinite scrolling
-  const items = [...mockTickerItems, ...mockTickerItems];
+  const items = [...tickerItems, ...tickerItems];
 
   return (
     <div className="w-full bg-[#111827]/40 border-y border-yuvakshar-gold/15 py-3 overflow-hidden select-none flex items-center">

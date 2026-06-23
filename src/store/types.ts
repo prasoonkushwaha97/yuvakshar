@@ -8,7 +8,25 @@
 
 // ─── Article & Magazine ────────────────────────────────────────────────────
 // These are re-exported from mockData for convenience
-export type { Article } from "@/lib/mockData";
+export interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  author: string;
+  authorRole: string;
+  authorAvatar?: string;
+  category: string;
+  date: string;
+  image?: string;
+  summary: string;
+  content: string;
+  readTime: string;
+  tags: string[];
+  trending?: boolean;
+  status?: string;
+  section?: string;
+  [key: string]: any;
+}
 
 export interface MagazineIssue {
   id: string;

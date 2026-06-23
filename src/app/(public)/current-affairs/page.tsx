@@ -43,14 +43,14 @@ export default function CurrentAffairsPage() {
     localStorage.setItem("yuvakshar_bookmarks", JSON.stringify(updated));
   };
 
-  const { articles } = useCms();
-  const categories = ["All", "समाचार", "विशेष लेख", "विचार", "साहित्य", "साक्षात्कार", "शिक्षा", "पर्यावरण", "इतिहास", "वीडियो", "पत्रिका"];
+  const { articles, categories: cmsCategories } = useCms();
+  const categories = ["All", ...cmsCategories.map(c => c.name)];
 
   const filteredArticles = articles.filter(art => {
     const matchesCategory = selectedCategory === "All" || art.category === selectedCategory;
     const matchesSearch = art.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           art.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          art.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+                          (art.tags || []).some((t: string) => t.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
@@ -171,7 +171,7 @@ export default function CurrentAffairsPage() {
 
                 <div className="p-6 pt-0 border-t border-yuvakshar-gold/5 mt-auto flex items-center justify-between">
                   <div className="flex space-x-1 overflow-hidden max-w-[70%]">
-                    {art.tags.slice(0, 2).map((t, idx) => (
+                    {(art.tags || []).slice(0, 2).map((t: string, idx: number) => (
                       <span key={idx} className="text-[9px] text-yuvakshar-gray font-mono bg-yuvakshar-card/85 px-2 py-0.5 rounded border border-yuvakshar-gold/5 shrink-0">
                         #{t}
                       </span>
