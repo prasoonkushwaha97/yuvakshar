@@ -46,7 +46,7 @@ export default function NotificationsPage() {
   const handleMarkAllRead = async () => {
     try {
       await markNotificationsRead();
-      setNotifications(notifications.map(n => ({ ...n, is_read: true })));
+      setNotifications(notifications?.map(n => ({ ...n, is_read: true })));
       alert("सभी सूचनाओं को पढ़ा गया मार्क कर दिया गया है।");
     } catch (err) {
       console.error(err);
@@ -136,7 +136,7 @@ export default function NotificationsPage() {
       <div className="space-y-3.5">
         <h4 className="text-[10px] uppercase font-bold text-slate-400 font-serif tracking-wider pl-1">{title}</h4>
         <div className="space-y-3">
-          {list.map((notif) => {
+          {list?.map((notif) => {
             const priority = getPriorityScore(notif.notification_type);
             const isHigh = priority === 1;
 
@@ -269,7 +269,7 @@ export default function NotificationsPage() {
         {[
           { id: "all", name: "सभी सूचनाएं" },
           { id: "unread", name: "अपठित" }
-        ].map((tab) => (
+        ]?.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setFilterType(tab.id as any)}

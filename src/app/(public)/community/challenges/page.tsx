@@ -94,7 +94,7 @@ export default function ChallengesPage() {
   };
 
   const handleVote = (subId: string) => {
-    setSubmissions(submissions.map(s => {
+    setSubmissions(submissions?.map(s => {
       if (s.id === subId) return { ...s, votes_count: s.votes_count + 1 };
       return s;
     }));
@@ -123,7 +123,7 @@ export default function ChallengesPage() {
 
       {/* Active Challenges list */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {challenges.map((chal) => {
+        {challenges?.map((chal) => {
           const isActive = selectedChallenge?.id === chal.id;
           const deadlineProgress = getDeadlineProgress(chal.start_date, chal.end_date);
           const timeLeftDays = Math.max(0, Math.round((new Date(chal.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
@@ -241,7 +241,7 @@ export default function ChallengesPage() {
 
             {submissions.length > 0 ? (
               <div className="grid grid-cols-1 gap-5">
-                {submissions.map((sub) => {
+                {submissions?.map((sub) => {
                   const currentStepIdx = sub.is_winner ? 3 : (sub.votes_count > 10 ? 2 : (sub.votes_count > 5 ? 1 : 0));
                   const steps = ["प्रस्तुत (Submitted)", "समीक्षाधीन (Review)", "शॉर्टलिस्ट (Shortlist)", "विजेता (Winner)"];
 
@@ -297,7 +297,7 @@ export default function ChallengesPage() {
                             style={{ width: `${(currentStepIdx / 3) * 100}%` }}
                           />
 
-                          {steps.map((step, idx) => {
+                          {steps?.map((step, idx) => {
                             const isPast = idx <= currentStepIdx;
                             const isCurrent = idx === currentStepIdx;
                             return (

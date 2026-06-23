@@ -108,7 +108,7 @@ export default function SocialProfilePage() {
     if (!currentUser) return;
     try {
       const newCount = await toggleLikePost(postId, currentUser.id);
-      setTimeline(prev => prev.map(t => {
+      setTimeline(prev => prev?.map(t => {
         if (t.id === postId) return { ...t, likesCount: newCount };
         return t;
       }));
@@ -150,7 +150,7 @@ export default function SocialProfilePage() {
 
   const renderContentWithHashtags = (content: string) => {
     const parts = content.split(/(\s+)/);
-    return parts.map((part, idx) => {
+    return parts?.map((part, idx) => {
       if (part.startsWith("#")) {
         const cleanTag = part.replace(/[^\w\u0900-\u097F]/g, "");
         return (
@@ -356,7 +356,7 @@ export default function SocialProfilePage() {
             <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
               <span className="block text-[10px] font-bold text-slate-400 mb-3 font-hindi uppercase">बैज (Badges)</span>
               <div className="flex flex-wrap gap-2">
-                {profile.badges.map((b, i) => (
+                {profile.badges?.map((b, i) => (
                   <span key={i} className="px-2.5 py-1 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] rounded-md border border-slate-200 dark:border-slate-700 font-hindi font-medium flex items-center gap-1.5">
                     <Trophy className="w-3 h-3 text-amber-500" />
                     {b}
@@ -377,7 +377,7 @@ export default function SocialProfilePage() {
             { id: "posts", label: "पोस्ट्स" },
             { id: "replies", label: "उत्तर" },
             { id: "bookmarks", label: "सुरक्षित" }
-          ].map(tab => (
+          ]?.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
@@ -395,7 +395,7 @@ export default function SocialProfilePage() {
         {/* Feed List */}
         <div className="space-y-4">
           {displayTimeline.length > 0 ? (
-            displayTimeline.map((item, idx) => {
+            displayTimeline?.map((item, idx) => {
               if (item.post_type === "reply" || item.activity_type === "Replied") {
                 return (
                   <GlassCard key={`reply-${idx}`} className="p-5 border border-slate-200/60 dark:border-slate-800/60 relative">

@@ -160,7 +160,7 @@ export default function NotificationsSettingsPage() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <h3 className="text-sm font-bold text-primary mb-4 uppercase tracking-wider">ईमेल सारांश (Email Digest)</h3>
           <div className="space-y-3">
-            {['daily', 'weekly', 'never'].map((freq) => (
+            {['daily', 'weekly', 'never']?.map((freq) => (
               <label key={freq} className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                 <input 
                   type="radio" 

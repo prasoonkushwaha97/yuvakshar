@@ -173,7 +173,7 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
         </div>
 
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
-          {navSections.map((section, idx) => {
+          {navSections?.map((section, idx) => {
             // Filter items inside section based on currentUserRoles
             const visibleItems = section.items.filter(item => {
               if (!item.roles) return true; // Accessible to everyone in this workspace
@@ -187,7 +187,7 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
                   {section.title}
                 </h3>
                 <div className="space-y-1">
-                  {visibleItems.map(item => {
+                  {visibleItems?.map(item => {
                     const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                     return (
                       <Link 

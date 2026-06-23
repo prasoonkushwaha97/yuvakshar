@@ -105,7 +105,7 @@ export default function DiscussionThreadPage() {
         replyToContent
       );
 
-      setComments(comments.map(c => {
+      setComments(comments?.map(c => {
         if (c.id === parentId) {
           return { ...c, replies: [...(c.replies || []), newReply] };
         }
@@ -128,10 +128,10 @@ export default function DiscussionThreadPage() {
     }
     try {
       const newCount = await toggleLikeComment(commentId, currentUser.id);
-      setComments(prevComments => prevComments.map(c => {
+      setComments(prevComments => prevComments?.map(c => {
         if (c.id === commentId) return { ...c, likesCount: newCount };
         if (c.replies && c.replies.length > 0) {
-          const updatedReplies = c.replies.map(r => r.id === commentId ? { ...r, likesCount: newCount } : r);
+          const updatedReplies = c.replies?.map(r => r.id === commentId ? { ...r, likesCount: newCount } : r);
           return { ...c, replies: updatedReplies };
         }
         return c;
@@ -152,7 +152,7 @@ export default function DiscussionThreadPage() {
     try {
       await creditReputationPoints(comment.user_id, 10, "Best Answer");
       
-      setComments(comments.map(c => {
+      setComments(comments?.map(c => {
         if (c.id === comment.id) return { ...c, is_accepted_answer: true };
         return c;
       }));
@@ -172,7 +172,7 @@ export default function DiscussionThreadPage() {
   // Parse @username mentions in comments into clickable links
   const renderCommentContent = (content: string) => {
     const parts = content.split(/(\s+)/);
-    return parts.map((part, idx) => {
+    return parts?.map((part, idx) => {
       if (part.startsWith("@")) {
         const username = part.replace(/[^\w\u0900-\u097F]/g, ""); // Devanagari Unicode supported
         return (
@@ -308,7 +308,7 @@ export default function DiscussionThreadPage() {
         {/* Comment list */}
         <div className="space-y-6">
           {remainingComments.length > 0 || (comments.length === 1 && !acceptedAnswer) ? (
-            comments.map((comment) => {
+            comments?.map((comment) => {
               if (comment.id === thread.best_answer_id || comment.is_accepted_answer) return null;
               
               const commentAuthor = users.find(u => u.id === comment.user_id || u.name === comment.user_name);
@@ -379,7 +379,7 @@ export default function DiscussionThreadPage() {
                   {/* Level 2 Sub-Replies rendering */}
                   {comment.replies && comment.replies.length > 0 && (
                     <div className="pl-4 border-l border-slate-200 dark:border-slate-800 space-y-3 pt-2 mt-2">
-                      {comment.replies.map(reply => {
+                      {comment.replies?.map(reply => {
                         const replyAuthor = users.find(u => u.id === reply.user_id || u.name === reply.user_name);
                         return (
                           <div key={reply.id} className="space-y-2 p-2.5 bg-slate-50/50 dark:bg-slate-950/20 rounded-lg">

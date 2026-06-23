@@ -50,7 +50,7 @@ export default function CategoriesPage() {
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {categoryList.map((cat, idx) => {
+        {categoryList?.map((cat, idx) => {
           const Icon = cat.icon;
           return (
             <GlassCard key={idx} glow={cat.glow} className="p-8 h-[280px] flex flex-col justify-between">

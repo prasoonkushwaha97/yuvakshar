@@ -77,7 +77,7 @@ export default async function FounderDashboardPage() {
           </div>
         ) : null}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {statCards.map((stat, idx) => (
+          {statCards?.map((stat, idx) => (
             <div key={idx} className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
               <div className={`p-4 rounded-full bg-slate-50 dark:bg-slate-800 ${stat.color}`}>
                 <stat.icon className="w-6 h-6" />

@@ -42,7 +42,7 @@ export default function EditorialSidebar({ articleId, initialNotes = [] }: { art
         {notes.length === 0 ? (
           <div className="text-center text-sm text-slate-500 mt-10">No review notes yet.</div>
         ) : (
-          notes.map((note: any) => (
+          notes?.map((note: any) => (
             <div key={note.id} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-sm">
               <div className="flex items-center justify-between mb-1">
                 <span className="font-semibold text-slate-900 dark:text-white">{note.reviewer?.name || 'Reviewer'}</span>

@@ -106,7 +106,7 @@ export default function GlobalNavigationPage() {
                   onChange={(e) => setNewItem({...newItem, menu_id: e.target.value})}
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm"
                 >
-                  {menus.map(m => (
+                  {menus?.map(m => (
                     <option key={m.id} value={m.id}>{m.name} ({m.location})</option>
                   ))}
                 </select>
@@ -157,7 +157,7 @@ export default function GlobalNavigationPage() {
         </div>
 
         <div className="md:col-span-2 space-y-6">
-          {menus.map((menu) => (
+          {menus?.map((menu) => (
             <div key={menu.id} className="bg-white dark:bg-[#0F172A] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                 <h3 className="font-bold text-lg">{menu.name}</h3>
@@ -166,7 +166,7 @@ export default function GlobalNavigationPage() {
               <div className="p-4">
                 {menu.navigation_items && menu.navigation_items.length > 0 ? (
                   <div className="space-y-2">
-                    {menu.navigation_items.sort((a: any, b: any) => a.sort_order - b.sort_order).map((item: any) => (
+                    {menu.navigation_items.sort((a: any, b: any) => a.sort_order - b.sort_order)?.map((item: any) => (
                       <div key={item.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-primary/50 transition-colors">
                         <div className="flex items-center">
                           <LinkIcon className="w-4 h-4 text-slate-400 mr-3" />

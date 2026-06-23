@@ -139,7 +139,7 @@ export default function AuthorsPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredUsers.map(user => (
+                  filteredUsers?.map(user => (
                     <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-[#1E293B]/50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-semibold text-slate-900 dark:text-slate-100">{user.name}</div>

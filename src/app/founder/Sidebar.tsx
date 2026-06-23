@@ -54,7 +54,7 @@ export default function FounderSidebar() {
           </button>
         </div>
         <nav className="flex flex-col gap-2">
-          {navLinks.map((link) => {
+          {navLinks?.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link 

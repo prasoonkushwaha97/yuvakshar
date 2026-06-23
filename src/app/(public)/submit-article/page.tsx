@@ -490,7 +490,7 @@ export default function SubmitArticlePage() {
   };
 
   const changeBlockType = (id: string, type: BlockItem["type"], extraAttrs: Partial<BlockItem> = {}) => {
-    setBlocks(prev => prev.map(b => {
+    setBlocks(prev => prev?.map(b => {
       if (b.id !== id) return b;
       return {
         ...b,
@@ -536,7 +536,7 @@ export default function SubmitArticlePage() {
 
   // Block values syncing
   const handleBlockChange = (blockId: string, text: string) => {
-    setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, text } : b));
+    setBlocks(prev => prev?.map(b => b.id === blockId ? { ...b, text } : b));
   };
 
   // Lists Item handlers
@@ -552,12 +552,12 @@ export default function SubmitArticlePage() {
       } else {
         items[itemIdx].depth = Math.min(3, items[itemIdx].depth + 1);
       }
-      setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, listItems: items } : b));
+      setBlocks(prev => prev?.map(b => b.id === blockId ? { ...b, listItems: items } : b));
     } else if (e.key === "Enter") {
       e.preventDefault();
       const items = [...block.listItems];
       items.splice(itemIdx + 1, 0, { text: "", checked: false, depth: items[itemIdx].depth });
-      setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, listItems: items } : b));
+      setBlocks(prev => prev?.map(b => b.id === blockId ? { ...b, listItems: items } : b));
       setTimeout(() => {
         document.getElementById(`list-input-${blockId}-${itemIdx + 1}`)?.focus();
       }, 50);
@@ -568,7 +568,7 @@ export default function SubmitArticlePage() {
         changeBlockType(blockId, "paragraph", { text: "" });
       } else {
         items.splice(itemIdx, 1);
-        setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, listItems: items } : b));
+        setBlocks(prev => prev?.map(b => b.id === blockId ? { ...b, listItems: items } : b));
         const prevIdx = Math.max(0, itemIdx - 1);
         setTimeout(() => {
           document.getElementById(`list-input-${blockId}-${prevIdx}`)?.focus();
@@ -578,24 +578,24 @@ export default function SubmitArticlePage() {
   };
 
   const handleListItemChange = (blockId: string, itemIdx: number, val: string) => {
-    setBlocks(prev => prev.map(b => {
+    setBlocks(prev => prev?.map(b => {
       if (b.id !== blockId || !b.listItems) return b;
-      const updated = b.listItems.map((item, idx) => idx === itemIdx ? { ...item, text: val } : item);
+      const updated = b.listItems?.map((item, idx) => idx === itemIdx ? { ...item, text: val } : item);
       return { ...b, listItems: updated };
     }));
   };
 
   const toggleListItemCheck = (blockId: string, itemIdx: number) => {
-    setBlocks(prev => prev.map(b => {
+    setBlocks(prev => prev?.map(b => {
       if (b.id !== blockId || !b.listItems) return b;
-      const updated = b.listItems.map((item, idx) => idx === itemIdx ? { ...item, checked: !item.checked } : item);
+      const updated = b.listItems?.map((item, idx) => idx === itemIdx ? { ...item, checked: !item.checked } : item);
       return { ...b, listItems: updated };
     }));
   };
 
   // Table Handlers
   const handleAddTableRow = (blockId: string) => {
-    setBlocks(prev => prev.map(b => {
+    setBlocks(prev => prev?.map(b => {
       if (b.id !== blockId || !b.tableData) return b;
       const cols = b.tableData[0]?.length || 2;
       return { ...b, tableData: [...b.tableData, Array(cols).fill("")] };
@@ -603,17 +603,17 @@ export default function SubmitArticlePage() {
   };
 
   const handleAddTableCol = (blockId: string) => {
-    setBlocks(prev => prev.map(b => {
+    setBlocks(prev => prev?.map(b => {
       if (b.id !== blockId || !b.tableData) return b;
-      return { ...b, tableData: b.tableData.map(r => [...r, ""]) };
+      return { ...b, tableData: b.tableData?.map(r => [...r, ""]) };
     }));
   };
 
   const handleTableCellChange = (blockId: string, r: number, c: number, val: string) => {
-    setBlocks(prev => prev.map(b => {
+    setBlocks(prev => prev?.map(b => {
       if (b.id !== blockId || !b.tableData) return b;
-      const updated = b.tableData.map((row, rIdx) => 
-        row.map((cell, cIdx) => (rIdx === r && cIdx === c) ? val : cell)
+      const updated = b.tableData?.map((row, rIdx) => 
+        row?.map((cell, cIdx) => (rIdx === r && cIdx === c) ? val : cell)
       );
       return { ...b, tableData: updated };
     }));
@@ -647,8 +647,8 @@ export default function SubmitArticlePage() {
     const mergedList = block.mergedCells ? [...block.mergedCells, newMerge] : [newMerge];
     
     let combinedText = "";
-    const updatedData = block.tableData.map((row, rIdx) => 
-      row.map((cell, cIdx) => {
+    const updatedData = block.tableData?.map((row, rIdx) => 
+      row?.map((cell, cIdx) => {
         if (rIdx >= r1 && rIdx <= r2 && cIdx >= c1 && cIdx <= c2) {
           if (cell.replace(/<[^>]*>/g, "").trim()) {
             combinedText += (combinedText ? " " : "") + cell.replace(/<[^>]*>/g, "").trim();
@@ -660,7 +660,7 @@ export default function SubmitArticlePage() {
     );
     updatedData[r1][c1] = combinedText;
 
-    setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, tableData: updatedData, mergedCells: mergedList } : b));
+    setBlocks(prev => prev?.map(b => b.id === blockId ? { ...b, tableData: updatedData, mergedCells: mergedList } : b));
     setMergeStartCell(null);
     alert("सेल्स सफलतापूर्वक मर्ज किए गए!");
   };
@@ -689,7 +689,7 @@ export default function SubmitArticlePage() {
           width: 100,
           rotation: 0
         };
-        setBlocks(prev => prev.map(b => {
+        setBlocks(prev => prev?.map(b => {
           if (b.id !== blockId) return b;
           const current = b.images || [];
           return {
@@ -717,9 +717,9 @@ export default function SubmitArticlePage() {
 
   // Image Adjustments
   const rotateBlockImage = (blockId: string, imgIdx: number) => {
-    setBlocks(prev => prev.map(b => {
+    setBlocks(prev => prev?.map(b => {
       if (b.id !== blockId || !b.images) return b;
-      const updated = b.images.map((img, idx) => 
+      const updated = b.images?.map((img, idx) => 
         idx === imgIdx ? { ...img, rotation: ((img.rotation || 0) + 90) % 360 } : img
       );
       return { ...b, images: updated };
@@ -727,9 +727,9 @@ export default function SubmitArticlePage() {
   };
 
   const resizeBlockImage = (blockId: string, imgIdx: number, width: number) => {
-    setBlocks(prev => prev.map(b => {
+    setBlocks(prev => prev?.map(b => {
       if (b.id !== blockId || !b.images) return b;
-      const updated = b.images.map((img, idx) => 
+      const updated = b.images?.map((img, idx) => 
         idx === imgIdx ? { ...img, width } : img
       );
       return { ...b, images: updated };
@@ -769,9 +769,9 @@ export default function SubmitArticlePage() {
         ctx.drawImage(img, x, y, width, height);
         
         const croppedUrl = canvas.toDataURL("image/jpeg", 0.95);
-        setBlocks(prev => prev.map(b => {
+        setBlocks(prev => prev?.map(b => {
           if (b.id !== croppingBlockId || !b.images) return b;
-          const updated = b.images.map((im, idx) => 
+          const updated = b.images?.map((im, idx) => 
             idx === croppingImageIdx ? { ...im, url: croppedUrl } : im
           );
           return { ...b, images: updated };
@@ -814,9 +814,9 @@ export default function SubmitArticlePage() {
         const compressedUrl = canvas.toDataURL("image/jpeg", compressionQuality);
         const newSize = Math.round(compressedUrl.length * 0.75);
         
-        setBlocks(prev => prev.map(b => {
+        setBlocks(prev => prev?.map(b => {
           if (b.id !== compressingBlockId || !b.images) return b;
-          const updated = b.images.map((im, idx) => 
+          const updated = b.images?.map((im, idx) => 
             idx === compressingImageIdx ? { ...im, url: compressedUrl } : im
           );
           return { ...b, images: updated };
@@ -878,7 +878,7 @@ export default function SubmitArticlePage() {
       rotation: 0
     };
 
-    setBlocks(prev => prev.map(b => {
+    setBlocks(prev => prev?.map(b => {
       if (b.id !== cloudImportBlockId) return b;
       const current = b.images || [];
       return {
@@ -927,7 +927,7 @@ export default function SubmitArticlePage() {
           rotation: 0
         };
 
-        setBlocks(prev => prev.map(b => {
+        setBlocks(prev => prev?.map(b => {
           if (b.id !== cameraTargetBlockId) return b;
           const current = b.images || [];
           return {
@@ -970,7 +970,7 @@ export default function SubmitArticlePage() {
       if (match) embedUrl = `https://www.youtube.com/embed/${match[1]}`;
     }
 
-    setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, videoUrl: embedUrl, videoType: type } : b));
+    setBlocks(prev => prev?.map(b => b.id === blockId ? { ...b, videoUrl: embedUrl, videoType: type } : b));
   };
 
   const stats = calculateStats();
@@ -1491,7 +1491,7 @@ export default function SubmitArticlePage() {
                     <button
                       type="button" onClick={() => {
                         if (activeBlockId) {
-                          setBlocks(prev => prev.map(b => b.id === activeBlockId ? { ...b, align: "left" } : b));
+                          setBlocks(prev => prev?.map(b => b.id === activeBlockId ? { ...b, align: "left" } : b));
                         }
                       }}
                       className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
@@ -1501,7 +1501,7 @@ export default function SubmitArticlePage() {
                     <button
                       type="button" onClick={() => {
                         if (activeBlockId) {
-                          setBlocks(prev => prev.map(b => b.id === activeBlockId ? { ...b, align: "center" } : b));
+                          setBlocks(prev => prev?.map(b => b.id === activeBlockId ? { ...b, align: "center" } : b));
                         }
                       }}
                       className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
@@ -1511,7 +1511,7 @@ export default function SubmitArticlePage() {
                     <button
                       type="button" onClick={() => {
                         if (activeBlockId) {
-                          setBlocks(prev => prev.map(b => b.id === activeBlockId ? { ...b, align: "right" } : b));
+                          setBlocks(prev => prev?.map(b => b.id === activeBlockId ? { ...b, align: "right" } : b));
                         }
                       }}
                       className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
@@ -1521,7 +1521,7 @@ export default function SubmitArticlePage() {
                     <button
                       type="button" onClick={() => {
                         if (activeBlockId) {
-                          setBlocks(prev => prev.map(b => b.id === activeBlockId ? { ...b, align: "justify" } : b));
+                          setBlocks(prev => prev?.map(b => b.id === activeBlockId ? { ...b, align: "justify" } : b));
                         }
                       }}
                       className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
@@ -1553,7 +1553,7 @@ export default function SubmitArticlePage() {
                     onPaste={handleEditorPaste}
                     className="min-h-[400px] border border-slate-100 dark:border-slate-900 rounded-2xl p-4 bg-slate-50/30 dark:bg-[#070b14]/30 space-y-4"
                   >
-                    {blocks.map((block, idx) => {
+                    {blocks?.map((block, idx) => {
                       const blockAlignClass = 
                         block.align === "center" ? "text-center" : 
                         block.align === "right" ? "text-right" : 
@@ -1635,7 +1635,7 @@ export default function SubmitArticlePage() {
                             <div className="flex items-center space-x-2">
                               <select
                                 value={block.level || 2}
-                                onChange={(e) => setBlocks(prev => prev.map(b => b.id === block.id ? { ...b, level: parseInt(e.target.value, 10) as any } : b))}
+                                onChange={(e) => setBlocks(prev => prev?.map(b => b.id === block.id ? { ...b, level: parseInt(e.target.value, 10) as any } : b))}
                                 className="text-[9px] bg-slate-100 dark:bg-slate-900 text-slate-500 rounded p-1 cursor-pointer font-bold shrink-0 border border-slate-200 dark:border-slate-800"
                               >
                                 <option value="1">H1</option>
@@ -1661,25 +1661,25 @@ export default function SubmitArticlePage() {
                             <div className="space-y-2 w-full">
                               <div className="flex space-x-2 text-[8px] font-bold">
                                 <button
-                                  type="button" onClick={() => setBlocks(prev => prev.map(b => b.id === block.id ? { ...b, style: "normal" } : b))}
+                                  type="button" onClick={() => setBlocks(prev => prev?.map(b => b.id === block.id ? { ...b, style: "normal" } : b))}
                                   className={`px-1.5 py-0.5 rounded ${block.style === 'normal' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-900 text-slate-400'}`}
                                 >
                                   सामान्य कोट
                                 </button>
                                 <button
-                                  type="button" onClick={() => setBlocks(prev => prev.map(b => b.id === block.id ? { ...b, style: "pull" } : b))}
+                                  type="button" onClick={() => setBlocks(prev => prev?.map(b => b.id === block.id ? { ...b, style: "pull" } : b))}
                                   className={`px-1.5 py-0.5 rounded ${block.style === 'pull' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-900 text-slate-400'}`}
                                 >
                                   पुल कोट
                                 </button>
                                 <button
-                                  type="button" onClick={() => setBlocks(prev => prev.map(b => b.id === block.id ? { ...b, style: "editorial" } : b))}
+                                  type="button" onClick={() => setBlocks(prev => prev?.map(b => b.id === block.id ? { ...b, style: "editorial" } : b))}
                                   className={`px-1.5 py-0.5 rounded ${block.style === 'editorial' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-900 text-slate-400'}`}
                                 >
                                   संपादकीय कोट
                                 </button>
                                 <button
-                                  type="button" onClick={() => setBlocks(prev => prev.map(b => b.id === block.id ? { ...b, style: "highlight" } : b))}
+                                  type="button" onClick={() => setBlocks(prev => prev?.map(b => b.id === block.id ? { ...b, style: "highlight" } : b))}
                                   className={`px-1.5 py-0.5 rounded ${block.style === 'highlight' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-900 text-slate-400'}`}
                                 >
                                   हाइलाइट कोट
@@ -1707,19 +1707,19 @@ export default function SubmitArticlePage() {
                             <div className="space-y-1.5 w-full">
                               <div className="flex space-x-2 text-[8px] font-bold">
                                 <button
-                                  type="button" onClick={() => setBlocks(prev => prev.map(b => b.id === block.id ? { ...b, listType: "bullet", type: "list" } : b))}
+                                  type="button" onClick={() => setBlocks(prev => prev?.map(b => b.id === block.id ? { ...b, listType: "bullet", type: "list" } : b))}
                                   className={`px-1.5 py-0.5 rounded ${block.type === 'list' && block.listType !== 'ordered' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-900 text-slate-400'}`}
                                 >
                                   बुलेट सूचि
                                 </button>
                                 <button
-                                  type="button" onClick={() => setBlocks(prev => prev.map(b => b.id === block.id ? { ...b, listType: "ordered", type: "list" } : b))}
+                                  type="button" onClick={() => setBlocks(prev => prev?.map(b => b.id === block.id ? { ...b, listType: "ordered", type: "list" } : b))}
                                   className={`px-1.5 py-0.5 rounded ${block.type === 'list' && block.listType === 'ordered' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-900 text-slate-400'}`}
                                 >
                                   क्रमबद्ध सूचि
                                 </button>
                                 <button
-                                  type="button" onClick={() => setBlocks(prev => prev.map(b => b.id === block.id ? { ...b, type: "checklist" } : b))}
+                                  type="button" onClick={() => setBlocks(prev => prev?.map(b => b.id === block.id ? { ...b, type: "checklist" } : b))}
                                   className={`px-1.5 py-0.5 rounded ${block.type === 'checklist' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-900 text-slate-400'}`}
                                 >
                                   चेकलिस्ट
@@ -1787,7 +1787,7 @@ export default function SubmitArticlePage() {
                                       const u = prompt("इमेज का डायरेक्ट URL दर्ज करें:");
                                       if (u) {
                                         const newImg: ImageItem = { url: u, caption: "वेब चित्र", credit: "इंटरनेट", width: 100, rotation: 0 };
-                                        setBlocks(prev => prev.map(b => b.id === block.id ? { ...b, images: [...(b.images || []), newImg], mediaType: (b.images || []).length > 0 ? "gallery" : "image" } : b));
+                                        setBlocks(prev => prev?.map(b => b.id === block.id ? { ...b, images: [...(b.images || []), newImg], mediaType: (b.images || []).length > 0 ? "gallery" : "image" } : b));
                                       }
                                     }}
                                     className="text-slate-500 hover:text-primary transition-all flex items-center space-x-1 cursor-pointer"
@@ -1828,7 +1828,7 @@ export default function SubmitArticlePage() {
                                   </div>
                                 ) : (
                                   <div className={block.mediaType === "gallery" ? "grid grid-cols-2 sm:grid-cols-3 gap-4" : "flex justify-center"}>
-                                    {block.images.map((img, imgIdx) => (
+                                    {block.images?.map((img, imgIdx) => (
                                       <div 
                                         key={imgIdx} 
                                         className="relative group/img border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden p-1 bg-white dark:bg-slate-900"
@@ -1879,7 +1879,7 @@ export default function SubmitArticlePage() {
                                           
                                           <button
                                             type="button" onClick={() => {
-                                              setBlocks(prev => prev.map(b => {
+                                              setBlocks(prev => prev?.map(b => {
                                                 if (b.id !== block.id || !b.images) return b;
                                                 const filtered = b.images.filter((_, idx) => idx !== imgIdx);
                                                 return { ...b, images: filtered, mediaType: filtered.length > 1 ? "gallery" : "image" };
@@ -1898,9 +1898,9 @@ export default function SubmitArticlePage() {
                                             value={img.caption || ""}
                                             onChange={(e) => {
                                               const val = e.target.value;
-                                              setBlocks(prev => prev.map(b => {
+                                              setBlocks(prev => prev?.map(b => {
                                                 if (b.id !== block.id || !b.images) return b;
-                                                const updated = b.images.map((im, idx) => idx === imgIdx ? { ...im, caption: val } : im);
+                                                const updated = b.images?.map((im, idx) => idx === imgIdx ? { ...im, caption: val } : im);
                                                 return { ...b, images: updated };
                                               }));
                                             }}
@@ -1912,9 +1912,9 @@ export default function SubmitArticlePage() {
                                             value={img.credit || ""}
                                             onChange={(e) => {
                                               const val = e.target.value;
-                                              setBlocks(prev => prev.map(b => {
+                                              setBlocks(prev => prev?.map(b => {
                                                 if (b.id !== block.id || !b.images) return b;
-                                                const updated = b.images.map((im, idx) => idx === imgIdx ? { ...im, credit: val } : im);
+                                                const updated = b.images?.map((im, idx) => idx === imgIdx ? { ...im, credit: val } : im);
                                                 return { ...b, images: updated };
                                               }));
                                             }}
@@ -1985,7 +1985,7 @@ export default function SubmitArticlePage() {
                                   <tbody>
                                     {block.tableData?.map((row, rIdx) => (
                                       <tr key={rIdx}>
-                                        {row.map((cellText, cIdx) => {
+                                        {row?.map((cellText, cIdx) => {
                                           const merge = block.mergedCells?.find(
                                             m => rIdx >= m.r1 && rIdx <= m.r2 && cIdx >= m.c1 && cIdx <= m.c2
                                           );
@@ -2047,7 +2047,7 @@ export default function SubmitArticlePage() {
                           {block.type === "special" && (
                             <div className="space-y-3 w-full">
                               <div className="flex space-x-2 text-[8px] font-bold">
-                                {["fact", "didyouknow", "editorial_note", "author_note", "warning", "reference"].map((spec) => {
+                                {["fact", "didyouknow", "editorial_note", "author_note", "warning", "reference"]?.map((spec) => {
                                   const labelMap: Record<string, string> = {
                                     fact: "तथ्य", didyouknow: "क्या जानते हैं?", editorial_note: "संपादकीय",
                                     author_note: "लेखक टिप्पणी", warning: "चेतावनी", reference: "संदर्भ"
@@ -2055,7 +2055,7 @@ export default function SubmitArticlePage() {
                                   return (
                                     <button
                                       key={spec} type="button" 
-                                      onClick={() => setBlocks(prev => prev.map(b => b.id === block.id ? { ...b, specialType: spec as any } : b))}
+                                      onClick={() => setBlocks(prev => prev?.map(b => b.id === block.id ? { ...b, specialType: spec as any } : b))}
                                       className={`px-1.5 py-0.5 rounded ${block.specialType === spec ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-900 text-slate-400'}`}
                                     >
                                       {labelMap[spec]}
@@ -2251,7 +2251,7 @@ export default function SubmitArticlePage() {
                     <div className="border-t border-slate-100 dark:border-slate-850 pt-2.5">
                       <p className="text-[9px] uppercase tracking-wider text-slate-400 font-bold mb-2">अनलॉक किए गए मेडल</p>
                       <div className="grid grid-cols-3 gap-2 text-center text-[9px] font-sans">
-                        {achievementsList.map((badge, bIdx) => (
+                        {achievementsList?.map((badge, bIdx) => (
                           <div 
                             key={bIdx} 
                             className={`p-1.5 rounded-xl border flex flex-col items-center justify-center space-y-1 ${
@@ -2358,7 +2358,7 @@ export default function SubmitArticlePage() {
                       
                       {activeAiTool === "suggest_titles" && typeof aiResult === "string" ? (
                         <div className="space-y-1">
-                          {aiResult.split("\n").map((t, idx) => {
+                          {aiResult.split("\n")?.map((t, idx) => {
                             const cleanT = t.replace(/^[*-\s\d.]+\s*/, "").trim();
                             if (!cleanT) return null;
                             return (
@@ -2381,7 +2381,7 @@ export default function SubmitArticlePage() {
                               onClick={() => {
                                 // Insert into currently active block
                                 if (activeBlockId) {
-                                  setBlocks(prev => prev.map(b => b.id === activeBlockId ? { ...b, text: (b.text || "") + " " + aiResult } : b));
+                                  setBlocks(prev => prev?.map(b => b.id === activeBlockId ? { ...b, text: (b.text || "") + " " + aiResult } : b));
                                 } else {
                                   // Append new block
                                   setBlocks(prev => [...prev, { id: `block-${Date.now()}`, type: "paragraph", text: aiResult }]);
@@ -2542,7 +2542,7 @@ export default function SubmitArticlePage() {
                       <span>ड्राफ्ट इतिहास (Draft Versions)</span>
                     </h3>
                     <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                      {draftHistory.map(ver => (
+                      {draftHistory?.map(ver => (
                         <div key={ver.id} className="p-2.5 rounded-xl border border-slate-250 dark:border-slate-850 text-[9px] font-sans flex justify-between items-center bg-white dark:bg-slate-950">
                           <div className="truncate max-w-[70%]">
                             <p className="font-bold text-slate-800 dark:text-slate-200 font-serif truncate">{ver.title || "शीर्षकहीन ड्राफ्ट"}</p>
@@ -2663,7 +2663,7 @@ export default function SubmitArticlePage() {
                       
                       {blocks.length > 0 ? (
                         <div className="space-y-6">
-                          {blocks.map((block, bIdx) => {
+                          {blocks?.map((block, bIdx) => {
                             const blockAlign = 
                               block.align === "center" ? "text-center" : 
                               block.align === "right" ? "text-right" : 
@@ -2741,7 +2741,7 @@ export default function SubmitArticlePage() {
                               if (block.mediaType === "gallery") {
                                 return (
                                   <div key={block.id} className="grid grid-cols-2 gap-4 my-4">
-                                    {block.images.map((img, imgIdx) => (
+                                    {block.images?.map((img, imgIdx) => (
                                       <div key={imgIdx} className="space-y-1 text-center">
                                         <img src={img.url} alt={img.caption} className="w-full h-40 object-cover rounded-xl" style={{ transform: `rotate(${img.rotation || 0}deg)` }} />
                                         {img.caption && <span className="block text-[10px] text-slate-400 italic leading-none">{img.caption}</span>}
@@ -2777,9 +2777,9 @@ export default function SubmitArticlePage() {
                                 <div key={block.id} className="overflow-x-auto border border-slate-250 dark:border-slate-800 rounded-xl my-4">
                                   <table className="min-w-full border-collapse border border-slate-200 dark:border-slate-800">
                                     <tbody>
-                                      {block.tableData.map((row, rIdx) => (
+                                      {block.tableData?.map((row, rIdx) => (
                                         <tr key={rIdx}>
-                                          {row.map((cellText, cIdx) => {
+                                          {row?.map((cellText, cIdx) => {
                                             const merge = block.mergedCells?.find(
                                               m => rIdx >= m.r1 && rIdx <= m.r2 && cIdx >= m.c1 && cIdx <= m.c2
                                             );
@@ -2889,7 +2889,7 @@ export default function SubmitArticlePage() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {submittedList.map(sub => (
+                    {submittedList?.map(sub => (
                       <div
                         key={sub.id}
                         className="bg-slate-50/50 dark:bg-[#0F172A]/10 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4 transition-all"

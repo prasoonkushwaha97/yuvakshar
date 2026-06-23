@@ -114,7 +114,7 @@ export default function ProfilePage() {
 
           {userArticles.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {userArticles.map(article => (
+              {userArticles?.map(article => (
                 <Link key={article.id} href={`/articles/${article.slug}`} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col h-full">
                   {article.coverImage && (
                     <div className="h-48 w-full overflow-hidden relative">

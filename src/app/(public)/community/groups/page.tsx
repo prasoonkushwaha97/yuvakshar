@@ -94,7 +94,7 @@ export default function GroupsListPage() {
             { id: "Story Writing", name: "कहानी" },
             { id: "Reading Club", name: "पठन क्लब" },
             { id: "Exams", name: "परीक्षा" }
-          ].map(cat => (
+          ]?.map(cat => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
@@ -118,7 +118,7 @@ export default function GroupsListPage() {
             साहित्यिक समूह लोड किए जा रहे हैं...
           </div>
         ) : filteredGroups.length > 0 ? (
-          filteredGroups.map((group) => {
+          filteredGroups?.map((group) => {
             const isReadingClub = group.category === "Reading Club";
             
             return (

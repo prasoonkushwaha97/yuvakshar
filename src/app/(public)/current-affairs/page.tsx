@@ -44,7 +44,7 @@ export default function CurrentAffairsPage() {
   };
 
   const { articles, categories: cmsCategories } = useCms();
-  const categories = ["All", ...cmsCategories.map(c => c.name)];
+  const categories = ["All", ...cmsCategories?.map(c => c.name)];
 
   const filteredArticles = articles.filter(art => {
     const matchesCategory = selectedCategory === "All" || art.category === selectedCategory;
@@ -111,7 +111,7 @@ export default function CurrentAffairsPage() {
 
       {/* Category selector row */}
       <div className="flex overflow-x-auto space-x-2 pb-2 select-none scrollbar-none border-b border-yuvakshar-gold/5">
-        {categories.map((cat) => (
+        {categories?.map((cat) => (
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
@@ -129,7 +129,7 @@ export default function CurrentAffairsPage() {
       {/* Content grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedArticles.length > 0 ? (
-          sortedArticles.map((art) => (
+          sortedArticles?.map((art) => (
             <GlassCard key={art.id} glow="none" className="p-0">
               <div className="flex flex-col h-full justify-between">
                 <div>
@@ -171,7 +171,7 @@ export default function CurrentAffairsPage() {
 
                 <div className="p-6 pt-0 border-t border-yuvakshar-gold/5 mt-auto flex items-center justify-between">
                   <div className="flex space-x-1 overflow-hidden max-w-[70%]">
-                    {(art.tags || []).slice(0, 2).map((t: string, idx: number) => (
+                    {(art.tags || []).slice(0, 2)?.map((t: string, idx: number) => (
                       <span key={idx} className="text-[9px] text-yuvakshar-gray font-mono bg-yuvakshar-card/85 px-2 py-0.5 rounded border border-yuvakshar-gold/5 shrink-0">
                         #{t}
                       </span>

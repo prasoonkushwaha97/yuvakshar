@@ -63,7 +63,7 @@ export default function SeoSettingsPage() {
       </div>
 
       <div className="space-y-4">
-        {seo.map((setting) => (
+        {seo?.map((setting) => (
           <div key={setting.id} className="bg-white dark:bg-[#0F172A] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
             <div className="flex flex-col md:flex-row md:items-start gap-4">
               <div className="flex-1 space-y-4">
@@ -107,7 +107,7 @@ export default function SeoSettingsPage() {
                       defaultValue={setting.keywords?.join(', ')}
                       placeholder="news, articles, local"
                       onBlur={(e) => {
-                        const kw = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                        const kw = e.target.value.split(',')?.map(s => s.trim()).filter(Boolean);
                         handleUpdate(setting.id, { keywords: kw });
                       }}
                       className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-sm"

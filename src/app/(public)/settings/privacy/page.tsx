@@ -77,7 +77,7 @@ export default function PrivacySettingsPage() {
               { id: 'public', label: 'सार्वजनिक (Public)', desc: 'कोई भी आपकी प्रोफ़ाइल देख सकता है।' },
               { id: 'members', label: 'केवल सदस्य (Members Only)', desc: 'केवल लॉग-इन किए गए उपयोगकर्ता देख सकते हैं।' },
               { id: 'private', label: 'निजी (Private)', desc: 'कोई भी आपकी प्रोफ़ाइल नहीं देख सकता (संपादकों को छोड़कर)।' }
-            ].map((option) => (
+            ]?.map((option) => (
               <label key={option.id} className="flex items-start gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                 <input 
                   type="radio" 
@@ -109,7 +109,7 @@ export default function PrivacySettingsPage() {
             {[
               { id: 'public', label: 'सार्वजनिक (Public)' },
               { id: 'private', label: 'निजी (Private)' }
-            ].map((option) => (
+            ]?.map((option) => (
               <label key={option.id} className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                 <input 
                   type="radio" 

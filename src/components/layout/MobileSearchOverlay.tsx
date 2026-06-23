@@ -27,7 +27,7 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
-  const quickCategories = categories.slice(0, 6).map(c => ({
+  const quickCategories = categories.slice(0, 6)?.map(c => ({
     label: c.name,
     href: `/category/${c.slug}`
   }));
@@ -114,7 +114,7 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
               <div className="px-4 pt-4">
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">सुझाव</p>
                 <div className="space-y-0.5">
-                  {suggestions.map((s, i) => (
+                  {suggestions?.map((s, i) => (
                     <button
                       key={i}
                       onClick={() => handleSearch(s)}
@@ -137,7 +137,7 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
                   <button onClick={clearRecent} className="text-[10px] text-primary font-bold">साफ़ करें</button>
                 </div>
                 <div className="space-y-0.5">
-                  {recentSearches.map((s, i) => (
+                  {recentSearches?.map((s, i) => (
                     <button
                       key={i}
                       onClick={() => handleSearch(s)}
@@ -160,7 +160,7 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ट्रेंडिंग विषय</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {trendingTopics.map((topic, i) => (
+                  {trendingTopics?.map((topic, i) => (
                     <button
                       key={i}
                       onClick={() => handleSearch(topic)}
@@ -178,7 +178,7 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
               <div className="px-4 pt-6 pb-8">
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-3">श्रेणियाँ</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {quickCategories.map(({ label, href }) => (
+                  {quickCategories?.map(({ label, href }) => (
                     <Link
                       key={href}
                       href={href}

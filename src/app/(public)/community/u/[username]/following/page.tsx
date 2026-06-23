@@ -39,7 +39,7 @@ export default function FollowingPage() {
 
         if (currentUser) {
           const initialFollowStates: Record<string, boolean> = {};
-          await Promise.all(followingProfiles.map(async (f: Profile) => {
+          await Promise.all(followingProfiles?.map(async (f: Profile) => {
             initialFollowStates[f.id] = await isUserFollowing(currentUser.id, f.id);
           }));
           setFollowStates(initialFollowStates);
@@ -100,7 +100,7 @@ export default function FollowingPage() {
       {/* List */}
       <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
         {filteredFollowing.length > 0 ? (
-          filteredFollowing.map(f => (
+          filteredFollowing?.map(f => (
             <div key={f.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
               <Link href={`/community/u/${f.slug || f.id}`} className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0 overflow-hidden">

@@ -23,9 +23,9 @@ export default function StudyProgressTab({ currentUser, getUserReputation }: Stu
 
   const userAttempts = cms.quizAttempts.filter(att => att.userId === (currentUser?.id || "anonymous-reader"));
   const totalAttempts = userAttempts.length;
-  const completedArticlesCount = new Set(userAttempts.filter(att => att.percentage >= 60).map(att => att.articleId)).size;
+  const completedArticlesCount = new Set(userAttempts.filter(att => att.percentage >= 60)?.map(att => att.articleId)).size;
   const averageScore = totalAttempts > 0 ? Math.round(userAttempts.reduce((acc, curr) => acc + curr.percentage, 0) / totalAttempts) : 0;
-  const bestScore = totalAttempts > 0 ? Math.max(...userAttempts.map(att => att.percentage)) : 0;
+  const bestScore = totalAttempts > 0 ? Math.max(...userAttempts?.map(att => att.percentage)) : 0;
   const totalStudyTime = userAttempts.reduce((acc, curr) => acc + curr.durationSeconds, 0);
 
   // Cognitive Metrics
@@ -230,7 +230,7 @@ export default function StudyProgressTab({ currentUser, getUserReputation }: Stu
 
               return (
                 <>
-                  {activeBadges.map((badge, idx) => (
+                  {activeBadges?.map((badge, idx) => (
                     <span key={idx} className="px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-bold font-serif">
                       {badge.badge}
                     </span>

@@ -65,7 +65,7 @@ export default function GlobalSettingsPage() {
       <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <div className="p-6">
           <div className="space-y-6">
-            {settings.map((setting) => (
+            {settings?.map((setting) => (
               <div key={setting.key} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800">
                 <div className="flex-1">
                   <h3 className="font-medium text-slate-900 dark:text-white font-mono text-sm">{setting.key}</h3>

@@ -96,18 +96,18 @@ export default function KanbanBoard({ initialArticles }: { initialArticles: Arti
     // Only "review" is slightly mismatched in our standard enum if we use "in_review"
     if (targetStatus === "review") targetStatus = "in_review";
 
-    if (activeArticle.status !== targetStatus && COLUMNS.map(c => c.id).includes(targetStatus.replace('in_review', 'review'))) {
+    if (activeArticle.status !== targetStatus && COLUMNS?.map(c => c.id).includes(targetStatus.replace('in_review', 'review'))) {
       const oldStatus = activeArticle.status;
       
       // Optimistic update
-      setArticles(prev => prev.map(a => a.id === activeArticleId ? { ...a, status: targetStatus as any } : a));
+      setArticles(prev => prev?.map(a => a.id === activeArticleId ? { ...a, status: targetStatus as any } : a));
 
       try {
         await moveArticleStatus(activeArticleId, targetStatus);
       } catch (e: any) {
         console.error(e);
         // Revert on error
-        setArticles(prev => prev.map(a => a.id === activeArticleId ? { ...a, status: oldStatus } : a));
+        setArticles(prev => prev?.map(a => a.id === activeArticleId ? { ...a, status: oldStatus } : a));
         alert("Failed to move article: " + e.message);
       }
     }
@@ -121,7 +121,7 @@ export default function KanbanBoard({ initialArticles }: { initialArticles: Arti
       onDragEnd={handleDragEnd}
     >
       <div className="flex flex-row space-x-4 overflow-x-auto pb-4 h-[calc(100vh-200px)]">
-        {COLUMNS.map((col) => {
+        {COLUMNS?.map((col) => {
           // 'in_review' is the actual enum for 'review'
           const colStatus = col.id === 'review' ? 'in_review' : col.id;
           const colArticles = articles.filter((a) => a.status === colStatus);
@@ -132,11 +132,11 @@ export default function KanbanBoard({ initialArticles }: { initialArticles: Arti
               
               <SortableContext 
                 id={col.id}
-                items={colArticles.map(a => a.id)} 
+                items={colArticles?.map(a => a.id)} 
                 strategy={verticalListSortingStrategy}
               >
                 <div className="flex-1 overflow-y-auto min-h-[150px]">
-                  {colArticles.map((article) => (
+                  {colArticles?.map((article) => (
                     <SortableItem key={article.id} id={article.id} article={article} />
                   ))}
                 </div>

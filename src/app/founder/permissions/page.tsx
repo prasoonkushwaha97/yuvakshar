@@ -65,7 +65,7 @@ export default function PermissionsCenterPage() {
                   <th className="px-6 py-4 sticky left-0 bg-slate-50 dark:bg-[#1E293B] z-10 w-64 border-r border-slate-200 dark:border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                     <div className="font-semibold text-slate-700 dark:text-slate-300">Category / Permission</div>
                   </th>
-                  {roles.map(role => (
+                  {roles?.map(role => (
                     <th key={role.id} className="px-4 py-4 text-center min-w-[120px]">
                       <div className="flex flex-col items-center space-y-1">
                         <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
@@ -78,7 +78,7 @@ export default function PermissionsCenterPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                {Object.entries(permissionsByCategory).map(([category, perms]) => (
+                {Object.entries(permissionsByCategory)?.map(([category, perms]) => (
                   <React.Fragment key={category}>
                     {/* Category Header Row */}
                     <tr className="bg-slate-50/50 dark:bg-[#1E293B]/50">
@@ -90,7 +90,7 @@ export default function PermissionsCenterPage() {
                       </td>
                     </tr>
                     {/* Permissions Rows */}
-                    {perms.map(perm => (
+                    {perms?.map(perm => (
                       <tr key={perm.id} className="hover:bg-slate-50 dark:hover:bg-[#1E293B]/30 transition-colors">
                         <td className="px-6 py-3 sticky left-0 bg-white dark:bg-[#0F172A] z-10 border-r border-slate-200 dark:border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
                           <div className="flex flex-col">
@@ -102,7 +102,7 @@ export default function PermissionsCenterPage() {
                             )}
                           </div>
                         </td>
-                        {roles.map(role => {
+                        {roles?.map(role => {
                           const hasPerm = matrix[perm.id]?.[role.id] || false;
                           return (
                             <td key={role.id} className="px-4 py-3 text-center border-l border-slate-50 dark:border-slate-800/30">

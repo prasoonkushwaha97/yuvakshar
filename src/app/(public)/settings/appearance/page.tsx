@@ -68,7 +68,7 @@ export default function AppearanceSettingsPage() {
              <Monitor className="w-4 h-4 text-primary" /> थीम (Theme)
           </label>
           <div className="grid grid-cols-3 gap-4">
-            {['light', 'dark', 'system'].map((t) => (
+            {['light', 'dark', 'system']?.map((t) => (
               <button
                 key={t}
                 type="button"
@@ -94,7 +94,7 @@ export default function AppearanceSettingsPage() {
              <Type className="w-4 h-4 text-primary" /> फ़ॉन्ट साइज़ (Font Size)
           </label>
           <div className="grid grid-cols-3 gap-4">
-            {['small', 'medium', 'large'].map((s) => (
+            {['small', 'medium', 'large']?.map((s) => (
               <button
                 key={s}
                 type="button"
@@ -117,7 +117,7 @@ export default function AppearanceSettingsPage() {
              <Maximize className="w-4 h-4 text-primary" /> रीडिंग चौड़ाई (Reading Width)
           </label>
           <div className="flex gap-4">
-            {['standard', 'wide'].map((w) => (
+            {['standard', 'wide']?.map((w) => (
               <button
                 key={w}
                 type="button"

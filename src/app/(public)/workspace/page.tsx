@@ -100,7 +100,7 @@ export default function WorkspacePage() {
   };
 
   const toggleCardReveal = (index: number) => {
-    setFlashcards(prev => prev.map((card, idx) => 
+    setFlashcards(prev => prev?.map((card, idx) => 
       idx === index ? { ...card, revealed: !card.revealed } : card
     ));
   };
@@ -144,7 +144,7 @@ export default function WorkspacePage() {
 
       {/* Tabs */}
       <div className="flex space-x-2 border-b border-yuvakshar-gold/10 pb-px mb-8 select-none overflow-x-auto">
-        {(["notes", "flashcards", "schedule"] as const).map((tab) => (
+        {(["notes", "flashcards", "schedule"] as const)?.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -169,7 +169,7 @@ export default function WorkspacePage() {
               <h2 className="text-sm font-serif text-yuvakshar-gold uppercase tracking-wider font-bold mb-4">Highlights Ledger</h2>
               
               {mounted && notes.length > 0 ? (
-                notes.map((note, idx) => (
+                notes?.map((note, idx) => (
                   <GlassCard key={idx} glow="none" className="p-5 border-l-4" style={{ borderLeftColor: note.color === "yellow" ? "#EAB308" : note.color === "blue" ? "#3B82F6" : note.color === "red" ? "#EF4444" : "#22C55E" }}>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center text-[10px] text-yuvakshar-gray">
@@ -227,7 +227,7 @@ export default function WorkspacePage() {
         {activeTab === "flashcards" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {mounted && flashcards.length > 0 ? (
-              flashcards.map((card, idx) => (
+              flashcards?.map((card, idx) => (
                 <GlassCard key={idx} glow="gold" className="p-6 h-[260px] flex flex-col justify-between select-none">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center border-b border-yuvakshar-gold/15 pb-2">
@@ -301,7 +301,7 @@ export default function WorkspacePage() {
                   { title: "Review 'AI & Sovereign Statecraft'", date: "Today", difficulty: "Medium", desc: "Highlight check: 8 key definitions saved." },
                   { title: "Study 'Demographic Arbitrage Reforms'", date: "Tomorrow", difficulty: "High", desc: "Analyze Prof. Raghavan's statistics on structural engineering hubs." },
                   { title: "Weekly Magazine MCQ Assessment", date: "May 31, 2026", difficulty: "Medium", desc: "Covers trade corridors and Indo-Pacific ocean sovereignty indices." }
-                ].map((item, idx) => (
+                ]?.map((item, idx) => (
                   <GlassCard key={idx} glow="none" className="p-5 flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center space-x-2">

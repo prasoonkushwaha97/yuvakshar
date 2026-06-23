@@ -279,7 +279,7 @@ export default function PostCard({
         <div className="p-4 bg-slate-50 dark:bg-[#111827] rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
           <p className="text-sm font-bold text-slate-800 dark:text-white font-serif font-hindi">{post.poll_question}</p>
           <div className="space-y-2">
-            {post.poll_options.map((opt, idx) => {
+            {post.poll_options?.map((opt, idx) => {
               const optVotes = post.poll_votes 
                 ? Object.values(post.poll_votes).filter(v => v === idx).length 
                 : 0;

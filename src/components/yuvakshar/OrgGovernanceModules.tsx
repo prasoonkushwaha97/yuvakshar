@@ -232,7 +232,7 @@ export function CandidateManagement({ currentUser }: { currentUser: Profile }) {
           </p>
         ) : (
           <div className="space-y-3">
-            {pendingList.map((cand) => (
+            {pendingList?.map((cand) => (
               <div key={cand.id} className="p-4 border border-slate-100 dark:border-slate-800/80 rounded-xl bg-slate-50/50 dark:bg-slate-900/10 flex flex-col md:flex-row justify-between gap-4">
                 <div className="space-y-1 text-xs">
                   <div className="flex items-center gap-2">
@@ -302,7 +302,7 @@ export function VerificationQueue({ currentUser }: { currentUser: Profile }) {
           </p>
         ) : (
           <div className="space-y-4">
-            {pendingList.map((req) => {
+            {pendingList?.map((req) => {
               const isSelf = req.user_id === currentUser.id;
               const isSahityakar = req.badge_requested === "सत्यापित साहित्यकार";
 
@@ -506,7 +506,7 @@ export function TaskBoard({ currentUser }: { currentUser: Profile }) {
                   required
                 >
                   <option value="">सदस्य चुनें...</option>
-                  {teamMembers.map(m => (
+                  {teamMembers?.map(m => (
                     <option key={m.id} value={m.id}>
                       {m.name} ({translateRole(m.role)})
                     </option>
@@ -604,7 +604,7 @@ export function TaskBoard({ currentUser }: { currentUser: Profile }) {
           </p>
         ) : (
           <div className="space-y-4">
-            {filteredTasks.map((task) => {
+            {filteredTasks?.map((task) => {
               const isAssignedToMe = task.assigned_to === currentUser.id;
               
               // Colors for Priority
@@ -748,7 +748,7 @@ export function OrgAuditLogViewer() {
             कोई ऑडिट लॉग नहीं मिला।
           </p>
         ) : (
-          filteredLogs.map((log) => {
+          filteredLogs?.map((log) => {
             const severityColors: Record<OrgAuditLog["severity"], string> = {
               Info: "text-blue-500 border-blue-500/20 bg-blue-500/5",
               Warning: "text-orange-500 border-orange-500/20 bg-orange-500/5",

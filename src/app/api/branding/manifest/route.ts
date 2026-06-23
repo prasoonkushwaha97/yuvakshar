@@ -58,7 +58,7 @@ export async function GET() {
     orientation: "portrait",
     background_color: backgroundColor,
     theme_color: primaryColor,
-    icons: iconSizes.map((size) => ({
+    icons: iconSizes?.map((size) => ({
       src: `${iconBaseUrl}?size=${size}&v=${version}`,
       sizes: `${size}x${size}`,
       type: "image/png",

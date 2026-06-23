@@ -155,7 +155,7 @@ export default function CommunitySettingsPage() {
           <div className="space-y-2 text-xs font-hindi">
             <span className="text-[10px] text-slate-400 block mb-2">अपनी रुचि के विषय चुनें, हम आपकी चौपाल फ़ीड में इनसे संबंधित प्रविष्टियों को प्राथमिकता देंगे:</span>
             <div className="flex flex-wrap gap-2">
-              {["काव्य", "कहानी", "उपन्यास समीक्षा", "साहित्य आलोचना", "लघु कथा", "वैचारिक निबंध", "जीवनी विमर्श"].map((cat) => {
+              {["काव्य", "कहानी", "उपन्यास समीक्षा", "साहित्य आलोचना", "लघु कथा", "वैचारिक निबंध", "जीवनी विमर्श"]?.map((cat) => {
                 const isSelected = prefCategories.includes(cat);
                 return (
                   <button

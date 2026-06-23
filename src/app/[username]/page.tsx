@@ -130,7 +130,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
 
           {userArticles.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userArticles.map(article => (
+              {userArticles?.map(article => (
                 <Link href={`/articles/${article.slug}`} key={article.id} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 flex flex-col h-full">
                   <div className="relative h-48 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
                     {(article as any).imageUrl || (article as any).coverImage ? (

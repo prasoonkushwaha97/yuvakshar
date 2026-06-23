@@ -98,7 +98,7 @@ export default function AuthorDirectoryPage() {
 
       {/* Authors list grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {sortedAuthors.map((author, index) => {
+        {sortedAuthors?.map((author, index) => {
           const isFollowing = currentUser ? (author.followers || []).includes(currentUser.id) : false;
           
           return (
@@ -138,7 +138,7 @@ export default function AuthorDirectoryPage() {
                     {/* Expertise Tags */}
                     {author.expertise_tags && author.expertise_tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {author.expertise_tags.slice(0, 2).map((tag) => (
+                        {author.expertise_tags.slice(0, 2)?.map((tag) => (
                           <span key={tag} className="text-[8px] bg-slate-50 dark:bg-slate-900 text-slate-400 border border-slate-200/50 dark:border-slate-800 px-1.5 py-0.5 rounded font-hindi">
                             {tag}
                           </span>

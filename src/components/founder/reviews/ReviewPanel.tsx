@@ -54,7 +54,7 @@ function NoteThread({ note, depth = 0 }: { note: ReviewNote; depth?: number }) {
 
       {note.replies && note.replies.length > 0 && (
         <div className="mt-4">
-          {note.replies.map(reply => <NoteThread key={reply.id} note={reply} depth={depth + 1} />)}
+          {note.replies?.map(reply => <NoteThread key={reply.id} note={reply} depth={depth + 1} />)}
         </div>
       )}
     </div>
@@ -93,7 +93,7 @@ export default function ReviewPanel({ article, initialNotes }: { article: Articl
           {initialNotes.length === 0 ? (
             <p className="text-sm text-gray-500 italic">No notes yet.</p>
           ) : (
-            initialNotes.map(note => <NoteThread key={note.id} note={note} />)
+            initialNotes?.map(note => <NoteThread key={note.id} note={note} />)
           )}
         </div>
 

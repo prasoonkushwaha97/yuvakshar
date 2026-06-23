@@ -187,7 +187,7 @@ export default function GroupDetailPage() {
     if (!currentUser) return;
     try {
       const newCount = await toggleLikePost(postId, currentUser.id);
-      setPosts(posts.map(p => {
+      setPosts(posts?.map(p => {
         if (p.id === postId) return { ...p, likesCount: newCount };
         return p;
       }));
@@ -243,7 +243,7 @@ export default function GroupDetailPage() {
 
   // Pinned Posts Mod Panel toggle
   const handleTogglePinPost = (postId: string) => {
-    const updated = posts.map(p => {
+    const updated = posts?.map(p => {
       if (p.id === postId) {
         const nextState = !p.is_pinned;
         alert(nextState ? "पोस्ट को पिन कर दिया गया है।" : "पोस्ट अनपिन कर दी गई है।");
@@ -345,7 +345,7 @@ export default function GroupDetailPage() {
           {/* Pinned Announcements list */}
           {announcements.length > 0 && (
             <div className="space-y-3">
-              {announcements.map((ann, idx) => (
+              {announcements?.map((ann, idx) => (
                 <div key={idx} className="bg-amber-500/5 dark:bg-amber-950/10 border border-amber-500/20 rounded-2xl p-4 flex items-start justify-between gap-3 text-xs font-hindi shadow-sm">
                   <div className="flex items-start space-x-2.5">
                     <Megaphone className="w-4.5 h-4.5 text-amber-500 shrink-0 mt-0.5" />
@@ -424,7 +424,7 @@ export default function GroupDetailPage() {
                   <span>पठन प्रगति समीक्षा</span>
                 </h4>
                 <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
-                  {progressLogs.map((log) => {
+                  {progressLogs?.map((log) => {
                     const percent = Math.round((log.current_page / log.total_pages) * 100);
                     const writer = users.find(u => u.id === log.user_id);
                     return (
@@ -621,7 +621,7 @@ export default function GroupDetailPage() {
             </h3>
 
             <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-              {groupMembers.map((member) => {
+              {groupMembers?.map((member) => {
                 const userProfile = users.find(u => u.id === member.user_id);
                 return (
                   <div key={member.id} className="flex items-center justify-between text-xs">

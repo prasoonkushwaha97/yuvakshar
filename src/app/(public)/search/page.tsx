@@ -95,7 +95,7 @@ export default function SearchPage() {
         )}
 
         <div className="space-y-4">
-          {results.map((art) => (
+          {results?.map((art) => (
             <GlassCard key={art.id} glow="none" className="p-5">
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                 <div className="space-y-2">
@@ -150,7 +150,7 @@ export default function SearchPage() {
             <div className="text-center py-20 text-slate-400 text-xs space-y-3">
               <p>खोजने के लिए ऊपर टाइप करना शुरू करें...</p>
               <div className="flex flex-wrap items-center justify-center gap-2 max-w-sm mx-auto pt-2">
-                {["पर्यावरण", "शिक्षा", "विचार", "साहित्य"].map(tag => (
+                {["पर्यावरण", "शिक्षा", "विचार", "साहित्य"]?.map(tag => (
                   <button
                     key={tag}
                     onClick={() => setQuery(tag)}

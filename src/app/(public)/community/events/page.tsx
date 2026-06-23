@@ -134,7 +134,7 @@ export default function EventsPage() {
       alert("प्रतिक्रिया (RSVP) दर्ज करने के लिए कृपया लॉगिन करें।");
       return;
     }
-    const updated = events.map(evt => {
+    const updated = events?.map(evt => {
       if (evt.id === id) {
         const prevRsvp = evt.rsvp || "none";
         let countDiff = 0;
@@ -328,7 +328,7 @@ export default function EventsPage() {
       {/* Events Listing */}
       <div className="space-y-5">
         {displayedEvents.length > 0 ? (
-          displayedEvents.map((evt) => {
+          displayedEvents?.map((evt) => {
             const dateObj = new Date(evt.event_date);
             const formattedDate = dateObj.toLocaleDateString("hi-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
             const formattedTime = dateObj.toLocaleTimeString("hi-IN", { hour: "2-digit", minute: "2-digit" });
@@ -363,7 +363,7 @@ export default function EventsPage() {
                     
                     {/* Participant initial bubbles */}
                     <div className="flex -space-x-1.5 overflow-hidden">
-                      {["र", "प", "अ", "म"].slice(0, Math.min(4, evt.attendeesCount)).map((char, idx) => (
+                      {["र", "प", "अ", "म"].slice(0, Math.min(4, evt.attendeesCount))?.map((char, idx) => (
                         <div 
                           key={idx} 
                           className="inline-flex items-center justify-center w-5.5 h-5.5 rounded-full ring-2 ring-white dark:ring-[#0B1222] bg-slate-100 dark:bg-slate-800 text-[8px] font-bold text-slate-500 uppercase font-hindi shrink-0"

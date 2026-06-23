@@ -70,7 +70,7 @@ export default function ArticleManager({
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedIds(new Set(articles.map(a => a.id)));
+      setSelectedIds(new Set(articles?.map(a => a.id)));
     } else {
       setSelectedIds(new Set());
     }
@@ -104,7 +104,7 @@ export default function ArticleManager({
 
   const handleStatusChange = async (id: string, status: ArticleStatus) => {
     const originalArticles = [...articles];
-    setArticles(articles.map(a => a.id === id ? { ...a, status } : a));
+    setArticles(articles?.map(a => a.id === id ? { ...a, status } : a));
     
     try {
       await updateArticleStatus(id, status);
@@ -252,7 +252,7 @@ export default function ArticleManager({
             onChange={(e) => updateUrlParams({ status: e.target.value || null })}
           >
             <option value="">All Statuses</option>
-            {Object.entries(statusLabels).map(([key, label]) => (
+            {Object.entries(statusLabels)?.map(([key, label]) => (
               <option key={key} value={key}>{label}</option>
             ))}
           </select>
@@ -263,7 +263,7 @@ export default function ArticleManager({
             onChange={(e) => updateUrlParams({ category_id: e.target.value || null })}
           >
             <option value="">All Categories</option>
-            {categories.map(c => (
+            {categories?.map(c => (
               <option key={c.id} value={c.id}>{c.name_hi}</option>
             ))}
           </select>
@@ -327,7 +327,7 @@ export default function ArticleManager({
                   </td>
                 </tr>
               ) : (
-                articles.map((article) => (
+                articles?.map((article) => (
                   <tr key={article.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                     <td className="px-6 py-4">
                       <input 
@@ -365,7 +365,7 @@ export default function ArticleManager({
                           onChange={(e) => handleStatusChange(article.id, e.target.value as ArticleStatus)}
                           className={`appearance-none cursor-pointer inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-medium border ${statusColors[article.status] || statusColors["draft"]} focus:outline-none focus:ring-2 focus:ring-primary/20 pr-6`}
                         >
-                          {Object.entries(statusLabels).map(([key, label]) => (
+                          {Object.entries(statusLabels)?.map(([key, label]) => (
                             <option key={key} value={key}>{label}</option>
                           ))}
                         </select>

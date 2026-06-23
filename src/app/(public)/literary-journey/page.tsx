@@ -26,7 +26,7 @@ export default function LiteraryJourneyPage() {
   const userAttempts = useMemo(() => quizAttempts.filter(att => att.userId === currentUser.id), [quizAttempts, currentUser.id]);
 
   // Calculate literary metrics (simulated from quiz attempts/article views for now)
-  const totalReadArticles = new Set(userAttempts.map(att => att.articleId)).size;
+  const totalReadArticles = new Set(userAttempts?.map(att => att.articleId)).size;
   const categoriesExplored = useMemo(() => {
     const cats = new Set<string>();
     userAttempts.forEach(att => {
@@ -89,7 +89,7 @@ export default function LiteraryJourneyPage() {
               
               {userAttempts.length > 0 ? (
                 <div className="space-y-6">
-                  {userAttempts.slice(0, 5).map((att, idx) => {
+                  {userAttempts.slice(0, 5)?.map((att, idx) => {
                     const art = articles.find(a => a.id === att.articleId);
                     if (!art) return null;
                     return (
@@ -136,7 +136,7 @@ export default function LiteraryJourneyPage() {
               </h3>
               {categoriesExplored.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
-                  {categoriesExplored.map(cat => (
+                  {categoriesExplored?.map(cat => (
                     <span key={cat} className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 dark:border-slate-700">
                       {cat}
                     </span>

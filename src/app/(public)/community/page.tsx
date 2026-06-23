@@ -133,7 +133,7 @@ function CommunityFeedPageContent() {
       return;
     }
     
-    const updatedPosts = posts.map(p => {
+    const updatedPosts = posts?.map(p => {
       if (p.id === postId) {
         const votes = { ...(p.poll_votes || {}) };
         votes[currentUser.id] = optionIdx;
@@ -158,7 +158,7 @@ function CommunityFeedPageContent() {
     }
     try {
       const newCount = await toggleLikePost(postId, currentUser.id);
-      const updatedPosts = posts.map(p => {
+      const updatedPosts = posts?.map(p => {
         if (p.id === postId) return { ...p, likesCount: newCount };
         return p;
       });
@@ -209,13 +209,13 @@ function CommunityFeedPageContent() {
 
   // Handle Edit Post from Feed State
   const handleEditPost = (postId: string, updatedPost: CommunityPost) => {
-    setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+    setPosts(prev => prev?.map(p => p.id === postId ? updatedPost : p));
   };
 
   // Parse hashtags into clickable links
   const renderContentWithHashtags = (content: string) => {
     const parts = content.split(/(\s+)/);
-    return parts.map((part, idx) => {
+    return parts?.map((part, idx) => {
       if (part.startsWith("#")) {
         const cleanTag = part.replace(/[^\w\u0900-\u097F]/g, ""); // Devanagari Unicode supported
         return (
@@ -376,7 +376,7 @@ function CommunityFeedPageContent() {
           { id: "following", name: "अनुसरण किए गए" },
           { id: "trending", name: "लोकप्रिय" },
           { id: "latest", name: "नवीनतम" }
-        ].map((tab) => (
+        ]?.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
@@ -398,7 +398,7 @@ function CommunityFeedPageContent() {
             फ़ीड लोड की जा रही है... कृपया प्रतीक्षा करें।
           </div>
         ) : filteredPosts.length > 0 ? (
-          filteredPosts.map((post) => {
+          filteredPosts?.map((post) => {
             const authorProfile = users.find(u => u.id === post.user_id || u.name === post.user_name);
             const isBookmarked = bookmarkedPostIds.includes(post.id);
 

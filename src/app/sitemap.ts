@@ -12,7 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/privacy-policy",
     "/terms-and-conditions",
     "/authors",
-  ].map((route) => ({
+  ]?.map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,
@@ -31,7 +31,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "itihas",
     "video",
     "patrika",
-  ].map((cat) => ({
+  ]?.map((cat) => ({
     url: `${baseUrl}/category/${cat}`,
     lastModified: new Date(),
     changeFrequency: "daily" as const,
@@ -45,7 +45,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "dr-rajesh-singh",
     "sanjay-kumar",
     "ravi-kumar",
-  ].map((auth) => ({
+  ]?.map((auth) => ({
     url: `${baseUrl}/authors/${auth}`,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,

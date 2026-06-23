@@ -45,7 +45,7 @@ export default function BookmarksPage() {
           // Preseed one saved post if empty for demo
           const defaultSaved = allPosts.slice(0, 1);
           setSavedPosts(defaultSaved);
-          localStorage.setItem("yuvakshar_c_post_bookmarks", JSON.stringify(defaultSaved.map(p => p.id)));
+          localStorage.setItem("yuvakshar_c_post_bookmarks", JSON.stringify(defaultSaved?.map(p => p.id)));
         }
       }
     } catch (err) {
@@ -72,7 +72,7 @@ export default function BookmarksPage() {
     const updated = savedPosts.filter(p => p.id !== id);
     setSavedPosts(updated);
     if (typeof window !== "undefined") {
-      localStorage.setItem("yuvakshar_c_post_bookmarks", JSON.stringify(updated.map(p => p.id)));
+      localStorage.setItem("yuvakshar_c_post_bookmarks", JSON.stringify(updated?.map(p => p.id)));
     }
     alert("पोस्ट को आपकी लाइब्रेरी से हटा दिया गया है।");
   };
@@ -94,7 +94,7 @@ export default function BookmarksPage() {
         {[
           { id: "articles", name: "सहेजे गए लेख (Articles)" },
           { id: "posts", name: "सहेजे गए संवाद (Posts)" }
-        ].map((tab) => (
+        ]?.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
@@ -118,7 +118,7 @@ export default function BookmarksPage() {
         ) : activeTab === "articles" ? (
           // Saved Articles
           savedArticlesList.length > 0 ? (
-            savedArticlesList.map(art => (
+            savedArticlesList?.map(art => (
               <GlassCard key={art.id} className="p-4 border-slate-200/60 dark:border-slate-800/40 flex items-center justify-between gap-4">
                 <div className="flex items-start space-x-3 min-w-0">
                   <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -159,7 +159,7 @@ export default function BookmarksPage() {
         ) : (
           // Saved Community Posts
           savedPosts.length > 0 ? (
-            savedPosts.map(p => (
+            savedPosts?.map(p => (
               <GlassCard key={p.id} className="p-4 border-slate-200/60 dark:border-slate-800/40 flex items-center justify-between gap-4">
                 <div className="flex items-start space-x-3 min-w-0">
                   <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">

@@ -33,7 +33,7 @@ export default function BookmarksPage() {
     return articles.filter(a => userBookmarks.includes(a.id));
   }, [currentUser.bookmarks, articles]);
 
-  const categories = Array.from(new Set(bookmarkedArticles.map(a => a.category).filter(Boolean)));
+  const categories = Array.from(new Set(bookmarkedArticles?.map(a => a.category).filter(Boolean)));
 
   const filteredBookmarks = bookmarkedArticles.filter(a => {
     if (filterCategory !== "all" && a.category !== filterCategory) return false;
@@ -74,7 +74,7 @@ export default function BookmarksPage() {
                   className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl appearance-none focus:ring-2 focus:ring-primary outline-none"
                 >
                   <option value="all">सभी श्रेणियां</option>
-                  {categories.map(c => (
+                  {categories?.map(c => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
@@ -82,7 +82,7 @@ export default function BookmarksPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredBookmarks.map(article => (
+              {filteredBookmarks?.map(article => (
                 <div key={article.id} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm flex flex-col h-full relative">
                   <button 
                     onClick={() => toggleBookmark && toggleBookmark(article.id)}

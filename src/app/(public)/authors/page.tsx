@@ -228,7 +228,7 @@ export default function AuthorDirectory() {
                   className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs font-serif text-slate-700 dark:text-slate-255 focus:outline-none focus:border-primary cursor-pointer"
                 >
                   <option value="all">सभी विशेषज्ञता</option>
-                  {allExpertiseTags.map(tag => (
+                  {allExpertiseTags?.map(tag => (
                     <option key={tag} value={tag}>{tag}</option>
                   ))}
                 </select>
@@ -257,7 +257,7 @@ export default function AuthorDirectory() {
                   className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs font-serif text-slate-700 dark:text-slate-255 focus:outline-none focus:border-primary cursor-pointer"
                 >
                   <option value="all">सभी स्थान</option>
-                  {allLocations.map(loc => (
+                  {allLocations?.map(loc => (
                     <option key={loc} value={loc}>{loc}</option>
                   ))}
                 </select>
@@ -346,7 +346,7 @@ export default function AuthorDirectory() {
                       className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-lg p-2 text-xs font-serif"
                     >
                       <option value="all">सभी विशेषज्ञता</option>
-                      {allExpertiseTags.map(tag => (
+                      {allExpertiseTags?.map(tag => (
                         <option key={tag} value={tag}>{tag}</option>
                       ))}
                     </select>
@@ -373,7 +373,7 @@ export default function AuthorDirectory() {
                       className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-855 rounded-lg p-2 text-xs font-serif"
                     >
                       <option value="all">सभी स्थान</option>
-                      {allLocations.map(loc => (
+                      {allLocations?.map(loc => (
                         <option key={loc} value={loc}>{loc}</option>
                       ))}
                     </select>
@@ -411,7 +411,7 @@ export default function AuthorDirectory() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredAuthors.map((author) => {
+                {filteredAuthors?.map((author) => {
                   const leadership = isLeadership(author.role);
                   return (
                     <GlassCard 
@@ -497,7 +497,7 @@ export default function AuthorDirectory() {
                         {/* Expertise Tags */}
                         {author.expertise_tags && author.expertise_tags.length > 0 && (
                           <div className="flex flex-wrap gap-1.5 mt-4">
-                            {author.expertise_tags.slice(0, 3).map((tag, idx) => (
+                            {author.expertise_tags.slice(0, 3)?.map((tag, idx) => (
                               <span 
                                 key={idx} 
                                 className="bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 text-[9px] font-medium font-serif px-2 py-0.5 rounded-md"

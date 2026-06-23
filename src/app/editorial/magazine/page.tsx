@@ -24,7 +24,7 @@ export default async function MagazineDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {issues.map(issue => (
+        {issues?.map(issue => (
           <div key={issue.id} className="bg-white border rounded-lg shadow-sm overflow-hidden flex flex-col">
             <div className="h-40 bg-gray-200 flex items-center justify-center text-gray-400">
               {issue.cover_image ? (

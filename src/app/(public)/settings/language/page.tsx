@@ -70,7 +70,7 @@ export default function LanguageSettingsPage() {
             {[
               { id: 'hi', label: 'हिंदी', desc: 'डिफ़ॉल्ट' },
               { id: 'en', label: 'English', desc: 'अंग्रेजी' }
-            ].map((opt) => (
+            ]?.map((opt) => (
               <button
                 key={opt.id}
                 type="button"
@@ -95,7 +95,7 @@ export default function LanguageSettingsPage() {
             {[
               { id: 'hi', label: 'मुख्य रूप से हिंदी', desc: 'हिंदी लेखों को प्राथमिकता दें' },
               { id: 'en', label: 'Mainly English', desc: 'Prefer English articles' }
-            ].map((opt) => (
+            ]?.map((opt) => (
               <button
                 key={opt.id}
                 type="button"

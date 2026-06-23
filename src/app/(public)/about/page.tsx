@@ -130,7 +130,7 @@ export default function AboutPage() {
           हमारे वैचारिक स्तंभ
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {pillars.map((pil, idx) => {
+          {pillars?.map((pil, idx) => {
             const Icon = pil.icon;
             return (
               <GlassCard key={idx} glow="gold" className="p-6">
@@ -153,7 +153,7 @@ export default function AboutPage() {
           हमारा मिशन
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 font-hindi">
-          {missionPoints.map((item, idx) => (
+          {missionPoints?.map((item, idx) => (
             <div key={idx} className="bg-slate-50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2">
               <h4 className="font-serif text-base font-bold text-orange-600 dark:text-orange-400">{item.title}</h4>
               <p className="text-xs text-slate-650 dark:text-slate-400 leading-relaxed">{item.desc}</p>
@@ -168,7 +168,7 @@ export default function AboutPage() {
           हमारे मूल्य
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 font-hindi">
-          {valuesList.map((val, idx) => (
+          {valuesList?.map((val, idx) => (
             <div key={idx} className="border border-[#E7E2D8] dark:border-slate-800 p-4 rounded-xl space-y-2 hover:border-orange-500 dark:hover:border-orange-500 transition-all duration-300">
               <h4 className="font-serif text-sm font-bold text-slate-800 dark:text-slate-200">{val.title}</h4>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">{val.desc}</p>

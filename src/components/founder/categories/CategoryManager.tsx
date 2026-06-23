@@ -32,7 +32,7 @@ export default function CategoryManager({ initialCategories }: { initialCategori
   // Build Hierarchy
   const buildHierarchy = (cats: Category[]) => {
     const rootCats = cats.filter(c => !c.parent_id).sort((a, b) => a.sort_order - b.sort_order);
-    return rootCats.map(root => ({
+    return rootCats?.map(root => ({
       ...root,
       children: cats.filter(c => c.parent_id === root.id).sort((a, b) => a.sort_order - b.sort_order)
     }));
@@ -103,7 +103,7 @@ export default function CategoryManager({ initialCategories }: { initialCategori
   const handleToggle = async (cat: Category) => {
     try {
       await toggleCategoryStatus(cat.id, cat.is_active);
-      setCategories(categories.map(c => c.id === cat.id ? { ...c, is_active: !cat.is_active } : c));
+      setCategories(categories?.map(c => c.id === cat.id ? { ...c, is_active: !cat.is_active } : c));
       toast.success(`Category ${!cat.is_active ? 'activated' : 'disabled'}`);
     } catch (err: any) {
       toast.error(err.message);
@@ -247,7 +247,7 @@ export default function CategoryManager({ initialCategories }: { initialCategori
                 </tr>
               ) : isSearching ? (
                 filteredCategories.length > 0 ? (
-                  filteredCategories.map(cat => renderCategoryRow(cat, !!cat.parent_id))
+                  filteredCategories?.map(cat => renderCategoryRow(cat, !!cat.parent_id))
                 ) : (
                   <tr>
                     <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
@@ -256,7 +256,7 @@ export default function CategoryManager({ initialCategories }: { initialCategori
                   </tr>
                 )
               ) : (
-                hierarchy.map(root => (
+                hierarchy?.map(root => (
                   <React.Fragment key={root.id}>
                     {renderCategoryRow(root as Category, false)}
                     {root.children?.map(child => renderCategoryRow(child as Category, true))}
@@ -295,7 +295,7 @@ export default function CategoryManager({ initialCategories }: { initialCategori
                 className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-800 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
               >
                 <option value="">None (Root Category)</option>
-                {availableParents.map(p => (
+                {availableParents?.map(p => (
                   <option key={p.id} value={p.id}>{p.name_hi}</option>
                 ))}
               </select>
@@ -341,7 +341,7 @@ export default function CategoryManager({ initialCategories }: { initialCategori
               className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-800 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
             >
               <option value="">-- Select Category --</option>
-              {categories.filter(c => c.id !== selectedCategory?.id).map(c => (
+              {categories.filter(c => c.id !== selectedCategory?.id)?.map(c => (
                 <option key={c.id} value={c.id}>{c.name_hi}</option>
               ))}
             </select>

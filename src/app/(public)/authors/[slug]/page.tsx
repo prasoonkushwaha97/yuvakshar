@@ -318,7 +318,7 @@ export default function AuthorProfile() {
                     <div className="space-y-2">
                       <h4 className="font-bold text-xs uppercase tracking-wider text-slate-400">शैक्षणिक योग्यता एवं संबद्धता</h4>
                       <div className="space-y-1.5">
-                        {author.academic_credentials.map((cred, i) => (
+                        {author.academic_credentials?.map((cred, i) => (
                           <div key={i} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-350">
                             <GraduationCap className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                             <span>{cred}</span>
@@ -421,7 +421,7 @@ export default function AuthorProfile() {
                       <p className="text-[10px] text-slate-400">इस लेखक के पास वर्तमान में कोई प्रकाशित आलेख नहीं है।</p>
                     </div>
                   ) : (
-                    standardArticles.map(art => (
+                    standardArticles?.map(art => (
                       <GlassCard key={art.id} className="p-5 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row gap-5 items-stretch group hover:shadow-md transition-all">
                         {art.coverImage && (
                           <div className="w-full sm:w-40 h-28 rounded-xl overflow-hidden bg-slate-105 shrink-0">
@@ -463,7 +463,7 @@ export default function AuthorProfile() {
                       <p className="text-[10px] text-slate-400">इस लेखक के पास वर्तमान में कोई प्रकाशित पत्रिका सामग्री नहीं है।</p>
                     </div>
                   ) : (
-                    magazineArticles.map(art => (
+                    magazineArticles?.map(art => (
                       <GlassCard key={art.id} className="p-5 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row gap-5 items-stretch group hover:shadow-md transition-all">
                         {art.coverImage && (
                           <div className="w-full sm:w-40 h-28 rounded-xl overflow-hidden bg-slate-105 shrink-0">
@@ -506,7 +506,7 @@ export default function AuthorProfile() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {author.portfolio.map(item => (
+                      {author.portfolio?.map(item => (
                         <GlassCard key={item.id} className="p-4 border border-slate-200 dark:border-slate-800 rounded-2xl hover:shadow-md transition-all flex flex-col justify-between">
                           <div className="space-y-2">
                             <span className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded font-sans">
@@ -550,7 +550,7 @@ export default function AuthorProfile() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {authorVideos.map(vid => (
+                      {authorVideos?.map(vid => (
                         <GlassCard key={vid.id} className="overflow-hidden border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col justify-between hover:shadow-md transition-all group">
                           {vid.thumbnailUrl && (
                             <div className="h-40 w-full overflow-hidden bg-slate-105 shrink-0 relative">
@@ -625,7 +625,7 @@ export default function AuthorProfile() {
               <GlassCard glow="none" className="p-5 space-y-4 font-serif">
                 <h3 className="font-bold text-slate-800 dark:text-white text-xs border-l-2 border-primary pl-2 uppercase tracking-wide">पुरस्कार एवं उपलब्धियाँ</h3>
                 <div className="space-y-3.5">
-                  {author.achievements.map((ach) => (
+                  {author.achievements?.map((ach) => (
                     <div key={ach.id} className="flex gap-3 items-start border-b border-slate-100 dark:border-slate-850/80 pb-3 last:border-b-0 last:pb-0">
                       <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
                         <Award className="w-4.5 h-4.5" />
@@ -650,7 +650,7 @@ export default function AuthorProfile() {
                 
                 {/* Timeline chain */}
                 <div className="relative pl-4 border-l border-slate-200 dark:border-slate-800 space-y-6 py-1 ml-1.5">
-                  {author.timeline.map((event) => (
+                  {author.timeline?.map((event) => (
                     <div key={event.id} className="relative group">
                       {/* Timeline dot */}
                       <span className="absolute -left-[20.5px] top-1.5 w-3 h-3 rounded-full bg-white dark:bg-[#0A0F1D] border-2 border-primary group-hover:scale-120 transition-transform duration-200" />

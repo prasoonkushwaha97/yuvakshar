@@ -304,7 +304,7 @@ export default function MagazineReaderPage() {
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 md:p-6 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 custom-scrollbar">
-              {mag.pages.map((p, idx) => (
+              {mag.pages?.map((p, idx) => (
                 <div 
                   key={idx}
                   onClick={() => {

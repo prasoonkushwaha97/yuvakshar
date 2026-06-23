@@ -101,7 +101,7 @@ export default function ForumBoardPage() {
       
       {/* Forum categories list */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {categories.map((cat) => (
+        {categories?.map((cat) => (
           <button
             key={cat.id}
             onClick={() => {
@@ -184,7 +184,7 @@ export default function ForumBoardPage() {
             चर्चा सूत्र लोड हो रहे हैं...
           </div>
         ) : filteredPosts.length > 0 ? (
-          filteredPosts.map((post) => (
+          filteredPosts?.map((post) => (
             <GlassCard key={post.id} className="p-4 border-slate-200/60 dark:border-slate-800/40 flex items-center justify-between gap-4">
               
               <div className="space-y-2 flex-1 min-w-0">

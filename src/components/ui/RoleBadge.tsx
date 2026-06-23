@@ -75,7 +75,7 @@ export function RoleBadgeList({ roles, className }: { roles: (Role | { slug: str
     <div className={cn("flex flex-wrap gap-1.5", className)}>
       <RoleBadge role={highestRole} />
       {sortedRoles.length > 1 && (
-        <span className="text-[10px] text-slate-400 self-center ml-1" title={sortedRoles.slice(1).map(r => r.name).join(', ')}>
+        <span className="text-[10px] text-slate-400 self-center ml-1" title={sortedRoles.slice(1)?.map(r => r.name).join(', ')}>
           +{sortedRoles.length - 1}
         </span>
       )}

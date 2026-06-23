@@ -171,7 +171,7 @@ function CategoryDetailPageContent() {
       {/* Content grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedArticles.length > 0 ? (
-          sortedArticles.map((art) => (
+          sortedArticles?.map((art) => (
             <GlassCard key={art.id} glow="none" className="p-0">
               <div className="flex flex-col h-full justify-between">
                 <div>
@@ -213,7 +213,7 @@ function CategoryDetailPageContent() {
 
                 <div className="p-6 pt-0 border-t border-border mt-auto flex items-center justify-between">
                   <div className="flex space-x-1 overflow-hidden max-w-[70%]">
-                    {(art.tags || []).slice(0, 2).map((t: string, idx: number) => (
+                    {(art.tags || []).slice(0, 2)?.map((t: string, idx: number) => (
                       <span key={idx} className="text-[9px] text-slate-400 font-mono bg-slate-50 dark:bg-slate-900/50 px-2 py-0.5 rounded border border-border shrink-0">
                         #{t}
                       </span>

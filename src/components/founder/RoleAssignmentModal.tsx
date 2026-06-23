@@ -46,7 +46,7 @@ export function RoleAssignmentModal({ open, onOpenChange, targetUserId, targetUs
   }, [open]);
 
   const currentHighestRank = currentRoles.length > 0 
-    ? Math.min(...currentRoles.map(r => ALL_ROLES.find(ar => ar.slug === r.slug)?.rank ?? 999))
+    ? Math.min(...currentRoles?.map(r => ALL_ROLES.find(ar => ar.slug === r.slug)?.rank ?? 999))
     : 999;
     
   const currentHighestRole = ALL_ROLES.find(r => r.rank === currentHighestRank);
@@ -114,7 +114,7 @@ export function RoleAssignmentModal({ open, onOpenChange, targetUserId, targetUs
             disabled={loading}
           >
             <option value="">-- Choose a Role --</option>
-            {ALL_ROLES.map(role => {
+            {ALL_ROLES?.map(role => {
               const isAlreadyAssigned = currentRoles.some(cr => cr.slug === role.slug);
               const dbRole = dbRoles.find(dr => dr.slug === role.slug);
               const realId = dbRole ? dbRole.id : role.id;

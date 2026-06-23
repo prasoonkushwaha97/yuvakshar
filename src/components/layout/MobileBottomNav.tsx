@@ -112,7 +112,7 @@ export default function MobileBottomNav() {
       className="lg:hidden fixed bottom-0 left-0 right-0 z-[30] bg-background border-t border-border safe-area-pb transition-transform duration-300 ease-in-out will-change-transform"
     >
       <div className="flex items-stretch justify-around h-16">
-        {dynamicNavItems.map(({ href, icon: Icon, label, exact, activePrefix }) => {
+        {dynamicNavItems?.map(({ href, icon: Icon, label, exact, activePrefix }) => {
           const checkPrefix = activePrefix || href;
           const isActive = exact ? pathname === href : pathname?.startsWith(checkPrefix) && checkPrefix !== "/";
           const finalActive = href === "/" ? pathname === "/" : isActive;

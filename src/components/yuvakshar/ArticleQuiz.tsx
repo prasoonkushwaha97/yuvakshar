@@ -671,7 +671,7 @@ export default function ArticleQuiz({ articleId }: ArticleQuizProps) {
                   { label: "सही उत्तर", val: correctAnswers, color: "text-green-500 font-bold" },
                   { label: "गलत उत्तर", val: wrongAnswers, color: "text-red-500" },
                   { label: "कुल समय", val: formatTimer(elapsedTime), color: "text-primary font-bold" }
-                ].map((ind, idx) => (
+                ]?.map((ind, idx) => (
                   <div key={idx} className="bg-slate-50/50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/80 p-3.5 rounded-xl space-y-1">
                     <span className="text-[10px] text-slate-400 block">{ind.label}</span>
                     <p className={`text-base font-serif ${ind.color}`}>{ind.val}</p>
@@ -692,7 +692,7 @@ export default function ArticleQuiz({ articleId }: ArticleQuizProps) {
                     { label: "विषय समझ (Understanding)", val: cognitiveMeters.understanding, color: "bg-blue-500" },
                     { label: "विश्लेषण क्षमता (Analysis)", val: cognitiveMeters.analysis, color: "bg-green-500" },
                     { label: "तार्किक सोच (Logic)", val: cognitiveMeters.logic, color: "bg-amber-500" }
-                  ].map((meter, idx) => (
+                  ]?.map((meter, idx) => (
                     <div key={idx} className="space-y-1.5">
                       <div className="flex justify-between font-medium">
                         <span>{meter.label}</span>
@@ -740,7 +740,7 @@ export default function ArticleQuiz({ articleId }: ArticleQuizProps) {
                 </h5>
 
                 <div className="space-y-4">
-                  {activeQuestions.map((q, idx) => {
+                  {activeQuestions?.map((q, idx) => {
                     const selected = selectedAnswers[idx];
                     const isCorrect = selected === q.correctAnswer;
                     

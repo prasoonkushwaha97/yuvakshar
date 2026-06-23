@@ -282,7 +282,7 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
             <aside className="hidden lg:flex flex-col w-[260px] xl:w-[280px] shrink-0 sticky top-[88px] h-[calc(100vh-88px)] pb-6 overflow-y-auto scrollbar-none space-y-6">
               
               <nav className="flex flex-col space-y-1">
-                {sidebarLinks.map((link) => {
+                {sidebarLinks?.map((link) => {
                   const isActive = pathname === link.href || (pathname?.startsWith(link.href) && link.href !== "/community");
                   const Icon = link.icon;
                   return (
@@ -345,7 +345,7 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
                     { topic: "लेखक की चुनौतियां", posts: "2.1k" },
                     { topic: "डिजिटल प्रकाशन", posts: "1.5k" },
                     { topic: "आधुनिक कविता", posts: "984" },
-                  ].map((t, idx) => (
+                  ]?.map((t, idx) => (
                     <div key={idx} className="cursor-pointer hover:bg-slate-100/50 dark:hover:bg-slate-800/30 p-2 -mx-2 rounded-lg transition-colors">
                       <div className="text-[11px] text-slate-500 font-hindi">#Trending {idx+1}</div>
                       <div className="font-bold text-sm text-slate-800 dark:text-slate-200 font-hindi">{t.topic}</div>
@@ -362,7 +362,7 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
                     { id: "ramesh-chandra", name: "डॉ. रमेश चंद्र", role: "प्रख्यात साहित्यकार" },
                     { id: "kavita-tiwari", name: "कविता तिवारी", role: "युवा कवयित्री" },
                     { id: "sumit-sharma", name: "सुमित शर्मा", role: "समीक्षक" },
-                  ].map((author, idx) => (
+                  ]?.map((author, idx) => (
                     <Link key={idx} href={`/community/u/${author.id}`} className="flex items-center gap-3 cursor-pointer hover:bg-slate-100/50 dark:hover:bg-slate-800/30 p-2 -mx-2 rounded-lg transition-colors">
                       <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0 flex items-center justify-center font-bold text-primary">
                         {author.name[0]}
@@ -469,7 +469,7 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-800 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary text-xs"
                   >
                     <option value="">सार्वजनिक चौपाल (Public Feed)</option>
-                    {availableGroups.map(g => (
+                    {availableGroups?.map(g => (
                       <option key={g.id} value={g.id}>{g.name}</option>
                     ))}
                   </select>
@@ -485,7 +485,7 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
                       { id: "thought", name: "💭 विचार" },
                       { id: "poll", name: "❓ मतदान" },
                       { id: "image", name: "🖼️ चित्र" }
-                    ].map(t => (
+                    ]?.map(t => (
                       <button
                         key={t.id}
                         type="button"
@@ -554,7 +554,7 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
                           + नया विकल्प
                         </button>
                       </label>
-                      {formPollOptions.map((opt, idx) => (
+                      {formPollOptions?.map((opt, idx) => (
                         <div key={idx} className="flex items-center gap-2">
                           <input
                             type="text"

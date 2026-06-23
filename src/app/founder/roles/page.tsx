@@ -44,7 +44,7 @@ export default function RoleGovernancePage() {
           <div className="text-center text-slate-500 py-12">Loading hierarchy tree...</div>
         ) : (
           <div className="space-y-4">
-            {roles.map((role, index) => (
+            {roles?.map((role, index) => (
               <div key={role.id} className="relative">
                 {/* Visual Connector for Hierarchy */}
                 {index > 0 && (

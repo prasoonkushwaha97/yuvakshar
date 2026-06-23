@@ -84,7 +84,7 @@ export function UserDetailDrawer({ open, onOpenChange, user }: Props) {
           </h4>
           <div className="flex flex-wrap gap-2">
             {user.roles.length > 0 ? (
-              user.roles.map(r => (
+              user.roles?.map(r => (
                 <RoleBadge key={r.id} role={r as any} />
               ))
             ) : (
@@ -101,7 +101,7 @@ export function UserDetailDrawer({ open, onOpenChange, user }: Props) {
               <div className="p-4 text-center text-sm text-slate-500">Loading audit logs...</div>
             ) : logs.length > 0 ? (
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                {logs.map((log) => (
+                {logs?.map((log) => (
                   <div key={log.id} className="p-3">
                     <div className="flex justify-between items-start mb-1">
                       <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${

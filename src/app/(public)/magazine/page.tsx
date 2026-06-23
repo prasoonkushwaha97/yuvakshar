@@ -20,7 +20,7 @@ export default function MagazineLibraryPage() {
   const latestIssues = [...publishedMags].sort((a, b) => new Date(b.publishDate || "").getTime() - new Date(a.publishDate || "").getTime());
   
   // Extract dynamic categories
-  const categories = Array.from(new Set(publishedMags.map(m => m.category).filter(Boolean)));
+  const categories = Array.from(new Set(publishedMags?.map(m => m.category).filter(Boolean)));
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#070B14] text-slate-900 dark:text-slate-100 font-hindi selection:bg-primary/20">
@@ -101,14 +101,14 @@ export default function MagazineLibraryPage() {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8">
-            {latestIssues.slice(0, 4).map(mag => (
+            {latestIssues.slice(0, 4)?.map(mag => (
               <MagazineCoverCard key={mag.id} mag={mag} />
             ))}
           </div>
         </section>
 
         {/* DYNAMIC CATEGORY COLLECTIONS */}
-        {categories.map(category => {
+        {categories?.map(category => {
           const categoryMags = publishedMags.filter(m => m.category === category);
           if (categoryMags.length === 0) return null;
           
@@ -122,7 +122,7 @@ export default function MagazineLibraryPage() {
               </div>
               
               <div className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory no-scrollbar">
-                {categoryMags.map(mag => (
+                {categoryMags?.map(mag => (
                   <div key={mag.id} className="snap-start shrink-0 w-[160px] md:w-[200px]">
                     <MagazineCoverCard mag={mag} compact />
                   </div>

@@ -445,7 +445,7 @@ export default function ContactPage() {
               </label>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {CONTACT_CATEGORIES.map((cat) => {
+                {CONTACT_CATEGORIES?.map((cat) => {
                   const IconComponent = cat.icon;
                   const isSelected = category === cat.id;
                   
@@ -710,7 +710,7 @@ export default function ContactPage() {
           </div>
 
           <div className="space-y-4 max-w-3xl mx-auto">
-            {FAQS.map((faq, idx) => {
+            {FAQS?.map((faq, idx) => {
               const isOpen = openFaqIndex === idx;
               
               return (

@@ -63,7 +63,7 @@ export default function AdsManagementPage() {
       </div>
 
       <div className="space-y-4">
-        {ads.map((ad) => (
+        {ads?.map((ad) => (
           <div key={ad.id} className="bg-white dark:bg-[#0F172A] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
             <div className="flex flex-col md:flex-row md:items-start gap-4">
               <div className="flex-1 space-y-4">

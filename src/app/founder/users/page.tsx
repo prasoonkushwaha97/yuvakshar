@@ -168,7 +168,7 @@ export default function UsersManagementPage() {
                   </td>
                 </tr>
               ) : (
-                paginatedUsers.map((user) => (
+                paginatedUsers?.map((user) => (
                   <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -190,7 +190,7 @@ export default function UsersManagementPage() {
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
                         {user.roles.length > 0 ? (
-                          user.roles.map(role => (
+                          user.roles?.map(role => (
                             <RoleBadge key={role.id} role={role} />
                           ))
                         ) : (

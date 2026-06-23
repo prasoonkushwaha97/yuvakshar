@@ -183,7 +183,7 @@ export default function AuthorPortfolioPage() {
     }
     try {
       const newCount = await toggleLikePost(postId, currentUser.id);
-      setAuthorPosts(prevPosts => prevPosts.map(p => {
+      setAuthorPosts(prevPosts => prevPosts?.map(p => {
         if (p.id === postId) return { ...p, likesCount: newCount };
         return p;
       }));
@@ -234,7 +234,7 @@ export default function AuthorPortfolioPage() {
         bio: editBio,
         institution: editInstitution,
         location: editLocation,
-        expertise_tags: editExpertise.split(",").map(t => t.trim()).filter(Boolean)
+        expertise_tags: editExpertise.split(",")?.map(t => t.trim()).filter(Boolean)
       };
 
       await updateUserProfile(updatedData);
@@ -363,7 +363,7 @@ export default function AuthorPortfolioPage() {
         return;
       }
       const updatedCol = { ...col, items: [...col.items, newItem] };
-      const updated = collections.map(c => c.id === colId ? updatedCol : c);
+      const updated = collections?.map(c => c.id === colId ? updatedCol : c);
       saveCollections(updated);
       setSelectedItemToAdd("");
       alert("सफलतापूर्वक संग्रह में जोड़ा गया!");
@@ -374,7 +374,7 @@ export default function AuthorPortfolioPage() {
     const col = collections.find(c => c.id === colId);
     if (!col) return;
     const updatedCol = { ...col, items: col.items.filter(i => i.id !== itemId) };
-    const updated = collections.map(c => c.id === colId ? updatedCol : c);
+    const updated = collections?.map(c => c.id === colId ? updatedCol : c);
     saveCollections(updated);
   };
 
@@ -383,7 +383,7 @@ export default function AuthorPortfolioPage() {
     if (!currentUser) return;
     try {
       const newCount = await toggleLikePost(postId, currentUser.id);
-      setAuthorPosts(authorPosts.map(p => p.id === postId ? { ...p, likesCount: newCount } : p));
+      setAuthorPosts(authorPosts?.map(p => p.id === postId ? { ...p, likesCount: newCount } : p));
     } catch (err) {
       console.error(err);
     }
@@ -409,7 +409,7 @@ export default function AuthorPortfolioPage() {
 
   const renderContentWithHashtags = (content: string) => {
     const parts = content.split(/(\s+)/);
-    return parts.map((part, idx) => {
+    return parts?.map((part, idx) => {
       if (part.startsWith("#")) {
         const cleanTag = part.replace(/[^\w\u0900-\u097F]/g, "");
         return (
@@ -822,7 +822,7 @@ export default function AuthorPortfolioPage() {
             {/* Folder Lists */}
             <div className="space-y-2">
               {collections.length > 0 ? (
-                collections.map(col => {
+                collections?.map(col => {
                   const isActive = activeCollectionId === col.id;
                   return (
                     <div key={col.id} className="space-y-1.5">
@@ -862,7 +862,7 @@ export default function AuthorPortfolioPage() {
                       {isActive && (
                         <div className="pl-3.5 border-l-2 border-primary/20 space-y-2 pt-1 pb-2">
                           {col.items && col.items.length > 0 ? (
-                            col.items.map(item => (
+                            col.items?.map(item => (
                               <div key={item.id} className="flex justify-between items-center text-[10px] bg-white dark:bg-slate-950 p-2 rounded-lg border border-slate-150/40 dark:border-slate-850/40 font-hindi">
                                 {item.url !== "#" ? (
                                   <Link href={item.url} className="text-slate-700 dark:text-slate-300 hover:text-primary transition-colors font-semibold truncate flex-1">
@@ -897,12 +897,12 @@ export default function AuthorPortfolioPage() {
                               >
                                 <option value="">रचना चुनें...</option>
                                 <optgroup label="साहित्यिक लेख (Articles)">
-                                  {articles.filter(a => a.author === author.name).map(a => (
+                                  {articles.filter(a => a.author === author.name)?.map(a => (
                                     <option key={a.id} value={a.id}>{a.title}</option>
                                   ))}
                                 </optgroup>
                                 <optgroup label="चौपाल पोस्ट्स (Posts)">
-                                  {authorPosts.map(p => (
+                                  {authorPosts?.map(p => (
                                     <option key={p.id} value={p.id}>{p.title || p.content.substring(0, 20) + "..."}</option>
                                   ))}
                                 </optgroup>
@@ -960,7 +960,7 @@ export default function AuthorPortfolioPage() {
               { id: "posts", name: "चौपाल पोस्ट्स" },
               { id: "info", name: "अकादमिक परिचय" },
               { id: "collab", name: "सह-लेखन" }
-            ].map((tab) => (
+            ]?.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
@@ -1131,7 +1131,7 @@ export default function AuthorPortfolioPage() {
           {activeTab === "posts" && (
             <div className="space-y-4 max-w-[800px]">
               {authorPosts.length > 0 ? (
-                authorPosts.map(p => (
+                authorPosts?.map(p => (
                   <PostCard 
                     key={p.id} 
                     post={p} 
@@ -1142,7 +1142,7 @@ export default function AuthorPortfolioPage() {
                     onBookmark={handleBookmarkToggle}
                     onShare={triggerShare}
                     onPollVote={(pid, optIdx) => {
-                      setAuthorPosts(authorPosts.map(p2 => {
+                      setAuthorPosts(authorPosts?.map(p2 => {
                         if (p2.id === pid && p2.poll_options) {
                           const updatedOps = [...p2.poll_options] as any[];
                           updatedOps[optIdx].votes = (updatedOps[optIdx].votes || 0) + 1;
@@ -1178,7 +1178,7 @@ export default function AuthorPortfolioPage() {
                 <div className="space-y-1.5">
                   <h4 className="font-serif font-bold text-xs text-primary">शोध एवं विशेषज्ञता क्षेत्र</h4>
                   <div className="flex flex-wrap gap-1.5">
-                    {(author.expertise_tags || ["हिंदी आलोचना", "निराला साहित्य", "छायावाद"]).map((t: string) => (
+                    {(author.expertise_tags || ["हिंदी आलोचना", "निराला साहित्य", "छायावाद"])?.map((t: string) => (
                       <span key={t} className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded text-[10px] text-slate-500">
                         {t}
                       </span>
@@ -1272,7 +1272,7 @@ export default function AuthorPortfolioPage() {
                 <h3 className="font-serif text-sm font-bold text-slate-850 dark:text-white font-hindi">आमंत्रण स्थिति (Collaboration Status)</h3>
                 
                 <div className="space-y-3.5">
-                  {collabInvites.map((invite) => (
+                  {collabInvites?.map((invite) => (
                     <div key={invite.id} className="p-3 bg-slate-50/50 dark:bg-slate-900/20 rounded-xl border border-slate-150/40 dark:border-slate-850/40 space-y-2 text-xs">
                       <div className="flex justify-between items-center text-[10px] font-bold">
                         <span className="text-slate-800 dark:text-slate-200 font-hindi">{invite.project_title}</span>

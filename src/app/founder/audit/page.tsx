@@ -62,7 +62,7 @@ export default function AuditCenterPage() {
     const headers = ["Timestamp", "Action", "Target User", "Target Email", "Performed By", "Role", "Note"];
     const csvContent = [
       headers.join(","),
-      ...filteredLogs.map(log => [
+      ...filteredLogs?.map(log => [
         new Date(log.performed_at).toISOString(),
         log.action,
         `"${log.target_user_details?.name || 'Unknown'}"`,
@@ -168,7 +168,7 @@ export default function AuditCenterPage() {
                   </td>
                 </tr>
               ) : (
-                filteredLogs.map(log => (
+                filteredLogs?.map(log => (
                   <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-[#1E293B]/50 transition-colors">
                     <td className="px-6 py-4">
                       <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full ${

@@ -672,7 +672,7 @@ export default function AuthModal() {
 
                                   {/* 6 Individual OTP Boxes */}
                                   <div className="flex justify-between gap-2 max-w-[320px] mx-auto py-2">
-                                    {otpArray.map((digit, index) => (
+                                    {otpArray?.map((digit, index) => (
                                       <input
                                         key={index}
                                         type="tel"

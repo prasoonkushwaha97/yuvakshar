@@ -279,7 +279,7 @@ export default function Navbar({
             </Link>
 
             <nav className="flex items-center font-serif text-sm">
-              {navLinks.map((link) => (
+              {navLinks?.map((link) => (
                 <div key={link.href} className="relative group">
                   <Link 
                     href={link.href}
@@ -392,7 +392,7 @@ export default function Navbar({
                             { href: "/certificates", icon: Award, label: "प्रमाणपत्र" },
                             { href: "/literary-journey", icon: Activity, label: "साहित्यिक यात्रा" },
                             { href: "/settings", icon: Settings, label: "सेटिंग्स" },
-                          ].map(({ href, icon: Icon, label }) => (
+                          ]?.map(({ href, icon: Icon, label }) => (
                             <Link
                               key={href}
                               href={href}
@@ -544,7 +544,7 @@ export default function Navbar({
               {/* Nav Categories */}
               <div className="flex-grow px-3 py-4 space-y-0.5">
                 <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest px-3 mb-2">श्रेणियाँ</p>
-                {navLinks.map((link) => {
+                {navLinks?.map((link) => {
                   const linkIcons: { [key: string]: string } = {
                     "समाचार": "📰", "विशेष लेख": "⭐", "विचार": "💬",
                     "साहित्य": "✍️", "साक्षात्कार": "🎙️", "शिक्षा": "🎓",
@@ -580,7 +580,7 @@ export default function Navbar({
                                   { href: "/category/literature?sub=story", label: "कहानी" },
                                   { href: "/category/literature?sub=memoir", label: "संस्मरण" },
                                   { href: "/category/literature?sub=review", label: "पुस्तक समीक्षा" },
-                                ].map(sub => (
+                                ]?.map(sub => (
                                   <Link key={sub.href} href={sub.href} onClick={() => handleMobileMenuToggle(false)} className="block px-3 py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-primary rounded-lg">
                                     {sub.label}
                                   </Link>
@@ -692,7 +692,7 @@ export default function Navbar({
                   { href: "/certificates", icon: Award, label: "प्रमाणपत्र" },
                   { href: "/literary-journey", icon: Activity, label: "साहित्यिक यात्रा" },
                   { href: "/settings", icon: Settings, label: "सेटिंग्स" },
-                ].map(({ href, icon: Icon, label }) => (
+                ]?.map(({ href, icon: Icon, label }) => (
                   <Link
                     key={href}
                     href={href}

@@ -141,7 +141,7 @@ export default function MagazineIssueDetailsPage() {
             </h3>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {relatedIssues.map(related => (
+              {relatedIssues?.map(related => (
                 <Link key={related.id} href={`/magazine/${related.id}`} className="group block">
                   <div className="relative rounded-sm overflow-hidden shadow-md border border-slate-200 dark:border-slate-800 mb-4 bg-slate-100 dark:bg-slate-800 aspect-[3/4]">
                     <img src={related.coverImage} alt={related.issue} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />

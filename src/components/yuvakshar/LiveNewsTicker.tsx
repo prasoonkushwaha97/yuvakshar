@@ -18,7 +18,7 @@ export default function LiveNewsTicker() {
   const [isPaused, setIsPaused] = useState(false);
   const { articles } = useCms();
 
-  const tickerItems: TickerItem[] = articles.slice(0, 5).map(art => ({
+  const tickerItems: TickerItem[] = articles.slice(0, 5)?.map(art => ({
     id: art.id,
     category: art.category,
     headline: art.title,
@@ -67,7 +67,7 @@ export default function LiveNewsTicker() {
             animationPlayState: isPaused ? "paused" : "running"
           }}
         >
-          {items.map((item, index) => (
+          {items?.map((item, index) => (
             <Link 
               key={`${item.id}-${index}`} 
               href={item.href}

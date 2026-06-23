@@ -112,7 +112,7 @@ export default function FounderAnnouncementsPage() {
                   </td>
                 </tr>
               ) : (
-                announcements.map(ann => (
+                announcements?.map(ann => (
                   <tr key={ann.id} className="hover:bg-slate-50 dark:hover:bg-[#1E293B]/50 transition-colors">
                     <td className="px-6 py-4">
                       <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full ${

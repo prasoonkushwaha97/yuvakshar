@@ -233,7 +233,7 @@ export default function MessagesPage() {
       ...(replyingTo ? { reply_to_id: replyingTo.id, reply_to_content: replyingTo.content } : {})
     };
 
-    const updatedThreads = threads.map(t => {
+    const updatedThreads = threads?.map(t => {
       if (t.id === activeThreadId) {
         return {
           ...t,
@@ -270,7 +270,7 @@ export default function MessagesPage() {
         created_at: new Date().toISOString()
       };
 
-      const finalThreads = updatedThreads.map(t => {
+      const finalThreads = updatedThreads?.map(t => {
         if (t.id === activeThreadId) {
           return {
             ...t,
@@ -290,9 +290,9 @@ export default function MessagesPage() {
     if (!currentUser || !activeThreadId) return;
     const userId = currentUser.id || "current_user";
 
-    const updated = threads.map(t => {
+    const updated = threads?.map(t => {
       if (t.id === activeThreadId) {
-        const msgs = t.messages.map(m => {
+        const msgs = t.messages?.map(m => {
           if (m.id === msgId) {
             const reacts = { ...(m.reactions || {}) };
             const list = reacts[emoji] || [];
@@ -315,7 +315,7 @@ export default function MessagesPage() {
   // Pin / Unpin chat thread
   const togglePinThread = (threadId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const updated = threads.map(t => {
+    const updated = threads?.map(t => {
       if (t.id === threadId) {
         return { ...t, isPinned: !t.isPinned };
       }
@@ -327,7 +327,7 @@ export default function MessagesPage() {
   // Archive / Unarchive thread
   const toggleArchiveThread = (threadId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const updated = threads.map(t => {
+    const updated = threads?.map(t => {
       if (t.id === threadId) {
         return { ...t, isArchived: !t.isArchived };
       }
@@ -339,7 +339,7 @@ export default function MessagesPage() {
   // Toggle Block / Unblock user
   const toggleBlockUser = () => {
     if (!activeThreadId) return;
-    const updated = threads.map(t => {
+    const updated = threads?.map(t => {
       if (t.id === activeThreadId) {
         const nextState = !t.isBlocked;
         alert(nextState ? `${t.name} को ब्लॉक कर दिया गया है।` : `${t.name} को अनब्लॉक कर दिया गया है।`);
@@ -365,7 +365,7 @@ export default function MessagesPage() {
   const handleDeleteMessage = (msgId: string) => {
     if (!activeThreadId) return;
     if (confirm("क्या आप इस संदेश को हटाना चाहते हैं?")) {
-      const updated = threads.map(t => {
+      const updated = threads?.map(t => {
         if (t.id === activeThreadId) {
           return {
             ...t,
@@ -466,7 +466,7 @@ export default function MessagesPage() {
         {/* Conversations Scrollbar List */}
         <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/40">
           {filteredThreads.length > 0 ? (
-            filteredThreads.map((t) => {
+            filteredThreads?.map((t) => {
               const isActive = activeThreadId === t.id;
               return (
                 <div
@@ -475,7 +475,7 @@ export default function MessagesPage() {
                     setActiveThreadId(t.id);
                     // Clear unread
                     if (t.unreadCount > 0) {
-                      saveThreads(threads.map(x => x.id === t.id ? { ...x, unreadCount: 0 } : x));
+                      saveThreads(threads?.map(x => x.id === t.id ? { ...x, unreadCount: 0 } : x));
                     }
                   }}
                   className={`w-full text-left p-3.5 flex items-start gap-3 transition-colors cursor-pointer relative group ${
@@ -584,7 +584,7 @@ export default function MessagesPage() {
                     <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-50 text-xs font-serif text-slate-700 dark:text-slate-300 py-1.5 font-bold">
                       <button 
                         onClick={() => {
-                          saveThreads(threads.map(x => x.id === activeThread.id ? { ...x, isPinned: !x.isPinned } : x));
+                          saveThreads(threads?.map(x => x.id === activeThread.id ? { ...x, isPinned: !x.isPinned } : x));
                           setShowDropdown(false);
                         }}
                         className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center gap-2 cursor-pointer"
@@ -594,7 +594,7 @@ export default function MessagesPage() {
                       </button>
                       <button 
                         onClick={() => {
-                          saveThreads(threads.map(x => x.id === activeThread.id ? { ...x, isArchived: !x.isArchived } : x));
+                          saveThreads(threads?.map(x => x.id === activeThread.id ? { ...x, isArchived: !x.isArchived } : x));
                           setShowDropdown(false);
                         }}
                         className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center gap-2 cursor-pointer"
@@ -660,7 +660,7 @@ export default function MessagesPage() {
                 </div>
               )}
 
-              {(searchMsgQuery ? filteredMessages : activeThread.messages).map((m) => {
+              {(searchMsgQuery ? filteredMessages : activeThread.messages)?.map((m) => {
                 const isOwn = m.sender_id === (currentUser?.id || "current_user");
                 
                 return (
@@ -712,7 +712,7 @@ export default function MessagesPage() {
                       <div className={`absolute top-0 -translate-y-6 flex items-center space-x-1.5 p-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-md transition-opacity duration-200 opacity-0 group-hover:opacity-100 z-30 ${
                         isOwn ? "right-0" : "left-0"
                       }`}>
-                        {["👍", "❤️", "😂", "😮", "😢", "🙏"].map(emoji => (
+                        {["👍", "❤️", "😂", "😮", "😢", "🙏"]?.map(emoji => (
                           <button
                             key={emoji}
                             onClick={() => toggleReaction(m.id, emoji)}
@@ -746,7 +746,7 @@ export default function MessagesPage() {
                     {/* Reactions display box */}
                     {m.reactions && Object.keys(m.reactions).some(k => m.reactions![k].length > 0) && (
                       <div className="flex items-center space-x-1 mt-1 z-15 relative">
-                        {Object.keys(m.reactions).map(emoji => {
+                        {Object.keys(m.reactions)?.map(emoji => {
                           const count = m.reactions![emoji].length;
                           if (count === 0) return null;
                           return (
@@ -810,7 +810,7 @@ export default function MessagesPage() {
                   <button 
                     type="button"
                     onClick={() => {
-                      const updated = threads.map(t => t.id === activeThread.id ? { ...t, isRequest: false } : t);
+                      const updated = threads?.map(t => t.id === activeThread.id ? { ...t, isRequest: false } : t);
                       saveThreads(updated);
                       alert("संदेश अनुरोध स्वीकार कर लिया गया है। अब आप चैट कर सकते हैं!");
                     }}
@@ -833,7 +833,7 @@ export default function MessagesPage() {
                   <button 
                     type="button"
                     onClick={() => {
-                      const updated = threads.map(t => t.id === activeThread.id ? { ...t, isRequest: false, isBlocked: true } : t);
+                      const updated = threads?.map(t => t.id === activeThread.id ? { ...t, isRequest: false, isBlocked: true } : t);
                       saveThreads(updated);
                       alert("उपयोगकर्ता को ब्लॉक कर दिया गया है।");
                     }}

@@ -57,7 +57,7 @@ export default async function ReviewsPage({ searchParams }: { searchParams: { ar
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {queue.map(article => (
+                {queue?.map(article => (
                   <tr key={article.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{article.title_hi}</div>

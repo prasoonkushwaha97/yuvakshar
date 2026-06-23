@@ -87,7 +87,7 @@ export default function KnowledgeHubPage() {
   };
 
   const handleDownload = (id: string) => {
-    const updated = resources.map(res => {
+    const updated = resources?.map(res => {
       if (res.id === id) {
         alert(`फ़ाइल '${res.file_url}' सफलतापूर्वक डाउनलोड की गई।`);
         return { ...res, downloads: res.downloads + 1 };
@@ -98,7 +98,7 @@ export default function KnowledgeHubPage() {
   };
 
   const handleLike = (id: string) => {
-    const updated = resources.map(res => {
+    const updated = resources?.map(res => {
       if (res.id === id) {
         return { ...res, likes: res.likes + 1 };
       }
@@ -154,7 +154,7 @@ export default function KnowledgeHubPage() {
           { id: "Study Material", name: "अध्ययन सामग्री" },
           { id: "Research Paper", name: "शोध पत्र" },
           { id: "Literary Guide", name: "साहित्यिक गाइड" }
-        ].map(cat => (
+        ]?.map(cat => (
           <button
             key={cat.id}
             onClick={() => setSelectedType(cat.id)}
@@ -243,7 +243,7 @@ export default function KnowledgeHubPage() {
       {/* Resources list */}
       <div className="space-y-4">
         {filtered.length > 0 ? (
-          filtered.map(res => (
+          filtered?.map(res => (
             <GlassCard key={res.id} className="p-5 border-slate-200/60 dark:border-slate-800/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
               
               <div className="flex items-start space-x-3.5">

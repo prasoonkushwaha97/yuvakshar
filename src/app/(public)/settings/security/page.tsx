@@ -211,7 +211,7 @@ export default function SecuritySettingsPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {loginHistory.map((log: any) => (
+              {loginHistory?.map((log: any) => (
                 <div key={log.id} className="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-colors">
                   <div className="flex gap-3 items-center">
                     <Clock className="w-4 h-4 text-slate-400" />

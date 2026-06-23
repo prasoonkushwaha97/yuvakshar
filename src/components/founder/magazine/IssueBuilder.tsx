@@ -53,7 +53,7 @@ export default function IssueBuilder({ initialIssue }: { initialIssue: any }) {
       <div className="flex-1 space-y-6">
         
         {/* Sections */}
-        {(issue.sections || []).map((section: any) => (
+        {(issue.sections || [])?.map((section: any) => (
           <div key={section.id} className="bg-white border rounded-lg p-4 shadow-sm">
             <div className="flex justify-between items-center mb-4 border-b pb-2">
               <h3 className="font-bold text-lg">{section.title}</h3>
@@ -62,7 +62,7 @@ export default function IssueBuilder({ initialIssue }: { initialIssue: any }) {
             
             <div className="space-y-2">
               {articlesBySection[section.id]?.length > 0 ? (
-                articlesBySection[section.id].map(ma => (
+                articlesBySection[section.id]?.map(ma => (
                   <div key={ma.article_id} className="flex justify-between items-center bg-gray-50 p-2 rounded border">
                     <div>
                       <div className="font-medium text-sm">{ma.article?.title_hi}</div>

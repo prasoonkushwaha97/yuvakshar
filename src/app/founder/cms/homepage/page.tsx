@@ -63,7 +63,7 @@ export default function HomepageSectionsPage() {
       </div>
 
       <div className="space-y-4">
-        {sections.map((section) => (
+        {sections?.map((section) => (
           <div key={section.id} className="bg-white dark:bg-[#0F172A] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
             <div className="flex flex-col md:flex-row md:items-start gap-4">
               <div className="flex-1 space-y-3">

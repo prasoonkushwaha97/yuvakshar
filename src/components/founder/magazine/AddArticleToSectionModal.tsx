@@ -68,7 +68,7 @@ export default function AddArticleToSectionModal({ issueId, sectionId }: { issue
             </div>
 
             <div className="max-h-64 overflow-y-auto border rounded divide-y mb-4">
-              {results.map(a => (
+              {results?.map(a => (
                 <div key={a.id} className="p-3 flex justify-between items-center hover:bg-gray-50">
                   <div>
                     <div className="font-medium text-sm">{a.title_hi}</div>

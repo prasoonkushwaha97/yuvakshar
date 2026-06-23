@@ -381,7 +381,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
                 {activeTab === "assistant" && (
                   <div className="space-y-4">
                     <div className="grid grid-cols-3 gap-2">
-                      {quickActions.map((act) => (
+                      {quickActions?.map((act) => (
                         <button
                           key={act.action}
                           onClick={() => handleAssistantAction(act.action, act.label)}
@@ -420,7 +420,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
                   <div className="h-full flex flex-col justify-between space-y-4">
                     {/* Chat Messages */}
                     <div className="flex-grow space-y-3 text-[11px]">
-                      {chatMessages.map((msg, index) => {
+                      {chatMessages?.map((msg, index) => {
                         const isAi = msg.sender === "ai";
                         return (
                           <div 
@@ -454,7 +454,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
                     <div className="space-y-1.5 border-t border-slate-200/40 dark:border-slate-800/40 pt-3">
                       <p className="text-[9px] uppercase tracking-wider text-slate-400 font-bold font-sans">त्वरित प्रश्न (Quick Questions)</p>
                       <div className="flex flex-wrap gap-1">
-                        {presetChatChips.map((chip, idx) => (
+                        {presetChatChips?.map((chip, idx) => (
                           <button
                             key={idx}
                             onClick={(e) => handleSendChat(undefined, chip)}
@@ -474,7 +474,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
                     <div className="space-y-2">
                       <label className="text-[10px] text-slate-500 font-bold uppercase block">नोट्स का प्रकार चुनें</label>
                       <div className="grid grid-cols-2 gap-2 text-xs">
-                        {(["अध्ययन नोट्स", "Revision Notes", "Quick Notes", "परीक्षा नोट्स"] as const).map((type) => (
+                        {(["अध्ययन नोट्स", "Revision Notes", "Quick Notes", "परीक्षा नोट्स"] as const)?.map((type) => (
                           <button
                             key={type}
                             onClick={() => setNoteType(type)}
@@ -574,7 +574,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
                       </div>
                       
                       <div className="flex justify-between gap-1">
-                        {([0.5, 1.0, 1.25, 1.5, 2.0] as const).map((rate) => (
+                        {([0.5, 1.0, 1.25, 1.5, 2.0] as const)?.map((rate) => (
                           <button
                             key={rate}
                             onClick={() => setPlaybackRate(rate)}

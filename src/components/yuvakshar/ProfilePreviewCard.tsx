@@ -194,7 +194,7 @@ export default function ProfilePreviewWrapper({
             {/* Badges List */}
             {targetUser.badges && targetUser.badges.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-3 pt-2 border-t border-slate-100 dark:border-slate-850">
-                {targetUser.badges.map(badge => (
+                {targetUser.badges?.map(badge => (
                   <span
                     key={badge}
                     className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded font-hindi ${

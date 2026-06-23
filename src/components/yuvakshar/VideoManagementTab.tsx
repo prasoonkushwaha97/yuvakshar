@@ -145,7 +145,7 @@ export default function VideoManagementTab({ currentUser }: VideoManagementTabPr
                   onChange={(e) => setVidCategory(e.target.value as VideoType["category"])}
                   className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-primary text-slate-700 dark:text-slate-200 text-xs font-serif"
                 >
-                  {["समाचार", "विशेष रिपोर्ट", "साक्षात्कार", "विचार", "साहित्य", "शिक्षा", "पर्यावरण", "इतिहास", "पत्रिका विशेष", "युवाक्षर संवाद"].map(c => (
+                  {["समाचार", "विशेष रिपोर्ट", "साक्षात्कार", "विचार", "साहित्य", "शिक्षा", "पर्यावरण", "इतिहास", "पत्रिका विशेष", "युवाक्षर संवाद"]?.map(c => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
@@ -230,7 +230,7 @@ export default function VideoManagementTab({ currentUser }: VideoManagementTabPr
           <h3 className="font-serif font-bold text-slate-800 dark:text-white text-xs border-l-2 border-primary pl-2">वीडियो लाइब्रेरी ({cms.videos.length} वीडियो)</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {cms.videos.map(v => (
+            {cms.videos?.map(v => (
               <GlassCard key={v.id} glow={v.isFeatured ? "gold" : "none"} className="p-4 flex flex-col justify-between space-y-4">
                 <div className="flex gap-4">
                   <div className="relative w-28 h-20 bg-slate-900 rounded-lg overflow-hidden shrink-0 border border-slate-200 dark:border-slate-800">

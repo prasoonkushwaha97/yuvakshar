@@ -55,7 +55,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
           {/* Desktop Sidebar */}
           <aside className="hidden md:block w-64 shrink-0">
             <nav className="flex flex-col gap-1 sticky top-24">
-              {navItems.map(item => {
+              {navItems?.map(item => {
                 const isActive = pathname === item.href || (pathname === "/settings" && item.href === "/settings/account");
                 const Icon = item.icon;
                 return (
@@ -84,7 +84,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                   </button>
                 </div>
                 <div className="p-4 flex flex-col gap-1 overflow-y-auto">
-                  {navItems.map(item => {
+                  {navItems?.map(item => {
                     const isActive = pathname === item.href || (pathname === "/settings" && item.href === "/settings/account");
                     const Icon = item.icon;
                     return (
