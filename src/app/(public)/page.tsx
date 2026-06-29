@@ -20,6 +20,7 @@ import {
 import AppHeader from "@/components/layout/AppHeader";
 import HomepageSidebar from "@/components/homepage/layout/HomepageSidebar";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
+import PartnerSection from "@/components/homepage/PartnerSection";
 
 // Blocks
 import Hero from "@/components/homepage/blocks/Hero";
@@ -418,6 +419,7 @@ export default function Home() {
 
             </div>
           </SectionContainer>
+          <PartnerSection />
         </>
       )}
 
