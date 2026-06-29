@@ -69,67 +69,87 @@ export async function getArticles(
 }
 
 export async function getArticleById(id: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("articles")
-    .select("*, categories(id, name, slug), profiles(name, avatar_url)")
-    .eq("id", id)
-    .single();
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("articles")
+      .select("*, categories(id, name, slug), profiles(name, avatar_url)")
+      .eq("id", id)
+      .maybeSingle();
 
-  if (error) {
-    console.error("Error fetching article by id:", error);
+    if (error) {
+      console.error("Error fetching article by id in getArticleById action:", error);
+      return null;
+    }
+    
+    if (!data) {
+      console.error(`No article found for ID: ${id}`);
+      return null;
+    }
+    
+    const art = data as any;
+    return {
+      ...art,
+      title_hi: art.title,
+      title_en: art.english_title || "",
+      summary_hi: art.summary || "",
+      summary_en: art.summary || "",
+      is_featured: art.featured || false,
+      view_count: art.views || 0,
+      like_count: art.likes || 0,
+      categories: art.categories ? {
+        id: art.categories.id,
+        name_hi: art.categories.name,
+        slug: art.categories.slug,
+        color: "#EA580C"
+      } : null
+    } as Article;
+  } catch (err) {
+    console.error("Exception in getArticleById action:", err);
     return null;
   }
-  
-  const art = data as any;
-  return {
-    ...art,
-    title_hi: art.title,
-    title_en: art.english_title || "",
-    summary_hi: art.summary || "",
-    summary_en: art.summary || "",
-    is_featured: art.featured || false,
-    view_count: art.views || 0,
-    like_count: art.likes || 0,
-    categories: art.categories ? {
-      id: art.categories.id,
-      name_hi: art.categories.name,
-      slug: art.categories.slug,
-      color: "#EA580C"
-    } : null
-  } as Article;
 }
 
 export async function getArticleBySlug(slug: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("articles")
-    .select("*, categories(id, name, slug), profiles(name, avatar_url)")
-    .eq("slug", slug)
-    .single();
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("articles")
+      .select("*, categories(id, name, slug), profiles(name, avatar_url)")
+      .eq("slug", slug)
+      .maybeSingle();
 
-  if (error) {
-    console.error("Error fetching article by slug:", error);
+    if (error) {
+      console.error("Error fetching article by slug in getArticleBySlug action:", error);
+      return null;
+    }
+
+    if (!data) {
+      console.error(`No article found for slug: ${slug}`);
+      return null;
+    }
+
+    const art = data as any;
+    return {
+      ...art,
+      title_hi: art.title,
+      title_en: art.english_title || "",
+      summary_hi: art.summary || "",
+      summary_en: art.summary || "",
+      is_featured: art.featured || false,
+      view_count: art.views || 0,
+      like_count: art.likes || 0,
+      categories: art.categories ? {
+        id: art.categories.id,
+        name_hi: art.categories.name,
+        slug: art.categories.slug,
+        color: "#EA580C"
+      } : null
+    } as Article;
+  } catch (err) {
+    console.error("Exception in getArticleBySlug action:", err);
     return null;
   }
-
-  const art = data as any;
-  return {
-    ...art,
-    title_hi: art.title,
-    title_en: art.english_title || "",
-    summary_hi: art.summary || "",
-    summary_en: art.summary || "",
-    is_featured: art.featured || false,
-    view_count: art.views || 0,
-    like_count: art.likes || 0,
-    categories: art.categories ? {
-      id: art.categories.id,
-      name_hi: art.categories.name,
-      slug: art.categories.slug,
-      color: "#EA580C"
-    } : null
-  } as Article;
 }
 
 export async function createArticle(data: Partial<Article>) {
