@@ -18,7 +18,6 @@ import {
 
 // Layout
 import AppHeader from "@/components/layout/AppHeader";
-import NewspaperFooter from "@/components/homepage/layout/NewspaperFooter";
 import Sidebar from "@/components/homepage/layout/Sidebar";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
 
@@ -34,6 +33,9 @@ import Authors from "@/components/homepage/blocks/Authors";
 import Community from "@/components/homepage/blocks/Community";
 import Newsletter from "@/components/homepage/blocks/Newsletter";
 import Popular from "@/components/homepage/blocks/Popular";
+import TopStories from "@/components/homepage/blocks/TopStories";
+import EditorialPicks from "@/components/homepage/blocks/EditorialPicks";
+import LatestNews from "@/components/homepage/blocks/LatestNews";
 
 // Error Boundary for Individual Layout Sections
 class SectionErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
@@ -118,7 +120,6 @@ export default function Home() {
   if (!hasData) {
     return (
       <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] pb-16 font-sans">
-        <AppHeader />
         <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-24 text-center border border-gray-150 dark:border-gray-850 rounded-lg my-12 bg-gray-50 dark:bg-gray-900">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-16 h-16 text-gray-300 mx-auto mb-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18V6.125c0-.621.504-1.125 1.125-1.125H11.25M12 7.5v6" />
@@ -126,7 +127,6 @@ export default function Home() {
           <h2 className="text-2xl font-serif font-black mb-2 text-gray-800 dark:text-gray-200">लेख शीघ्र प्रकाशित किए जाएंगे</h2>
           <p className="text-sm text-gray-500 max-w-sm mx-auto">युवाक्षर संपादकीय कक्ष में विमर्श जारी है। जल्द ही ताज़ा खबरें और बौद्धिक विचार यहाँ उपलब्ध होंगे।</p>
         </div>
-        <NewspaperFooter />
       </div>
     );
   }
@@ -149,6 +149,12 @@ export default function Home() {
     switch (type) {
       case "hero":
         return <Hero />;
+      case "topstories":
+        return <TopStories />;
+      case "editorialpicks":
+        return <EditorialPicks />;
+      case "latestnews":
+        return <LatestNews />;
       case "breakingticker":
         return <BreakingTicker />;
       case "trending":
@@ -177,15 +183,12 @@ export default function Home() {
   return (
     <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] text-[#111] dark:text-[#F5F5F5] pb-16 font-sans overflow-x-hidden transition-colors duration-300">
       
-      {/* 1. Header Layout */}
-      <AppHeader />
-
       {/* 2. Dynamic or Fallback static layout content */}
       {hasDbConfig ? (
         <div className="w-full animate-fade-in">
           {activeDbSections.map((sec: any) => {
             const type = (sec.section_type || sec.type || "").toLowerCase().replace(/_/, "").trim();
-            const isFullWidth = ["hero", "breakingticker", "trending", "videos", "magazine", "newsletter"].includes(type);
+            const isFullWidth = ["hero", "topstories", "editorialpicks", "latestnews", "breakingticker", "trending", "videos", "magazine", "newsletter"].includes(type);
 
             if (isFullWidth) {
               return (
@@ -230,6 +233,20 @@ export default function Home() {
             </SectionErrorBoundary>
           </SectionContainer>
 
+          {/* Top Stories */}
+          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
+            <SectionErrorBoundary>
+              <TopStories />
+            </SectionErrorBoundary>
+          </SectionContainer>
+
+          {/* Editorial Picks */}
+          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
+            <SectionErrorBoundary>
+              <EditorialPicks />
+            </SectionErrorBoundary>
+          </SectionContainer>
+
           {/* Horizontal Trending Topics bar */}
           <SectionContainer bgClassName="bg-[#FAFAFA] dark:bg-[#0F0F0F] border-t border-b border-gray-150 dark:border-gray-850">
             <SectionErrorBoundary>
@@ -237,53 +254,30 @@ export default function Home() {
             </SectionErrorBoundary>
           </SectionContainer>
 
-          {/* Main 70/30 Grid section */}
-          <SectionContainer>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              
-              {/* Left Column (70%) */}
-              <div className="lg:col-span-8 space-y-10">
-                <SectionErrorBoundary>
-                  <CategoryBlock categoryName="राजनीति" englishName="politics" />
-                </SectionErrorBoundary>
+          {/* Latest News Feed */}
+          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
+            <SectionErrorBoundary>
+              <LatestNews />
+            </SectionErrorBoundary>
+          </SectionContainer>
 
-                <SectionErrorBoundary>
-                  <Opinion />
-                </SectionErrorBoundary>
-
-                <SectionErrorBoundary>
-                  <CategoryBlock categoryName="शिक्षा" englishName="education" />
-                </SectionErrorBoundary>
-
-                <SectionErrorBoundary>
-                  <Popular />
-                </SectionErrorBoundary>
-
-                <SectionErrorBoundary>
-                  <CategoryBlock categoryName="साहित्य" englishName="literature" />
-                </SectionErrorBoundary>
-
-                <SectionErrorBoundary>
-                  <CategoryBlock categoryName="इतिहास" englishName="history" />
-                </SectionErrorBoundary>
-
-                <SectionErrorBoundary>
-                  <Community />
-                </SectionErrorBoundary>
-
-                <SectionErrorBoundary>
-                  <Authors />
-                </SectionErrorBoundary>
-              </div>
-
-              {/* Right Column (Sidebar 30%) */}
-              <div className="lg:col-span-4 border-l-0 lg:border-l border-gray-150 dark:border-gray-850 pl-0 lg:pl-6 space-y-8">
-                <SectionErrorBoundary>
-                  <Sidebar />
-                </SectionErrorBoundary>
-              </div>
-
+          {/* Categories */}
+          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <SectionErrorBoundary>
+                <CategoryBlock categoryName="राजनीति" englishName="politics" />
+              </SectionErrorBoundary>
+              <SectionErrorBoundary>
+                <CategoryBlock categoryName="शिक्षा" englishName="education" />
+              </SectionErrorBoundary>
             </div>
+          </SectionContainer>
+
+          {/* Opinion Column */}
+          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
+            <SectionErrorBoundary>
+              <Opinion />
+            </SectionErrorBoundary>
           </SectionContainer>
 
           {/* Videos Block */}
@@ -300,6 +294,20 @@ export default function Home() {
             </SectionErrorBoundary>
           </SectionContainer>
 
+          {/* Authors Block */}
+          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
+            <SectionErrorBoundary>
+              <Authors />
+            </SectionErrorBoundary>
+          </SectionContainer>
+
+          {/* Community Block */}
+          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
+            <SectionErrorBoundary>
+              <Community />
+            </SectionErrorBoundary>
+          </SectionContainer>
+
           {/* Newsletter Box */}
           <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
             <SectionErrorBoundary>
@@ -309,8 +317,6 @@ export default function Home() {
         </>
       )}
 
-      {/* 6. Footer Layout */}
-      <NewspaperFooter />
     </div>
   );
 }

@@ -1,0 +1,110 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import { useCms } from "@/store/CmsContext";
+import { useLanguage } from "@/store/LanguageContext";
+import { stripMarkdown } from "@/lib/markdown";
+import { Award, Clock, ArrowRight } from "lucide-react";
+
+export default function EditorialPicks() {
+  const { locale } = useLanguage();
+  const { articles } = useCms();
+
+  const published = articles.filter(
+    (art: any) => art.status === "Published" || art.status === "Approved" || !art.status
+  );
+
+  if (published.length === 0) return null;
+
+  // Main Hero Story (to exclude)
+  const heroStory = published.find((a: any) => a.hero || a.isFeatured) || published[0];
+
+  // Remaining articles
+  const remaining = published.filter((a: any) => a.id !== heroStory.id);
+
+  // Editorial Picks filter
+  let picks = published.filter((a: any) => a.editors_pick || a.recommended);
+  if (picks.length === 0) {
+    picks = remaining.slice(4, 8); // fallback slice to avoid overlap with top stories
+  } else {
+    picks = picks.slice(0, 4);
+  }
+
+  if (picks.length === 0) return null;
+
+  return (
+    <div className="w-full">
+      {/* Section Header */}
+      <div className="flex items-center justify-between mb-6 border-b border-gray-150 dark:border-gray-850 pb-3">
+        <div className="flex items-center space-x-2">
+          <Award className="w-5 h-5 text-[#f97316]" />
+          <h2 className="font-serif font-black text-lg md:text-xl text-gray-900 dark:text-white uppercase tracking-tight">
+            {locale === "hi" ? "संपादकीय चयन" : "Editorial Picks"}
+          </h2>
+        </div>
+      </div>
+
+      {/* Grid: 4 cols on desktop, 2 cols on tablet, swipe on mobile */}
+      <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 overflow-x-auto sm:overflow-x-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none">
+        {picks.map((art: any) => {
+          const title = stripMarkdown(art.title || art.title_hi || "");
+          const summary = stripMarkdown(art.summary || art.summary_hi || art.content || "");
+          const imageUrl = art.coverImage || art.cover_image || art.image || "/images/placeholder-news.jpg";
+
+          const readTimeVal = art.content
+            ? Math.max(1, Math.ceil(art.content.split(/\s+/).length / 150))
+            : 2;
+
+          return (
+            <div 
+              key={art.id} 
+              className="group flex flex-col w-[80vw] sm:w-auto shrink-0 sm:shrink bg-white dark:bg-[#0E1322] rounded-xl overflow-hidden border border-gray-150 dark:border-gray-850 shadow-sm hover:shadow-md hover:border-[#f97316]/30 transition-all duration-300 snap-start"
+            >
+              {/* Image Section */}
+              <Link 
+                href={`/articles/${art.slug || art.id}`} 
+                className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-100 dark:bg-gray-900 border-b border-gray-150 dark:border-gray-850 shrink-0"
+              >
+                <img
+                  src={imageUrl}
+                  alt={title}
+                  className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700 ease-out"
+                  loading="lazy"
+                />
+                <div className="absolute top-2.5 left-2.5 z-10">
+                  <span className="bg-[#f97316] text-white text-[8px] font-sans font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
+                    {art.category || "संपादकीय"}
+                  </span>
+                </div>
+              </Link>
+
+              {/* Text Section */}
+              <div className="flex-1 flex flex-col p-4">
+                {/* Title */}
+                <Link href={`/articles/${art.slug || art.id}`} className="block hover:text-[#f97316] transition-colors duration-250 mb-2">
+                  <h3 className="text-sm md:text-base font-bold font-serif leading-snug text-gray-900 dark:text-white line-clamp-2">
+                    {title}
+                  </h3>
+                </Link>
+
+                {/* Summary */}
+                <p className="text-gray-550 dark:text-gray-400 text-xs leading-relaxed mb-4 font-serif line-clamp-2">
+                  {summary}
+                </p>
+
+                {/* Footer details */}
+                <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-850 flex items-center justify-between text-[10px] text-gray-400 font-sans">
+                  <span>{art.author || "युवाक्षर डेस्क"}</span>
+                  <span className="flex items-center space-x-0.5 text-[#f97316] font-bold">
+                    <span>{readTimeVal} मि.</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

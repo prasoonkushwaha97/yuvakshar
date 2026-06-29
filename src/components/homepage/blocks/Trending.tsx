@@ -36,15 +36,15 @@ export default function Trending() {
         </h4>
       </div>
 
-      {/* Responsive wrapping tags list */}
-      <div className="flex flex-wrap items-center gap-2 w-full h-auto">
+      {/* Responsive wrapping tags list with horizontal scroll */}
+      <div className="flex items-center gap-2 w-full overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory">
         {uniqueTags.map((tag) => {
           const query = tag.replace("#", "");
           return (
             <Link
               key={tag}
               href={`/search?q=${encodeURIComponent(query)}`}
-              className="px-3.5 py-1.5 bg-gray-100 hover:bg-[#f97316]/10 hover:text-[#f97316] dark:bg-gray-900 dark:hover:bg-[#f97316]/15 dark:text-gray-350 text-xs font-bold font-sans rounded-full border border-transparent hover:border-[#f97316]/20 transition-all duration-300 whitespace-nowrap shadow-sm cursor-pointer"
+              className="px-4 py-1.5 bg-gray-100 hover:bg-[#f97316]/10 hover:text-[#f97316] dark:bg-gray-900 dark:hover:bg-[#f97316]/15 dark:text-gray-350 text-xs font-bold font-sans rounded-full border border-transparent hover:border-[#f97316]/20 transition-all duration-300 whitespace-nowrap shadow-sm cursor-pointer snap-start"
             >
               {tag}
             </Link>

@@ -1,13 +1,11 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
-import ArticleCardHero from "../cards/ArticleCardHero";
-import ArticleCardMedium from "../cards/ArticleCardMedium";
-import ArticleCardSmall from "../cards/ArticleCardSmall";
 import { stripMarkdown } from "@/lib/markdown";
-import Link from "next/link";
+import { ArrowRight, Clock, Calendar } from "lucide-react";
 
 export default function Hero() {
   const { locale } = useLanguage();
@@ -19,101 +17,97 @@ export default function Hero() {
 
   if (published.length === 0) return null;
 
-  // Fallback Logic mapping
-  // 1. Center Hero Story
+  // Main Cover Hero Story
   const heroStory = published.find((a: any) => a.hero || a.isFeatured) || published[0];
 
-  // Remaining articles excluding the main hero
-  const remaining = published.filter((a: any) => a.id !== heroStory.id);
+  const title = stripMarkdown(heroStory.title || heroStory.title_hi || "");
+  const summary = stripMarkdown(heroStory.summary || heroStory.summary_hi || heroStory.content || "");
+  const imageUrl = heroStory.coverImage || heroStory.cover_image || heroStory.image || "/images/placeholder-news.jpg";
 
-  // 2. Left Timeline: 10 latest articles
-  const timelineStories = remaining.slice(0, 10);
+  const dateStr = heroStory.published_at 
+    ? new Date(heroStory.published_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
+    : heroStory.created_at
+      ? new Date(heroStory.created_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
+      : "";
 
-  // 3. Center Secondary Featured: 2 stories
-  const secondaryFeatured = remaining.slice(10, 12).length >= 2 
-    ? remaining.slice(10, 12) 
-    : remaining.slice(0, 2);
-
-  // 4. Right Editor's Picks: 4 stories
-  let editorsPicks = published.filter((a: any) => a.editors_pick || a.recommended);
-  if (editorsPicks.length === 0) {
-    editorsPicks = remaining.slice(2, 6);
-  } else {
-    editorsPicks = editorsPicks.slice(0, 4);
-  }
+  const readTimeVal = heroStory.content
+    ? Math.max(1, Math.ceil(heroStory.content.split(/\s+/).length / 150))
+    : 3;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full py-0">
-      
-      {/* COLUMN 1: LEFT TIMELINE (3 cols) */}
-      <div className="lg:col-span-3 border-r-0 lg:border-r border-gray-150 dark:border-gray-850 pr-0 lg:pr-6">
-        <div className="flex items-center justify-between mb-4 border-b-2 border-gray-900 dark:border-gray-800 pb-2">
-          <h3 className="font-serif font-black text-sm uppercase tracking-tight text-gray-900 dark:text-gray-200">
-            {locale === "hi" ? "ताजा घटनाक्रम" : "Latest Updates"}
-          </h3>
-          <span className="w-2 h-2 rounded-full bg-[#f97316] animate-pulse" />
-        </div>
-        <div className="flex flex-col">
-          {timelineStories.map((art: any, index: number) => {
-            const cleanTitle = stripMarkdown(art.title);
-            const timeStr = art.date ? art.date.split(",")[1]?.trim().substring(0, 5) || "09:30" : "09:30";
-            return (
-              <div key={art.id} className="group py-3 border-b border-gray-105 dark:border-gray-850 last:border-0">
-                <div className="flex items-center space-x-2 text-[9px] uppercase tracking-wider font-extrabold text-[#f97316] mb-1">
-                  <span>{timeStr}</span>
-                  <span className="text-gray-300">•</span>
-                  <span>{art.category}</span>
-                </div>
-                <Link href={`/articles/${art.slug || art.id}`} className="block group-hover:text-[#f97316] transition-colors">
-                  <h4 className="font-serif font-bold text-xs md:text-sm text-gray-800 dark:text-gray-200 leading-snug line-clamp-2">
-                    {cleanTitle}
-                  </h4>
-                </Link>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* COLUMN 2: CENTER FEATURED & SECONDARY STORIES (6 cols) */}
-      <div className="lg:col-span-6">
-        <div className="flex items-center justify-between mb-4 border-b-2 border-gray-900 dark:border-gray-800 pb-2">
-          <h3 className="font-serif font-black text-sm uppercase tracking-tight text-gray-900 dark:text-gray-200">
-            {locale === "hi" ? "मुख्य समाचार" : "Hero Story"}
-          </h3>
-        </div>
-        <div className="space-y-6">
-          {/* Main Hero Card */}
-          <ArticleCardHero article={heroStory} />
-
-          {/* 2 Secondary Articles Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {secondaryFeatured.map((art: any) => (
-              <ArticleCardMedium key={art.id} article={art} showImage={true} />
-            ))}
+    <div className="max-w-[1100px] mx-auto w-full">
+      <div className="group grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 bg-white dark:bg-[#0E1322] rounded-xl overflow-hidden border border-gray-150 dark:border-gray-850 shadow-sm hover:shadow-md hover:border-[#f97316]/30 transition-all duration-300">
+        
+        {/* LEFT COLUMN: HERO IMAGE (7 cols desktop) */}
+        <Link 
+          href={`/articles/${heroStory.slug || heroStory.id}`} 
+          className="lg:col-span-7 relative aspect-[16/10] lg:aspect-auto lg:h-[480px] w-full overflow-hidden bg-gray-50 dark:bg-gray-900 border-b lg:border-b-0 lg:border-r border-gray-150 dark:border-gray-850"
+        >
+          <img
+            src={imageUrl}
+            alt={title}
+            className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700 ease-out"
+            loading="eager"
+          />
+          {/* Saffron Category Badge Overlay */}
+          <div className="absolute top-4 left-4 z-10">
+            <span className="bg-[#f97316] text-white text-[10px] font-sans font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
+              {heroStory.category || "समाचार"}
+            </span>
           </div>
-        </div>
-      </div>
+          {/* Elegant bottom gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-60 pointer-events-none" />
+        </Link>
 
-      {/* COLUMN 3: RIGHT EDITOR'S PICKS (3 cols) */}
-      <div className="lg:col-span-3 border-l-0 lg:border-l border-gray-150 dark:border-gray-850 pl-0 lg:pl-6">
-        <div className="flex items-center space-x-2 mb-4 border-b-2 border-gray-900 dark:border-gray-800 pb-2">
-          <h3 className="font-serif font-black text-sm uppercase tracking-tight text-gray-900 dark:text-gray-200">
-            {locale === "hi" ? "संपादकीय चयन" : "Editor's Picks"}
-          </h3>
-        </div>
-        <div className="flex flex-col">
-          {editorsPicks.map((art: any, idx: number) => (
-            <ArticleCardSmall 
-              key={art.id} 
-              article={art} 
-              showThumbnail={true} 
-              indexNumber={idx + 1} 
-            />
-          ))}
-        </div>
-      </div>
+        {/* RIGHT COLUMN: HERO CONTENT (5 cols desktop) */}
+        <div className="lg:col-span-5 flex flex-col justify-center p-6 md:p-8 lg:p-10">
+          
+          {/* Metadata Row */}
+          <div className="flex items-center space-x-3 text-[10px] font-sans font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
+            <span className="flex items-center space-x-1">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>{dateStr}</span>
+            </span>
+            <span>•</span>
+            <span className="flex items-center space-x-1">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{readTimeVal} मिनट पठन</span>
+            </span>
+          </div>
 
+          {/* Headline */}
+          <Link href={`/articles/${heroStory.slug || heroStory.id}`} className="block hover:text-[#f97316] transition-colors duration-300">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-black font-serif leading-tight text-gray-900 dark:text-white mb-4 tracking-tight">
+              {title}
+            </h1>
+          </Link>
+
+          {/* Short Description */}
+          <p className="text-gray-600 dark:text-gray-400 text-xs md:text-sm leading-relaxed mb-6 font-serif line-clamp-4">
+            {summary}
+          </p>
+
+          {/* Author info & Call to Action */}
+          <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-850 flex items-center justify-between">
+            <div>
+              <span className="text-[10px] text-gray-450 uppercase tracking-wider block font-sans">लेखक</span>
+              <span className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                {heroStory.author || "युवाक्षर डेस्क"}
+              </span>
+            </div>
+
+            <Link 
+              href={`/articles/${heroStory.slug || heroStory.id}`}
+              className="inline-flex items-center space-x-1 text-xs font-black font-sans text-[#f97316] hover:text-[#ea580c] transition-colors group/btn"
+            >
+              <span>{locale === "hi" ? "आगे पढ़ें" : "Read More"}</span>
+              <ArrowRight className="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+        </div>
+
+      </div>
     </div>
   );
 }

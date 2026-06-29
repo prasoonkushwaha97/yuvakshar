@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { getArticleBySlug, getArticleById } from "@/lib/actions/articleActions";
 import { stripMarkdown } from "@/lib/markdown";
 import AppHeader from "@/components/layout/AppHeader";
-import NewspaperFooter from "@/components/homepage/layout/NewspaperFooter";
 import Sidebar from "@/components/homepage/layout/Sidebar";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
 import { ContentRenderer } from "@/components/content/ContentRenderer";
@@ -108,9 +107,6 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
   return (
     <div className="w-full min-h-screen bg-[#FDFCF7] dark:bg-[#0B0F19] text-[#111111] dark:text-[#E2E8F0] font-sans pb-16 transition-colors duration-300">
       
-      {/* 1. Header Navigation */}
-      <AppHeader />
-
       <SectionContainer>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-6">
           
@@ -216,7 +212,6 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
         </div>
       </SectionContainer>
 
-      <NewspaperFooter />
     </div>
   );
 }
