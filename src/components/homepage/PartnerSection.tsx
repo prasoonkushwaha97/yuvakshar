@@ -25,7 +25,7 @@ export default function PartnerSection() {
           {/* Logo */}
           <div className="relative w-[140px] h-[140px] md:w-[160px] md:h-[160px] shrink-0 mb-[24px]">
             <Image
-              src="/images/partners/kaalchakra-logo.jpg"
+              src="/images/partners/kaalchakra-logo.png"
               alt="The Kaalchakra Logo"
               fill
               className="object-contain drop-shadow-sm group-hover:scale-[1.03] transition-transform duration-500"
