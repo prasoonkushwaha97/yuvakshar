@@ -27,7 +27,7 @@ export default function Authors() {
   if (authorNames.length === 0) return null;
 
   return (
-    <div className="w-full py-4">
+    <div className="w-full py-0.5">
       {/* Title */}
       <SectionTitle 
         title={locale === "hi" ? "हमारे लेखक और योगदानकर्ता" : "Our Authors & Contributors"} 

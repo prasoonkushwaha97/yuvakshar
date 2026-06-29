@@ -11,12 +11,13 @@ import { ContentRenderer } from "@/components/content/ContentRenderer";
 import { Calendar, Clock, Eye, Share2, Bookmark, Award, MessageSquare } from "lucide-react";
 
 interface ArticlePageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 // Dynamic SEO Metadata Generator
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
-  const slug = decodeURIComponent(params.slug);
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
   let article = await getArticleBySlug(slug);
   if (!article) {
     article = await getArticleById(slug);
@@ -45,7 +46,8 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 }
 
 export default async function ArticleDetailPage({ params }: ArticlePageProps) {
-  const slug = decodeURIComponent(params.slug);
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
   
   // Try slug first, then fallback to ID query
   let article = await getArticleBySlug(slug);

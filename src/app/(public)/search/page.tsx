@@ -108,7 +108,7 @@ export default function SearchPage() {
                     </span>
                   </div>
 
-                  <Link href={`/editorial?id=${art.id}`} className="block">
+                  <Link href={`/articles/${art.slug || art.id}`} className="block">
                     <h3 className="font-serif text-base font-bold hover:text-primary transition-colors">
                       {stripMarkdown(art.title)}
                     </h3>
@@ -130,7 +130,7 @@ export default function SearchPage() {
                     )}
                   </button>
                   <Link 
-                    href={`/editorial?id=${art.id}`}
+                    href={`/articles/${art.slug || art.id}`}
                     className="p-2 rounded bg-primary text-white hover:bg-primary/90 transition-all flex items-center justify-center cursor-pointer"
                   >
                     <ArrowRight className="w-4 h-4" />

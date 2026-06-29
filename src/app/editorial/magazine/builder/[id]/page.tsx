@@ -7,11 +7,12 @@ import IssueBuilder from "@/components/founder/magazine/IssueBuilder";
 
 export const dynamic = "force-dynamic";
 
-export default async function MagazineBuilderPage({ params }: { params: { id: string } }) {
+export default async function MagazineBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const canAccess = await hasPermission("manage_system");
   if (!canAccess) redirect("/founder/unauthorized");
 
-  const issue = await getMagazineIssueById(params.id);
+  const { id } = await params;
+  const issue = await getMagazineIssueById(id);
   if (!issue) redirect("/founder/magazine");
 
   return (

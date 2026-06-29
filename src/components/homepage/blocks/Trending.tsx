@@ -27,24 +27,24 @@ export default function Trending() {
     .map(tag => tag.startsWith("#") ? tag : `#${tag}`);
 
   return (
-    <div className="w-full py-2.5 flex flex-col md:flex-row md:items-center justify-start gap-4">
+    <div className="w-full flex flex-col lg:flex-row lg:items-center justify-start gap-4 h-auto">
       {/* Title block */}
-      <div className="flex items-center space-x-2 shrink-0 border-r-0 md:border-r border-gray-200 dark:border-gray-800 pr-0 md:pr-4">
+      <div className="flex items-center space-x-2 shrink-0 border-b lg:border-b-0 lg:border-r border-gray-150 dark:border-gray-850 pb-2.5 lg:pb-0 lg:pr-4">
         <span className="w-1.5 h-1.5 rounded-full bg-[#f97316] animate-pulse" />
-        <h4 className="font-serif font-black text-xs md:text-sm text-gray-900 dark:text-gray-200 uppercase tracking-wider">
+        <h4 className="font-serif font-black text-xs md:text-sm text-gray-900 dark:text-gray-250 uppercase tracking-wider">
           {locale === "hi" ? "आज के ट्रेंडिंग विषय" : "Trending Topics Today"}
         </h4>
       </div>
 
-      {/* Horizontal pill list */}
-      <div className="flex flex-wrap md:flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+      {/* Responsive wrapping tags list */}
+      <div className="flex flex-wrap items-center gap-2 w-full h-auto">
         {uniqueTags.map((tag) => {
           const query = tag.replace("#", "");
           return (
             <Link
               key={tag}
               href={`/search?q=${encodeURIComponent(query)}`}
-              className="px-3.5 py-1.5 bg-gray-105 hover:bg-[#f97316]/10 hover:text-[#f97316] dark:bg-gray-900 dark:hover:bg-[#f97316]/15 dark:text-gray-300 text-xs font-bold font-sans rounded-full border border-transparent hover:border-[#f97316]/20 transition-all duration-300 whitespace-nowrap shadow-sm cursor-pointer"
+              className="px-3.5 py-1.5 bg-gray-100 hover:bg-[#f97316]/10 hover:text-[#f97316] dark:bg-gray-900 dark:hover:bg-[#f97316]/15 dark:text-gray-350 text-xs font-bold font-sans rounded-full border border-transparent hover:border-[#f97316]/20 transition-all duration-300 whitespace-nowrap shadow-sm cursor-pointer"
             >
               {tag}
             </Link>

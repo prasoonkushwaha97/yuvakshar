@@ -53,6 +53,7 @@ export default function ArticleCardHero({ article }: ArticleCardHeroProps) {
         {/* Metadata section */}
         <MetaInfo
           articleId={article.id}
+          slug={article.slug}
           author={article.author || "युवाक्षर डेस्क"}
           date={article.date || ""}
           readTime={article.readTime}

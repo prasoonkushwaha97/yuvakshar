@@ -37,7 +37,7 @@ export default function Videos() {
   const hasValidVideo = activeVideo && activeVideo.youtubeUrl;
 
   return (
-    <div className="w-full py-4 text-white">
+    <div className="w-full py-0.5 text-white">
       {/* Title */}
       <SectionTitle 
         title={locale === "hi" ? "वीडियो डेस्क" : "Video Desk"} 

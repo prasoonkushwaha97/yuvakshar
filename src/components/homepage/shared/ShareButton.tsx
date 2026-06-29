@@ -5,18 +5,21 @@ import { Share2 } from "lucide-react";
 
 interface ShareButtonProps {
   articleId: string;
+  slug?: string;
   title: string;
   className?: string;
 }
 
-export default function ShareButton({ articleId, title, className = "" }: ShareButtonProps) {
+export default function ShareButton({ articleId, slug, title, className = "" }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const shareUrl = `${window.location.origin}/editorial?id=${articleId}`;
+    const shareUrl = slug 
+      ? `${window.location.origin}/articles/${slug}`
+      : `${window.location.origin}/articles/${articleId}`;
 
     if (navigator.share) {
       try {

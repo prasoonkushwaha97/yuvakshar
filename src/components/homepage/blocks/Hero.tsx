@@ -43,7 +43,7 @@ export default function Hero() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full py-6">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full py-0">
       
       {/* COLUMN 1: LEFT TIMELINE (3 cols) */}
       <div className="lg:col-span-3 border-r-0 lg:border-r border-gray-150 dark:border-gray-850 pr-0 lg:pr-6">
@@ -58,7 +58,7 @@ export default function Hero() {
             const cleanTitle = stripMarkdown(art.title);
             const timeStr = art.date ? art.date.split(",")[1]?.trim().substring(0, 5) || "09:30" : "09:30";
             return (
-              <div key={art.id} className="group py-3 border-b border-gray-100 dark:border-gray-850 last:border-0">
+              <div key={art.id} className="group py-3 border-b border-gray-105 dark:border-gray-850 last:border-0">
                 <div className="flex items-center space-x-2 text-[9px] uppercase tracking-wider font-extrabold text-[#f97316] mb-1">
                   <span>{timeStr}</span>
                   <span className="text-gray-300">•</span>
@@ -76,15 +76,22 @@ export default function Hero() {
       </div>
 
       {/* COLUMN 2: CENTER FEATURED & SECONDARY STORIES (6 cols) */}
-      <div className="lg:col-span-6 space-y-6">
-        {/* Main Hero Card */}
-        <ArticleCardHero article={heroStory} />
+      <div className="lg:col-span-6">
+        <div className="flex items-center justify-between mb-4 border-b-2 border-gray-900 dark:border-gray-800 pb-2">
+          <h3 className="font-serif font-black text-sm uppercase tracking-tight text-gray-900 dark:text-gray-200">
+            {locale === "hi" ? "मुख्य समाचार" : "Hero Story"}
+          </h3>
+        </div>
+        <div className="space-y-6">
+          {/* Main Hero Card */}
+          <ArticleCardHero article={heroStory} />
 
-        {/* 2 Secondary Articles Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {secondaryFeatured.map((art: any) => (
-            <ArticleCardMedium key={art.id} article={art} showImage={true} />
-          ))}
+          {/* 2 Secondary Articles Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {secondaryFeatured.map((art: any) => (
+              <ArticleCardMedium key={art.id} article={art} showImage={true} />
+            ))}
+          </div>
         </div>
       </div>
 

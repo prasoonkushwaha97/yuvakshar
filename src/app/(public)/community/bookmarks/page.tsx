@@ -125,7 +125,7 @@ export default function BookmarksPage() {
                     <BookOpen className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 space-y-0.5">
-                    <Link href={`/editorial?id=${art.id}`} className="block text-xs font-bold text-slate-800 dark:text-white hover:text-primary font-hindi truncate">
+                    <Link href={`/articles/${art.slug || art.id}`} className="block text-xs font-bold text-slate-800 dark:text-white hover:text-primary font-hindi truncate">
                       {art.title}
                     </Link>
                     <span className="block text-[9px] text-slate-400 font-serif">श्रेणी: {art.category} | समय: {art.readTime}</span>
@@ -141,7 +141,7 @@ export default function BookmarksPage() {
                     <Trash2 className="w-4 h-4" />
                   </button>
                   <Link
-                    href={`/editorial?id=${art.id}`}
+                    href={`/articles/${art.slug || art.id}`}
                     className="p-2 text-primary hover:bg-primary/10 rounded-xl transition-all"
                   >
                     <ArrowRight className="w-4 h-4" />

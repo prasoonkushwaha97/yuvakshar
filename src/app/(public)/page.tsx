@@ -180,28 +180,9 @@ export default function Home() {
       {/* 1. Header Layout */}
       <AppHeader />
 
-      {/* 2. Full-Width Breaking News Ticker */}
-      <SectionErrorBoundary>
-        <BreakingTicker />
-      </SectionErrorBoundary>
-
-      {/* 3. Main Newspaper Hero section */}
-      <SectionContainer>
-        <SectionErrorBoundary>
-          <Hero />
-        </SectionErrorBoundary>
-      </SectionContainer>
-
-      {/* 4. Horizontal Trending Topics bar */}
-      <SectionContainer bgClassName="bg-[#FAFAFA] dark:bg-[#0F0F0F] border-t border-b border-gray-150 dark:border-gray-850">
-        <SectionErrorBoundary>
-          <Trending />
-        </SectionErrorBoundary>
-      </SectionContainer>
-
-      {/* 5. Dynamic / Configured Content Blocks */}
+      {/* 2. Dynamic or Fallback static layout content */}
       {hasDbConfig ? (
-        <div className="w-full">
+        <div className="w-full animate-fade-in">
           {activeDbSections.map((sec: any) => {
             const type = (sec.section_type || sec.type || "").toLowerCase().replace(/_/, "").trim();
             const isFullWidth = ["hero", "breakingticker", "trending", "videos", "magazine", "newsletter"].includes(type);
@@ -235,8 +216,27 @@ export default function Home() {
           })}
         </div>
       ) : (
-        // Standard Premium Editorial default structure
+        // Standard Premium Editorial default structure (Fallback when database homepage_layouts is empty)
         <>
+          {/* Breaking News Ticker */}
+          <SectionErrorBoundary>
+            <BreakingTicker />
+          </SectionErrorBoundary>
+
+          {/* Main Newspaper Hero section */}
+          <SectionContainer>
+            <SectionErrorBoundary>
+              <Hero />
+            </SectionErrorBoundary>
+          </SectionContainer>
+
+          {/* Horizontal Trending Topics bar */}
+          <SectionContainer bgClassName="bg-[#FAFAFA] dark:bg-[#0F0F0F] border-t border-b border-gray-150 dark:border-gray-850">
+            <SectionErrorBoundary>
+              <Trending />
+            </SectionErrorBoundary>
+          </SectionContainer>
+
           {/* Main 70/30 Grid section */}
           <SectionContainer>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

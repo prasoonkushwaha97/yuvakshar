@@ -27,7 +27,7 @@ export default function Magazine() {
   const archives = publishedMags.slice(1, 6);
 
   return (
-    <div className="w-full py-4">
+    <div className="w-full py-0.5">
       {/* Title */}
       <SectionTitle 
         title={locale === "hi" ? "डिजिटल पत्रिका डेस्क" : "Digital Magazine Desk"} 

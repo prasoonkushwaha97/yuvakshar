@@ -7,8 +7,9 @@ import EditorClient from "@/components/founder/editor/EditorClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function ArticleEditor({ params }: { params: { id: string } }) {
-  const isNew = params.id === "new";
+export default async function ArticleEditor({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const isNew = id === "new";
   
   const canEdit = await hasPermission("manage_articles");
   if (!canEdit) {
@@ -19,11 +20,11 @@ export default async function ArticleEditor({ params }: { params: { id: string }
   let reviewNotes: any[] = [];
 
   if (!isNew) {
-    article = await getArticleById(params.id);
+    article = await getArticleById(id);
     if (!article) {
       redirect("/founder/articles");
     }
-    reviewNotes = await getReviewNotes(params.id);
+    reviewNotes = await getReviewNotes(id);
   }
 
   return (

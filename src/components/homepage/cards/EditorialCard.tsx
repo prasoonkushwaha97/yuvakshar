@@ -16,25 +16,31 @@ export default function EditorialCard({ article }: EditorialCardProps) {
   const authorAvatar = article.authorAvatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(article.author || "User")}`;
   const authorRole = article.authorRole || "वरिष्ठ स्तंभकार";
 
+  const authorSlug = article.author
+    ? encodeURIComponent(article.author.toLowerCase().trim().replace(/\s+/g, "-"))
+    : "desk";
+
   return (
     <div className="group flex flex-col items-center text-center bg-white dark:bg-[#0A0A0A] p-6 rounded-lg border border-gray-150 dark:border-gray-850 hover:shadow-[0_8px_20px_-6px_rgba(249,115,22,0.1)] hover:border-[#f97316]/40 transition-all duration-300">
-      {/* Columnist Avatar */}
-      <div className="relative w-16 h-16 rounded-full overflow-hidden mb-3 border-2 border-gray-100 dark:border-gray-800 group-hover:border-[#f97316] transition-colors shrink-0 bg-gray-50">
-        <img
-          src={authorAvatar}
-          alt={article.author}
-          className="w-full h-full object-cover"
-          onError={(e) => { e.currentTarget.src = "https://api.dicebear.com/7.x/adventurer/svg?seed=avatar"; }}
-        />
-      </div>
+      <Link href={`/authors/${authorSlug}`} className="group/avatar flex flex-col items-center cursor-pointer">
+        {/* Columnist Avatar */}
+        <div className="relative w-16 h-16 rounded-full overflow-hidden mb-3 border-2 border-gray-100 dark:border-gray-800 group-hover/avatar:border-[#f97316] transition-colors shrink-0 bg-gray-50">
+          <img
+            src={authorAvatar}
+            alt={article.author}
+            className="w-full h-full object-cover"
+            onError={(e) => { e.currentTarget.src = "https://api.dicebear.com/7.x/adventurer/svg?seed=avatar"; }}
+          />
+        </div>
 
-      {/* Columnist Metadata */}
-      <span className="font-extrabold text-sm text-gray-850 dark:text-gray-200 block mb-0.5">
-        {article.author}
-      </span>
-      <span className="text-[10px] text-gray-400 font-sans uppercase font-bold tracking-widest block mb-4">
-        {authorRole}
-      </span>
+        {/* Columnist Metadata */}
+        <span className="font-extrabold text-sm text-gray-850 dark:text-gray-200 block mb-0.5 group-hover/avatar:text-[#f97316] transition-colors">
+          {article.author}
+        </span>
+        <span className="text-[10px] text-gray-400 font-sans uppercase font-bold tracking-widest block mb-4">
+          {authorRole}
+        </span>
+      </Link>
 
       {/* Column Title */}
       <Link href={`/articles/${article.slug || article.id}`} className="block flex-grow group-hover:text-[#f97316] transition-colors">

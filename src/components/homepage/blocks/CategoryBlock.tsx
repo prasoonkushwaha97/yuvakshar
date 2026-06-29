@@ -30,7 +30,7 @@ export default function CategoryBlock({ categoryName, englishName, limit = 4 }: 
   const secondary = categoryArticles.slice(1, limit + 1);
 
   return (
-    <div className="w-full py-4">
+    <div className="w-full py-0.5">
       {/* Category Section Header */}
       <SectionTitle title={categoryName} link={`/category/${encodeURIComponent(categoryName)}`} />
 

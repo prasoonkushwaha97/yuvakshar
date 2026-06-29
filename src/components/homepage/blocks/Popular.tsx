@@ -57,7 +57,7 @@ export default function Popular() {
   ];
 
   return (
-    <div className="w-full py-4 font-sans">
+    <div className="w-full py-0.5 font-sans">
       <SectionTitle title={locale === "hi" ? "चर्चित रैंकिंग सूचियां" : "Popular Rankings"} />
 
       {/* Tabs */}

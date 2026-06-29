@@ -44,7 +44,7 @@ function CategoryDetailPageContent() {
   const searchParams = useSearchParams();
   const slug = params.slug as string;
   const sub = searchParams.get("sub");
-  const { articles } = useCms();
+  const { articles, categories } = useCms();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("latest");
   const [bookmarks, setBookmarks] = useState<string[]>([]);
@@ -69,7 +69,8 @@ function CategoryDetailPageContent() {
     localStorage.setItem("yuvakshar_bookmarks", JSON.stringify(updated));
   };
 
-  const categoryName = categorySlugMap[slug] || slug;
+  const cat = categories.find(c => c.slug === slug || c.name === slug);
+  const categoryName = cat ? cat.name : (categorySlugMap[slug] || slug);
 
   useEffect(() => {
     if (categoryName) {
@@ -200,7 +201,7 @@ function CategoryDetailPageContent() {
                       </span>
                     </div>
 
-                    <Link href={`/editorial?id=${art.id}`} className="block group">
+                    <Link href={`/articles/${art.slug || art.id}`} className="block group">
                       <h3 className="font-serif text-lg font-bold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2 font-hindi">
                         {stripMarkdown(art.title)}
                       </h3>
@@ -232,7 +233,7 @@ function CategoryDetailPageContent() {
                       )}
                     </button>
                     <Link 
-                      href={`/editorial?id=${art.id}`}
+                      href={`/articles/${art.slug || art.id}`}
                       className="p-1.5 rounded bg-primary text-white hover:bg-primary/90 transition-all flex items-center justify-center cursor-pointer"
                     >
                       <ArrowRight className="w-3.5 h-3.5" />

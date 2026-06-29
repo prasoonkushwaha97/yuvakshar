@@ -19,7 +19,7 @@ export default function Opinion() {
   if (opinionArticles.length === 0) return null;
 
   return (
-    <div className="w-full py-4">
+    <div className="w-full py-0.5">
       {/* Title */}
       <SectionTitle 
         title={locale === "hi" ? "संपादकीय एवं विचार" : "Opinions & Editorial"} 

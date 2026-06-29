@@ -25,7 +25,7 @@ export default function Newsletter() {
   };
 
   return (
-    <div className="w-full py-4">
+    <div className="w-full py-0.5">
       <div className="bg-[#111] dark:bg-[#1A1A1A] text-white p-8 rounded-lg relative overflow-hidden shadow-lg border border-gray-850 group">
         {/* Absolute Mail icon decor */}
         <div className="absolute -right-8 -bottom-8 opacity-[0.03] group-hover:scale-105 transition-transform duration-700 pointer-events-none">

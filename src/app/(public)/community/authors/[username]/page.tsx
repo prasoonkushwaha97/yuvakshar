@@ -343,7 +343,7 @@ export default function AuthorPortfolioPage() {
     if (selectedItemToAdd.startsWith("art-")) {
       const art = articles.find(a => a.id === selectedItemToAdd);
       if (art) {
-        newItem = { id: art.id, title: art.title, type: "article", url: `/editorial?id=${art.id}` };
+        newItem = { id: art.id, title: art.title, type: "article", url: `/articles/${art.slug || art.id}` };
       }
     } else {
       const post = authorPosts.find(p => p.id === selectedItemToAdd);
@@ -1022,7 +1022,7 @@ export default function AuthorPortfolioPage() {
                   </div>
                   
                   {showcase.featuredArticle ? (
-                    <Link href={`/editorial?id=${showcase.featuredArticle.id}`} className="block text-[10px] text-primary hover:underline font-bold font-hindi pt-3 mt-3 border-t border-slate-100 dark:border-slate-800/60">
+                    <Link href={`/articles/${showcase.featuredArticle.slug || showcase.featuredArticle.id}`} className="block text-[10px] text-primary hover:underline font-bold font-hindi pt-3 mt-3 border-t border-slate-100 dark:border-slate-800/60">
                       आलेख पढ़ें →
                     </Link>
                   ) : (

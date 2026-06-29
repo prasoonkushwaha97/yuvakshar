@@ -47,6 +47,7 @@ export default function ArticleCardLarge({ article }: ArticleCardLargeProps) {
 
         <MetaInfo
           articleId={article.id}
+          slug={article.slug}
           author={article.author || "युवाक्षर डेस्क"}
           date={article.date || ""}
           readTime={article.readTime}

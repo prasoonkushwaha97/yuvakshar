@@ -86,10 +86,9 @@ export default function AppHeader() {
     <>
       {/* 1. Header Layout Frame */}
       <header 
-        className="fixed top-0 left-0 right-0 z-40 bg-[#FDFCF7]/95 dark:bg-[#0B0F19]/95 border-b border-gray-150 dark:border-gray-850 backdrop-blur transition-transform duration-300"
+        className="fixed top-0 left-0 right-0 z-40 bg-[#FDFCF7]/95 dark:bg-[#0B0F19]/95 border-b border-gray-150 dark:border-gray-850 backdrop-blur transition-transform duration-300 h-[52px] lg:h-[72px]"
         style={{
-          transform: visible ? "translateY(0)" : "translateY(-100%)",
-          height: designTokens.spacing.headerHeightDesktop
+          transform: visible ? "translateY(0)" : "translateY(-100%)"
         }}
       >
         <div className="max-w-[1400px] mx-auto h-full px-4 md:px-8 flex items-center justify-between">
@@ -169,8 +168,7 @@ export default function AppHeader() {
 
       {/* Spacer block under fixed header */}
       <div 
-        className="w-full shrink-0" 
-        style={{ height: designTokens.spacing.headerHeightDesktop }} 
+        className="w-full shrink-0 h-[52px] lg:h-[72px]" 
       />
 
       {/* 2. Unified Navigation Drawer */}

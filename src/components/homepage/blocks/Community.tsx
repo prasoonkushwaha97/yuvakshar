@@ -17,7 +17,7 @@ export default function Community() {
   const { locale } = useLanguage();
 
   return (
-    <div className="w-full py-4">
+    <div className="w-full py-0.5">
       {/* Title */}
       <SectionTitle title={locale === "hi" ? "युवाक्षर चौपाल" : "Yuvakshar Chaupal"} link="/community" />
 
