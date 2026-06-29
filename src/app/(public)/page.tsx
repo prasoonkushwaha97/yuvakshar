@@ -18,7 +18,7 @@ import {
 
 // Layout
 import AppHeader from "@/components/layout/AppHeader";
-import Sidebar from "@/components/homepage/layout/Sidebar";
+import HomepageSidebar from "@/components/homepage/layout/HomepageSidebar";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
 
 // Blocks
@@ -93,18 +93,38 @@ export default function Home() {
   if (!isMounted || previewLoading) {
     return (
       <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] pb-16 font-sans">
-        <div className="w-full h-24 bg-gray-105 dark:bg-gray-900 border-b border-gray-150 animate-pulse" />
-        <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 space-y-8">
-          <HeroSkeleton />
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 space-y-8">
-              <CategorySkeleton />
-              <OpinionSkeleton />
+        <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-4 lg:pt-6 pb-10 lg:pb-14">
+          
+          {/* Main 70/30 Hero Skeleton Deck */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[460px] lg:h-[calc(100vh-160px)] max-h-[620px] w-full">
+            
+            {/* Left Main Hero Slide Placeholder */}
+            <div className="lg:col-span-8 bg-gray-100 dark:bg-[#0E1322] rounded-3xl animate-pulse flex flex-col justify-end p-6 md:p-8 lg:p-10">
+              <div className="w-24 h-4 bg-gray-200 dark:bg-gray-800 rounded-full mb-3" />
+              <div className="w-full lg:w-3/4 h-8 bg-gray-200 dark:bg-gray-800 rounded-full mb-4" />
+              <div className="w-1/2 h-4 bg-gray-200 dark:bg-gray-800 rounded-full mb-6" />
+              <div className="flex gap-4">
+                <div className="w-32 h-10 bg-gray-200 dark:bg-gray-800 rounded-full" />
+                <div className="w-32 h-10 bg-gray-200 dark:bg-gray-800 rounded-full" />
+              </div>
             </div>
-            <div className="lg:col-span-4">
-              <SidebarSkeleton />
+
+            {/* Right Stacked Editorial Cards Placeholders */}
+            <div className="lg:col-span-4 flex flex-col justify-between gap-4 h-full">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex-1 bg-gray-100 dark:bg-[#0E1322] rounded-3xl animate-pulse p-4 flex items-center gap-4">
+                  <div className="w-20 h-20 bg-gray-200 dark:bg-gray-800 rounded-2xl shrink-0" />
+                  <div className="flex-grow">
+                    <div className="w-16 h-3 bg-gray-200 dark:bg-gray-800 rounded-full mb-2" />
+                    <div className="w-full h-4 bg-gray-200 dark:bg-gray-800 rounded-full mb-2" />
+                    <div className="w-3/4 h-4 bg-gray-200 dark:bg-gray-800 rounded-full" />
+                  </div>
+                </div>
+              ))}
             </div>
+
           </div>
+
         </div>
       </div>
     );
@@ -186,114 +206,113 @@ export default function Home() {
       {/* 2. Dynamic or Fallback static layout content */}
       {hasDbConfig ? (
         <div className="w-full animate-fade-in">
-          {activeDbSections.map((sec: any) => {
-            const type = (sec.section_type || sec.type || "").toLowerCase().replace(/_/, "").trim();
-            const isFullWidth = ["hero", "topstories", "editorialpicks", "latestnews", "breakingticker", "trending", "videos", "magazine", "newsletter"].includes(type);
-
-            if (isFullWidth) {
-              return (
-                <SectionContainer key={sec.id} bgClassName={type === "videos" ? "bg-[#111] border-y-0" : ""}>
-                  <SectionErrorBoundary>
-                    {renderDbSection(sec)}
-                  </SectionErrorBoundary>
-                </SectionContainer>
-              );
-            }
-
-            return (
-              <SectionContainer key={sec.id}>
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                  <div className="lg:col-span-8">
-                    <SectionErrorBoundary>
-                      {renderDbSection(sec)}
-                    </SectionErrorBoundary>
-                  </div>
-                  <div className="lg:col-span-4 border-l-0 lg:border-l border-gray-150 dark:border-gray-850 pl-0 lg:pl-6">
-                    <SectionErrorBoundary>
-                      <Sidebar />
-                    </SectionErrorBoundary>
-                  </div>
-                </div>
+          {/* 1. Render Hero full-width at the top */}
+          {activeDbSections
+            .filter((sec: any) => (sec.section_type || sec.type || "").toLowerCase().replace(/_/, "").trim() === "hero")
+            .map((sec: any) => (
+              <SectionContainer key={sec.id} noTopPadding={true}>
+                <SectionErrorBoundary>
+                  {renderDbSection(sec)}
+                </SectionErrorBoundary>
               </SectionContainer>
-            );
-          })}
+            ))}
+
+          {/* 2. Render all subsequent non-hero sections in a single unified split column layout */}
+          {activeDbSections.filter((sec: any) => (sec.section_type || sec.type || "").toLowerCase().replace(/_/, "").trim() !== "hero").length > 0 && (
+            <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                {/* Left content stream */}
+                <div className="lg:col-span-8 space-y-12 lg:space-y-16">
+                  {activeDbSections
+                    .filter((sec: any) => (sec.section_type || sec.type || "").toLowerCase().replace(/_/, "").trim() !== "hero")
+                    .map((sec: any) => (
+                      <div key={sec.id} className="w-full">
+                        <SectionErrorBoundary>
+                          {renderDbSection(sec)}
+                        </SectionErrorBoundary>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Right single sticky Sidebar */}
+                <div className="lg:col-span-4 border-l-0 lg:border-l border-gray-150/80 dark:border-gray-850/80 pl-0 lg:pl-6 sticky top-20 self-start">
+                  <SectionErrorBoundary>
+                    <HomepageSidebar />
+                  </SectionErrorBoundary>
+                </div>
+
+              </div>
+            </SectionContainer>
+          )}
         </div>
       ) : (
         // Standard Premium Editorial default structure (Fallback when database homepage_layouts is empty)
         <>
           {/* Main Newspaper Hero section */}
-          <SectionContainer>
+          <SectionContainer noTopPadding={true}>
             <SectionErrorBoundary>
               <Hero />
             </SectionErrorBoundary>
           </SectionContainer>
 
-          {/* Top Stories */}
+          {/* Unified Two-Column continuous layout for all content sections */}
           <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-            <SectionErrorBoundary>
-              <TopStories />
-            </SectionErrorBoundary>
-          </SectionContainer>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              {/* LEFT COLUMN: Main content feeds */}
+              <div className="lg:col-span-8 space-y-12 lg:space-y-16">
+                {/* Top Stories */}
+                <SectionErrorBoundary>
+                  <TopStories />
+                </SectionErrorBoundary>
 
-          {/* Latest News Feed */}
-          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-            <SectionErrorBoundary>
-              <LatestNews />
-            </SectionErrorBoundary>
-          </SectionContainer>
+                {/* Latest News Feed */}
+                <SectionErrorBoundary>
+                  <LatestNews />
+                </SectionErrorBoundary>
 
-          {/* Editorial Picks */}
-          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-            <SectionErrorBoundary>
-              <EditorialPicks />
-            </SectionErrorBoundary>
-          </SectionContainer>
+                {/* Editorial Picks */}
+                <SectionErrorBoundary>
+                  <EditorialPicks />
+                </SectionErrorBoundary>
 
-          {/* Opinion Column */}
-          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-            <SectionErrorBoundary>
-              <Opinion />
-            </SectionErrorBoundary>
-          </SectionContainer>
+                {/* Categories block */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <SectionErrorBoundary>
+                    <CategoryBlock categoryName="राजनीति" englishName="politics" />
+                  </SectionErrorBoundary>
+                  <SectionErrorBoundary>
+                    <CategoryBlock categoryName="शिक्षा" englishName="education" />
+                  </SectionErrorBoundary>
+                </div>
 
-          {/* Magazine Spotlight */}
-          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-            <SectionErrorBoundary>
-              <Magazine />
-            </SectionErrorBoundary>
-          </SectionContainer>
+                {/* Magazine Spotlight */}
+                <SectionErrorBoundary>
+                  <Magazine />
+                </SectionErrorBoundary>
 
-          {/* Videos Block */}
-          <SectionContainer id="videos-section" bgClassName="bg-[#111] border-y-0 text-white">
-            <SectionErrorBoundary>
-              <Videos />
-            </SectionErrorBoundary>
-          </SectionContainer>
+                {/* Videos Block */}
+                <div id="videos-section" className="w-full bg-[#111] dark:bg-[#1A1A1A] p-6 md:p-8 rounded-3xl border border-gray-850 text-white">
+                  <SectionErrorBoundary>
+                    <Videos />
+                  </SectionErrorBoundary>
+                </div>
 
-          {/* Categories */}
-          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <SectionErrorBoundary>
-                <CategoryBlock categoryName="राजनीति" englishName="politics" />
-              </SectionErrorBoundary>
-              <SectionErrorBoundary>
-                <CategoryBlock categoryName="शिक्षा" englishName="education" />
-              </SectionErrorBoundary>
+                {/* Opinion Column */}
+                <SectionErrorBoundary>
+                  <Opinion />
+                </SectionErrorBoundary>
+              </div>
+
+              {/* RIGHT COLUMN: Sidebar (Rendered exactly once) */}
+              <div className="lg:col-span-4 border-l-0 lg:border-l border-gray-150/80 dark:border-gray-850/80 pl-0 lg:pl-6 sticky top-20 self-start">
+                <SectionErrorBoundary>
+                  <HomepageSidebar />
+                </SectionErrorBoundary>
+              </div>
+
             </div>
-          </SectionContainer>
-
-          {/* Authors Block */}
-          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-            <SectionErrorBoundary>
-              <Authors />
-            </SectionErrorBoundary>
-          </SectionContainer>
-
-          {/* Newsletter Box */}
-          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-            <SectionErrorBoundary>
-              <Newsletter />
-            </SectionErrorBoundary>
           </SectionContainer>
         </>
       )}
