@@ -419,10 +419,10 @@ export default function Home() {
 
             </div>
           </SectionContainer>
-          <PartnerSection />
         </>
       )}
 
+      <PartnerSection />
     </div>
   );
 }
