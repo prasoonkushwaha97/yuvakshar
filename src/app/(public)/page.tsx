@@ -86,7 +86,7 @@ export default function Home() {
 
   if (!isMounted || previewLoading) {
     return (
-      <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] pb-16 font-sans">
+      <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] pb-4 font-sans">
         <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-4 lg:pt-6 pb-10 lg:pb-14">
           
           {/* Main 70/30 Hero Skeleton Deck */}
@@ -274,7 +274,7 @@ export default function Home() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] text-[#111] dark:text-[#F5F5F5] pb-16 font-sans overflow-x-hidden transition-colors duration-300">
+    <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] text-[#111] dark:text-[#F5F5F5] pb-2 font-sans overflow-x-hidden transition-colors duration-300">
       
       {/* Unified Homepage Layout Pipeline (Strict Ordering) */}
       

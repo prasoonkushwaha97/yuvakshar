@@ -217,11 +217,11 @@ export default function UserProfile() {
         </Link>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 relative -mt-20 sm:-mt-24 z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="max-w-5xl mx-auto px-4 relative -mt-20 sm:-mt-24 z-10">
+        <div className="flex flex-col gap-8">
           
-          {/* LEFT COLUMN: Details Info */}
-          <div className="lg:col-span-8 space-y-6">
+          {/* MAIN COLUMN: Details Info */}
+          <div className="w-full space-y-6">
             <GlassCard 
               glow={isLeadership ? "gold" : "none"} 
               className={`p-6 sm:p-8 rounded-3xl border ${
@@ -493,6 +493,80 @@ export default function UserProfile() {
                       <p className="text-[10px] text-slate-400">इस उपयोगकर्ता ने अभी तक कोई चौपाल चर्चा शुरू नहीं की है।</p>
                     </div>
                   )}
+
+
+                  {/* --- Moved from Right Sidebar --- */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 border-t border-slate-100 dark:border-slate-800/80 pt-8">
+                    {/* Analytics Statistics */}
+                    <GlassCard glow="none" className="p-5 space-y-4 font-serif">
+                    <h3 className="font-bold text-slate-800 dark:text-white text-xs border-l-2 border-primary pl-2 uppercase tracking-wide">गतिविधि एवं प्रभाव</h3>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-xl p-3.5 text-center">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">कुल आलेख</span>
+                    <span className="text-xl font-bold font-sans text-slate-800 dark:text-white mt-1 block">{userArticles.length}</span>
+                    </div>
+                    
+                    <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-xl p-3.5 text-center">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">कुल पाठक व्यूज</span>
+                    <span className="text-xl font-bold font-sans text-slate-800 dark:text-white mt-1 block">{totalArticleViews}</span>
+                    </div>
+                    
+                    <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-xl p-3.5 text-center">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">फ़ॉलोवर्स</span>
+                    <span className="text-xl font-bold font-sans text-slate-800 dark:text-white mt-1 block">{user.followers?.length || 0}</span>
+                    </div>
+                    
+                    <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-xl p-3.5 text-center">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">संवाद और लाइक</span>
+                    <span className="text-xl font-bold font-sans text-slate-800 dark:text-white mt-1 block">{totalArticleLikes}</span>
+                    </div>
+                    </div>
+                    </GlassCard>
+                    
+                    {/* Achievements Section */}
+                    {user.achievements && user.achievements.length > 0 && (
+                    <GlassCard glow="none" className="p-5 space-y-4 font-serif">
+                    <h3 className="font-bold text-slate-800 dark:text-white text-xs border-l-2 border-primary pl-2 uppercase tracking-wide">पुरस्कार एवं उपलब्धियाँ</h3>
+                    <div className="space-y-3.5">
+                    {user.achievements?.map((ach) => (
+                    <div key={ach.id} className="flex gap-3 items-start border-b border-slate-100 dark:border-slate-850/80 pb-3 last:border-b-0 last:pb-0">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
+                    <Award className="w-4.5 h-4.5" />
+                    </div>
+                    <div className="min-w-0">
+                    <div className="flex justify-between items-baseline gap-2">
+                    <p className="font-bold text-slate-800 dark:text-slate-200 text-xs truncate leading-snug">{ach.title}</p>
+                    {ach.year && <span className="text-[9px] text-slate-400 font-sans font-bold">{ach.year}</span>}
+                    </div>
+                    {ach.description && <p className="text-[10px] text-slate-450 mt-0.5 leading-relaxed">{ach.description}</p>}
+                    </div>
+                    </div>
+                    ))}
+                    </div>
+                    </GlassCard>
+                    )}
+                    
+                    {/* Chronological Milestone Timeline */}
+                    {user.timeline && user.timeline.length > 0 && (
+                    <GlassCard glow="none" className="p-5 space-y-4 font-serif">
+                    <h3 className="font-bold text-slate-800 dark:text-white text-xs border-l-2 border-primary pl-2 uppercase tracking-wide">विकास यात्रा (Milestones)</h3>
+                    
+                    <div className="relative pl-4 border-l border-slate-200 dark:border-slate-800 space-y-6 py-1 ml-1.5">
+                    {user.timeline?.map((event) => (
+                    <div key={event.id} className="relative group">
+                    <span className="absolute -left-[20.5px] top-1.5 w-3 h-3 rounded-full bg-white dark:bg-[#0A0F1D] border-2 border-primary group-hover:scale-120 transition-transform duration-200" />
+                    <div className="space-y-0.5">
+                    <span className="text-[9px] font-sans font-bold text-primary">{event.date}</span>
+                    <h4 className="font-bold text-slate-800 dark:text-slate-200 text-xs leading-snug">{event.title}</h4>
+                    <p className="text-[10px] text-slate-450 leading-relaxed mt-0.5">{event.description}</p>
+                    </div>
+                    </div>
+                    ))}
+                    </div>
+                    </GlassCard>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -577,80 +651,6 @@ export default function UserProfile() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Statistics & Timeline milestones */}
-          <div className="lg:col-span-4 space-y-6">
-            
-            {/* Analytics Statistics */}
-            <GlassCard glow="none" className="p-5 space-y-4 font-serif">
-              <h3 className="font-bold text-slate-800 dark:text-white text-xs border-l-2 border-primary pl-2 uppercase tracking-wide">गतिविधि एवं प्रभाव</h3>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-xl p-3.5 text-center">
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block">कुल आलेख</span>
-                  <span className="text-xl font-bold font-sans text-slate-800 dark:text-white mt-1 block">{userArticles.length}</span>
-                </div>
-
-                <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-xl p-3.5 text-center">
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block">कुल पाठक व्यूज</span>
-                  <span className="text-xl font-bold font-sans text-slate-800 dark:text-white mt-1 block">{totalArticleViews}</span>
-                </div>
-
-                <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-xl p-3.5 text-center">
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block">फ़ॉलोवर्स</span>
-                  <span className="text-xl font-bold font-sans text-slate-800 dark:text-white mt-1 block">{user.followers?.length || 0}</span>
-                </div>
-
-                <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-xl p-3.5 text-center">
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block">संवाद और लाइक</span>
-                  <span className="text-xl font-bold font-sans text-slate-800 dark:text-white mt-1 block">{totalArticleLikes}</span>
-                </div>
-              </div>
-            </GlassCard>
-
-            {/* Achievements Section */}
-            {user.achievements && user.achievements.length > 0 && (
-              <GlassCard glow="none" className="p-5 space-y-4 font-serif">
-                <h3 className="font-bold text-slate-800 dark:text-white text-xs border-l-2 border-primary pl-2 uppercase tracking-wide">पुरस्कार एवं उपलब्धियाँ</h3>
-                <div className="space-y-3.5">
-                  {user.achievements?.map((ach) => (
-                    <div key={ach.id} className="flex gap-3 items-start border-b border-slate-100 dark:border-slate-850/80 pb-3 last:border-b-0 last:pb-0">
-                      <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
-                        <Award className="w-4.5 h-4.5" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex justify-between items-baseline gap-2">
-                          <p className="font-bold text-slate-800 dark:text-slate-200 text-xs truncate leading-snug">{ach.title}</p>
-                          {ach.year && <span className="text-[9px] text-slate-400 font-sans font-bold">{ach.year}</span>}
-                        </div>
-                        {ach.description && <p className="text-[10px] text-slate-450 mt-0.5 leading-relaxed">{ach.description}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </GlassCard>
-            )}
-
-            {/* Chronological Milestone Timeline */}
-            {user.timeline && user.timeline.length > 0 && (
-              <GlassCard glow="none" className="p-5 space-y-4 font-serif">
-                <h3 className="font-bold text-slate-800 dark:text-white text-xs border-l-2 border-primary pl-2 uppercase tracking-wide">विकास यात्रा (Milestones)</h3>
-                
-                <div className="relative pl-4 border-l border-slate-200 dark:border-slate-800 space-y-6 py-1 ml-1.5">
-                  {user.timeline?.map((event) => (
-                    <div key={event.id} className="relative group">
-                      <span className="absolute -left-[20.5px] top-1.5 w-3 h-3 rounded-full bg-white dark:bg-[#0A0F1D] border-2 border-primary group-hover:scale-120 transition-transform duration-200" />
-                      <div className="space-y-0.5">
-                        <span className="text-[9px] font-sans font-bold text-primary">{event.date}</span>
-                        <h4 className="font-bold text-slate-800 dark:text-slate-200 text-xs leading-snug">{event.title}</h4>
-                        <p className="text-[10px] text-slate-450 leading-relaxed mt-0.5">{event.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </GlassCard>
-            )}
-
-          </div>
         </div>
       </div>
 

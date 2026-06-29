@@ -123,10 +123,17 @@ export default function Hero() {
             </span>
           </div>
 
+          {/* Full Card Click Overlay */}
+          <Link 
+            href={`/articles/${currentArticle.slug || currentArticle.id}`}
+            className="absolute inset-0 z-10"
+            aria-label={stripMarkdown(currentArticle.title || currentArticle.title_hi || "")}
+          />
+
           {/* Bottom Left Content Area */}
-          <div className="relative z-20 p-6 md:p-8 lg:p-10 text-white w-full max-w-3xl">
+          <div className="relative z-20 p-6 md:p-8 lg:p-10 text-white w-full max-w-3xl pointer-events-none">
             {/* Slide Metadata */}
-            <div className="flex flex-wrap items-center gap-3 text-[10px] font-sans font-bold text-gray-300 uppercase tracking-widest mb-3">
+            <div className="flex flex-wrap items-center gap-3 text-[10.5px] font-sans font-bold text-gray-300 uppercase tracking-widest mb-4">
               <span className="flex items-center space-x-1">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>
@@ -160,46 +167,25 @@ export default function Hero() {
             </div>
 
             {/* Slider Title */}
-            <Link 
-              href={`/articles/${currentArticle.slug || currentArticle.id}`} 
-              className="block group/title mb-4"
-            >
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif font-black leading-tight text-white group-hover/title:text-[#f97316] transition-colors duration-300 tracking-tight">
-                {stripMarkdown(currentArticle.title || currentArticle.title_hi || "")}
-              </h1>
-            </Link>
+            <h1 className="text-3xl md:text-4xl lg:text-[42px] font-serif font-black leading-tight text-white transition-colors duration-300 tracking-tight mb-5 drop-shadow-md">
+              {stripMarkdown(currentArticle.title || currentArticle.title_hi || "")}
+            </h1>
 
             {/* Slider Summary */}
-            <p className="text-gray-300 text-xs md:text-sm leading-relaxed mb-6 font-serif line-clamp-2 opacity-90 max-w-2xl">
+            <p className="text-gray-200 text-sm md:text-base leading-relaxed font-serif line-clamp-3 opacity-95 max-w-2xl drop-shadow-sm">
               {stripMarkdown(currentArticle.summary || currentArticle.summary_hi || currentArticle.content || "")}
             </p>
 
-            {/* Action CTAs */}
-            <div className="flex flex-wrap items-center gap-4">
-              <Link 
-                href={`/articles/${currentArticle.slug || currentArticle.id}`}
-                className="inline-flex items-center space-x-2 px-5 py-2.5 bg-white hover:bg-[#f97316] text-gray-900 hover:text-white font-sans text-xs font-black rounded-full transition-all duration-300 shadow-md transform hover:-translate-y-0.5 active:scale-95"
-              >
-                <span>पूरा लेख पढ़ें</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-
-              <button 
-                onClick={handleVideoScroll}
-                className="inline-flex items-center space-x-2 px-5 py-2.5 backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/10 text-white font-sans text-xs font-bold rounded-full transition-all duration-300 shadow-md active:scale-95"
-              >
-                <Play className="w-3.5 h-3.5 fill-white" />
-                <span>वीडियो देखें</span>
-              </button>
-            </div>
-
             {/* Slider Indicators */}
             {sliderArticles.length > 1 && (
-              <div className="flex items-center space-x-2.5 mt-8 border-t border-white/10 pt-4">
+              <div className="flex items-center space-x-2.5 mt-10 border-t border-white/15 pt-5 pointer-events-auto">
                 {sliderArticles.map((_, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setActiveIndex(idx)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setActiveIndex(idx);
+                    }}
                     className={`h-1.5 rounded-full transition-all duration-350 ${
                       idx === activeIndex 
                         ? "w-8 bg-[#f97316] shadow-[0_0_8px_#f97316]" 
