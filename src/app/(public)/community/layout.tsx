@@ -273,9 +273,9 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* ─── MAIN 3-COLUMN ARCHITECTURE ─── */}
+      {/* ─── MAIN 2-COLUMN ARCHITECTURE ─── */}
       <div className="max-w-[1440px] mx-auto px-0 lg:px-6 py-0 lg:py-6 w-full flex justify-center">
-        <div className={`w-full flex ${isChatOpen ? "max-w-full" : "max-w-[1200px]"} gap-6`}>
+        <div className={`w-full flex ${isChatOpen ? "max-w-full" : "max-w-[1100px]"} gap-6`}>
           
           {/* ─── LEFT SIDEBAR (Desktop Fixed) ─── */}
           {!isChatOpen && (
@@ -329,61 +329,10 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
           )}
 
           {/* ─── CENTER CONTENT AREA (Dynamic width) ─── */}
-          <main className="flex-1 w-full min-w-0 relative pb-20 lg:pb-0">
+          <main className="flex-1 w-full min-w-0 relative pb-20 lg:pb-0 mx-auto max-w-[800px]">
             {children}
           </main>
 
-          {/* ─── RIGHT CONTEXT PANEL (Desktop Extra) ─── */}
-          {!isChatOpen && (
-            <aside className="hidden xl:flex flex-col w-[320px] shrink-0 sticky top-[88px] h-[calc(100vh-88px)] pb-6 overflow-y-auto scrollbar-none space-y-6">
-              
-              <div className="bg-slate-50 dark:bg-[#111827] rounded-2xl border border-slate-200/50 dark:border-slate-800/40 p-4">
-                <h3 className="text-lg font-black font-hindi text-slate-800 dark:text-white mb-4">ट्रेंडिंग विषय</h3>
-                <div className="space-y-4">
-                  {[
-                    { topic: "हिंदी साहित्य", posts: "4.2k" },
-                    { topic: "लेखक की चुनौतियां", posts: "2.1k" },
-                    { topic: "डिजिटल प्रकाशन", posts: "1.5k" },
-                    { topic: "आधुनिक कविता", posts: "984" },
-                  ]?.map((t, idx) => (
-                    <div key={idx} className="cursor-pointer hover:bg-slate-100/50 dark:hover:bg-slate-800/30 p-2 -mx-2 rounded-lg transition-colors">
-                      <div className="text-[11px] text-slate-500 font-hindi">#Trending {idx+1}</div>
-                      <div className="font-bold text-sm text-slate-800 dark:text-slate-200 font-hindi">{t.topic}</div>
-                      <div className="text-[11px] text-slate-500 font-sans mt-0.5">{t.posts} posts</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-slate-50 dark:bg-[#111827] rounded-2xl border border-slate-200/50 dark:border-slate-800/40 p-4">
-                <h3 className="text-lg font-black font-hindi text-slate-800 dark:text-white mb-4">सुझाए गए सदस्य</h3>
-                <div className="space-y-4">
-                  {[
-                    { id: "ramesh-chandra", name: "डॉ. रमेश चंद्र", role: "प्रख्यात साहित्यकार" },
-                    { id: "kavita-tiwari", name: "कविता तिवारी", role: "युवा कवयित्री" },
-                    { id: "sumit-sharma", name: "सुमित शर्मा", role: "समीक्षक" },
-                  ]?.map((author, idx) => (
-                    <Link key={idx} href={`/community/u/${author.id}`} className="flex items-center gap-3 cursor-pointer hover:bg-slate-100/50 dark:hover:bg-slate-800/30 p-2 -mx-2 rounded-lg transition-colors">
-                      <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0 flex items-center justify-center font-bold text-primary">
-                        {author.name[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-bold text-sm text-slate-800 dark:text-slate-200 font-hindi truncate hover:text-primary transition-colors">{author.name}</div>
-                        <div className="text-[11px] text-slate-500 font-hindi truncate">{author.role}</div>
-                      </div>
-                      <button 
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); alert("फ़ॉलो किया गया!"); }}
-                        className="px-3 py-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-xs font-bold font-hindi hover:opacity-90"
-                      >
-                        Follow
-                      </button>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-            </aside>
-          )}
         </div>
       </div>
 
