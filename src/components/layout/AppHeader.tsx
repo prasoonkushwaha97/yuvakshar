@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, Search, Sun, Moon, User, LogOut, ChevronDown } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
@@ -110,10 +111,16 @@ export default function AppHeader() {
               <Menu className="w-5 h-5" strokeWidth={2.2} />
             </button>
 
-            <Link href="/" className="flex items-center space-x-1.5">
-              <span className="font-serif font-black text-xl md:text-2xl uppercase tracking-tighter text-[#f97316]">
-                युवाक्षर
-              </span>
+            <Link href="/" className="flex items-center shrink-0 hover:opacity-90 transition-opacity duration-200 cursor-pointer">
+              <Image
+                src="/yuvakshar_logo_official.png"
+                alt="युवाक्षर"
+                width={240}
+                height={60}
+                className="h-[42px] md:h-[48px] lg:h-[58px] w-auto object-contain"
+                priority
+                sizes="(max-width: 768px) 160px, (max-width: 1024px) 200px, 240px"
+              />
             </Link>
           </div>
 
