@@ -34,7 +34,7 @@ export async function createAnnouncement(
   if (!isAuthorized) throw new Error("Only Founders can create platform announcements.");
   if (!isAuthorized) throw new Error("Only Founders can create platform announcements.");
 
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (!authData?.user) throw new Error("Unauthenticated");
 
   const { data, error } = await supabase

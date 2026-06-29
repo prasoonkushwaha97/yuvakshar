@@ -28,7 +28,7 @@ export type Permission = {
 export const getCurrentUser = cache(async () => {
   try {
     const supabase = await createClient();
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { data: { user }, error } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
     if (error || !user) return null;
     return user;
   } catch (error) {

@@ -6,7 +6,7 @@ import { hasPermission } from "@/lib/rbacService";
 import { revalidatePath } from "next/cache";
 
 export async function createMagazineIssue(data: { title: string, slug: string, volume: number, issue_number: number }) {
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   const userId = authData?.user?.id;
   
   if (!await hasPermission("manage_system")) throw new Error("Forbidden");
@@ -63,7 +63,7 @@ export async function addSectionToIssue(issue_id: string, title: string) {
 export async function addArticleToIssue(issue_id: string, article_id: string, section_id?: string) {
   if (!await hasPermission("manage_system")) throw new Error("Forbidden");
   
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
 
   const { error } = await supabase.from('magazine_issue_articles').insert({
     issue_id,

@@ -89,7 +89,7 @@ export async function createCategory(data: Partial<Category>) {
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   const userId = authData?.user?.id;
 
   if (!userId) throw new Error("Unauthorized");
@@ -129,7 +129,7 @@ export async function updateCategory(id: string, data: Partial<Category>) {
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   const userId = authData?.user?.id;
 
   if (!userId) throw new Error("Unauthorized");
@@ -165,7 +165,7 @@ export async function deleteCategory(id: string) {
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (!authData?.user) throw new Error("Unauthorized");
 
   // Check if it has articles
@@ -202,7 +202,7 @@ export async function deleteCategory(id: string) {
 
 export async function mergeCategories(sourceId: string, targetId: string) {
   const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (!authData?.user) throw new Error("Unauthorized");
 
   if (sourceId === targetId) throw new Error("Cannot merge a category into itself.");
@@ -230,7 +230,7 @@ export async function mergeCategories(sourceId: string, targetId: string) {
 
 export async function reorderCategories(updates: { id: string; sort_order: number }[]) {
   const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (!authData?.user) throw new Error("Unauthorized");
 
   // Update sequentially for now (upsert can be complex with partial data)

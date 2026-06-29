@@ -1,271 +1,316 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useCms } from "@/store/CmsContext";
-import LiveNewsTicker from "@/components/yuvakshar/LiveNewsTicker";
-import { stripMarkdown } from "@/lib/markdown";
+import { useLanguage } from "@/store/LanguageContext";
+import { getSectionsForLayout } from "@/lib/actions/homepageCmsActions";
+
+// Skeletons
+import { 
+  HeroSkeleton, 
+  CategorySkeleton, 
+  VideoSkeleton, 
+  MagazineSkeleton, 
+  OpinionSkeleton, 
+  SidebarSkeleton 
+} from "@/components/homepage/shared/Skeleton";
+
+// Layout
+import NewspaperHeader from "@/components/homepage/layout/NewspaperHeader";
+import NewspaperFooter from "@/components/homepage/layout/NewspaperFooter";
+import Sidebar from "@/components/homepage/layout/Sidebar";
+import SectionContainer from "@/components/homepage/layout/SectionContainer";
+
+// Blocks
+import Hero from "@/components/homepage/blocks/Hero";
+import BreakingTicker from "@/components/homepage/blocks/BreakingTicker";
+import Trending from "@/components/homepage/blocks/Trending";
+import CategoryBlock from "@/components/homepage/blocks/CategoryBlock";
+import Opinion from "@/components/homepage/blocks/Opinion";
+import Videos from "@/components/homepage/blocks/Videos";
+import Magazine from "@/components/homepage/blocks/Magazine";
+import Authors from "@/components/homepage/blocks/Authors";
+import Community from "@/components/homepage/blocks/Community";
+import Newsletter from "@/components/homepage/blocks/Newsletter";
+import Popular from "@/components/homepage/blocks/Popular";
+
+// Error Boundary for Individual Layout Sections
+class SectionErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    // Gracefully handle section render errors in production
+  }
+
+  render() {
+    if (this.state.hasError) return null; // Gracefully hide only the failed section
+    return this.props.children;
+  }
+}
 
 export default function Home() {
-  const { articles, magazines, ads, homepageSections } = useCms();
+  const { locale } = useLanguage();
+  const { articles, homepageSections } = useCms();
+  const searchParams = useSearchParams();
 
-  const publishedArticles = (articles || []).filter(
-    (a: any) => a.status === "Published" || a.status === "Approved" || !a.status
-  );
+  // Dynamic Preview states
+  const [isMounted, setIsMounted] = useState(false);
+  const [previewSections, setPreviewSections] = useState<any[] | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
-  const renderFallback = () => {
-    const featured = publishedArticles.slice(0, 5);
-    const latest = publishedArticles.slice(5, 11);
-    const categoriesToMap = ["समाचार", "विश्लेषण", "विशेष लेख"];
-    const latestMag = magazines?.[0];
+  useEffect(() => {
+    setIsMounted(true);
+    const isPreview = searchParams.get("preview") === "true";
+    const layoutId = searchParams.get("layout_id");
+    
+    if (isPreview && layoutId) {
+      loadPreviewLayout(layoutId);
+    }
+  }, [searchParams]);
 
-    return (
-      <div className="w-full flex flex-col gap-12 pt-8">
-        {/* SECTION A: Featured Articles */}
-        {featured.length > 0 && (
-          <section className="max-w-7xl mx-auto px-4 md:px-8 w-full">
-            <h2 className="text-xl font-bold font-serif mb-4 border-b-2 border-primary inline-block pb-1">मुख्य समाचार</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {featured.slice(0, 1)?.map((article: any) => (
-                <div key={article.id} className="lg:col-span-8 bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm relative group cursor-pointer border border-slate-200 dark:border-slate-800">
-                  <Link href={`/editorial?id=${article.id}`}>
-                    <div className="aspect-video w-full overflow-hidden">
-                      <img src={article.coverImage || "/placeholder-news.jpg"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={stripMarkdown(article.title)} />
-                    </div>
-                    <div className="p-6">
-                      <h3 className="text-2xl md:text-3xl font-bold font-serif leading-tight group-hover:text-primary transition-colors">{stripMarkdown(article.title)}</h3>
-                      <p className="text-slate-600 dark:text-slate-400 mt-2 line-clamp-2">{stripMarkdown(article.summary || "")}</p>
-                    </div>
-                  </Link>
-                </div>
-              ))}
-              <div className="lg:col-span-4 flex flex-col gap-4">
-                {featured.slice(1)?.map((article: any) => (
-                  <Link href={`/editorial?id=${article.id}`} key={article.id} className="flex gap-4 group">
-                    <img src={article.coverImage || "/placeholder-news.jpg"} className="w-24 h-24 rounded-xl object-cover shrink-0 border border-slate-200 dark:border-slate-800" alt={stripMarkdown(article.title)} />
-                    <div>
-                      <h4 className="font-serif font-bold text-sm group-hover:text-primary line-clamp-3">{stripMarkdown(article.title)}</h4>
-                      <p className="text-xs text-slate-500 mt-1">{article.date}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* SECTION B: Latest Articles */}
-        {latest.length > 0 && (
-          <section className="max-w-7xl mx-auto px-4 md:px-8 w-full">
-             <div className="flex items-center justify-between border-b-2 border-primary pb-2 mb-6">
-              <h2 className="text-2xl font-bold font-serif">ताजा लेख</h2>
-              <Link href={`/categories`} className="text-sm font-bold text-primary hover:underline flex items-center">
-                सभी देखें <ArrowRight className="w-4 h-4 ml-1" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {latest?.map((article: any) => (
-                 <Link href={`/editorial?id=${article.id}`} key={article.id} className="group">
-                  <div className="aspect-[4/3] rounded-xl overflow-hidden mb-3 border border-slate-200 dark:border-slate-800">
-                    <img src={article.coverImage || "/placeholder-news.jpg"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={stripMarkdown(article.title)} />
-                  </div>
-                  <h3 className="font-serif font-bold leading-tight group-hover:text-primary line-clamp-2">{stripMarkdown(article.title)}</h3>
-                  <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
-                    <span>{article.author}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* SECTION C: Category Blocks */}
-        <section className="max-w-7xl mx-auto px-4 md:px-8 w-full">
-          {categoriesToMap?.map(cat => {
-            const catArticles = publishedArticles.filter((a: any) => a.category === cat).slice(0, 4);
-            if (catArticles.length === 0) return null;
-            return (
-              <div key={cat} className="mb-12">
-                <div className="flex items-center justify-between border-b-2 border-primary pb-2 mb-6">
-                  <h2 className="text-2xl font-bold font-serif">{cat}</h2>
-                  <Link href={`/category/${cat}`} className="text-sm font-bold text-primary hover:underline flex items-center">
-                    सभी देखें <ArrowRight className="w-4 h-4 ml-1" />
-                  </Link>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {catArticles?.map((article: any) => (
-                    <Link href={`/editorial?id=${article.id}`} key={article.id} className="group">
-                      <div className="aspect-[4/3] rounded-xl overflow-hidden mb-3 border border-slate-200 dark:border-slate-800">
-                        <img src={article.coverImage || "/placeholder-news.jpg"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={stripMarkdown(article.title)} />
-                      </div>
-                      <h3 className="font-serif font-bold leading-tight group-hover:text-primary line-clamp-2">{stripMarkdown(article.title)}</h3>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </section>
-
-        {/* SECTION D: Current Magazine (PATRIKA) */}
-        {latestMag && (
-          <section className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full">
-             <div className="bg-slate-50 dark:bg-slate-900/50 rounded-3xl p-8 border border-slate-200 dark:border-slate-800">
-              <div className="flex flex-col md:flex-row gap-8 items-center">
-                <div className="w-full md:w-1/3 flex justify-center">
-                  <img src={latestMag.coverImage || "/placeholder-news.jpg"} alt={latestMag.issue} className="w-48 h-auto shadow-xl rounded-md border-4 border-white dark:border-slate-800" />
-                </div>
-                <div className="w-full md:w-2/3 space-y-4">
-                  <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">पत्रिका (Patrika)</span>
-                  <h2 className="text-3xl md:text-4xl font-serif font-bold">{latestMag.issue}</h2>
-                  <p className="text-slate-600 dark:text-slate-400">नवीनतम अंक पढ़ें और ज्ञानवर्धन करें।</p>
-                  <div className="flex gap-4 pt-4">
-                    <Link href="/magazine" className="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
-                      पत्रिका पढ़ें
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* SECTION E: Chaupal Highlights */}
-        <section className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full mb-12">
-          <div className="bg-gradient-to-br from-primary/10 to-transparent rounded-3xl p-8 border border-primary/20 text-center">
-            <h2 className="text-3xl font-serif font-bold mb-4">चौपाल (Chaupal)</h2>
-            <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto">
-              युवाक्षर चौपाल समुदाय से जुड़ें। अपने विचार साझा करें, समूहों में शामिल हों और चर्चा का हिस्सा बनें।
-            </p>
-            <Link href="/community" className="inline-block bg-primary text-white px-8 py-3 rounded-full font-bold hover:bg-primary/90 transition-colors shadow-lg">
-              चौपाल में जाएँ
-            </Link>
-          </div>
-        </section>
-      </div>
-    );
+  const loadPreviewLayout = async (layoutId: string) => {
+    setPreviewLoading(true);
+    try {
+      const data = await getSectionsForLayout(layoutId);
+      setPreviewSections(data);
+    } catch (err) {
+      console.error("Failed to load preview sections:", err);
+    } finally {
+      setPreviewLoading(false);
+    }
   };
 
-  const activeSections = (homepageSections || []).filter((s: any) => s.is_active).sort((a: any, b: any) => a.sort_order - b.sort_order);
+  if (!isMounted || previewLoading) {
+    return (
+      <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] pb-16 font-sans">
+        <div className="w-full h-24 bg-gray-105 dark:bg-gray-900 border-b border-gray-150 animate-pulse" />
+        <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 space-y-8">
+          <HeroSkeleton />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-8 space-y-8">
+              <CategorySkeleton />
+              <OpinionSkeleton />
+            </div>
+            <div className="lg:col-span-4">
+              <SidebarSkeleton />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  // Original CMS rendering logic for compatibility if configured
-  const renderCmsSection = (section: any) => {
-    const config = section.configuration || {};
-    const category = config.category || "समाचार";
-    const sectionArticles = publishedArticles.filter((a: any) => a.category === category);
+  // Check if articles are loaded
+  const publishedArticles = articles.filter(
+    (art: any) => art.status === "Published" || art.status === "Approved" || !art.status
+  );
 
-    switch (section.section_type) {
+  const hasData = publishedArticles.length > 0;
+
+  if (!hasData) {
+    return (
+      <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] pb-16 font-sans">
+        <NewspaperHeader />
+        <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-24 text-center border border-gray-150 dark:border-gray-850 rounded-lg my-12 bg-gray-50 dark:bg-gray-900">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-16 h-16 text-gray-300 mx-auto mb-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18V6.125c0-.621.504-1.125 1.125-1.125H11.25M12 7.5v6" />
+          </svg>
+          <h2 className="text-2xl font-serif font-black mb-2 text-gray-800 dark:text-gray-200">लेख शीघ्र प्रकाशित किए जाएंगे</h2>
+          <p className="text-sm text-gray-500 max-w-sm mx-auto">युवाक्षर संपादकीय कक्ष में विमर्श जारी है। जल्द ही ताज़ा खबरें और बौद्धिक विचार यहाँ उपलब्ध होंगे।</p>
+        </div>
+        <NewspaperFooter />
+      </div>
+    );
+  }
+
+  // --- LAYOUT ENGINE ---
+  // Select active sections from preview states or database layouts
+  const activeDbSections = previewSections 
+    ? previewSections.filter((sec: any) => sec.is_visible !== false)
+    : Array.isArray(homepageSections)
+      ? homepageSections.filter((sec: any) => sec.is_visible !== false && sec.visible !== false && sec.active !== false)
+      : [];
+
+  const hasDbConfig = activeDbSections.length > 0;
+
+  const renderDbSection = (section: any) => {
+    const type = (section.section_type || section.type || "").toLowerCase().replace(/_/, "").trim();
+    const catName = section.category_name || section.category || "";
+    const artLimit = section.article_count || section.limit || 4;
+
+    switch (type) {
       case "hero":
-        if (sectionArticles.length === 0) return null;
-        return (
-          <section key={section.id} className="max-w-7xl mx-auto px-4 md:px-8 py-6">
-            <h2 className="text-xl font-bold font-serif mb-4">{section.title || "मुख्य समाचार"}</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {sectionArticles.slice(0, 1)?.map((article: any) => (
-                <div key={article.id} className="lg:col-span-8 bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm relative group cursor-pointer border border-slate-200 dark:border-slate-800">
-                  <Link href={`/editorial?id=${article.id}`}>
-                    <div className="aspect-video w-full overflow-hidden">
-                      <img src={article.coverImage || "/placeholder-news.jpg"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={stripMarkdown(article.title)} />
-                    </div>
-                    <div className="p-6">
-                      <h3 className="text-2xl font-bold font-serif leading-tight group-hover:text-primary transition-colors">{stripMarkdown(article.title)}</h3>
-                      <p className="text-slate-600 dark:text-slate-400 mt-2 line-clamp-2">{stripMarkdown(article.summary || "")}</p>
-                    </div>
-                  </Link>
-                </div>
-              ))}
-              <div className="lg:col-span-4 flex flex-col gap-4">
-                {sectionArticles.slice(1, 4)?.map((article: any) => (
-                  <Link href={`/editorial?id=${article.id}`} key={article.id} className="flex gap-4 group">
-                    <img src={article.coverImage || "/placeholder-news.jpg"} className="w-24 h-24 rounded-xl object-cover shrink-0 border border-slate-200 dark:border-slate-800" alt={stripMarkdown(article.title)} />
-                    <div>
-                      <h4 className="font-serif font-bold text-sm group-hover:text-primary line-clamp-3">{stripMarkdown(article.title)}</h4>
-                      <p className="text-xs text-slate-500 mt-1">{article.date}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        );
-
-      case "featured_articles":
-        if (sectionArticles.length === 0) return null;
-        return (
-          <section key={section.id} className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-            <div className="flex items-center justify-between border-b-2 border-primary pb-2 mb-6">
-              <h2 className="text-2xl font-bold font-serif">{section.title || "विशेष लेख"}</h2>
-              <Link href={`/category/${category}`} className="text-sm font-bold text-primary hover:underline flex items-center">
-                सभी देखें <ArrowRight className="w-4 h-4 ml-1" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sectionArticles.slice(0, 4)?.map((article: any) => (
-                <Link href={`/editorial?id=${article.id}`} key={article.id} className="group">
-                  <div className="aspect-[4/3] rounded-xl overflow-hidden mb-3 border border-slate-200 dark:border-slate-800">
-                    <img src={article.coverImage || "/placeholder-news.jpg"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={stripMarkdown(article.title)} />
-                  </div>
-                  <h3 className="font-serif font-bold leading-tight group-hover:text-primary line-clamp-2">{stripMarkdown(article.title)}</h3>
-                  <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
-                    <span>{article.author}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        );
-
-      case "ad":
-        const activeAds = (ads || []).filter((a: any) => a.active === true);
-        const adToDisplay = activeAds[0];
-        if (!adToDisplay) return null;
-        return (
-          <section key={section.id} className="max-w-7xl mx-auto px-4 md:px-8 py-6 flex justify-center">
-             <a href={adToDisplay.link_url} target="_blank" rel="noopener noreferrer" className="block w-full max-w-4xl bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700 relative group">
-                <span className="absolute top-0 right-0 bg-black/50 text-white text-[9px] px-2 py-0.5 uppercase tracking-wider z-10 backdrop-blur-sm rounded-bl">विज्ञापन</span>
-                <img src={adToDisplay.image_url} alt={adToDisplay.name} className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
-             </a>
-          </section>
-        );
-      
+        return <Hero />;
+      case "breakingticker":
+        return <BreakingTicker />;
+      case "trending":
+        return <Trending />;
+      case "opinion":
+        return <Opinion />;
+      case "videos":
+        return <Videos />;
       case "magazine":
-        const latestMagConfig = magazines?.[0];
-        if (!latestMagConfig) return null;
-        return (
-          <section key={section.id} className="max-w-7xl mx-auto px-4 md:px-8 py-8 bg-slate-50 dark:bg-slate-900/50 rounded-3xl my-8 border border-slate-200 dark:border-slate-800">
-            <div className="flex flex-col md:flex-row gap-8 items-center">
-              <div className="w-full md:w-1/3 flex justify-center">
-                <img src={latestMagConfig.coverImage || "/placeholder-news.jpg"} alt={latestMagConfig.issue} className="w-48 h-auto shadow-xl rounded-md border-4 border-white dark:border-slate-800" />
-              </div>
-              <div className="w-full md:w-2/3 space-y-4">
-                <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">{section.title || "वर्तमान अंक"}</span>
-                <h2 className="text-3xl md:text-4xl font-serif font-bold">{latestMagConfig.issue}</h2>
-                <p className="text-slate-600 dark:text-slate-400">{section.subtitle || "इस महीने की पत्रिका पढ़ें"}</p>
-                <div className="flex gap-4 pt-4">
-                  <Link href="/magazine" className="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
-                    पत्रिका पढ़ें
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </section>
-        );
-
+        return <Magazine />;
+      case "community":
+        return <Community />;
+      case "newsletter":
+        return <Newsletter />;
+      case "popular":
+        return <Popular />;
+      case "categoryblock":
+        return <CategoryBlock categoryName={catName} limit={artLimit} />;
+      case "authors":
+        return <Authors />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="w-full min-h-screen bg-white dark:bg-[#0A0F1D] pb-16">
-      <LiveNewsTicker />
+    <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] text-[#111] dark:text-[#F5F5F5] pb-16 font-sans overflow-x-hidden transition-colors duration-300">
       
-      {activeSections.length > 0 ? (
-        activeSections?.map(renderCmsSection)
+      {/* 1. Header Layout */}
+      <NewspaperHeader />
+
+      {/* 2. Full-Width Breaking News Ticker */}
+      <SectionErrorBoundary>
+        <BreakingTicker />
+      </SectionErrorBoundary>
+
+      {/* 3. Main Newspaper Hero section */}
+      <SectionContainer>
+        <SectionErrorBoundary>
+          <Hero />
+        </SectionErrorBoundary>
+      </SectionContainer>
+
+      {/* 4. Horizontal Trending Topics bar */}
+      <SectionContainer bgClassName="bg-[#FAFAFA] dark:bg-[#0F0F0F] border-t border-b border-gray-150 dark:border-gray-850">
+        <SectionErrorBoundary>
+          <Trending />
+        </SectionErrorBoundary>
+      </SectionContainer>
+
+      {/* 5. Dynamic / Configured Content Blocks */}
+      {hasDbConfig ? (
+        <div className="w-full">
+          {activeDbSections.map((sec: any) => {
+            const type = (sec.section_type || sec.type || "").toLowerCase().replace(/_/, "").trim();
+            const isFullWidth = ["hero", "breakingticker", "trending", "videos", "magazine", "newsletter"].includes(type);
+
+            if (isFullWidth) {
+              return (
+                <SectionContainer key={sec.id} bgClassName={type === "videos" ? "bg-[#111] border-y-0" : ""}>
+                  <SectionErrorBoundary>
+                    {renderDbSection(sec)}
+                  </SectionErrorBoundary>
+                </SectionContainer>
+              );
+            }
+
+            return (
+              <SectionContainer key={sec.id}>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div className="lg:col-span-8">
+                    <SectionErrorBoundary>
+                      {renderDbSection(sec)}
+                    </SectionErrorBoundary>
+                  </div>
+                  <div className="lg:col-span-4 border-l-0 lg:border-l border-gray-150 dark:border-gray-850 pl-0 lg:pl-6">
+                    <SectionErrorBoundary>
+                      <Sidebar />
+                    </SectionErrorBoundary>
+                  </div>
+                </div>
+              </SectionContainer>
+            );
+          })}
+        </div>
       ) : (
-        renderFallback()
+        // Standard Premium Editorial default structure
+        <>
+          {/* Main 70/30 Grid section */}
+          <SectionContainer>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              {/* Left Column (70%) */}
+              <div className="lg:col-span-8 space-y-10">
+                <SectionErrorBoundary>
+                  <CategoryBlock categoryName="राजनीति" englishName="politics" />
+                </SectionErrorBoundary>
+
+                <SectionErrorBoundary>
+                  <Opinion />
+                </SectionErrorBoundary>
+
+                <SectionErrorBoundary>
+                  <CategoryBlock categoryName="शिक्षा" englishName="education" />
+                </SectionErrorBoundary>
+
+                <SectionErrorBoundary>
+                  <Popular />
+                </SectionErrorBoundary>
+
+                <SectionErrorBoundary>
+                  <CategoryBlock categoryName="साहित्य" englishName="literature" />
+                </SectionErrorBoundary>
+
+                <SectionErrorBoundary>
+                  <CategoryBlock categoryName="इतिहास" englishName="history" />
+                </SectionErrorBoundary>
+
+                <SectionErrorBoundary>
+                  <Community />
+                </SectionErrorBoundary>
+
+                <SectionErrorBoundary>
+                  <Authors />
+                </SectionErrorBoundary>
+              </div>
+
+              {/* Right Column (Sidebar 30%) */}
+              <div className="lg:col-span-4 border-l-0 lg:border-l border-gray-150 dark:border-gray-850 pl-0 lg:pl-6 space-y-8">
+                <SectionErrorBoundary>
+                  <Sidebar />
+                </SectionErrorBoundary>
+              </div>
+
+            </div>
+          </SectionContainer>
+
+          {/* Videos Block */}
+          <SectionContainer bgClassName="bg-[#111] border-y-0 text-white">
+            <SectionErrorBoundary>
+              <Videos />
+            </SectionErrorBoundary>
+          </SectionContainer>
+
+          {/* Magazine Spotlight */}
+          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
+            <SectionErrorBoundary>
+              <Magazine />
+            </SectionErrorBoundary>
+          </SectionContainer>
+
+          {/* Newsletter Box */}
+          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
+            <SectionErrorBoundary>
+              <Newsletter />
+            </SectionErrorBoundary>
+          </SectionContainer>
+        </>
       )}
+
+      {/* 6. Footer Layout */}
+      <NewspaperFooter />
     </div>
   );
 }

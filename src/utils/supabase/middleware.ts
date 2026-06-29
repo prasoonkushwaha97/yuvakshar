@@ -17,15 +17,12 @@ export async function updateSession(request: NextRequest) {
       pathname.startsWith('/editorial') ||
       pathname.startsWith('/author');
 
-    // Fail gracefully if environment variables are missing
-    if (!supabaseUrl || !supabaseKey) {
-      console.warn("Middleware: Missing Supabase Environment Variables.");
-      if (isProtectedRoute) {
-        const loginUrl = new URL('/login', request.url);
-        loginUrl.searchParams.set('redirect_to', pathname);
-        return NextResponse.redirect(loginUrl);
-      }
-      return supabaseResponse;
+    // Validate environment variables explicitly as per strict production requirements
+    if (!supabaseUrl) {
+      throw new Error("CRITICAL: NEXT_PUBLIC_SUPABASE_URL is required to initialize Supabase client.");
+    }
+    if (!supabaseKey) {
+      throw new Error("CRITICAL: NEXT_PUBLIC_SUPABASE_ANON_KEY is required to initialize Supabase client.");
     }
 
     const supabase = createServerClient(
@@ -59,7 +56,7 @@ export async function updateSession(request: NextRequest) {
     // Refreshing the auth token safely
     let user = null;
     try {
-      const { data, error } = await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
       if (error) {
         console.warn("Middleware: Auth Validation Error:", error.message);
       } else {

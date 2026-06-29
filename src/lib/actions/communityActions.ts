@@ -14,7 +14,7 @@ export async function hasCommunityRole(communityId: string, allowedRoles: string
   const isPlatformAdmin = await hasAnyRole(['founder', 'super_admin']);
   if (isPlatformAdmin) return true;
 
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (!authData?.user) return false;
 
   const { data } = await supabase
@@ -39,7 +39,7 @@ export async function createCommunity(name: string, description: string) {
   const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (!authData?.user) throw new Error("Unauthorized");
   
   const userId = authData.user.id;
@@ -76,7 +76,7 @@ export async function createCommunity(name: string, description: string) {
 }
 
 export async function joinCommunity(communityId: string) {
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (!authData?.user) throw new Error("Unauthorized");
   
   const userId = authData.user.id;
@@ -123,7 +123,7 @@ export async function inviteMember(communityId: string, email: string, role: 'mo
   const isAuthorized = await hasCommunityRole(communityId, ['owner', 'moderator']);
   if (!isAuthorized) throw new Error("Only Owners and Moderators can invite members.");
 
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (!authData.user) throw new Error("Unauthorized");
   const inviterId = authData.user.id;
 
@@ -149,7 +149,7 @@ export async function inviteMember(communityId: string, email: string, role: 'mo
 }
 
 export async function acceptInvitation(token: string) {
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (!authData?.user) throw new Error("You must be logged in to accept an invitation.");
   
   const user = authData.user;
@@ -240,7 +240,7 @@ export async function transferOwnership(communityId: string, newOwnerId: string)
 
   if (!target) throw new Error("New owner must be an existing member of the community.");
 
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (!authData.user) throw new Error("Unauthorized");
   const currentUserId = authData.user.id;
 

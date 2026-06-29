@@ -39,7 +39,7 @@ export default function MagazineLibraryPage() {
       <main className="max-w-7xl mx-auto px-6 py-12 space-y-20">
         
         {/* HERO / FEATURED ISSUE */}
-        {featuredIssue && (
+        {featuredIssue ? (
           <section>
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold font-serif flex items-center gap-2">
@@ -86,9 +86,16 @@ export default function MagazineLibraryPage() {
               </div>
             </div>
           </section>
+        ) : (
+          <div className="py-24 text-center">
+            <BookOpen className="w-16 h-16 text-slate-300 dark:text-slate-700 mx-auto mb-6" />
+            <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white mb-2">पत्रिकाएँ जल्द आ रही हैं</h2>
+            <p className="text-slate-500 dark:text-slate-400">हमारी टीम नए संस्करणों पर काम कर रही है। कृपया कुछ समय बाद पुनः जाँचें।</p>
+          </div>
         )}
 
         {/* LATEST ISSUES BOOKSHELF */}
+        {latestIssues.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold font-serif flex items-center gap-2">
@@ -106,6 +113,7 @@ export default function MagazineLibraryPage() {
             ))}
           </div>
         </section>
+        )}
 
         {/* DYNAMIC CATEGORY COLLECTIONS */}
         {categories?.map(category => {

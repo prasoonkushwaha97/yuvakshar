@@ -6,7 +6,7 @@ import { hasPermission } from "@/lib/rbacService";
 import { revalidatePath } from "next/cache";
 
 export async function addReviewNote(article_id: string, note: string, decision?: 'approve' | 'request_changes' | 'reject' | null, parent_id?: string) {
-  const { data: authData, error: authError } = await supabase.auth.getUser();
+  const { data: authData, error: authError } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (authError || !authData?.user) throw new Error("Unauthorized");
 
   const userId = authData.user.id;
@@ -43,7 +43,7 @@ export async function addReviewNote(article_id: string, note: string, decision?:
 }
 
 export async function assignReviewer(article_id: string, user_id: string, role_type: 'reviewer' | 'editor' | 'fact_checker') {
-  const { data: authData, error: authError } = await supabase.auth.getUser();
+  const { data: authData, error: authError } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (authError || !authData?.user) throw new Error("Unauthorized");
 
   const adminId = authData.user.id;

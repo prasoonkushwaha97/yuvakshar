@@ -8,7 +8,7 @@ export async function logGovernanceAction(
   entity_id: string | null = null,
   metadata: Record<string, any> = {}
 ) {
-  const { data: authData, error: authError } = await supabase.auth.getUser();
+  const { data: authData, error: authError } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   
   if (authError || !authData?.user) {
     console.error("Governance Audit Error: No authenticated user found to log action.");

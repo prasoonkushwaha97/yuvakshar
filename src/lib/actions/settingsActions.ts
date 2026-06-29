@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 export async function getUserSettings() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
 
   if (!user) {
     throw new Error("Unauthorized");
@@ -44,7 +44,7 @@ export async function getUserSettings() {
 
 export async function updateUserSettings(category: string, data: any) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
 
   if (!user) {
     throw new Error("Unauthorized");
@@ -65,7 +65,7 @@ export async function updateUserSettings(category: string, data: any) {
 
 export async function updateUserAccount(data: { name?: string, username?: string, bio?: string, social_links?: any }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
 
   if (!user) {
     throw new Error("Unauthorized");
@@ -86,7 +86,7 @@ export async function updateUserAccount(data: { name?: string, username?: string
 
 export async function updateAvatarUrl(avatar_url: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
 
   if (!user) {
     throw new Error("Unauthorized");
@@ -107,7 +107,7 @@ export async function updateAvatarUrl(avatar_url: string) {
 
 export async function getUserLoginHistory() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
 
   if (!user) {
     throw new Error("Unauthorized");

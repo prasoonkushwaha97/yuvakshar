@@ -107,7 +107,7 @@ export default function Navbar({
     }
   };
 
-  if (pathname && (pathname.startsWith("/admin") || pathname.startsWith("/community"))) {
+  if (pathname && (pathname === "/" || pathname.startsWith("/admin") || pathname.startsWith("/community"))) {
     return null;
   }
 

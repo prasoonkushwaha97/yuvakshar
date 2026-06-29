@@ -374,7 +374,7 @@ export const fetchEvents = async (): Promise<CommunityEvent[]> => {
 
   // To check if current user is registered, we need user context which isn't passed here.
   // We'll leave isRegistered as false or handle it client-side.
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   let registeredIds: string[] = [];
   if (authData?.user?.id) {
      const { data: myAttendees } = await supabase.from("community_event_attendees")
@@ -396,7 +396,7 @@ export const fetchEvents = async (): Promise<CommunityEvent[]> => {
 
 export const toggleEventRegistration = async (eventId: string, isRegistering: boolean): Promise<boolean> => {
   const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (!authData?.user) return false;
 
   if (isRegistering) {

@@ -688,7 +688,7 @@ export function CmsProvider({
         db = await checkConnectionHealth();
         storage = await checkStorageHealth();
         try {
-          const { data, error } = await supabase.auth.getSession();
+          const { data, error } = await supabase.auth.getSession().catch(() => ({ data: { session: null }, error: { message: 'Session network error' } }));
           if (error) {
             console.warn("Session check error:", error.message);
             auth = false;

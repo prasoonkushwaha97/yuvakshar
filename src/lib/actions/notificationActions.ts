@@ -31,7 +31,7 @@ export async function createNotification(
 }
 
 export async function getUserNotifications() {
-  const { data: authData, error: authError } = await supabase.auth.getUser();
+  const { data: authData, error: authError } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   
   if (authError || !authData?.user) {
     throw new Error("Unauthorized");
@@ -53,7 +53,7 @@ export async function getUserNotifications() {
 }
 
 export async function markNotificationAsRead(notificationId: string) {
-  const { data: authData } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (!authData?.user) return false;
 
   const { error } = await supabase

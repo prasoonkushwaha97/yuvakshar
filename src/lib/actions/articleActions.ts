@@ -198,7 +198,7 @@ export async function updateArticleStatus(id: string, status: ArticleStatus | st
     
     const allowed = allowedTransitions[normalizedCurrent] || [];
     if (!allowed.includes(normalizedAttempt)) {
-      const { data: authData } = await supabase.auth.getUser();
+      const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
       await logGovernanceAction(
         "workflow_violation",
         "article",

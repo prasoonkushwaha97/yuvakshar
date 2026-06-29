@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 
 export async function moveArticleStatus(article_id: string, new_status: string) {
   // 1. Validate auth and roles
-  const { data: authData, error: authError } = await supabase.auth.getUser();
+  const { data: authData, error: authError } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
   if (authError || !authData?.user) throw new Error("Unauthorized");
 
   const userId = authData.user.id;
