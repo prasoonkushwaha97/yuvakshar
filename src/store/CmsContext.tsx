@@ -329,6 +329,9 @@ interface CmsContextType {
   addComment: (articleId: string, name: string, content: string, parentId?: string | null) => Promise<void>;
   moderateComment: (id: string, status: Comment["status"]) => Promise<void>;
   reportComment: (id: string) => Promise<void>;
+  likeComment: (id: string) => Promise<void>;
+  editComment: (id: string, newContent: string) => Promise<void>;
+  deleteComment: (id: string) => Promise<void>;
   
   // Ads Actions
   saveAd: (ad: Partial<Ad>) => Promise<void>;
@@ -2201,6 +2204,40 @@ export function CmsProvider({
     logActivity(`Deleted Video: ${id}`);
   };
 
+  const likeComment = async (id: string) => {
+    if (supabaseConfigured) {
+      // In a real app this might use an RPC or edge function to increment.
+      const comment = comments.find(c => c.id === id);
+      if (comment) {
+        await supabase.from("comments").update({ likes: (comment.likes || 0) + 1 }).eq("id", id);
+      }
+    } else {
+      const updated = comments.map(c => c.id === id ? { ...c, likes: (c.likes || 0) + 1 } : c);
+      setComments(updated);
+      localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+    }
+  };
+
+  const editComment = async (id: string, newContent: string) => {
+    if (supabaseConfigured) {
+      await supabase.from("comments").update({ content: newContent }).eq("id", id);
+    } else {
+      const updated = comments.map(c => c.id === id ? { ...c, content: newContent } : c);
+      setComments(updated);
+      localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+    }
+  };
+
+  const deleteComment = async (id: string) => {
+    if (supabaseConfigured) {
+      await supabase.from("comments").delete().eq("id", id);
+    } else {
+      const updated = comments.filter(c => c.id !== id);
+      setComments(updated);
+      localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+    }
+  };
+
   const setFeaturedVideo = async (id: string) => {
     const updated = videos.map(v => ({
       ...v,
@@ -3756,6 +3793,9 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         addComment,
         moderateComment,
         reportComment,
+        likeComment,
+        editComment,
+        deleteComment,
         saveAd,
         trackAdClick,
         subscribeNewsletter,

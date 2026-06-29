@@ -10,7 +10,7 @@ import { useLanguage } from "@/store/LanguageContext";
 import { primaryLinks, profileActions } from "@/config/navigation.config";
 import { designTokens } from "@/config/designTokens";
 import AppDrawer from "./AppDrawer";
-import MobileSearchOverlay from "./MobileSearchOverlay";
+import SearchModal from "./SearchModal";
 
 export default function AppHeader() {
   const pathname = usePathname();
@@ -39,6 +39,15 @@ export default function AppHeader() {
     if (savedTheme === "dark") {
       document.documentElement.classList.add("dark");
     }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   useEffect(() => {
@@ -199,8 +208,8 @@ export default function AppHeader() {
         onLogout={handleLogout}
       />
 
-      {/* 3. Fullscreen Search Overlay */}
-      <MobileSearchOverlay 
+      {/* 3. Universal Search Modal */}
+      <SearchModal 
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
       />

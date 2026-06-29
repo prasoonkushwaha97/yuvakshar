@@ -2,12 +2,15 @@ import React from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getArticleBySlug, getArticleById } from "@/lib/actions/articleActions";
+import Link from "next/link";
 import { stripMarkdown } from "@/lib/markdown";
 import AppHeader from "@/components/layout/AppHeader";
 import Sidebar from "@/components/homepage/layout/Sidebar";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
 import { ContentRenderer } from "@/components/content/ContentRenderer";
-import { Calendar, Clock, Eye, Share2, Bookmark, Award, MessageSquare } from "lucide-react";
+import { Calendar, Clock, Eye, Award, MessageSquare } from "lucide-react";
+import ArticleActions from "@/components/articles/ArticleActions";
+import CommentSection from "@/components/articles/CommentSection";
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -136,19 +139,19 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
 
             {/* Author Profile and Metadata */}
             <div className="flex flex-wrap items-center justify-between gap-4 border-t border-b border-gray-100 dark:border-gray-850 py-4 mb-6">
-              <div className="flex items-center space-x-3">
+              <Link href={article?.profiles ? `/authors/${(article.profiles as any).username || article.profiles.id}` : "#"} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
                 <img 
                   src={article?.profiles?.avatar_url || "/images/default-avatar.png"} 
                   alt={article?.profiles?.name || "युवाक्षर लेखक"}
                   className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-800"
                 />
                 <div>
-                  <h4 className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                  <h4 className="text-xs font-bold text-gray-800 dark:text-gray-200 hover:text-primary transition-colors">
                     {article?.profiles?.name || "युवाक्षर डेस्क"}
                   </h4>
                   <span className="text-[10px] text-gray-400 font-sans tracking-wide">संपादकीय स्तंभकार</span>
                 </div>
-              </div>
+              </Link>
 
               <div className="flex items-center space-x-4 text-xs text-gray-450 dark:text-gray-500 font-sans">
                 <span className="flex items-center space-x-1">
@@ -192,15 +195,11 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
                 ))}
               </div>
 
-              <div className="flex items-center space-x-3">
-                <button className="p-2 bg-gray-55 dark:bg-gray-900 rounded-full hover:text-[#f97316] transition-colors cursor-pointer" title="बुकमार्क (Requires Login)">
-                  <Bookmark className="w-4 h-4" />
-                </button>
-                <button className="p-2 bg-gray-55 dark:bg-gray-900 rounded-full hover:text-[#f97316] transition-colors cursor-pointer" title="साझा करें">
-                  <Share2 className="w-4 h-4" />
-                </button>
-              </div>
+              <ArticleActions articleId={article.id} slug={article.slug} title={title} />
             </div>
+
+            {/* Comment Section Sprint 2 */}
+            <CommentSection articleId={article.id} />
 
           </article>
 
