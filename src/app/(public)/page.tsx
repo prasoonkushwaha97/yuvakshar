@@ -283,144 +283,98 @@ export default function Home() {
   return (
     <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] text-[#111] dark:text-[#F5F5F5] pb-16 font-sans overflow-x-hidden transition-colors duration-300">
       
-      {/* 2. Dynamic or Fallback static layout content */}
-      {hasDbConfig ? (
-        <div className="w-full animate-fade-in">
-          {/* 1. Render Hero full-width at the top */}
-          {activeDbSections
-            .filter((sec: any) => (sec.section_type || sec.type || "").toLowerCase().replace(/_/, "").trim() === "hero")
-            .map((sec: any) => (
-              <SectionContainer key={sec.id} noTopPadding={true}>
-                <SectionErrorBoundary>
-                  {renderDbSection(sec)}
-                </SectionErrorBoundary>
-              </SectionContainer>
-            ))}
+      {/* Unified Homepage Layout Pipeline (Strict Ordering) */}
+      
+      {/* 1. Main Newspaper Hero section */}
+      <SectionContainer noTopPadding={true}>
+        <SectionErrorBoundary>
+          <Hero />
+        </SectionErrorBoundary>
+      </SectionContainer>
 
-          {/* 2. Render all subsequent non-hero sections in a single unified split column layout */}
-          {activeDbSections.filter((sec: any) => (sec.section_type || sec.type || "").toLowerCase().replace(/_/, "").trim() !== "hero").length > 0 && (
-            <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                
-                {/* Left content stream */}
-                <div className="lg:col-span-8 space-y-12 lg:space-y-16">
-                  {activeDbSections
-                    .filter((sec: any) => (sec.section_type || sec.type || "").toLowerCase().replace(/_/, "").trim() !== "hero")
-                    .map((sec: any) => (
-                      <div key={sec.id} className="w-full">
-                        <SectionErrorBoundary>
-                          {renderDbSection(sec)}
-                        </SectionErrorBoundary>
-                      </div>
-                    ))}
-                </div>
-
-                {/* Right single sticky Sidebar */}
-                <div className="lg:col-span-4 border-l-0 lg:border-l border-gray-150/80 dark:border-gray-850/80 pl-0 lg:pl-6 sticky top-20 self-start">
-                  <SectionErrorBoundary>
-                    <HomepageSidebar />
-                  </SectionErrorBoundary>
-                </div>
-
-              </div>
-            </SectionContainer>
-          )}
-        </div>
-      ) : (
-        // Standard Premium Editorial default structure (Fallback when database homepage_layouts is empty)
-        <>
-          {/* Main Newspaper Hero section */}
-          <SectionContainer noTopPadding={true}>
+      {/* 2. Unified Two-Column continuous layout for all content sections */}
+      <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* LEFT COLUMN: Main content feeds */}
+          <div className="lg:col-span-8 space-y-12 lg:space-y-16">
+            
+            {/* Top Stories (8 articles) */}
             <SectionErrorBoundary>
-              <Hero />
+              <TopStories />
             </SectionErrorBoundary>
-          </SectionContainer>
 
-          {/* Unified Two-Column continuous layout for all content sections */}
-          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              
-              {/* LEFT COLUMN: Main content feeds */}
-              <div className="lg:col-span-8 space-y-12 lg:space-y-16">
-                
-                {/* Top Stories (8 articles) */}
-                <SectionErrorBoundary>
-                  <TopStories />
-                </SectionErrorBoundary>
+            {/* Latest News Feed (10 articles) */}
+            <SectionErrorBoundary>
+              <LatestNews excludeIds={excludeIdsForLatest} />
+            </SectionErrorBoundary>
 
-                {/* Latest News Feed (10 articles) */}
-                <SectionErrorBoundary>
-                  <LatestNews excludeIds={excludeIdsForLatest} />
-                </SectionErrorBoundary>
+            {/* Category highlights ordered dynamically */}
+            <SectionErrorBoundary>
+              <CategoryBlock categoryName="राजनीति" englishName="politics" limit={4} excludeIds={excludeIdsForCategories} />
+            </SectionErrorBoundary>
+            
+            <SectionErrorBoundary>
+              <CategoryBlock categoryName="समाज" englishName="society" limit={4} excludeIds={afterPoliticsExcludes} />
+            </SectionErrorBoundary>
 
-                {/* Category highlights ordered dynamically */}
-                <SectionErrorBoundary>
-                  <CategoryBlock categoryName="राजनीति" englishName="politics" limit={4} excludeIds={excludeIdsForCategories} />
-                </SectionErrorBoundary>
-                
-                <SectionErrorBoundary>
-                  <CategoryBlock categoryName="समाज" englishName="society" limit={4} excludeIds={afterPoliticsExcludes} />
-                </SectionErrorBoundary>
+            <SectionErrorBoundary>
+              <CategoryBlock categoryName="अर्थव्यवस्था" englishName="economy" limit={4} excludeIds={afterSocietyExcludes} />
+            </SectionErrorBoundary>
 
-                <SectionErrorBoundary>
-                  <CategoryBlock categoryName="अर्थव्यवस्था" englishName="economy" limit={4} excludeIds={afterSocietyExcludes} />
-                </SectionErrorBoundary>
+            <SectionErrorBoundary>
+              <CategoryBlock categoryName="शिक्षा" englishName="education" limit={4} excludeIds={afterEconomyExcludes} />
+            </SectionErrorBoundary>
 
-                <SectionErrorBoundary>
-                  <CategoryBlock categoryName="शिक्षा" englishName="education" limit={4} excludeIds={afterEconomyExcludes} />
-                </SectionErrorBoundary>
+            <SectionErrorBoundary>
+              <CategoryBlock categoryName="विज्ञान" englishName="science" limit={4} excludeIds={afterEducationExcludes} />
+            </SectionErrorBoundary>
 
-                <SectionErrorBoundary>
-                  <CategoryBlock categoryName="विज्ञान" englishName="science" limit={4} excludeIds={afterEducationExcludes} />
-                </SectionErrorBoundary>
+            <SectionErrorBoundary>
+              <CategoryBlock categoryName="संस्कृति" englishName="culture" limit={4} excludeIds={afterScienceExcludes} />
+            </SectionErrorBoundary>
 
-                <SectionErrorBoundary>
-                  <CategoryBlock categoryName="संस्कृति" englishName="culture" limit={4} excludeIds={afterScienceExcludes} />
-                </SectionErrorBoundary>
+            <SectionErrorBoundary>
+              <CategoryBlock categoryName="पर्यावरण" englishName="environment" limit={4} excludeIds={afterCultureExcludes} />
+            </SectionErrorBoundary>
 
-                <SectionErrorBoundary>
-                  <CategoryBlock categoryName="पर्यावरण" englishName="environment" limit={4} excludeIds={afterCultureExcludes} />
-                </SectionErrorBoundary>
+            <SectionErrorBoundary>
+              <CategoryBlock categoryName="खेल" englishName="sports" limit={4} excludeIds={afterEnvExcludes} />
+            </SectionErrorBoundary>
 
-                <SectionErrorBoundary>
-                  <CategoryBlock categoryName="खेल" englishName="sports" limit={4} excludeIds={afterEnvExcludes} />
-                </SectionErrorBoundary>
+            {/* Editorial Picks */}
+            <SectionErrorBoundary>
+              <EditorialPicks excludeIds={finalExcludesBeforeEditorial} />
+            </SectionErrorBoundary>
 
-                {/* Editorial Picks */}
-                <SectionErrorBoundary>
-                  <EditorialPicks excludeIds={finalExcludesBeforeEditorial} />
-                </SectionErrorBoundary>
-
-                {/* Videos Block */}
-                <div id="videos-section" className="w-full bg-[#111] dark:bg-[#1A1A1A] p-6 md:p-8 rounded-3xl border border-gray-850 text-white">
-                  <SectionErrorBoundary>
-                    <Videos />
-                  </SectionErrorBoundary>
-                </div>
-
-                {/* Magazine Spotlight */}
-                <SectionErrorBoundary>
-                  <Magazine />
-                </SectionErrorBoundary>
-
-                {/* Authors Block */}
-                <SectionErrorBoundary>
-                  <Authors />
-                </SectionErrorBoundary>
-
-              </div>
-
-              {/* RIGHT COLUMN: Sidebar (Rendered exactly once) */}
-              <div className="lg:col-span-4 border-l-0 lg:border-l border-gray-150/80 dark:border-gray-850/80 pl-0 lg:pl-6 sticky top-20 self-start">
-                <SectionErrorBoundary>
-                  <HomepageSidebar />
-                </SectionErrorBoundary>
-              </div>
-
+            {/* Videos Block */}
+            <div id="videos-section" className="w-full bg-[#111] dark:bg-[#1A1A1A] p-6 md:p-8 rounded-3xl border border-gray-850 text-white">
+              <SectionErrorBoundary>
+                <Videos />
+              </SectionErrorBoundary>
             </div>
-          </SectionContainer>
-        </>
-      )}
+
+            {/* Magazine Spotlight */}
+            <SectionErrorBoundary>
+              <Magazine />
+            </SectionErrorBoundary>
+
+            {/* Authors Block */}
+            <SectionErrorBoundary>
+              <Authors />
+            </SectionErrorBoundary>
+
+          </div>
+
+          {/* RIGHT COLUMN: Sidebar (Rendered exactly once) */}
+          <div className="lg:col-span-4 border-l-0 lg:border-l border-gray-150/80 dark:border-gray-850/80 pl-0 lg:pl-6 sticky top-20 self-start">
+            <SectionErrorBoundary>
+              <HomepageSidebar />
+            </SectionErrorBoundary>
+          </div>
+
+        </div>
+      </SectionContainer>
 
       <PartnerSection />
     </div>
