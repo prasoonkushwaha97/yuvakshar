@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
-import { stripMarkdown } from "@/lib/markdown";
-import { Clock, Calendar, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import ArticleCardMedium from "../cards/ArticleCardMedium";
 
 interface LatestNewsProps {
   excludeIds?: string[];
@@ -47,72 +47,10 @@ export default function LatestNews({ excludeIds = [] }: LatestNewsProps) {
       </div>
 
       {/* Feed List Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {visibleArticles.map((art: any) => {
-          const title = stripMarkdown(art.title || art.title_hi || "");
-          const summary = stripMarkdown(art.summary || art.summary_hi || art.content || "");
-          const imageUrl = art.coverImage || art.cover_image || art.image || "/images/placeholder-news.jpg";
-
-          const dateStr = art.published_at 
-            ? new Date(art.published_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
-            : art.created_at
-              ? new Date(art.created_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
-              : "";
-
-          const readTimeVal = art.content
-            ? Math.max(1, Math.ceil(art.content.split(/\s+/).length / 150))
-            : 2;
-
-          return (
-            <div 
-              key={art.id} 
-              className="group flex flex-col sm:flex-row gap-4 bg-white dark:bg-[#0E1322] p-4 rounded-3xl border border-gray-150/80 dark:border-gray-850/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300"
-            >
-              {/* Thumbnail */}
-              <Link 
-                href={`/articles/${art.slug || art.id}`} 
-                className="block relative w-full sm:w-32 h-44 sm:h-32 shrink-0 overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-150/60 dark:border-gray-850/60"
-              >
-                <img
-                  src={imageUrl}
-                  alt={title}
-                  className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out"
-                  loading="lazy"
-                />
-              </Link>
-
-              {/* Details */}
-              <div className="flex-1 flex flex-col justify-between min-w-0">
-                <div>
-                  {/* Category & Date */}
-                  <div className="flex items-center space-x-2 text-[9px] font-sans font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">
-                    <span className="text-[#f97316]">{art.category || "समाचार"}</span>
-                    <span>•</span>
-                    <span>{dateStr}</span>
-                  </div>
-
-                  {/* Title */}
-                  <Link href={`/articles/${art.slug || art.id}`} className="block hover:text-[#f97316] transition-colors duration-250 mb-2">
-                    <h3 className="text-sm md:text-base font-bold font-serif leading-snug text-gray-900 dark:text-white line-clamp-2">
-                      {title}
-                    </h3>
-                  </Link>
-
-                  {/* Summary */}
-                  <p className="text-gray-550 dark:text-gray-450 text-xs leading-relaxed line-clamp-2 font-serif mb-2">
-                    {summary}
-                  </p>
-                </div>
-
-                {/* Metadata */}
-                <div className="flex items-center justify-between text-[10px] text-gray-400 font-sans border-t border-gray-100 dark:border-gray-850 pt-2 mt-2">
-                  <span className="font-semibold text-gray-650 dark:text-gray-300">{art.author || "युवाक्षर डेस्क"}</span>
-                  <span>{readTimeVal} मिनट पठन</span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-8">
+        {visibleArticles.map((art: any) => (
+          <ArticleCardMedium key={art.id} article={art} />
+        ))}
       </div>
 
       {/* Load More Button */}

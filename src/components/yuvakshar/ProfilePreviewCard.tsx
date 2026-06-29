@@ -226,7 +226,7 @@ export default function ProfilePreviewWrapper({
             {/* Actions Footer */}
             <div className="flex gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-850">
               <Link
-                href={`/authors/${targetUser.slug || targetUser.id}`}
+                href={`/profile/${targetUser.slug || targetUser.id}`}
                 className="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-[10px] font-bold py-1.5 rounded-lg flex items-center justify-center gap-1 font-hindi text-slate-700 dark:text-slate-350 cursor-pointer"
                 onClick={() => setShowCard(false)}
               >

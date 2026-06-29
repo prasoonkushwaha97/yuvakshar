@@ -261,7 +261,7 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center space-x-4">
             {currentUser && (
-              <Link href={`/community/authors/${currentUser.slug || currentUser.id}`} className="w-10 h-10 rounded-full bg-slate-200 border-2 border-slate-100 dark:border-slate-800 flex items-center justify-center text-sm font-bold text-slate-600 uppercase shrink-0 overflow-hidden hover:scale-105 transition-all">
+              <Link href={`/profile/${currentUser.slug || currentUser.id}`} className="w-10 h-10 rounded-full bg-slate-200 border-2 border-slate-100 dark:border-slate-800 flex items-center justify-center text-sm font-bold text-slate-600 uppercase shrink-0 overflow-hidden hover:scale-105 transition-all">
                 {currentUser.avatar_url ? (
                   <img src={currentUser.avatar_url} alt={currentUser.name} className="w-full h-full object-cover" />
                 ) : (
@@ -363,11 +363,11 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
             <Bell className={`w-6 h-6 ${pathname === "/community/notifications" ? "stroke-[2.5px]" : "stroke-[2px]"}`} />
             <span className="absolute top-2 right-[calc(50%-12px)] w-2 h-2 bg-primary rounded-full border-2 border-white dark:border-[#0A0F1D]"></span>
           </Link>
-          <Link href={currentUser ? `/community/authors/${currentUser.id}` : "/community"} className={`flex flex-col items-center justify-center w-full h-full ${pathname?.includes("/authors/") ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}>
+          <Link href={currentUser ? `/profile/${currentUser.slug || currentUser.id}` : "/community"} className={`flex flex-col items-center justify-center w-full h-full ${pathname?.includes("/profile/") ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}>
             {currentUser?.avatar_url ? (
               <img src={currentUser.avatar_url} alt="Profile" className="w-6 h-6 rounded-full border-2 border-transparent" />
             ) : (
-              <Users className={`w-6 h-6 ${pathname?.includes("/authors/") ? "stroke-[2.5px]" : "stroke-[2px]"}`} />
+              <Users className={`w-6 h-6 ${pathname?.includes("/profile/") ? "stroke-[2.5px]" : "stroke-[2px]"}`} />
             )}
           </Link>
         </div>

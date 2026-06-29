@@ -18,22 +18,15 @@ import {
 
 // Layout
 import AppHeader from "@/components/layout/AppHeader";
-import HomepageSidebar from "@/components/homepage/layout/HomepageSidebar";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
 import PartnerSection from "@/components/homepage/PartnerSection";
 
 // Blocks
 import Hero from "@/components/homepage/blocks/Hero";
-import BreakingTicker from "@/components/homepage/blocks/BreakingTicker";
-import Trending from "@/components/homepage/blocks/Trending";
 import CategoryBlock from "@/components/homepage/blocks/CategoryBlock";
-import Opinion from "@/components/homepage/blocks/Opinion";
 import Videos from "@/components/homepage/blocks/Videos";
 import Magazine from "@/components/homepage/blocks/Magazine";
 import Authors from "@/components/homepage/blocks/Authors";
-import Community from "@/components/homepage/blocks/Community";
-import Newsletter from "@/components/homepage/blocks/Newsletter";
-import Popular from "@/components/homepage/blocks/Popular";
 import TopStories from "@/components/homepage/blocks/TopStories";
 import EditorialPicks from "@/components/homepage/blocks/EditorialPicks";
 import LatestNews from "@/components/homepage/blocks/LatestNews";
@@ -256,21 +249,21 @@ export default function Home() {
       case "latestnews":
         return <LatestNews excludeIds={excludeIdsForLatest} />;
       case "breakingticker":
-        return <BreakingTicker />;
+        return null;
       case "trending":
-        return <Trending />;
+        return null;
       case "opinion":
-        return <Opinion />;
+        return null;
       case "videos":
         return <Videos />;
       case "magazine":
         return <Magazine />;
       case "community":
-        return <Community />;
+        return null;
       case "newsletter":
-        return <Newsletter />;
+        return null;
       case "popular":
-        return <Popular />;
+        return null;
       case "categoryblock":
         return <CategoryBlock categoryName={catName} limit={artLimit} excludeIds={excludeIdsForCategories} />;
       case "authors":
@@ -292,86 +285,74 @@ export default function Home() {
         </SectionErrorBoundary>
       </SectionContainer>
 
-      {/* 2. Unified Two-Column continuous layout for all content sections */}
+      {/* 2. Unified Full-Width continuous layout for all content sections */}
       <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="w-full space-y-12 lg:space-y-16">
           
-          {/* LEFT COLUMN: Main content feeds */}
-          <div className="lg:col-span-8 space-y-12 lg:space-y-16">
-            
-            {/* Top Stories (8 articles) */}
-            <SectionErrorBoundary>
-              <TopStories />
-            </SectionErrorBoundary>
+          {/* Top Stories (8 articles) */}
+          <SectionErrorBoundary>
+            <TopStories />
+          </SectionErrorBoundary>
 
-            {/* Latest News Feed (10 articles) */}
-            <SectionErrorBoundary>
-              <LatestNews excludeIds={excludeIdsForLatest} />
-            </SectionErrorBoundary>
+          {/* Latest News Feed (10 articles) */}
+          <SectionErrorBoundary>
+            <LatestNews excludeIds={excludeIdsForLatest} />
+          </SectionErrorBoundary>
 
-            {/* Category highlights ordered dynamically */}
-            <SectionErrorBoundary>
-              <CategoryBlock categoryName="राजनीति" englishName="politics" limit={4} excludeIds={excludeIdsForCategories} />
-            </SectionErrorBoundary>
-            
-            <SectionErrorBoundary>
-              <CategoryBlock categoryName="समाज" englishName="society" limit={4} excludeIds={afterPoliticsExcludes} />
-            </SectionErrorBoundary>
+          {/* Category highlights ordered dynamically */}
+          <SectionErrorBoundary>
+            <CategoryBlock categoryName="राजनीति" englishName="politics" limit={5} excludeIds={excludeIdsForCategories} />
+          </SectionErrorBoundary>
+          
+          <SectionErrorBoundary>
+            <CategoryBlock categoryName="समाज" englishName="society" limit={5} excludeIds={afterPoliticsExcludes} />
+          </SectionErrorBoundary>
 
+          <SectionErrorBoundary>
+            <CategoryBlock categoryName="अर्थव्यवस्था" englishName="economy" limit={5} excludeIds={afterSocietyExcludes} />
+          </SectionErrorBoundary>
+
+          <SectionErrorBoundary>
+            <CategoryBlock categoryName="शिक्षा" englishName="education" limit={5} excludeIds={afterEconomyExcludes} />
+          </SectionErrorBoundary>
+
+          <SectionErrorBoundary>
+            <CategoryBlock categoryName="विज्ञान" englishName="science" limit={5} excludeIds={afterEducationExcludes} />
+          </SectionErrorBoundary>
+
+          <SectionErrorBoundary>
+            <CategoryBlock categoryName="संस्कृति" englishName="culture" limit={5} excludeIds={afterScienceExcludes} />
+          </SectionErrorBoundary>
+
+          <SectionErrorBoundary>
+            <CategoryBlock categoryName="पर्यावरण" englishName="environment" limit={5} excludeIds={afterCultureExcludes} />
+          </SectionErrorBoundary>
+
+          <SectionErrorBoundary>
+            <CategoryBlock categoryName="खेल" englishName="sports" limit={5} excludeIds={afterEnvExcludes} />
+          </SectionErrorBoundary>
+
+          {/* Editorial Picks */}
+          <SectionErrorBoundary>
+            <EditorialPicks excludeIds={finalExcludesBeforeEditorial} />
+          </SectionErrorBoundary>
+
+          {/* Videos Block */}
+          <div id="videos-section" className="w-full bg-[#111] dark:bg-[#1A1A1A] p-6 md:p-8 rounded-3xl border border-gray-850 text-white">
             <SectionErrorBoundary>
-              <CategoryBlock categoryName="अर्थव्यवस्था" englishName="economy" limit={4} excludeIds={afterSocietyExcludes} />
-            </SectionErrorBoundary>
-
-            <SectionErrorBoundary>
-              <CategoryBlock categoryName="शिक्षा" englishName="education" limit={4} excludeIds={afterEconomyExcludes} />
-            </SectionErrorBoundary>
-
-            <SectionErrorBoundary>
-              <CategoryBlock categoryName="विज्ञान" englishName="science" limit={4} excludeIds={afterEducationExcludes} />
-            </SectionErrorBoundary>
-
-            <SectionErrorBoundary>
-              <CategoryBlock categoryName="संस्कृति" englishName="culture" limit={4} excludeIds={afterScienceExcludes} />
-            </SectionErrorBoundary>
-
-            <SectionErrorBoundary>
-              <CategoryBlock categoryName="पर्यावरण" englishName="environment" limit={4} excludeIds={afterCultureExcludes} />
-            </SectionErrorBoundary>
-
-            <SectionErrorBoundary>
-              <CategoryBlock categoryName="खेल" englishName="sports" limit={4} excludeIds={afterEnvExcludes} />
-            </SectionErrorBoundary>
-
-            {/* Editorial Picks */}
-            <SectionErrorBoundary>
-              <EditorialPicks excludeIds={finalExcludesBeforeEditorial} />
-            </SectionErrorBoundary>
-
-            {/* Videos Block */}
-            <div id="videos-section" className="w-full bg-[#111] dark:bg-[#1A1A1A] p-6 md:p-8 rounded-3xl border border-gray-850 text-white">
-              <SectionErrorBoundary>
-                <Videos />
-              </SectionErrorBoundary>
-            </div>
-
-            {/* Magazine Spotlight */}
-            <SectionErrorBoundary>
-              <Magazine />
-            </SectionErrorBoundary>
-
-            {/* Authors Block */}
-            <SectionErrorBoundary>
-              <Authors />
-            </SectionErrorBoundary>
-
-          </div>
-
-          {/* RIGHT COLUMN: Sidebar (Rendered exactly once) */}
-          <div className="lg:col-span-4 border-l-0 lg:border-l border-gray-150/80 dark:border-gray-850/80 pl-0 lg:pl-6 sticky top-20 self-start">
-            <SectionErrorBoundary>
-              <HomepageSidebar />
+              <Videos />
             </SectionErrorBoundary>
           </div>
+
+          {/* Magazine Spotlight */}
+          <SectionErrorBoundary>
+            <Magazine />
+          </SectionErrorBoundary>
+
+          {/* Authors Block */}
+          <SectionErrorBoundary>
+            <Authors />
+          </SectionErrorBoundary>
 
         </div>
       </SectionContainer>

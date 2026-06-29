@@ -40,8 +40,8 @@ export default function TopStories() {
         </div>
       </div>
 
-      {/* Responsive layout: Swipe on mobile, Grid on tablet/desktop */}
-      <div className="flex sm:grid sm:grid-cols-2 gap-6 overflow-x-auto sm:overflow-x-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none">
+      {/* Responsive layout: Grid on mobile, tablet, desktop */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 pb-4 sm:pb-0">
         {topStories.map((art: any) => {
           const title = stripMarkdown(art.title || art.title_hi || "");
           const summary = stripMarkdown(art.summary || art.summary_hi || art.content || "");
@@ -60,7 +60,7 @@ export default function TopStories() {
           return (
             <div 
               key={art.id} 
-              className="group flex flex-col w-[85vw] sm:w-auto shrink-0 sm:shrink bg-white dark:bg-[#0E1322] rounded-3xl overflow-hidden border border-gray-150/80 dark:border-gray-850/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300 snap-start"
+              className="group flex flex-col h-full bg-white dark:bg-[#0E1322] rounded-3xl overflow-hidden border border-gray-150/80 dark:border-gray-850/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300"
             >
               {/* Image Section */}
               <Link 

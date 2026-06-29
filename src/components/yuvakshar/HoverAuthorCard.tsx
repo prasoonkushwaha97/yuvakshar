@@ -74,7 +74,7 @@ export default function HoverAuthorCard({ author, children }: HoverAuthorCardPro
     };
   }, [isOpen]);
 
-  const authorLink = `/community/authors/${author.slug || author.id}`;
+  const authorLink = `/profile/${author.slug || author.id}`;
 
   return (
     <div 

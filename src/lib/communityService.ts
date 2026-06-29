@@ -190,6 +190,49 @@ export const fetchPosts = async (groupId?: string): Promise<CommunityPost[]> => 
   }));
 };
 
+export const fetchUserPosts = async (userId: string): Promise<CommunityPost[]> => {
+  const supabase = await createClient();
+  const query = supabase.from("community_posts").select(`
+    *,
+    profiles:user_id(name, avatar_url, role),
+    groups:group_id(name),
+    likes:community_post_likes(count),
+    comments:community_comments(count)
+  `).eq("user_id", userId).order("created_at", { ascending: false });
+
+  const { data, error } = await query;
+  if (error) {
+    console.error("Error fetching user posts:", error);
+    return [];
+  }
+
+  return (data || []).map((p: any) => ({
+    id: p.id,
+    user_id: p.user_id,
+    user_name: p.profiles?.name || "Unknown User",
+    user_avatar: p.profiles?.avatar_url,
+    user_rank: p.profiles?.role || "Member",
+    group_id: p.group_id,
+    group_name: p.groups?.name,
+    title: p.title,
+    content: p.content,
+    post_type: p.post_type || "text",
+    media_url: p.media_url,
+    poll_question: p.poll_question,
+    poll_options: p.poll_options,
+    poll_votes: p.poll_votes,
+    link_url: p.link_url,
+    forum_category: p.forum_category || "General",
+    is_pinned: p.is_pinned || false,
+    is_locked: p.is_locked || false,
+    is_solved: p.is_solved || false,
+    best_answer_id: p.best_answer_id,
+    created_at: p.created_at,
+    likesCount: p.likes[0]?.count || 0,
+    commentsCount: p.comments[0]?.count || 0
+  }));
+};
+
 export const createPost = async (
   userId: string,
   userName: string,

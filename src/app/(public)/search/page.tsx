@@ -104,7 +104,7 @@ export default function SearchPage() {
                       {art.category}
                     </span>
                     <span className="text-[10px] text-slate-400 font-mono">
-                      {art.readTime} • लेखक: <Link href={`/authors/${slugifyAuthor(art.author)}`} className="text-primary hover:underline font-bold">{art.author}</Link>
+                      {art.readTime} • लेखक: <Link href={`/profile/${slugifyAuthor(art.author)}`} className="text-primary hover:underline font-bold">{art.author}</Link>
                     </span>
                   </div>
 

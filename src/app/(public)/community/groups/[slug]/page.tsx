@@ -499,7 +499,7 @@ export default function GroupDetailPage() {
                         <div className="flex justify-between items-start">
                           <div className="flex items-center space-x-2">
                             <HoverUserCard userId={p.user_id}>
-                              <Link href={`/community/u/${p.user_id}`} className="font-bold text-slate-800 dark:text-slate-200 font-hindi hover:text-primary transition-colors">
+                              <Link href={`/profile/${p.user_id}`} className="font-bold text-slate-800 dark:text-slate-200 font-hindi hover:text-primary transition-colors">
                                 {p.user_name}
                               </Link>
                             </HoverUserCard>
@@ -626,7 +626,7 @@ export default function GroupDetailPage() {
                 return (
                   <div key={member.id} className="flex items-center justify-between text-xs">
                     <HoverUserCard userId={member.user_id}>
-                      <Link href={`/community/u/${member.user_id}`} className="flex items-center space-x-2 min-w-0 hover:opacity-80 transition-opacity">
+                      <Link href={`/profile/${member.user_id}`} className="flex items-center space-x-2 min-w-0 hover:opacity-80 transition-opacity">
                         <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center font-bold text-[9px] text-slate-500 uppercase shrink-0 overflow-hidden">
                           {userProfile?.avatar_url ? (
                             <img src={userProfile.avatar_url} alt={userProfile.name} className="w-full h-full object-cover" />

@@ -222,7 +222,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">लेखक</h3>
                           <div className="space-y-1">
                             {results.authors.map(u => (
-                              <button key={u.id} onClick={() => handleSelectResult(`/authors/${u.username || u.id}`, query)} className="w-full text-left p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors flex items-center gap-3">
+                              <button key={u.id} onClick={() => handleSelectResult(`/profile/${u.slug || u.username || u.id}`, query)} className="w-full text-left p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors flex items-center gap-3">
                                 {u.avatar_url ? (
                                   <img src={u.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
                                 ) : (

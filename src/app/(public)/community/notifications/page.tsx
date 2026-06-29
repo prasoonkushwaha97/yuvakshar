@@ -196,7 +196,7 @@ export default function NotificationsPage() {
                   {notif.notification_type === "follow" && (
                     <div className="flex gap-2">
                       <Link 
-                        href={`/community/u/${notif.sender_id}`}
+                        href={`/profile/${notif.sender_id}`}
                         className="text-[9px] font-bold text-slate-500 border border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800 rounded-lg px-2.5 py-1 transition-all flex items-center gap-1 font-hindi shrink-0"
                       >
                         <span>प्रोफ़ाइल खोलें</span>

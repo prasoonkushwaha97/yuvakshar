@@ -40,7 +40,7 @@ export default function MetaInfo({
     <div className={`flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-150 dark:border-gray-800/80 pt-3 mt-auto font-sans w-full ${className}`}>
       {/* Left: Author avatar & Date */}
       <div className="flex items-center space-x-2">
-        <Link href={`/authors/${authorSlug}`} className="flex items-center space-x-2 group/author cursor-pointer">
+        <Link href={`/profile/${authorSlug}`} className="flex items-center space-x-2 group/author cursor-pointer">
           <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700 text-[#111] dark:text-[#FFF] flex items-center justify-center text-[9px] font-extrabold uppercase shrink-0 group-hover/author:border group-hover/author:border-[#f97316]/50">
             {initial}
           </div>

@@ -36,20 +36,20 @@ export default function CategoryBlock({ categoryName, englishName, limit = 4, ex
       {/* Category Section Header */}
       <SectionTitle title={categoryName} link={`/category/${encodeURIComponent(categoryName)}`} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
         {/* Left Column: 1 Featured Story */}
-        <div className="lg:col-span-6 flex">
+        <div className="lg:col-span-5 flex">
           <ArticleCardLarge article={featured} />
         </div>
 
-        {/* Right Column: 4 Secondary Stories */}
-        <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Right Column: 4 Secondary Stories (2x2 Grid) */}
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-6">
           {secondary.map((art: any) => (
             <ArticleCardMedium key={art.id} article={art} showImage={true} />
           ))}
           {/* Fill empty grid blocks if count is low to keep newspaper density */}
           {secondary.length === 0 && (
-            <div className="col-span-2 py-8 text-center text-xs text-gray-400 dark:text-gray-600 font-serif">
+            <div className="col-span-1 sm:col-span-2 py-8 text-center text-xs text-gray-400 dark:text-gray-600 font-serif">
               शीघ्र ही और लेख प्रकाशित किए जाएंगे।
             </div>
           )}
