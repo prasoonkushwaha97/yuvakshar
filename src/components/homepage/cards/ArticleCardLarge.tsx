@@ -18,9 +18,9 @@ export default function ArticleCardLarge({ article }: ArticleCardLargeProps) {
   const imageUrl = article.coverImage || article.cover_image || article.image || "/images/placeholder-news.jpg";
 
   return (
-    <div className="group flex flex-col w-full h-full bg-white dark:bg-[#0A0A0A] rounded-lg overflow-hidden border border-gray-150 dark:border-gray-850 hover:shadow-[0_8px_20px_-6px_rgba(0,0,0,0.06)] transition-all duration-300">
+    <div className="group flex flex-col w-full h-full bg-white dark:bg-[#0E1322] rounded-3xl overflow-hidden border border-gray-150/80 dark:border-gray-850/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300">
       {/* Image Block */}
-      <Link href={`/articles/${article.slug || article.id}`} className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-100 dark:bg-gray-900 border-b border-gray-150 dark:border-gray-850 shrink-0">
+      <Link href={`/articles/${article.slug || article.id}`} className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-50 dark:bg-gray-900 border-b border-gray-150/60 dark:border-gray-850/60 shrink-0">
         <img
           src={imageUrl}
           alt={title}

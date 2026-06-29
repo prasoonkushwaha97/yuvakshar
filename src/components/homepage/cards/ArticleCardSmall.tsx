@@ -27,15 +27,15 @@ export default function ArticleCardSmall({
   const cleanDate = formatDisplayDate(article.date);
 
   return (
-    <div className={`group flex gap-3 py-3 border-b border-gray-100 dark:border-gray-850 last:border-0 ${className}`}>
+    <div className={`group flex gap-4 py-4 border-b border-gray-100/70 dark:border-gray-850/70 last:border-0 ${className}`}>
       {indexNumber !== undefined && (
-        <span className="text-xl font-bold text-gray-300 dark:text-gray-700 font-sans w-6 text-right shrink-0 select-none">
+        <span className="text-lg font-black text-gray-300 dark:text-gray-700 font-sans w-6 text-right shrink-0 select-none">
           {indexNumber}
         </span>
       )}
 
       {showThumbnail && (
-        <Link href={`/articles/${article.slug || article.id}`} className="block relative w-16 h-16 shrink-0 overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-sm border border-gray-150 dark:border-gray-850">
+        <Link href={`/articles/${article.slug || article.id}`} className="block relative w-16 h-16 shrink-0 overflow-hidden bg-gray-55 dark:bg-gray-900 rounded-xl border border-gray-150/60 dark:border-gray-850/60">
           <img
             src={imageUrl}
             alt={title}

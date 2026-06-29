@@ -21,10 +21,10 @@ export default function EditorialCard({ article }: EditorialCardProps) {
     : "desk";
 
   return (
-    <div className="group flex flex-col items-center text-center bg-white dark:bg-[#0A0A0A] p-6 rounded-lg border border-gray-150 dark:border-gray-850 hover:shadow-[0_8px_20px_-6px_rgba(249,115,22,0.1)] hover:border-[#f97316]/40 transition-all duration-300">
+    <div className="group flex flex-col items-center text-center bg-white dark:bg-[#0E1322] p-6 rounded-3xl border border-gray-150/80 dark:border-gray-850/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300">
       <Link href={`/authors/${authorSlug}`} className="group/avatar flex flex-col items-center cursor-pointer">
         {/* Columnist Avatar */}
-        <div className="relative w-16 h-16 rounded-full overflow-hidden mb-3 border-2 border-gray-100 dark:border-gray-800 group-hover/avatar:border-[#f97316] transition-colors shrink-0 bg-gray-50">
+        <div className="relative w-16 h-16 rounded-full overflow-hidden mb-3 border-2 border-gray-105 dark:border-gray-800 group-hover/avatar:border-[#f97316] transition-colors shrink-0 bg-gray-55">
           <img
             src={authorAvatar}
             alt={article.author}

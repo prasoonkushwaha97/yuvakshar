@@ -21,9 +21,9 @@ export default function ArticleCardMedium({ article, showImage = true }: Article
   const cleanDate = formatDisplayDate(article.date);
 
   return (
-    <div className="group flex gap-3.5 bg-white dark:bg-[#0A0A0A] p-3 rounded-lg border border-gray-150 dark:border-gray-850 hover:border-gray-300 dark:hover:border-gray-700 transition-all duration-200">
+    <div className="group flex gap-4 bg-white dark:bg-[#0E1322] p-4 rounded-3xl border border-gray-150/80 dark:border-gray-850/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300">
       {showImage && (
-        <Link href={`/articles/${article.slug || article.id}`} className="block relative w-20 h-20 shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-900 rounded-sm border border-gray-100 dark:border-gray-850">
+        <Link href={`/articles/${article.slug || article.id}`} className="block relative w-20 h-20 shrink-0 overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-150/60 dark:border-gray-850/60">
           <img
             src={imageUrl}
             alt={title}

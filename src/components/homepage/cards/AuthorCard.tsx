@@ -26,7 +26,7 @@ export default function AuthorCard({
     : "desk";
 
   return (
-    <div className="flex items-center space-x-3 bg-white dark:bg-[#0A0A0A] p-3 border border-gray-150 dark:border-gray-850 rounded-lg min-w-[220px] shadow-[0_2px_8px_-3px_rgba(0,0,0,0.03)] hover:border-[#f97316]/30 transition-all duration-200">
+    <div className="flex items-center space-x-3 bg-white dark:bg-[#0E1322] p-3.5 border border-gray-150/80 dark:border-gray-850/80 rounded-3xl min-w-[220px] shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-0.5 hover:border-[#f97316]/30 transition-all duration-300">
       <Link href={`/authors/${authorSlug}`} className="flex items-center space-x-3 flex-1 min-w-0 group/author cursor-pointer">
         {/* Avatar */}
         <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-100 dark:border-gray-800 bg-gray-50 group-hover/author:border-[#f97316]">

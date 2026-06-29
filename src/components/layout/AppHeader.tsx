@@ -29,6 +29,7 @@ export default function AppHeader() {
   // Scroll collapsing state
   const [visible, setVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isAtTop, setIsAtTop] = useState(true);
 
   useEffect(() => {
     // Theme initialization
@@ -43,6 +44,8 @@ export default function AppHeader() {
     // Scroll collapse/expand hooks
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      setIsAtTop(currentScrollY < 20);
+      
       if (currentScrollY < 10) {
         setVisible(true);
       } else if (currentScrollY > lastScrollY && currentScrollY > 60) {
@@ -86,7 +89,11 @@ export default function AppHeader() {
     <>
       {/* 1. Header Layout Frame */}
       <header 
-        className="fixed top-0 left-0 right-0 z-40 bg-[#FDFCF7]/95 dark:bg-[#0B0F19]/95 border-b border-gray-150 dark:border-gray-850 backdrop-blur transition-transform duration-300 h-[52px] lg:h-[72px]"
+        className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-md transition-all duration-300 h-[52px] lg:h-[72px] ${
+          isAtTop 
+            ? "bg-transparent border-b border-transparent shadow-none" 
+            : "bg-[#FDFCF7]/95 dark:bg-[#0B0F19]/95 border-b border-gray-150 dark:border-gray-850 shadow-sm"
+        }`}
         style={{
           transform: visible ? "translateY(0)" : "translateY(-100%)"
         }}
@@ -111,20 +118,26 @@ export default function AppHeader() {
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-6">
             {primaryLinks.slice(0, 6).map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3 py-2 text-xs font-extrabold uppercase tracking-wide font-sans rounded-md transition-all duration-200 ${
+                  className={`group relative py-1.5 text-xs font-bold uppercase tracking-widest font-sans transition-all duration-300 ${
                     isActive 
-                      ? "text-[#f97316] bg-[#f97316]/5" 
+                      ? "text-[#f97316] drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]" 
                       : "text-gray-700 dark:text-gray-300 hover:text-[#f97316]"
                   }`}
                 >
-                  {locale === "hi" ? link.labelHi : link.labelEn}
+                  <span>{locale === "hi" ? link.labelHi : link.labelEn}</span>
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#f97316] rounded-full shadow-[0_0_8px_#f97316]" />
+                  )}
+                  {!isActive && (
+                    <span className="absolute bottom-0 left-1/2 right-1/2 h-[2px] bg-[#f97316] rounded-full transition-all duration-300 opacity-0 group-hover:left-0 group-hover:right-0 group-hover:opacity-100" />
+                  )}
                 </Link>
               );
             })}

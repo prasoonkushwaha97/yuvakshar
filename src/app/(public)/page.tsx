@@ -221,11 +221,6 @@ export default function Home() {
       ) : (
         // Standard Premium Editorial default structure (Fallback when database homepage_layouts is empty)
         <>
-          {/* Breaking News Ticker */}
-          <SectionErrorBoundary>
-            <BreakingTicker />
-          </SectionErrorBoundary>
-
           {/* Main Newspaper Hero section */}
           <SectionContainer>
             <SectionErrorBoundary>
@@ -240,6 +235,13 @@ export default function Home() {
             </SectionErrorBoundary>
           </SectionContainer>
 
+          {/* Latest News Feed */}
+          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
+            <SectionErrorBoundary>
+              <LatestNews />
+            </SectionErrorBoundary>
+          </SectionContainer>
+
           {/* Editorial Picks */}
           <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
             <SectionErrorBoundary>
@@ -247,17 +249,24 @@ export default function Home() {
             </SectionErrorBoundary>
           </SectionContainer>
 
-          {/* Horizontal Trending Topics bar */}
-          <SectionContainer bgClassName="bg-[#FAFAFA] dark:bg-[#0F0F0F] border-t border-b border-gray-150 dark:border-gray-850">
+          {/* Opinion Column */}
+          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
             <SectionErrorBoundary>
-              <Trending />
+              <Opinion />
             </SectionErrorBoundary>
           </SectionContainer>
 
-          {/* Latest News Feed */}
+          {/* Magazine Spotlight */}
           <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
             <SectionErrorBoundary>
-              <LatestNews />
+              <Magazine />
+            </SectionErrorBoundary>
+          </SectionContainer>
+
+          {/* Videos Block */}
+          <SectionContainer id="videos-section" bgClassName="bg-[#111] border-y-0 text-white">
+            <SectionErrorBoundary>
+              <Videos />
             </SectionErrorBoundary>
           </SectionContainer>
 
@@ -273,38 +282,10 @@ export default function Home() {
             </div>
           </SectionContainer>
 
-          {/* Opinion Column */}
-          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-            <SectionErrorBoundary>
-              <Opinion />
-            </SectionErrorBoundary>
-          </SectionContainer>
-
-          {/* Videos Block */}
-          <SectionContainer bgClassName="bg-[#111] border-y-0 text-white">
-            <SectionErrorBoundary>
-              <Videos />
-            </SectionErrorBoundary>
-          </SectionContainer>
-
-          {/* Magazine Spotlight */}
-          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-            <SectionErrorBoundary>
-              <Magazine />
-            </SectionErrorBoundary>
-          </SectionContainer>
-
           {/* Authors Block */}
           <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
             <SectionErrorBoundary>
               <Authors />
-            </SectionErrorBoundary>
-          </SectionContainer>
-
-          {/* Community Block */}
-          <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-            <SectionErrorBoundary>
-              <Community />
             </SectionErrorBoundary>
           </SectionContainer>
 
