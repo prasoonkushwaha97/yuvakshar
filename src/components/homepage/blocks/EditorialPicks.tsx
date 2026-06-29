@@ -7,7 +7,11 @@ import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
 import { Award, Clock, ArrowRight } from "lucide-react";
 
-export default function EditorialPicks() {
+interface EditorialPicksProps {
+  excludeIds?: string[];
+}
+
+export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps) {
   const { locale } = useLanguage();
   const { articles } = useCms();
 
@@ -17,16 +21,13 @@ export default function EditorialPicks() {
 
   if (published.length === 0) return null;
 
-  // Main Hero Story (to exclude)
-  const heroStory = published.find((a: any) => a.hero || a.isFeatured) || published[0];
-
-  // Remaining articles
-  const remaining = published.filter((a: any) => a.id !== heroStory.id);
+  // Filter out any articles rendered in Hero or TopStories/LatestNews/Categories
+  const remaining = published.filter((a: any) => !excludeIds.includes(a.id));
 
   // Editorial Picks filter
-  let picks = published.filter((a: any) => a.editors_pick || a.recommended);
+  let picks = remaining.filter((a: any) => a.editors_pick || a.recommended);
   if (picks.length === 0) {
-    picks = remaining.slice(4, 8); // fallback slice to avoid overlap with top stories
+    picks = remaining.slice(0, 4); // fallback slice to avoid duplicates
   } else {
     picks = picks.slice(0, 4);
   }
@@ -59,12 +60,12 @@ export default function EditorialPicks() {
           return (
             <div 
               key={art.id} 
-              className="group flex flex-col w-[80vw] sm:w-auto shrink-0 sm:shrink bg-white dark:bg-[#0E1322] rounded-xl overflow-hidden border border-gray-150 dark:border-gray-850 shadow-sm hover:shadow-md hover:border-[#f97316]/30 transition-all duration-300 snap-start"
+              className="group flex flex-col w-[80vw] sm:w-auto shrink-0 sm:shrink bg-white dark:bg-[#0E1322] rounded-3xl overflow-hidden border border-gray-150/80 dark:border-gray-850/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300 snap-start"
             >
               {/* Image Section */}
               <Link 
                 href={`/articles/${art.slug || art.id}`} 
-                className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-100 dark:bg-gray-900 border-b border-gray-150 dark:border-gray-850 shrink-0"
+                className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-50 dark:bg-gray-900 border-b border-gray-150/60 dark:border-gray-850/60 shrink-0"
               >
                 <img
                   src={imageUrl}

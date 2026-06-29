@@ -10,13 +10,15 @@ interface CategoryBlockProps {
   categoryName: string; // Hindi name matching category field, e.g. "शिक्षा", "साहित्य"
   englishName?: string;  // English fallback title
   limit?: number;
+  excludeIds?: string[];
 }
 
-export default function CategoryBlock({ categoryName, englishName, limit = 4 }: CategoryBlockProps) {
+export default function CategoryBlock({ categoryName, englishName, limit = 4, excludeIds = [] }: CategoryBlockProps) {
   const { articles } = useCms();
 
   const categoryArticles = articles
     .filter((art: any) => art.status === "Published" || art.status === "Approved" || !art.status)
+    .filter((art: any) => !excludeIds.includes(art.id))
     .filter(
       (art: any) => 
         art.category?.trim().toLowerCase() === categoryName.toLowerCase() ||
@@ -27,7 +29,7 @@ export default function CategoryBlock({ categoryName, englishName, limit = 4 }: 
   if (categoryArticles.length === 0) return null;
 
   const featured = categoryArticles[0];
-  const secondary = categoryArticles.slice(1, limit + 1);
+  const secondary = categoryArticles.slice(1, limit);
 
   return (
     <div className="w-full py-0.5">

@@ -151,8 +151,87 @@ export default function Home() {
     );
   }
 
+  // --- DYNAMIC DEDUPLICATION GATHERING ---
+  const sliderArticles = publishedArticles.slice(0, 3);
+  const remainingAfterHeroSlider = publishedArticles.filter((a: any) => !sliderArticles.map((sa: any) => sa.id).includes(a.id));
+  
+  const getArticleByCategory = (catKeywords: string[], fallbackIdx: number) => {
+    const matched = remainingAfterHeroSlider.find((a: any) => 
+      catKeywords.some(keyword => 
+        (a.category || "").toLowerCase().includes(keyword) || 
+        (a.category_hi || "").toLowerCase().includes(keyword)
+      )
+    );
+    return matched || remainingAfterHeroSlider[fallbackIdx] || publishedArticles[fallbackIdx] || null;
+  };
+
+  const politicsArticle = getArticleByCategory(["राजनीति", "politics"], 0);
+  const economyArticle = getArticleByCategory(["अर्थव्यवस्था", "economy", "business", "व्यवसाय"], 1);
+  const techArticle = getArticleByCategory(["तकनीक", "tech", "science", "विज्ञान"], 2);
+
+  const heroExcludedIds = [
+    ...sliderArticles.map((a: any) => a.id),
+    politicsArticle?.id,
+    economyArticle?.id,
+    techArticle?.id
+  ].filter(Boolean) as string[];
+
+  const remainingForTopStories = publishedArticles.filter((a: any) => !heroExcludedIds.includes(a.id));
+  const topStoriesArticles = remainingForTopStories.slice(0, 8);
+  const topStoriesIds = topStoriesArticles.map((a: any) => a.id);
+  const excludeIdsForLatest = [...new Set([...heroExcludedIds, ...topStoriesIds])];
+
+  const latestNewsArticles = publishedArticles
+    .filter((a: any) => !excludeIdsForLatest.includes(a.id))
+    .slice(0, 10);
+  const latestNewsIds = latestNewsArticles.map((a: any) => a.id);
+  const excludeIdsForCategories = [...new Set([...excludeIdsForLatest, ...latestNewsIds])];
+
+  const getCategoryArticles = (keywords: string[], excludes: string[]) => {
+    return publishedArticles
+      .filter((a: any) => !excludes.includes(a.id))
+      .filter((a: any) => 
+        keywords.some(keyword => 
+          (a.category || "").toLowerCase().includes(keyword) || 
+          (a.category_hi || "").toLowerCase().includes(keyword)
+        )
+      )
+      .slice(0, 4);
+  };
+
+  const politicsCatArticles = getCategoryArticles(["राजनीति", "politics"], excludeIdsForCategories);
+  const politicsCatIds = politicsCatArticles.map((a: any) => a.id);
+  const afterPoliticsExcludes = [...excludeIdsForCategories, ...politicsCatIds];
+
+  const societyCatArticles = getCategoryArticles(["समाज", "society"], afterPoliticsExcludes);
+  const societyCatIds = societyCatArticles.map((a: any) => a.id);
+  const afterSocietyExcludes = [...afterPoliticsExcludes, ...societyCatIds];
+
+  const economyCatArticles = getCategoryArticles(["अर्थव्यवस्था", "economy", "business", "व्यवसाय"], afterSocietyExcludes);
+  const economyCatIds = economyCatArticles.map((a: any) => a.id);
+  const afterEconomyExcludes = [...afterSocietyExcludes, ...economyCatIds];
+
+  const educationCatArticles = getCategoryArticles(["शिक्षा", "education"], afterEconomyExcludes);
+  const educationCatIds = educationCatArticles.map((a: any) => a.id);
+  const afterEducationExcludes = [...afterEconomyExcludes, ...educationCatIds];
+
+  const scienceCatArticles = getCategoryArticles(["विज्ञान", "science", "तकनीक", "tech"], afterEducationExcludes);
+  const scienceCatIds = scienceCatArticles.map((a: any) => a.id);
+  const afterScienceExcludes = [...afterEducationExcludes, ...scienceCatIds];
+
+  const cultureCatArticles = getCategoryArticles(["संस्कृति", "culture", "art", "कला"], afterScienceExcludes);
+  const cultureCatIds = cultureCatArticles.map((a: any) => a.id);
+  const afterCultureExcludes = [...afterScienceExcludes, ...cultureCatIds];
+
+  const envCatArticles = getCategoryArticles(["पर्यावरण", "environment"], afterCultureExcludes);
+  const envCatIds = envCatArticles.map((a: any) => a.id);
+  const afterEnvExcludes = [...afterCultureExcludes, ...envCatIds];
+
+  const sportsCatArticles = getCategoryArticles(["खेल", "sports"], afterEnvExcludes);
+  const sportsCatIds = sportsCatArticles.map((a: any) => a.id);
+  const finalExcludesBeforeEditorial = [...afterEnvExcludes, ...sportsCatIds];
+
   // --- LAYOUT ENGINE ---
-  // Select active sections from preview states or database layouts
   const activeDbSections = previewSections 
     ? previewSections.filter((sec: any) => sec.is_visible !== false)
     : Array.isArray(homepageSections)
@@ -172,9 +251,9 @@ export default function Home() {
       case "topstories":
         return <TopStories />;
       case "editorialpicks":
-        return <EditorialPicks />;
+        return <EditorialPicks excludeIds={finalExcludesBeforeEditorial} />;
       case "latestnews":
-        return <LatestNews />;
+        return <LatestNews excludeIds={excludeIdsForLatest} />;
       case "breakingticker":
         return <BreakingTicker />;
       case "trending":
@@ -192,7 +271,7 @@ export default function Home() {
       case "popular":
         return <Popular />;
       case "categoryblock":
-        return <CategoryBlock categoryName={catName} limit={artLimit} />;
+        return <CategoryBlock categoryName={catName} limit={artLimit} excludeIds={excludeIdsForCategories} />;
       case "authors":
         return <Authors />;
       default:
@@ -262,34 +341,53 @@ export default function Home() {
               
               {/* LEFT COLUMN: Main content feeds */}
               <div className="lg:col-span-8 space-y-12 lg:space-y-16">
-                {/* Top Stories */}
+                
+                {/* Top Stories (8 articles) */}
                 <SectionErrorBoundary>
                   <TopStories />
                 </SectionErrorBoundary>
 
-                {/* Latest News Feed */}
+                {/* Latest News Feed (10 articles) */}
                 <SectionErrorBoundary>
-                  <LatestNews />
+                  <LatestNews excludeIds={excludeIdsForLatest} />
+                </SectionErrorBoundary>
+
+                {/* Category highlights ordered dynamically */}
+                <SectionErrorBoundary>
+                  <CategoryBlock categoryName="राजनीति" englishName="politics" limit={4} excludeIds={excludeIdsForCategories} />
+                </SectionErrorBoundary>
+                
+                <SectionErrorBoundary>
+                  <CategoryBlock categoryName="समाज" englishName="society" limit={4} excludeIds={afterPoliticsExcludes} />
+                </SectionErrorBoundary>
+
+                <SectionErrorBoundary>
+                  <CategoryBlock categoryName="अर्थव्यवस्था" englishName="economy" limit={4} excludeIds={afterSocietyExcludes} />
+                </SectionErrorBoundary>
+
+                <SectionErrorBoundary>
+                  <CategoryBlock categoryName="शिक्षा" englishName="education" limit={4} excludeIds={afterEconomyExcludes} />
+                </SectionErrorBoundary>
+
+                <SectionErrorBoundary>
+                  <CategoryBlock categoryName="विज्ञान" englishName="science" limit={4} excludeIds={afterEducationExcludes} />
+                </SectionErrorBoundary>
+
+                <SectionErrorBoundary>
+                  <CategoryBlock categoryName="संस्कृति" englishName="culture" limit={4} excludeIds={afterScienceExcludes} />
+                </SectionErrorBoundary>
+
+                <SectionErrorBoundary>
+                  <CategoryBlock categoryName="पर्यावरण" englishName="environment" limit={4} excludeIds={afterCultureExcludes} />
+                </SectionErrorBoundary>
+
+                <SectionErrorBoundary>
+                  <CategoryBlock categoryName="खेल" englishName="sports" limit={4} excludeIds={afterEnvExcludes} />
                 </SectionErrorBoundary>
 
                 {/* Editorial Picks */}
                 <SectionErrorBoundary>
-                  <EditorialPicks />
-                </SectionErrorBoundary>
-
-                {/* Categories block */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <SectionErrorBoundary>
-                    <CategoryBlock categoryName="राजनीति" englishName="politics" />
-                  </SectionErrorBoundary>
-                  <SectionErrorBoundary>
-                    <CategoryBlock categoryName="शिक्षा" englishName="education" />
-                  </SectionErrorBoundary>
-                </div>
-
-                {/* Magazine Spotlight */}
-                <SectionErrorBoundary>
-                  <Magazine />
+                  <EditorialPicks excludeIds={finalExcludesBeforeEditorial} />
                 </SectionErrorBoundary>
 
                 {/* Videos Block */}
@@ -299,10 +397,16 @@ export default function Home() {
                   </SectionErrorBoundary>
                 </div>
 
-                {/* Opinion Column */}
+                {/* Magazine Spotlight */}
                 <SectionErrorBoundary>
-                  <Opinion />
+                  <Magazine />
                 </SectionErrorBoundary>
+
+                {/* Authors Block */}
+                <SectionErrorBoundary>
+                  <Authors />
+                </SectionErrorBoundary>
+
               </div>
 
               {/* RIGHT COLUMN: Sidebar (Rendered exactly once) */}

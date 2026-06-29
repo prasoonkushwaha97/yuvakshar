@@ -23,8 +23,8 @@ export default function TopStories() {
   // Remaining articles
   const remaining = published.filter((a: any) => a.id !== heroStory.id);
 
-  // Top Stories: Next 4 articles
-  const topStories = remaining.slice(0, 4);
+  // Top Stories: Next 8 articles
+  const topStories = remaining.slice(0, 8);
 
   if (topStories.length === 0) return null;
 
@@ -48,9 +48,9 @@ export default function TopStories() {
           const imageUrl = art.coverImage || art.cover_image || art.image || "/images/placeholder-news.jpg";
 
           const dateStr = art.published_at 
-            ? new Date(art.published_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
+            ? new Date(art.published_at).toLocaleDateString("hi-IN", { year: "numeric", month: "short", day: "numeric" })
             : art.created_at
-              ? new Date(art.created_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
+              ? new Date(art.created_at).toLocaleDateString("hi-IN", { year: "numeric", month: "short", day: "numeric" })
               : "";
 
           const readTimeVal = art.content
@@ -60,7 +60,7 @@ export default function TopStories() {
           return (
             <div 
               key={art.id} 
-              className="group flex flex-col w-[85vw] sm:w-auto shrink-0 sm:shrink bg-white dark:bg-[#0E1322] rounded-xl overflow-hidden border border-gray-150 dark:border-gray-850 shadow-sm hover:shadow-md hover:border-[#f97316]/30 transition-all duration-300 snap-start"
+              className="group flex flex-col w-[85vw] sm:w-auto shrink-0 sm:shrink bg-white dark:bg-[#0E1322] rounded-3xl overflow-hidden border border-gray-150/80 dark:border-gray-850/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300 snap-start"
             >
               {/* Image Section */}
               <Link 

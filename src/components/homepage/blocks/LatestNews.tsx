@@ -7,10 +7,14 @@ import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
 import { Clock, Calendar, ChevronDown } from "lucide-react";
 
-export default function LatestNews() {
+interface LatestNewsProps {
+  excludeIds?: string[];
+}
+
+export default function LatestNews({ excludeIds = [] }: LatestNewsProps) {
   const { locale } = useLanguage();
   const { articles } = useCms();
-  const [visibleCount, setVisibleCount] = useState(6);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   const published = articles.filter(
     (art: any) => art.status === "Published" || art.status === "Approved" || !art.status
@@ -18,14 +22,8 @@ export default function LatestNews() {
 
   if (published.length === 0) return null;
 
-  // Main Hero Story (to exclude)
-  const heroStory = published.find((a: any) => a.hero || a.isFeatured) || published[0];
-
-  // Remaining articles
-  const remaining = published.filter((a: any) => a.id !== heroStory.id);
-
-  // Latest News: Starts after Top Stories (index 4 onwards)
-  const feedArticles = remaining.slice(4);
+  // Filter out any articles rendered in Hero or TopStories
+  const feedArticles = published.filter((a: any) => !excludeIds.includes(a.id));
 
   if (feedArticles.length === 0) return null;
 
@@ -33,7 +31,7 @@ export default function LatestNews() {
   const hasMore = feedArticles.length > visibleCount;
 
   const handleLoadMore = () => {
-    setVisibleCount((prev) => prev + 6);
+    setVisibleCount((prev) => prev + 10);
   };
 
   return (
@@ -68,12 +66,12 @@ export default function LatestNews() {
           return (
             <div 
               key={art.id} 
-              className="group flex flex-col sm:flex-row gap-4 bg-white dark:bg-[#0E1322] p-4 rounded-xl border border-gray-150 dark:border-gray-850 shadow-sm hover:shadow-md hover:border-[#f97316]/30 transition-all duration-300"
+              className="group flex flex-col sm:flex-row gap-4 bg-white dark:bg-[#0E1322] p-4 rounded-3xl border border-gray-150/80 dark:border-gray-850/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300"
             >
               {/* Thumbnail */}
               <Link 
                 href={`/articles/${art.slug || art.id}`} 
-                className="block relative w-full sm:w-32 h-44 sm:h-32 shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-850"
+                className="block relative w-full sm:w-32 h-44 sm:h-32 shrink-0 overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-150/60 dark:border-gray-850/60"
               >
                 <img
                   src={imageUrl}
