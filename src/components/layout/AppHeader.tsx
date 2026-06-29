@@ -1,0 +1,191 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, Search, Sun, Moon, User, LogOut, ChevronDown } from "lucide-react";
+import { useCms } from "@/store/CmsContext";
+import { useLanguage } from "@/store/LanguageContext";
+import { primaryLinks, profileActions } from "@/config/navigation.config";
+import { designTokens } from "@/config/designTokens";
+import AppDrawer from "./AppDrawer";
+import MobileSearchOverlay from "./MobileSearchOverlay";
+
+export default function AppHeader() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { locale, setLocale } = useLanguage();
+  const { currentUser, openAuthModal, logoutUser } = useCms();
+
+  // Navigation Drawers/Overlay States
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerMode, setDrawerMode] = useState<"navigation" | "profile">("navigation");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+
+  // Theme State
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  // Scroll collapsing state
+  const [visible, setVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    // Theme initialization
+    const savedTheme = localStorage.getItem("yuvakshar_theme") as "light" | "dark" || "light";
+    setTheme(savedTheme);
+    if (savedTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
+  useEffect(() => {
+    // Scroll collapse/expand hooks
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY < 10) {
+        setVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 60) {
+        setVisible(false); // Collapsed on scroll down
+      } else {
+        setVisible(true); // Expanded on scroll up
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("yuvakshar_theme", newTheme);
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
+
+  const handleProfileClick = () => {
+    if (!currentUser) {
+      openAuthModal();
+    } else {
+      setDrawerMode("profile");
+      setDrawerOpen(true);
+    }
+  };
+
+  const handleLogout = async () => {
+    await logoutUser();
+    router.refresh();
+  };
+
+  return (
+    <>
+      {/* 1. Header Layout Frame */}
+      <header 
+        className="fixed top-0 left-0 right-0 z-40 bg-[#FDFCF7]/95 dark:bg-[#0B0F19]/95 border-b border-gray-150 dark:border-gray-850 backdrop-blur transition-transform duration-300"
+        style={{
+          transform: visible ? "translateY(0)" : "translateY(-100%)",
+          height: designTokens.spacing.headerHeightDesktop
+        }}
+      >
+        <div className="max-w-[1400px] mx-auto h-full px-4 md:px-8 flex items-center justify-between">
+          
+          {/* Mobile Menu Trigger & Logo Group */}
+          <div className="flex items-center space-x-3.5">
+            <button 
+              onClick={() => { setDrawerMode("navigation"); setDrawerOpen(true); }}
+              className="lg:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500"
+              aria-label="Open menu drawer"
+            >
+              <Menu className="w-5 h-5" strokeWidth={2.2} />
+            </button>
+
+            <Link href="/" className="flex items-center space-x-1.5">
+              <span className="font-serif font-black text-xl md:text-2xl uppercase tracking-tighter text-[#f97316]">
+                युवाक्षर
+              </span>
+            </Link>
+          </div>
+
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center space-x-1">
+            {primaryLinks.slice(0, 6).map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-3 py-2 text-xs font-extrabold uppercase tracking-wide font-sans rounded-md transition-all duration-200 ${
+                    isActive 
+                      ? "text-[#f97316] bg-[#f97316]/5" 
+                      : "text-gray-700 dark:text-gray-300 hover:text-[#f97316]"
+                  }`}
+                >
+                  {locale === "hi" ? link.labelHi : link.labelEn}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Actions toolbar: Search | Theme | Profile */}
+          <div className="flex items-center space-x-2.5">
+            <button 
+              onClick={() => setSearchOpen(true)}
+              className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-500 hover:text-[#f97316] transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Trigger search overlay"
+            >
+              <Search className="w-[18px] h-[18px]" strokeWidth={2.2} />
+            </button>
+
+            <button 
+              onClick={toggleTheme}
+              className="hidden lg:flex p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-500 hover:text-[#f97316] transition-colors cursor-pointer min-h-[44px] min-w-[44px] items-center justify-center"
+              aria-label="Toggle dark mode"
+            >
+              {theme === "light" 
+                ? <Moon className="w-[18px] h-[18px]" strokeWidth={2.2} /> 
+                : <Sun className="w-[18px] h-[18px]" strokeWidth={2.2} />
+              }
+            </button>
+
+            {/* Profile Dropdown/Drawer trigger */}
+            <div className="relative">
+              <button 
+                onClick={handleProfileClick}
+                className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-500 hover:text-[#f97316] transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+                aria-label="Open profile actions"
+              >
+                <User className="w-[18px] h-[18px]" strokeWidth={2.2} />
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </header>
+
+      {/* Spacer block under fixed header */}
+      <div 
+        className="w-full shrink-0" 
+        style={{ height: designTokens.spacing.headerHeightDesktop }} 
+      />
+
+      {/* 2. Unified Navigation Drawer */}
+      <AppDrawer 
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        mode={drawerMode}
+        onLogout={handleLogout}
+      />
+
+      {/* 3. Fullscreen Search Overlay */}
+      <MobileSearchOverlay 
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+      />
+    </>
+  );
+}

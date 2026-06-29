@@ -17,7 +17,7 @@ import {
 } from "@/components/homepage/shared/Skeleton";
 
 // Layout
-import NewspaperHeader from "@/components/homepage/layout/NewspaperHeader";
+import AppHeader from "@/components/layout/AppHeader";
 import NewspaperFooter from "@/components/homepage/layout/NewspaperFooter";
 import Sidebar from "@/components/homepage/layout/Sidebar";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
@@ -118,7 +118,7 @@ export default function Home() {
   if (!hasData) {
     return (
       <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] pb-16 font-sans">
-        <NewspaperHeader />
+        <AppHeader />
         <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-24 text-center border border-gray-150 dark:border-gray-850 rounded-lg my-12 bg-gray-50 dark:bg-gray-900">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-16 h-16 text-gray-300 mx-auto mb-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18V6.125c0-.621.504-1.125 1.125-1.125H11.25M12 7.5v6" />
@@ -178,7 +178,7 @@ export default function Home() {
     <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] text-[#111] dark:text-[#F5F5F5] pb-16 font-sans overflow-x-hidden transition-colors duration-300">
       
       {/* 1. Header Layout */}
-      <NewspaperHeader />
+      <AppHeader />
 
       {/* 2. Full-Width Breaking News Ticker */}
       <SectionErrorBoundary>

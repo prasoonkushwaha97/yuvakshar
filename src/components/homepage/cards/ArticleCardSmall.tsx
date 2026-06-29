@@ -5,6 +5,8 @@ import Link from "next/link";
 import { stripMarkdown } from "@/lib/markdown";
 import ReadingTime from "../shared/ReadingTime";
 
+import { formatDisplayDate } from "@/utils/date";
+
 interface ArticleCardSmallProps {
   article: any;
   showThumbnail?: boolean;
@@ -20,9 +22,9 @@ export default function ArticleCardSmall({
 }: ArticleCardSmallProps) {
   if (!article) return null;
 
-  const title = stripMarkdown(article.title || "");
-  const imageUrl = article.coverImage || article.image || "/images/placeholder-news.jpg";
-  const cleanDate = article.date ? article.date.split(",")[0] : "";
+  const title = stripMarkdown(article.title || article.title_hi || "");
+  const imageUrl = article.coverImage || article.cover_image || article.image || "/images/placeholder-news.jpg";
+  const cleanDate = formatDisplayDate(article.date);
 
   return (
     <div className={`group flex gap-3 py-3 border-b border-gray-100 dark:border-gray-850 last:border-0 ${className}`}>
@@ -33,7 +35,7 @@ export default function ArticleCardSmall({
       )}
 
       {showThumbnail && (
-        <Link href={`/editorial?id=${article.id}`} className="block relative w-16 h-16 shrink-0 overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-sm border border-gray-150 dark:border-gray-850">
+        <Link href={`/articles/${article.slug || article.id}`} className="block relative w-16 h-16 shrink-0 overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-sm border border-gray-150 dark:border-gray-850">
           <img
             src={imageUrl}
             alt={title}
@@ -51,7 +53,7 @@ export default function ArticleCardSmall({
           <span>{cleanDate}</span>
         </div>
 
-        <Link href={`/editorial?id=${article.id}`} className="block group-hover:text-[#f97316] transition-colors duration-250">
+        <Link href={`/articles/${article.slug || article.id}`} className="block group-hover:text-[#f97316] transition-colors duration-250">
           <h4 className="font-bold font-serif text-[13.5px] leading-snug text-gray-900 dark:text-gray-200 line-clamp-2">
             {title}
           </h4>

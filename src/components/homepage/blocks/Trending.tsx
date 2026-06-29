@@ -1,50 +1,55 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
-import TrendingCard from "../cards/TrendingCard";
 
-const TOPICS = [
-  { name: "राजनीति", englishName: "Politics", icon: "🗳️" },
-  { name: "पर्यावरण", englishName: "Environment", icon: "🌿" },
-  { name: "शिक्षा", englishName: "Education", icon: "🎓" },
-  { name: "विज्ञान", englishName: "Science", icon: "🔬" },
-  { name: "इतिहास", englishName: "History", icon: "📜" },
-  { name: "तकनीक", englishName: "Technology", icon: "💻" },
-  { name: "साहित्य", englishName: "Literature", icon: "✍️" },
-  { name: "संस्कृति", englishName: "Culture", icon: "🏛️" }
-];
+const DEFAULT_TAGS = ["भारत", "राजनीति", "शिक्षा", "पर्यावरण", "AI", "इतिहास", "मध्यप्रदेश", "संविधान", "विज्ञान", "युवा"];
 
 export default function Trending() {
   const { locale } = useLanguage();
   const { articles } = useCms();
 
-  const trendingTopics = TOPICS.map((topic) => {
-    const count = articles.filter(
-      (a: any) => a.category?.trim().toLowerCase() === topic.name.toLowerCase() ||
-                  a.category?.trim().toLowerCase() === topic.englishName.toLowerCase()
-    ).length;
+  const published = articles.filter(
+    (art: any) => art.status === "Published" || art.status === "Approved" || !art.status
+  );
 
-    // Fallback to mock count if no articles are matching
-    return {
-      ...topic,
-      count: count > 0 ? count : Math.floor(Math.random() * 8) + 3
-    };
-  });
+  // Extract dynamic tags from articles
+  const dynamicTags = published
+    .flatMap((art: any) => art.tags || [])
+    .filter(Boolean)
+    .map((tag: string) => tag.trim());
+
+  // Deduplicate and merge dynamic tags with default fallback tags
+  const uniqueTags = Array.from(new Set([...dynamicTags, ...DEFAULT_TAGS]))
+    .slice(0, 10)
+    .map(tag => tag.startsWith("#") ? tag : `#${tag}`);
 
   return (
-    <div className="w-full py-4">
-      <div className="flex items-center space-x-2 mb-4">
-        <span className="w-1 bg-[#f97316] h-4 rounded-sm" />
-        <h4 className="font-serif font-black text-xs md:text-sm text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-          {locale === "hi" ? "चर्चित विषय" : "Trending Topics"}
+    <div className="w-full py-2.5 flex flex-col md:flex-row md:items-center justify-start gap-4">
+      {/* Title block */}
+      <div className="flex items-center space-x-2 shrink-0 border-r-0 md:border-r border-gray-200 dark:border-gray-800 pr-0 md:pr-4">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#f97316] animate-pulse" />
+        <h4 className="font-serif font-black text-xs md:text-sm text-gray-900 dark:text-gray-200 uppercase tracking-wider">
+          {locale === "hi" ? "आज के ट्रेंडिंग विषय" : "Trending Topics Today"}
         </h4>
       </div>
-      <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-none">
-        {trendingTopics.map((topic) => (
-          <TrendingCard key={topic.name} topic={topic} />
-        ))}
+
+      {/* Horizontal pill list */}
+      <div className="flex flex-wrap md:flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+        {uniqueTags.map((tag) => {
+          const query = tag.replace("#", "");
+          return (
+            <Link
+              key={tag}
+              href={`/search?q=${encodeURIComponent(query)}`}
+              className="px-3.5 py-1.5 bg-gray-105 hover:bg-[#f97316]/10 hover:text-[#f97316] dark:bg-gray-900 dark:hover:bg-[#f97316]/15 dark:text-gray-300 text-xs font-bold font-sans rounded-full border border-transparent hover:border-[#f97316]/20 transition-all duration-300 whitespace-nowrap shadow-sm cursor-pointer"
+            >
+              {tag}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

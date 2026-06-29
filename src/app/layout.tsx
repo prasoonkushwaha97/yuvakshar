@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import Link from "next/link";
 import { LanguageProvider } from "@/store/LanguageContext";
 import { CmsProvider } from "@/store/CmsContext";
 import AuthModal from "@/components/yuvakshar/AuthModal";
-import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
 import { Noto_Sans_Devanagari, Noto_Serif_Devanagari, Hind, Mukta, Inter } from "next/font/google";

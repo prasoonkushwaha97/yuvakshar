@@ -13,14 +13,14 @@ interface ArticleCardLargeProps {
 export default function ArticleCardLarge({ article }: ArticleCardLargeProps) {
   if (!article) return null;
 
-  const title = stripMarkdown(article.title || "");
-  const summary = stripMarkdown(article.summary || article.content || "");
-  const imageUrl = article.coverImage || article.image || "/images/placeholder-news.jpg";
+  const title = stripMarkdown(article.title || article.title_hi || "");
+  const summary = stripMarkdown(article.summary || article.summary_hi || article.content || "");
+  const imageUrl = article.coverImage || article.cover_image || article.image || "/images/placeholder-news.jpg";
 
   return (
     <div className="group flex flex-col w-full h-full bg-white dark:bg-[#0A0A0A] rounded-lg overflow-hidden border border-gray-150 dark:border-gray-850 hover:shadow-[0_8px_20px_-6px_rgba(0,0,0,0.06)] transition-all duration-300">
       {/* Image Block */}
-      <Link href={`/editorial?id=${article.id}`} className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-100 dark:bg-gray-900 border-b border-gray-150 dark:border-gray-850 shrink-0">
+      <Link href={`/articles/${article.slug || article.id}`} className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-100 dark:bg-gray-900 border-b border-gray-150 dark:border-gray-850 shrink-0">
         <img
           src={imageUrl}
           alt={title}
@@ -35,7 +35,7 @@ export default function ArticleCardLarge({ article }: ArticleCardLargeProps) {
 
       {/* Content Block */}
       <div className="flex-1 flex flex-col p-5">
-        <Link href={`/editorial?id=${article.id}`} className="block group-hover:text-[#f97316] transition-colors duration-200">
+        <Link href={`/articles/${article.slug || article.id}`} className="block group-hover:text-[#f97316] transition-colors duration-200">
           <h3 className="text-xl font-bold font-serif leading-[1.3] text-gray-900 dark:text-gray-150 mb-2.5 line-clamp-2">
             {title}
           </h3>

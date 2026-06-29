@@ -11,8 +11,8 @@ interface EditorialCardProps {
 export default function EditorialCard({ article }: EditorialCardProps) {
   if (!article) return null;
 
-  const title = stripMarkdown(article.title || "");
-  const summary = stripMarkdown(article.summary || article.content || "");
+  const title = stripMarkdown(article.title || article.title_hi || "");
+  const summary = stripMarkdown(article.summary || article.summary_hi || article.content || "");
   const authorAvatar = article.authorAvatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(article.author || "User")}`;
   const authorRole = article.authorRole || "वरिष्ठ स्तंभकार";
 
@@ -37,7 +37,7 @@ export default function EditorialCard({ article }: EditorialCardProps) {
       </span>
 
       {/* Column Title */}
-      <Link href={`/editorial?id={article.id}`} className="block flex-grow group-hover:text-[#f97316] transition-colors">
+      <Link href={`/articles/${article.slug || article.id}`} className="block flex-grow group-hover:text-[#f97316] transition-colors">
         <h4 className="font-serif font-black text-[15px] leading-snug text-gray-900 dark:text-gray-150 line-clamp-3 mb-3">
           "{title}"
         </h4>
@@ -49,7 +49,7 @@ export default function EditorialCard({ article }: EditorialCardProps) {
 
       {/* Link to Read */}
       <Link
-        href={`/editorial?id=${article.id}`}
+        href={`/articles/${article.slug || article.id}`}
         className="text-[10px] uppercase font-sans font-bold tracking-widest text-[#f97316] hover:text-[#EA580C] mt-auto hover:underline"
       >
         कॉलम पढ़ें

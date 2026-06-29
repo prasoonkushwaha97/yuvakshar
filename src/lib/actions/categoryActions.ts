@@ -47,15 +47,10 @@ async function validateMaxDepth(parent_id: string | null, category_id?: string) 
 export async function getCategories() {
   const supabase = await createClient();
   
-  // Fetch categories with creator and updater profiles
+  // Fetch categories
   const { data: categories, error } = await supabase
     .from("categories")
-    .select(`
-      *,
-      creator:profiles!created_by(name, avatar_url),
-      updater:profiles!updated_by(name, avatar_url)
-    `)
-    .order("sort_order", { ascending: true });
+    .select("*");
 
   if (error) {
     console.error("Error fetching categories:", error);
@@ -77,7 +72,18 @@ export async function getCategories() {
   }
 
   return categories.map((cat: any) => ({
-    ...cat,
+    id: cat.id,
+    name_hi: cat.name,
+    name_en: cat.name,
+    slug: cat.slug,
+    description_hi: cat.description || "",
+    description_en: cat.description || "",
+    color: "#EA580C",
+    is_active: true,
+    sort_order: 0,
+    parent_id: cat.parent_id,
+    created_at: cat.created_at,
+    updated_at: cat.created_at,
     _count: {
       articles: counts[cat.id] || 0
     }
@@ -89,30 +95,15 @@ export async function createCategory(data: Partial<Category>) {
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
-  const userId = authData?.user?.id;
-
-  if (!userId) throw new Error("Unauthorized");
-
-  if (data.parent_id) {
-    await validateMaxDepth(data.parent_id);
-  }
 
   const { data: result, error } = await supabase
     .from("categories")
     .insert([{
-      name_hi: data.name_hi,
-      name_en: data.name_en,
-      slug: data.slug,
-      description_hi: data.description_hi,
-      description_en: data.description_en,
-      color: data.color || "#EA580C",
-      icon: data.icon,
-      is_active: data.is_active ?? true,
-      sort_order: data.sort_order || 0,
+      name: data.name_hi || data.name_en || "",
+      slug: data.slug || "",
+      description: data.description_hi || data.description_en || "",
       parent_id: data.parent_id || null,
-      created_by: userId,
-      updated_by: userId
+      language_code: "hi"
     }])
     .select("id")
     .single();
@@ -129,24 +120,20 @@ export async function updateCategory(id: string, data: Partial<Category>) {
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
-  const userId = authData?.user?.id;
 
-  if (!userId) throw new Error("Unauthorized");
-
-  if (data.parent_id !== undefined) {
-    await validateMaxDepth(data.parent_id, id);
+  const updateData: any = {};
+  if (data.name_hi !== undefined || data.name_en !== undefined) {
+    updateData.name = data.name_hi || data.name_en;
   }
-
-  const updateData: any = {
-    ...data,
-    updated_by: userId,
-    updated_at: new Date().toISOString()
-  };
-  
-  // ensure _count etc are not sent to DB
-  delete updateData._count;
-  delete updateData.created_by; // Prevent overwriting
+  if (data.slug !== undefined) {
+    updateData.slug = data.slug;
+  }
+  if (data.description_hi !== undefined || data.description_en !== undefined) {
+    updateData.description = data.description_hi || data.description_en;
+  }
+  if (data.parent_id !== undefined) {
+    updateData.parent_id = data.parent_id;
+  }
 
   const { error } = await supabase
     .from("categories")
@@ -155,7 +142,7 @@ export async function updateCategory(id: string, data: Partial<Category>) {
 
   if (error) throw new Error(error.message);
 
-  await logGovernanceAction("update", "category", id, { fields_updated: Object.keys(data) });
+  await logGovernanceAction("update", "category", id, { fields_updated: Object.keys(updateData) });
   revalidatePath("/founder/categories");
   return { success: true };
 }

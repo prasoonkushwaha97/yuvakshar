@@ -73,6 +73,7 @@ export interface Article {
   meta_description?: string;
   meta_keywords?: string;
   language: string;
+  read_time?: string;
   
   // Relations
   categories?: {

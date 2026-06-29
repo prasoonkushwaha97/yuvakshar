@@ -64,7 +64,7 @@ export default function Hero() {
                   <span className="text-gray-300">•</span>
                   <span>{art.category}</span>
                 </div>
-                <Link href={`/editorial?id=${art.id}`} className="block group-hover:text-[#f97316] transition-colors">
+                <Link href={`/articles/${art.slug || art.id}`} className="block group-hover:text-[#f97316] transition-colors">
                   <h4 className="font-serif font-bold text-xs md:text-sm text-gray-800 dark:text-gray-200 leading-snug line-clamp-2">
                     {cleanTitle}
                   </h4>

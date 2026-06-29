@@ -6,6 +6,8 @@ import ViewCounter from "./ViewCounter";
 import BookmarkButton from "./BookmarkButton";
 import ShareButton from "./ShareButton";
 
+import { formatDisplayDate } from "@/utils/date";
+
 interface MetaInfoProps {
   articleId: string;
   author: string;
@@ -27,7 +29,7 @@ export default function MetaInfo({
   showActions = true,
   className = ""
 }: MetaInfoProps) {
-  const cleanDate = date ? date.split(",")[0] : "";
+  const cleanDate = formatDisplayDate(date);
   const initial = author ? author.charAt(0).toUpperCase() : "U";
 
   return (

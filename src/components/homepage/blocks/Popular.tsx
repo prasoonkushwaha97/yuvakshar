@@ -120,7 +120,7 @@ export default function Popular() {
                   {/* Title */}
                   <td className="py-3 px-4">
                     <Link
-                      href={`/editorial?id=${art.id}`}
+                      href={`/articles/${art.slug || art.id}`}
                       className="font-serif font-bold text-gray-850 dark:text-gray-200 hover:text-[#f97316] transition-colors leading-relaxed block line-clamp-1"
                     >
                       {cleanTitle}

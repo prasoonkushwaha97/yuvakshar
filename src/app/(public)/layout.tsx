@@ -1,5 +1,5 @@
 import React from 'react';
-import Navbar from '@/components/layout/Navbar';
+import AppHeader from '@/components/layout/AppHeader';
 import Footer from '@/components/layout/Footer';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
 
@@ -10,7 +10,7 @@ export default function PublicLayout({
 }) {
   return (
     <>
-      <Navbar />
+      <AppHeader />
       {children}
       <Footer />
       <MobileBottomNav />

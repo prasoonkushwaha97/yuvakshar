@@ -18,7 +18,7 @@ export async function getArticles(
   
   let query = supabase
     .from("articles")
-    .select("*, categories(name_hi, name_en, slug), profiles(name, display_name, avatar_url, email)", { count: 'exact' });
+    .select("*, categories(name, slug), profiles(name, avatar_url)", { count: 'exact' });
 
   if (filters?.status) {
     query = query.eq("status", filters.status);
@@ -30,7 +30,7 @@ export async function getArticles(
     query = query.eq("author_id", filters.author_id);
   }
   if (filters?.search) {
-    query = query.or(`title_hi.ilike.%${filters.search}%,title_en.ilike.%${filters.search}%`);
+    query = query.or(`title.ilike.%${filters.search}%,english_title.ilike.%${filters.search}%`);
   }
 
   // Sorting
@@ -48,14 +48,31 @@ export async function getArticles(
     return { data: [], count: 0, error: error.message };
   }
 
-  return { data: data as Article[], count: count || 0, error: null };
+  const mappedData = (data as any[]).map((art: any) => ({
+    ...art,
+    title_hi: art.title,
+    title_en: art.english_title || "",
+    summary_hi: art.summary || "",
+    summary_en: art.summary || "",
+    is_featured: art.featured || false,
+    view_count: art.views || 0,
+    like_count: art.likes || 0,
+    categories: art.categories ? {
+      id: art.categories.id,
+      name_hi: art.categories.name,
+      slug: art.categories.slug,
+      color: "#EA580C"
+    } : null
+  }));
+
+  return { data: mappedData as Article[], count: count || 0, error: null };
 }
 
 export async function getArticleById(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("articles")
-    .select("*, categories(name_hi, slug), profiles(name, avatar_url)")
+    .select("*, categories(id, name, slug), profiles(name, avatar_url)")
     .eq("id", id)
     .single();
 
@@ -63,14 +80,31 @@ export async function getArticleById(id: string) {
     console.error("Error fetching article by id:", error);
     return null;
   }
-  return data as Article;
+  
+  const art = data as any;
+  return {
+    ...art,
+    title_hi: art.title,
+    title_en: art.english_title || "",
+    summary_hi: art.summary || "",
+    summary_en: art.summary || "",
+    is_featured: art.featured || false,
+    view_count: art.views || 0,
+    like_count: art.likes || 0,
+    categories: art.categories ? {
+      id: art.categories.id,
+      name_hi: art.categories.name,
+      slug: art.categories.slug,
+      color: "#EA580C"
+    } : null
+  } as Article;
 }
 
 export async function getArticleBySlug(slug: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("articles")
-    .select("*, categories(name_hi, slug), profiles(name, avatar_url)")
+    .select("*, categories(id, name, slug), profiles(name, avatar_url)")
     .eq("slug", slug)
     .single();
 
@@ -78,7 +112,24 @@ export async function getArticleBySlug(slug: string) {
     console.error("Error fetching article by slug:", error);
     return null;
   }
-  return data as Article;
+
+  const art = data as any;
+  return {
+    ...art,
+    title_hi: art.title,
+    title_en: art.english_title || "",
+    summary_hi: art.summary || "",
+    summary_en: art.summary || "",
+    is_featured: art.featured || false,
+    view_count: art.views || 0,
+    like_count: art.likes || 0,
+    categories: art.categories ? {
+      id: art.categories.id,
+      name_hi: art.categories.name,
+      slug: art.categories.slug,
+      color: "#EA580C"
+    } : null
+  } as Article;
 }
 
 export async function createArticle(data: Partial<Article>) {
@@ -88,11 +139,8 @@ export async function createArticle(data: Partial<Article>) {
   const supabase = await createClient();
   
   // Enforce server-side logic
-  const insertData = { ...data };
-  if (!insertData.status) insertData.status = "draft";
-  if (insertData.status === "published" && !insertData.published_at) {
-    insertData.published_at = new Date().toISOString();
-  }
+  const insertData = mapArticleToDb(data);
+  if (!insertData.status) insertData.status = "Draft";
 
   const { data: result, error } = await supabase
     .from("articles")
@@ -114,10 +162,7 @@ export async function updateArticle(id: string, data: Partial<Article>) {
 
   const supabase = await createClient();
   
-  const updateData = { ...data, updated_at: new Date().toISOString() };
-  if (data.status === "published" && !data.published_at) {
-    updateData.published_at = new Date().toISOString();
-  }
+  const updateData = mapArticleToDb(data);
 
   const { error } = await supabase
     .from("articles")
@@ -126,7 +171,7 @@ export async function updateArticle(id: string, data: Partial<Article>) {
 
   if (error) throw new Error(error.message);
 
-  await logGovernanceAction("update", "article", id, { fields_updated: Object.keys(data), new_status: data.status });
+  await logGovernanceAction("update", "article", id, { fields_updated: Object.keys(updateData), new_status: data.status });
   revalidatePath("/founder/articles");
   revalidatePath("/admin/articles");
   revalidatePath(`/founder/articles/${id}`);
@@ -213,10 +258,7 @@ export async function updateArticleStatus(id: string, status: ArticleStatus | st
     }
   }
   
-  const updateData: any = { status, updated_at: new Date().toISOString() };
-  if (status === "published") {
-    updateData.published_at = new Date().toISOString();
-  }
+  const updateData: any = { status };
 
   const { error } = await supabase
     .from("articles")
@@ -230,4 +272,24 @@ export async function updateArticleStatus(id: string, status: ArticleStatus | st
   revalidatePath("/admin/articles");
   revalidatePath(`/founder/articles/${id}`);
   return { success: true };
+}
+
+function mapArticleToDb(data: Partial<Article>): any {
+  const dbData: any = {};
+  if (data.title_hi !== undefined) dbData.title = data.title_hi;
+  if (data.title_en !== undefined) dbData.english_title = data.title_en;
+  if (data.slug !== undefined) dbData.slug = data.slug;
+  if (data.summary_hi !== undefined) dbData.summary = data.summary_hi;
+  if (data.content !== undefined) dbData.content = data.content;
+  if (data.cover_image !== undefined) dbData.cover_image = data.cover_image;
+  if (data.category_id !== undefined) dbData.category_id = data.category_id;
+  if (data.author_id !== undefined) dbData.author_id = data.author_id;
+  if (data.status !== undefined) dbData.status = data.status;
+  if (data.is_featured !== undefined) dbData.featured = data.is_featured;
+  if (data.view_count !== undefined) dbData.views = data.view_count;
+  if (data.like_count !== undefined) dbData.likes = data.like_count;
+  if (data.read_time !== undefined) dbData.read_time = data.read_time;
+  if (data.scheduled_publish_at !== undefined) dbData.scheduled_for = data.scheduled_publish_at;
+  if (data.language !== undefined) dbData.language_code = data.language;
+  return dbData;
 }

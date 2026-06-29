@@ -158,7 +158,7 @@ export default function CurrentAffairsPage() {
                       </span>
                     </div>
 
-                    <Link href={`/editorial?id=${art.id}`} className="block group">
+                    <Link href={`/articles/${art.slug || art.id}`} className="block group">
                       <h3 className="font-serif text-lg font-bold text-yuvakshar-text group-hover:text-yuvakshar-gold transition-colors leading-snug line-clamp-2">
                         {stripMarkdown(art.title)}
                       </h3>
@@ -190,7 +190,7 @@ export default function CurrentAffairsPage() {
                       )}
                     </button>
                     <Link 
-                      href={`/editorial?id=${art.id}`}
+                      href={`/articles/${art.slug || art.id}`}
                       className="p-1.5 rounded bg-yuvakshar-gold text-yuvakshar-bg hover:bg-white transition-all flex items-center justify-center cursor-pointer"
                     >
                       <ArrowRight className="w-3.5 h-3.5" />

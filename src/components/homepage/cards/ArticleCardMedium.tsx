@@ -6,6 +6,8 @@ import { stripMarkdown } from "@/lib/markdown";
 import CategoryBadge from "../shared/CategoryBadge";
 import ReadingTime from "../shared/ReadingTime";
 
+import { formatDisplayDate } from "@/utils/date";
+
 interface ArticleCardMediumProps {
   article: any;
   showImage?: boolean;
@@ -14,14 +16,14 @@ interface ArticleCardMediumProps {
 export default function ArticleCardMedium({ article, showImage = true }: ArticleCardMediumProps) {
   if (!article) return null;
 
-  const title = stripMarkdown(article.title || "");
-  const imageUrl = article.coverImage || article.image || "/images/placeholder-news.jpg";
-  const cleanDate = article.date ? article.date.split(",")[0] : "";
+  const title = stripMarkdown(article.title || article.title_hi || "");
+  const imageUrl = article.coverImage || article.cover_image || article.image || "/images/placeholder-news.jpg";
+  const cleanDate = formatDisplayDate(article.date);
 
   return (
     <div className="group flex gap-3.5 bg-white dark:bg-[#0A0A0A] p-3 rounded-lg border border-gray-150 dark:border-gray-850 hover:border-gray-300 dark:hover:border-gray-700 transition-all duration-200">
       {showImage && (
-        <Link href={`/editorial?id=${article.id}`} className="block relative w-20 h-20 shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-900 rounded-sm border border-gray-100 dark:border-gray-850">
+        <Link href={`/articles/${article.slug || article.id}`} className="block relative w-20 h-20 shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-900 rounded-sm border border-gray-100 dark:border-gray-850">
           <img
             src={imageUrl}
             alt={title}
@@ -39,7 +41,7 @@ export default function ArticleCardMedium({ article, showImage = true }: Article
           <span className="text-gray-400 font-sans">{cleanDate}</span>
         </div>
 
-        <Link href={`/editorial?id=${article.id}`} className="block group-hover:text-[#f97316] transition-colors duration-200">
+        <Link href={`/articles/${article.slug || article.id}`} className="block group-hover:text-[#f97316] transition-colors duration-200">
           <h4 className="font-bold font-serif text-[14px] leading-snug text-gray-900 dark:text-gray-150 line-clamp-2">
             {title}
           </h4>

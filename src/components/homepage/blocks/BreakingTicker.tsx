@@ -45,7 +45,7 @@ export default function BreakingTicker() {
             return (
               <Link 
                 key={story.id} 
-                href={`/editorial?id=${story.id}`}
+                href={`/articles/${story.slug || story.id}`}
                 className="hover:underline flex items-center space-x-2 shrink-0 text-white hover:text-white/90"
               >
                 <span>✦</span>
@@ -59,7 +59,7 @@ export default function BreakingTicker() {
             return (
               <Link 
                 key={`${story.id}-dup`} 
-                href={`/editorial?id=${story.id}`}
+                href={`/articles/${story.slug || story.id}`}
                 className="hover:underline flex items-center space-x-2 shrink-0 text-white hover:text-white/90"
               >
                 <span>✦</span>

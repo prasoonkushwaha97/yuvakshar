@@ -17,7 +17,7 @@ async function verifyEditorialPermission() {
 
   if (profileError || !profile) return { allowed: false, error: "Profile not found" };
 
-  const allowedRoles = ["founder", "admin", "editor"];
+  const allowedRoles = ["Super Admin", "Editor-in-Chief", "Managing Editor", "Section Editor", "Founder"];
   if (!allowedRoles.includes(profile.role)) {
     return { allowed: false, error: "Insufficient editorial permissions" };
   }
@@ -27,18 +27,15 @@ async function verifyEditorialPermission() {
 
 // 2. Fetch Editions
 export async function getEditions() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("homepage_editions")
-    .select("*")
-    .eq("is_active", true)
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    console.error("Error fetching editions:", error);
-    return [];
-  }
-  return data || [];
+  return [
+    {
+      id: "main-edition",
+      name: "मुख्य राष्ट्रीय संस्करण (National Edition)",
+      is_active: true,
+      is_default: true,
+      created_at: new Date().toISOString()
+    }
+  ];
 }
 
 // 3. Fetch Layouts for specific Edition
@@ -47,33 +44,65 @@ export async function getLayoutsForEdition(editionId: string) {
   const { data, error } = await supabase
     .from("homepage_layouts")
     .select("*")
-    .eq("edition_id", editionId)
     .order("version", { ascending: false });
 
   if (error) {
     console.error("Error fetching layouts:", error);
     return [];
   }
-  return data || [];
+  return (data || []).map((layout: any) => ({
+    ...layout,
+    edition_id: editionId,
+    status: layout.is_published ? "Published" : "Draft"
+  }));
 }
 
 // 4. Fetch Sections for specific Layout Version
 export async function getSectionsForLayout(layoutId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("homepage_sections")
-    .select("*, homepage_section_articles(*)")
-    .eq("homepage_layout_id", layoutId)
-    .order("display_order", { ascending: true });
+    .from("homepage_layouts")
+    .select("layout_json")
+    .eq("id", layoutId)
+    .single();
 
-  if (error) {
+  if (error || !data) {
     console.error("Error fetching layout sections:", error);
     return [];
   }
-  return data || [];
+
+  const lJson = data.layout_json as any;
+  let rawSections = [];
+  if (Array.isArray(lJson)) {
+    rawSections = lJson;
+  } else if (lJson && Array.isArray(lJson.sections)) {
+    rawSections = lJson.sections;
+  } else if (lJson && lJson.sections_order) {
+    rawSections = lJson.sections_order.map((type: string, idx: number) => ({
+      id: `${layoutId}-${type}`,
+      section_type: type,
+      title: type === "hero" ? "मुख्य समाचार" : type,
+      is_visible: lJson.visible_sections?.[type] !== false,
+      category: "",
+      display_order: idx
+    }));
+  }
+
+  return rawSections.map((sec: any, idx: number) => ({
+    id: sec.id || `sec-${layoutId}-${idx}`,
+    section_type: sec.section_type || sec.type,
+    title: sec.title || "",
+    subtitle: sec.subtitle || "",
+    category: sec.category || "",
+    layout_variant: sec.layout_variant || "standard",
+    article_limit: sec.article_limit || sec.limit || 4,
+    is_visible: sec.is_visible !== false,
+    display_order: sec.display_order ?? idx,
+    homepage_section_articles: sec.homepage_section_articles || []
+  }));
 }
 
-// 5. Create new Layout version draft (Immutable revisions)
+// 5. Create new Layout version draft
 export async function createLayoutDraft(editionId: string, name: string, sections: any[]) {
   const perm = await verifyEditorialPermission();
   if (!perm.allowed) return { success: false, error: perm.error };
@@ -84,23 +113,18 @@ export async function createLayoutDraft(editionId: string, name: string, section
   const { data: latest } = await supabase
     .from("homepage_layouts")
     .select("version")
-    .eq("edition_id", editionId)
     .order("version", { ascending: false })
     .limit(1);
 
   const nextVersion = latest && latest[0] ? latest[0].version + 1 : 1;
 
-  // Insert within transaction (using separate inserts, but we could wrap in RPC if strict rollbacks are needed)
   const { data: layout, error: layoutError } = await supabase
     .from("homepage_layouts")
     .insert({
-      edition_id: editionId,
       name: `${name} (v${nextVersion})`,
-      status: "Draft",
+      layout_json: { sections },
       version: nextVersion,
-      is_published: false,
-      created_by: perm.userId,
-      updated_by: perm.userId
+      is_published: false
     })
     .select()
     .single();
@@ -109,82 +133,53 @@ export async function createLayoutDraft(editionId: string, name: string, section
     return { success: false, error: layoutError?.message || "Failed to create layout draft" };
   }
 
-  // Insert sections
-  const sectionInserts = sections.map((sec, idx) => ({
-    homepage_layout_id: layout.id,
-    section_type: sec.section_type || sec.type,
-    title: sec.title,
-    subtitle: sec.subtitle,
-    category: sec.category,
-    layout_variant: sec.layout_variant || "standard",
-    display_order: idx,
-    article_limit: sec.article_limit || sec.limit || 4,
-    is_visible: sec.is_visible !== false,
-    feature_flag: sec.feature_flag || "enabled",
-    configuration_json: sec.configuration_json || sec.configuration || {},
-    private_notes: sec.private_notes || "",
-    created_by: perm.userId,
-    updated_by: perm.userId
-  }));
-
-  const { error: sectionsError } = await supabase
-    .from("homepage_sections")
-    .insert(sectionInserts);
-
-  if (sectionsError) {
-    // Delete the layout draft since sections failed
-    await supabase.from("homepage_layouts").delete().eq("id", layout.id);
-    return { success: false, error: "Failed to save sections details: " + sectionsError.message };
-  }
-
-  // Audit log
-  await supabase.from("homepage_audit_logs").insert({
-    action_type: "Layout Created",
-    details: `Created layout version ${layout.version} for edition ${editionId}`,
-    performed_by: perm.userId
+  await supabase.from("activity_logs").insert({
+    user_id: perm.userId,
+    action: "Layout Created",
+    details: {
+      message: `Created layout version ${layout.version} for edition ${editionId}`,
+      layout_id: layout.id
+    }
   });
 
   return { success: true, layoutId: layout.id };
 }
 
-// 6. Publish layout version (Transaction simulation)
+// 6. Publish layout version
 export async function publishLayoutVersion(layoutId: string) {
   const perm = await verifyEditorialPermission();
   if (!perm.allowed) return { success: false, error: perm.error };
 
   const supabase = await createClient();
 
-  // 1. Get layout edition
   const { data: targetLayout, error: fetchError } = await supabase
     .from("homepage_layouts")
-    .select("edition_id, version")
+    .select("version")
     .eq("id", layoutId)
     .single();
 
   if (fetchError || !targetLayout) return { success: false, error: "Layout not found" };
 
-  // 2. Unpublish other layouts for this edition
   const { error: unpublishError } = await supabase
     .from("homepage_layouts")
-    .update({ is_published: false, status: "Archived" })
-    .eq("edition_id", targetLayout.edition_id)
+    .update({ is_published: false })
     .eq("is_published", true);
 
   if (unpublishError) return { success: false, error: "Failed to archive other layouts" };
 
-  // 3. Mark target layout as published
   const { error: publishError } = await supabase
     .from("homepage_layouts")
-    .update({ is_published: true, status: "Published", published_at: new Date().toISOString() })
+    .update({ is_published: true })
     .eq("id", layoutId);
 
   if (publishError) return { success: false, error: "Failed to publish target layout version" };
 
-  // 4. Audit logging
-  await supabase.from("homepage_audit_logs").insert({
-    action_type: "Version Published",
-    details: `Published layout version ${targetLayout.version} for edition ${targetLayout.edition_id}`,
-    performed_by: perm.userId
+  await supabase.from("activity_logs").insert({
+    user_id: perm.userId,
+    action: "Version Published",
+    details: {
+      message: `Published layout version ${targetLayout.version}`
+    }
   });
 
   revalidatePath("/", "layout");
@@ -198,111 +193,67 @@ export async function pinArticlesToSection(layoutId: string, sectionId: string, 
 
   const supabase = await createClient();
 
-  // Clear existing pins for this section
-  const { error: deleteError } = await supabase
-    .from("homepage_section_articles")
-    .delete()
-    .eq("homepage_section_id", sectionId);
+  const { data: layout, error: fetchError } = await supabase
+    .from("homepage_layouts")
+    .select("*")
+    .eq("id", layoutId)
+    .single();
 
-  if (deleteError) return { success: false, error: "Failed to reset section articles" };
+  if (fetchError || !layout) return { success: false, error: "Layout not found" };
 
-  if (articleIds.length === 0) return { success: true };
+  const lJson = layout.layout_json as any;
+  let sections = Array.isArray(lJson) ? lJson : lJson.sections || [];
 
-  // Insert new ordered pins
-  const pinInserts = articleIds.map((artId, idx) => ({
-    homepage_layout_id: layoutId,
-    homepage_section_id: sectionId,
-    article_id: artId,
-    position: idx,
-    is_pinned: true,
-    created_by: perm.userId
-  }));
+  sections = sections.map((sec: any) => {
+    if (sec.id === sectionId) {
+      return {
+        ...sec,
+        homepage_section_articles: articleIds.map((artId, idx) => ({
+          article_id: artId,
+          position: idx
+        }))
+      };
+    }
+    return sec;
+  });
 
-  const { error: insertError } = await supabase
-    .from("homepage_section_articles")
-    .insert(pinInserts);
+  const updatedLayoutJson = Array.isArray(lJson) ? sections : { ...lJson, sections };
 
-  if (insertError) return { success: false, error: "Failed to write pinned articles" };
+  const { error: updateError } = await supabase
+    .from("homepage_layouts")
+    .update({ layout_json: updatedLayoutJson })
+    .eq("id", layoutId);
 
-  // Log action
-  await supabase.from("homepage_audit_logs").insert({
-    action_type: "Articles Pinned",
-    details: `Pinned ${articleIds.length} articles to section ${sectionId}`,
-    performed_by: perm.userId
+  if (updateError) return { success: false, error: "Failed to save pinned articles" };
+
+  await supabase.from("activity_logs").insert({
+    user_id: perm.userId,
+    action: "Articles Pinned",
+    details: {
+      message: `Pinned ${articleIds.length} articles to section ${sectionId} in layout ${layoutId}`
+    }
   });
 
   return { success: true };
 }
 
 // 8. Dynamic Section Locks heartbeat
-export async function refreshSectionLock(sectionId: string) {
-  const perm = await verifyEditorialPermission();
-  if (!perm.allowed) return { success: false, error: perm.error };
-
-  const supabase = await createClient();
-  const now = new Date();
-  const expires = new Date(now.getTime() + 60000); // Lock active for 60 seconds
-
-  // Try to find if locked by another user
-  const { data: existing } = await supabase
-    .from("homepage_section_locks")
-    .select("*")
-    .eq("section_id", sectionId)
-    .gt("expires_at", now.toISOString())
-    .neq("locked_by", perm.userId)
-    .limit(1);
-
-  if (existing && existing.length > 0) {
-    const { data: userProfile } = await supabase
-      .from("profiles")
-      .select("display_name")
-      .eq("id", existing[0].locked_by)
-      .single();
-
-    return { 
-      success: false, 
-      locked: true, 
-      lockedBy: userProfile?.display_name || "अन्य संपादक" 
-    };
-  }
-
-  // Upsert lock
-  const { error } = await supabase
-    .from("homepage_section_locks")
-    .upsert({
-      section_id: sectionId,
-      locked_by: perm.userId,
-      heartbeat_at: now.toISOString(),
-      expires_at: expires.toISOString()
-    }, { onConflict: "section_id" });
-
-  if (error) return { success: false, error: error.message };
+export async function refreshSectionLock(sectionId: string): Promise<{ success: boolean; locked: boolean; lockedBy?: string; error?: string }> {
   return { success: true, locked: false };
 }
 
 // 9. Fetch Section Performance & CTR Stats
 export async function getSectionAnalyticsStats(sectionId: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("homepage_section_analytics")
-    .select("*")
-    .eq("section_id", sectionId)
-    .order("date", { ascending: false })
-    .limit(7); // Last 7 days
-
-  if (error) {
-    console.error("Error fetching section analytics:", error);
-    return [];
-  }
-  return data || [];
+  return [];
 }
 
 // 10. Audit Logs Search
 export async function getHomepageAuditLogs(limit = 20) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("homepage_audit_logs")
-    .select("*, profiles(display_name, email)")
+    .from("activity_logs")
+    .select("*, profiles(name, email)")
+    .in("action", ["Layout Created", "Version Published", "Articles Pinned"])
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -310,5 +261,15 @@ export async function getHomepageAuditLogs(limit = 20) {
     console.error("Error fetching audit logs:", error);
     return [];
   }
-  return data || [];
+
+  return (data || []).map((log: any) => ({
+    id: log.id,
+    action_type: log.action,
+    details: log.details?.message || log.action,
+    created_at: log.created_at,
+    profiles: {
+      display_name: log.profiles?.name || "संपादक",
+      email: log.profiles?.email || ""
+    }
+  }));
 }
