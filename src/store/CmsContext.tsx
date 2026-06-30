@@ -370,9 +370,6 @@ interface CmsContextType {
   authModalMessage: string;
   becomeAuthor: (bio: string, avatarUrl: string, expertise: string) => Promise<void>;
   updateUserProfile: (data: Partial<Profile>) => Promise<void>;
-  
-  sendOtpCode: (email: string) => Promise<boolean>;
-  verifyOtpCode: (email: string, token: string) => Promise<boolean>;
   sendPasswordReset: (email: string) => Promise<boolean>;
   // Author Ecosystem 2.0 Actions
   followAuthor: (authorId: string, followerId: string) => Promise<void>;
@@ -1559,13 +1556,8 @@ export function CmsProvider({
         }
         return true;
       } else {
-        // Fallback for magic link if no password provided
-        const { error } = await supabase.auth.signInWithOtp({ email });
-        if (error) {
-          alert("❌ Supabase connection failed: " + error.message);
-          return false;
-        }
-        return true;
+        alert("Password is required for login.");
+        return false;
       }
     } catch (err: any) {
       alert("❌ Supabase connection failed: " + err.message);
@@ -1677,46 +1669,7 @@ export function CmsProvider({
     }
   };
 
-  const sendOtpCode = async (email: string): Promise<boolean> => {
-    const configError = getSupabaseConfigError();
-    if (configError) {
-      alert(configError);
-      return false;
-    }
-    try {
-      const { error } = await supabase.auth.signInWithOtp({ email });
-      if (error) {
-        alert("❌ Supabase connection failed: " + error.message);
-        return false;
-      }
-      return true;
-    } catch (err: any) {
-      alert("❌ Supabase connection failed: " + err.message);
-      return false;
-    }
-  };
-
-  const verifyOtpCode = async (email: string, token: string): Promise<boolean> => {
-    const configError = getSupabaseConfigError();
-    if (configError) {
-      alert(configError);
-      return false;
-    }
-    try {
-      const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
-      if (error) {
-        alert("❌ Auth callback failed: " + error.message);
-        return false;
-      }
-      setAuthModalOpen(false);
-      return true;
-    } catch (err: any) {
-      alert("❌ Auth callback failed: " + err.message);
-      return false;
-    }
-  };
-
-  const sendPasswordReset = async (email: string): Promise<boolean> => {
+const sendPasswordReset = async (email: string): Promise<boolean> => {
     const configError = getSupabaseConfigError();
     if (configError) {
       alert(configError);
@@ -3725,9 +3678,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         authModalMessage,
         becomeAuthor,
         updateUserProfile,
-
-        sendOtpCode,
-        verifyOtpCode,
         sendPasswordReset,
         followAuthor,
         addTimelineEvent,

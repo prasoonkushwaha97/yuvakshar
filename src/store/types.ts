@@ -111,6 +111,12 @@ export interface Profile {
   groups_count?: number;
   featured?: boolean;
   publicVisibility?: boolean;
+
+  // Terms Acceptance
+  terms_accepted?: boolean;
+  terms_accepted_at?: string | null;
+  terms_version?: string;
+  privacy_version?: string;
 }
 
 // ─── Video ─────────────────────────────────────────────────────────────────
