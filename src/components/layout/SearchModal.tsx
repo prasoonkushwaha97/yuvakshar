@@ -38,15 +38,14 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    // Keyboard shortcut Ctrl+K or Cmd+K
+    // Keyboard shortcuts
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) {
+        onClose();
+      }
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
         if (open) onClose();
-        else {
-          // Trigger open via parent state is better, but since this component receives `open`,
-          // we need the parent to listen. We will emit a custom event or just export the listener logic to AppHeader.
-        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -57,7 +56,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 200);
       try {
-        const saved = localStorage.getItem(RECENT_SEARCHES_KEY);
+        const saved = null;
         if (saved) setRecentSearches(JSON.parse(saved));
       } catch {}
     } else {
@@ -120,7 +119,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     if (term) {
       const updated = [term, ...recentSearches.filter(r => r !== term)].slice(0, 8);
       setRecentSearches(updated);
-      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+      undefined;
     }
     onClose();
     router.push(url);

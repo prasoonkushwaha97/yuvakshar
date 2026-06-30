@@ -41,7 +41,7 @@ export default function MobileBottomNav() {
   }, [pathname]);
 
   // Exclude bottom navigation inside dashboard settings & portal pathways
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/founder") || pathname?.startsWith("/editorial") || pathname?.startsWith("/author")) {
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/admin") || pathname?.startsWith("/admin") || pathname?.startsWith("/author")) {
     return null;
   }
 

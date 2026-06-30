@@ -27,7 +27,7 @@ export const primaryLinks: NavigationLink[] = [
   { labelHi: "मुख्य पृष्ठ", labelEn: "Home", href: "/", icon: Home },
   { labelHi: "समाचार", labelEn: "News", href: "/current-affairs", icon: Newspaper },
   { labelHi: "डिजिटल पत्रिका", labelEn: "Magazine", href: "/magazine", icon: BookOpen },
-  { labelHi: "वीडियो", labelEn: "Videos", href: "/founder/videos", icon: Video },
+  { labelHi: "वीडियो", labelEn: "Videos", href: "/admin/videos", icon: Video },
   { labelHi: "युवाक्षर चौपाल", labelEn: "Community", href: "/community", icon: MessageSquare },
   { labelHi: "हमारे बारे में", labelEn: "About", href: "/about", icon: Info },
   { labelHi: "संपर्क करें", labelEn: "Contact", href: "/contact", icon: Mail },

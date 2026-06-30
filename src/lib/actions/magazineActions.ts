@@ -21,7 +21,7 @@ export async function createMagazineIssue(data: { title: string, slug: string, v
   if (error) throw error;
 
   await logGovernanceAction("CREATE_MAGAZINE_ISSUE", "magazine_issues", issue.id, { title: issue.title });
-  revalidatePath('/founder/magazine');
+  revalidatePath('/admin/magazine');
   
   return issue;
 }
@@ -56,7 +56,7 @@ export async function addSectionToIssue(issue_id: string, title: string) {
   const { data, error } = await supabase.from('magazine_sections').insert({ issue_id, title }).select().single();
   if (error) throw error;
   
-  revalidatePath(`/founder/magazine/builder/${issue_id}`);
+  revalidatePath(`/admin/magazine/builder/${issue_id}`);
   return data;
 }
 
@@ -75,7 +75,7 @@ export async function addArticleToIssue(issue_id: string, article_id: string, se
   if (error) throw error;
 
   await logGovernanceAction("MAGAZINE_ARTICLE_ADDED", "magazine_issues", issue_id, { article_id, section_id });
-  revalidatePath(`/founder/magazine/builder/${issue_id}`);
+  revalidatePath(`/admin/magazine/builder/${issue_id}`);
   return true;
 }
 
@@ -91,8 +91,8 @@ export async function updateIssueStatus(issue_id: string, status: string) {
   if (error) throw error;
 
   await logGovernanceAction("UPDATE_MAGAZINE_STATUS", "magazine_issues", issue_id, { status });
-  revalidatePath('/founder/magazine');
-  revalidatePath(`/founder/magazine/builder/${issue_id}`);
+  revalidatePath('/admin/magazine');
+  revalidatePath(`/admin/magazine/builder/${issue_id}`);
   
   return true;
 }

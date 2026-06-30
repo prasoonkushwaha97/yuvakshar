@@ -18,7 +18,7 @@ export default function Footer() {
     }
   }, [currentUser]);
 
-  if (pathname && (pathname.startsWith("/admin") || pathname.startsWith("/editorial") || pathname.startsWith("/founder") || pathname.startsWith("/workspace"))) {
+  if (pathname && (pathname.startsWith("/admin") || pathname.startsWith("/admin") || pathname.startsWith("/admin") || pathname.startsWith("/workspace"))) {
     return null;
   }
 

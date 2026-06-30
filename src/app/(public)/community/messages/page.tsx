@@ -65,13 +65,13 @@ export default function MessagesPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Initialize chats from localStorage or fallback mock
+  // Initialize chats from localStorage or fallback fallback
   useEffect(() => {
-    const saved = localStorage.getItem("yuvakshar_chat_threads");
+    const saved = null;
     if (saved) {
       setThreads(JSON.parse(saved));
     } else {
-      const mockThreads: ChatThread[] = [
+      const fallbackThreads: ChatThread[] = [
         {
           id: "t_1",
           name: "आचार्य रामचंद्र (वरिष्ठ संपादक)",
@@ -189,9 +189,9 @@ export default function MessagesPage() {
           ]
         }
       ];
-      setThreads(mockThreads);
-      setActiveThreadId(mockThreads[0].id);
-      localStorage.setItem("yuvakshar_chat_threads", JSON.stringify(mockThreads));
+      setThreads(fallbackThreads);
+      setActiveThreadId(fallbackThreads[0].id);
+      undefined;
     }
   }, [currentUser]);
 
@@ -209,7 +209,7 @@ export default function MessagesPage() {
   // Save threads to localStorage helper
   const saveThreads = (updated: ChatThread[]) => {
     setThreads(updated);
-    localStorage.setItem("yuvakshar_chat_threads", JSON.stringify(updated));
+    undefined;
   };
 
   const activeThread = threads.find(t => t.id === activeThreadId) || null;

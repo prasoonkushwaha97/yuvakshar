@@ -19,7 +19,7 @@ export default function CreateIssueModal() {
     try {
       const issue = await createMagazineIssue({ title, slug, volume, issue_number: issueNum });
       setIsOpen(false);
-      router.push(`/founder/magazine/builder/${issue.id}`);
+      router.push(`/admin/magazine/builder/${issue.id}`);
     } catch (e: any) {
       alert("Failed to create issue: " + e.message);
     }

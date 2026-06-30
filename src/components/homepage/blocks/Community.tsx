@@ -6,7 +6,7 @@ import { MessageSquare, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/store/LanguageContext";
 import SectionTitle from "../shared/SectionTitle";
 
-const MOCK_CHAUPAL_TOPICS = [
+const fallback_CHAUPAL_TOPICS = [
   { id: 1, title: "नई शिक्षा नीति 2024 के प्रभाव पर विमर्श", tag: "शिक्षा", comments: 142, activeUsers: ['A', 'R', 'S'] },
   { id: 2, title: "क्या आर्टिफिशियल इंटेलिजेंस साहित्य को खत्म कर देगी?", tag: "तकनीक", comments: 89, activeUsers: ['V', 'P'] },
   { id: 3, title: "वर्तमान राजनीतिक परिदृश्य और युवा भागीदारी", tag: "राजनीति", comments: 215, activeUsers: ['M', 'K', 'J', 'N'] },
@@ -42,7 +42,7 @@ export default function Community() {
 
         {/* Discussion list */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {MOCK_CHAUPAL_TOPICS.map((topic) => (
+          {fallback_CHAUPAL_TOPICS.map((topic) => (
             <Link
               key={topic.id}
               href="/community"

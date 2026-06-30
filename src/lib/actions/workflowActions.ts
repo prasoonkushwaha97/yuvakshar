@@ -59,8 +59,8 @@ export async function moveArticleStatus(article_id: string, new_status: string) 
     }
   );
 
-  revalidatePath('/founder/workflow');
-  revalidatePath('/founder/articles');
+  revalidatePath('/admin/workflow');
+  revalidatePath('/admin/articles');
   
   return true;
 }

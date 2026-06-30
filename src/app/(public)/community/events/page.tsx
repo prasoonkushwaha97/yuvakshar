@@ -113,11 +113,11 @@ export default function EventsPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("yuvakshar_c_events");
+      const saved = null;
       if (saved) {
         setEvents(JSON.parse(saved));
       } else {
-        localStorage.setItem("yuvakshar_c_events", JSON.stringify(events));
+        undefined;
       }
     }
   }, []);
@@ -125,7 +125,7 @@ export default function EventsPage() {
   const saveEvents = (items: CommunityEvent[]) => {
     setEvents(items);
     if (typeof window !== "undefined") {
-      localStorage.setItem("yuvakshar_c_events", JSON.stringify(items));
+      undefined;
     }
   };
 

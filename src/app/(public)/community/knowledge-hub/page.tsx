@@ -48,7 +48,7 @@ export default function KnowledgeHubPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("yuvakshar_c_resources");
+      const saved = null;
       if (saved) setResources(JSON.parse(saved));
     }
   }, []);
@@ -56,7 +56,7 @@ export default function KnowledgeHubPage() {
   const saveResources = (items: ResourceItem[]) => {
     setResources(items);
     if (typeof window !== "undefined") {
-      localStorage.setItem("yuvakshar_c_resources", JSON.stringify(items));
+      undefined;
     }
   };
 

@@ -73,11 +73,11 @@ export default function AuthModal() {
   // founding slots countdown effect
   useEffect(() => {
     if (authModalOpen) {
-      const savedSlots = localStorage.getItem("yuvakshar_founding_slots");
+      const savedSlots = null;
       let currentSlots = savedSlots ? parseInt(savedSlots, 10) : 327;
       if (Math.random() > 0.3 && currentSlots > 7) {
         currentSlots -= Math.floor(Math.random() * 2) + 1;
-        localStorage.setItem("yuvakshar_founding_slots", currentSlots.toString());
+        undefined;
       }
       setSlotsLeft(currentSlots);
     }

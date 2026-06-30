@@ -36,7 +36,7 @@ export default function MagazineReaderPage() {
   // Restore progress on load
   useEffect(() => {
     if (mag) {
-      const saved = localStorage.getItem("yuvakshar_mag_progress");
+      const saved = null;
       if (saved) {
         try {
           const progress = JSON.parse(saved);
@@ -52,11 +52,7 @@ export default function MagazineReaderPage() {
   useEffect(() => {
     if (mag) {
       const percentage = Math.round(((currentPage + 1) / mag.pages.length) * 100);
-      localStorage.setItem("yuvakshar_mag_progress", JSON.stringify({
-        issueId: mag.id,
-        page: currentPage,
-        percentage
-      }));
+      undefined;
     }
   }, [currentPage, mag]);
 

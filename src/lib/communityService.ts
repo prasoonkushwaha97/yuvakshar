@@ -46,6 +46,7 @@ export interface CommunityPost {
   is_solved: boolean;
   best_answer_id?: string;
   created_at: string;
+  status: string;
   likesCount: number;
   commentsCount: number;
 }
@@ -185,6 +186,7 @@ export const fetchPosts = async (groupId?: string): Promise<CommunityPost[]> => 
     is_solved: p.is_solved || false,
     best_answer_id: p.best_answer_id,
     created_at: p.created_at,
+    status: p.status || "Published",
     likesCount: p.likes[0]?.count || 0,
     commentsCount: p.comments[0]?.count || 0
   }));
@@ -228,6 +230,7 @@ export const fetchUserPosts = async (userId: string): Promise<CommunityPost[]> =
     is_solved: p.is_solved || false,
     best_answer_id: p.best_answer_id,
     created_at: p.created_at,
+    status: p.status || "Published",
     likesCount: p.likes[0]?.count || 0,
     commentsCount: p.comments[0]?.count || 0
   }));
@@ -451,7 +454,7 @@ export const toggleEventRegistration = async (eventId: string, isRegistering: bo
   }
 };
 
-// ─── NON-IMPLEMENTED MOCKED FEATURES ────────────────────────────────────────
+// ─── NON-IMPLEMENTED fallbackED FEATURES ────────────────────────────────────────
 
 // These are scoped out of Phase 4C schema requests, returning empty or stubs.
 

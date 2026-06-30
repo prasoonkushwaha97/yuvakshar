@@ -184,3 +184,64 @@ export async function getAuthorsList(): Promise<AdminUserRecord[]> {
     article_count: counts[p.id] || 0
   }));
 }
+
+export async function createStaff(email: string, name: string, password: string): Promise<{ success: boolean; error?: string }> {
+  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
+  if (!isAuthorized) return { success: false, error: 'Unauthorized to create staff' };
+
+  // Create user in Auth
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { name }
+  });
+
+  if (error || !data.user) {
+    console.error("Error creating staff:", error);
+    return { success: false, error: error?.message || 'Failed to create staff' };
+  }
+
+  // Create profile
+  const { error: profileError } = await supabaseAdmin.from('profiles').insert({
+    id: data.user.id,
+    email,
+    full_name: name,
+    username: email.split('@')[0] + Math.floor(Math.random() * 1000)
+  });
+
+  if (profileError) {
+    console.error("Error creating profile:", profileError);
+  }
+
+  return { success: true };
+}
+
+export async function resetStaffPassword(userId: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
+  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
+  if (!isAuthorized) return { success: false, error: 'Unauthorized to reset password' };
+
+  // Verify target is not a founder (unless actor is founder, but for safety disallow via UI for now)
+  const { data: roleData } = await supabaseAdmin.from('user_roles')
+    .select('roles(slug)')
+    .eq('user_id', userId);
+    
+  if (roleData && roleData.some((r: any) => r.roles?.slug === 'founder')) {
+    const isFounderActor = await hasAnyRole(['founder']);
+    if (!isFounderActor) {
+      return { success: false, error: 'Cannot reset a Founder account password.' };
+    }
+  }
+
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+    password: newPassword
+  });
+
+  if (error) {
+    console.error("Error resetting password:", error);
+    return { success: false, error: error.message || 'Failed to reset password' };
+  }
+
+  return { success: true };
+}
+

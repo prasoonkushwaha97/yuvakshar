@@ -301,7 +301,7 @@ export default function ArticleQuiz({ articleId }: ArticleQuizProps) {
   // Offline sync simulation helper
   const getOfflinePendingCount = () => {
     if (typeof window !== "undefined") {
-      const local = localStorage.getItem("yuvakshar_quiz_attempts_offline");
+      const local = null;
       return local ? JSON.parse(local).length : 0;
     }
     return 0;

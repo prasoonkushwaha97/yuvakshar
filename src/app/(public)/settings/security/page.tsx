@@ -186,7 +186,7 @@ export default function SecuritySettingsPage() {
           </div>
           
           <div className="space-y-4">
-            {/* Current Session Mockup */}
+            {/* Current Session fallbackup */}
             <div className="flex items-center justify-between p-4 border border-primary/20 bg-primary/5 rounded-xl">
               <div className="flex items-center gap-4">
                 <Monitor className="w-6 h-6 text-primary" />

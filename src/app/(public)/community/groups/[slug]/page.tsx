@@ -74,9 +74,9 @@ export default function GroupDetailPage() {
           setIsMember(memberStatus);
         }
 
-        // Fetch mock members of this group
+        // Fetch fallback members of this group
         if (typeof window !== "undefined") {
-          const savedMembers = localStorage.getItem("yuvakshar_c_group_members");
+          const savedMembers = null;
           let members: CommunityGroupMember[] = savedMembers ? JSON.parse(savedMembers) : [];
           // Filter members for this group
           members = members.filter(m => m.group_id === match.id);
@@ -89,18 +89,18 @@ export default function GroupDetailPage() {
               { id: "gm-3", group_id: match.id, user_id: "usr-author-2", role: "Mentor", joined_at: match.created_at }
             ];
             const allSavedMembers = savedMembers ? JSON.parse(savedMembers) : [];
-            localStorage.setItem("yuvakshar_c_group_members", JSON.stringify([...allSavedMembers, ...members]));
+            undefined;
           }
           setGroupMembers(members);
 
           // Announcements
-          const savedAnn = localStorage.getItem(`yuvakshar_announcements_${match.id}`);
+          const savedAnn = null;
           if (savedAnn) {
             setAnnouncements(JSON.parse(savedAnn));
           } else {
             const defaults = ["सभी समूह सदस्यों का स्वागत है! मर्यादा बनाए रखें और सार्थक विमर्श करें।"];
             setAnnouncements(defaults);
-            localStorage.setItem(`yuvakshar_announcements_${match.id}`, JSON.stringify(defaults));
+            undefined;
           }
         }
         
@@ -130,7 +130,7 @@ export default function GroupDetailPage() {
       setIsMember(joined);
       
       // Update local members list
-      const savedMembers = localStorage.getItem("yuvakshar_c_group_members");
+      const savedMembers = null;
       let members: CommunityGroupMember[] = savedMembers ? JSON.parse(savedMembers) : [];
       if (joined) {
         const newMember: CommunityGroupMember = {
@@ -144,7 +144,7 @@ export default function GroupDetailPage() {
       } else {
         members = members.filter(m => !(m.group_id === group.id && m.user_id === currentUser.id));
       }
-      localStorage.setItem("yuvakshar_c_group_members", JSON.stringify(members));
+      undefined;
       setGroupMembers(members.filter(m => m.group_id === group.id));
 
       const allGroups = await fetchGroups();
@@ -229,7 +229,7 @@ export default function GroupDetailPage() {
     if (!announcementText.trim() || !group) return;
     const updated = [announcementText.trim(), ...announcements];
     setAnnouncements(updated);
-    localStorage.setItem(`yuvakshar_announcements_${group.id}`, JSON.stringify(updated));
+    undefined;
     setAnnouncementText("");
     alert("घोषणा सफलतापूर्वक पिन कर दी गई है!");
   };
@@ -238,7 +238,7 @@ export default function GroupDetailPage() {
     if (!group) return;
     const updated = announcements.filter((_, i) => i !== idx);
     setAnnouncements(updated);
-    localStorage.setItem(`yuvakshar_announcements_${group.id}`, JSON.stringify(updated));
+    undefined;
   };
 
   // Pinned Posts Mod Panel toggle
@@ -252,7 +252,7 @@ export default function GroupDetailPage() {
       return p;
     });
     setPosts(updated);
-    localStorage.setItem("yuvakshar_c_posts", JSON.stringify(updated));
+    undefined;
   };
 
   if (loading) {

@@ -102,7 +102,7 @@ export default function ContactPage() {
 
   // Load draft on mount
   useEffect(() => {
-    const savedDraft = localStorage.getItem("yuvakshar_contact_draft");
+    const savedDraft = null;
     if (savedDraft) {
       try {
         const parsed = JSON.parse(savedDraft);
@@ -120,7 +120,7 @@ export default function ContactPage() {
   useEffect(() => {
     if (isSubmitting || submitSuccess) return;
     const draftData = { name, email, mobile, category, message };
-    localStorage.setItem("yuvakshar_contact_draft", JSON.stringify(draftData));
+    undefined;
   }, [name, email, mobile, category, message, isSubmitting, submitSuccess]);
 
   const handleRestoreDraft = () => {

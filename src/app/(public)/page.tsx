@@ -278,84 +278,25 @@ export default function Home() {
       
       {/* Unified Homepage Layout Pipeline (Strict Ordering) */}
       
-      {/* 1. Main Newspaper Hero section */}
-      <SectionContainer noTopPadding={true}>
-        <SectionErrorBoundary>
-          <Hero />
-        </SectionErrorBoundary>
-      </SectionContainer>
-
-      {/* 2. Unified Full-Width continuous layout for all content sections */}
-      <SectionContainer bgClassName="bg-white dark:bg-[#0A0A0A]">
-        <div className="w-full space-y-12 lg:space-y-16">
+      {/* CMS Driven Layout Pipeline */}
+      {activeDbSections.length > 0 ? (
+        activeDbSections.map((section: any, idx: number) => {
+          const type = (section.section_type || section.type || "").toLowerCase().replace(/_/, "").trim();
+          const isHero = type === "hero";
           
-          {/* Top Stories (8 articles) */}
-          <SectionErrorBoundary>
-            <TopStories />
-          </SectionErrorBoundary>
-
-          {/* Latest News Feed (10 articles) */}
-          <SectionErrorBoundary>
-            <LatestNews excludeIds={excludeIdsForLatest} />
-          </SectionErrorBoundary>
-
-          {/* Category highlights ordered dynamically */}
-          <SectionErrorBoundary>
-            <CategoryBlock categoryName="राजनीति" englishName="politics" limit={5} excludeIds={excludeIdsForCategories} />
-          </SectionErrorBoundary>
-          
-          <SectionErrorBoundary>
-            <CategoryBlock categoryName="समाज" englishName="society" limit={5} excludeIds={afterPoliticsExcludes} />
-          </SectionErrorBoundary>
-
-          <SectionErrorBoundary>
-            <CategoryBlock categoryName="अर्थव्यवस्था" englishName="economy" limit={5} excludeIds={afterSocietyExcludes} />
-          </SectionErrorBoundary>
-
-          <SectionErrorBoundary>
-            <CategoryBlock categoryName="शिक्षा" englishName="education" limit={5} excludeIds={afterEconomyExcludes} />
-          </SectionErrorBoundary>
-
-          <SectionErrorBoundary>
-            <CategoryBlock categoryName="विज्ञान" englishName="science" limit={5} excludeIds={afterEducationExcludes} />
-          </SectionErrorBoundary>
-
-          <SectionErrorBoundary>
-            <CategoryBlock categoryName="संस्कृति" englishName="culture" limit={5} excludeIds={afterScienceExcludes} />
-          </SectionErrorBoundary>
-
-          <SectionErrorBoundary>
-            <CategoryBlock categoryName="पर्यावरण" englishName="environment" limit={5} excludeIds={afterCultureExcludes} />
-          </SectionErrorBoundary>
-
-          <SectionErrorBoundary>
-            <CategoryBlock categoryName="खेल" englishName="sports" limit={5} excludeIds={afterEnvExcludes} />
-          </SectionErrorBoundary>
-
-          {/* Editorial Picks */}
-          <SectionErrorBoundary>
-            <EditorialPicks excludeIds={finalExcludesBeforeEditorial} />
-          </SectionErrorBoundary>
-
-          {/* Videos Block */}
-          <div id="videos-section" className="w-full bg-[#111] dark:bg-[#1A1A1A] p-6 md:p-8 rounded-3xl border border-gray-850 text-white">
-            <SectionErrorBoundary>
-              <Videos />
-            </SectionErrorBoundary>
-          </div>
-
-          {/* Magazine Spotlight */}
-          <SectionErrorBoundary>
-            <Magazine />
-          </SectionErrorBoundary>
-
-          {/* Authors Block */}
-          <SectionErrorBoundary>
-            <Authors />
-          </SectionErrorBoundary>
-
+          return (
+            <SectionContainer key={section.id || idx} noTopPadding={isHero} bgClassName={!isHero ? "bg-white dark:bg-[#0A0A0A]" : ""}>
+              <SectionErrorBoundary>
+                {renderDbSection(section)}
+              </SectionErrorBoundary>
+            </SectionContainer>
+          );
+        })
+      ) : (
+        <div className="text-center py-20 text-gray-500">
+          No layout configuration found. Please publish a layout from the CMS.
         </div>
-      </SectionContainer>
+      )}
 
       <PartnerSection />
     </div>

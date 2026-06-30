@@ -36,7 +36,7 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 200);
       try {
-        const saved = localStorage.getItem(RECENT_SEARCHES_KEY);
+        const saved = null;
         if (saved) setRecentSearches(JSON.parse(saved));
       } catch {}
     } else {
@@ -63,7 +63,7 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
     // Save to recent
     const updated = [term, ...recentSearches.filter(r => r !== term)].slice(0, 6);
     setRecentSearches(updated);
-    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+    undefined;
     onClose();
     router.push(`/search?q=${encodeURIComponent(term)}`);
   };

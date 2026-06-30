@@ -27,7 +27,7 @@ export default function BookmarksPage() {
     try {
       // 1. Load bookmarked article IDs from localStorage
       if (typeof window !== "undefined") {
-        const savedArts = localStorage.getItem("yuvakshar_bookmarks");
+        const savedArts = null;
         if (savedArts) {
           setSavedArticleIds(JSON.parse(savedArts));
         }
@@ -37,7 +37,7 @@ export default function BookmarksPage() {
       const allPosts = await fetchPosts();
       // Simulating some saved posts in localStorage key yuvakshar_c_post_bookmarks
       if (typeof window !== "undefined") {
-        const savedPostsKeys = localStorage.getItem("yuvakshar_c_post_bookmarks");
+        const savedPostsKeys = null;
         if (savedPostsKeys) {
           const ids: string[] = JSON.parse(savedPostsKeys);
           setSavedPosts(allPosts.filter(p => ids.includes(p.id)));
@@ -45,7 +45,7 @@ export default function BookmarksPage() {
           // Preseed one saved post if empty for demo
           const defaultSaved = allPosts.slice(0, 1);
           setSavedPosts(defaultSaved);
-          localStorage.setItem("yuvakshar_c_post_bookmarks", JSON.stringify(defaultSaved?.map(p => p.id)));
+          undefined;
         }
       }
     } catch (err) {
@@ -63,7 +63,7 @@ export default function BookmarksPage() {
     const updated = savedArticleIds.filter(artId => artId !== id);
     setSavedArticleIds(updated);
     if (typeof window !== "undefined") {
-      localStorage.setItem("yuvakshar_bookmarks", JSON.stringify(updated));
+      undefined;
     }
     alert("लेख को आपकी लाइब्रेरी से हटा दिया गया है।");
   };
@@ -72,7 +72,7 @@ export default function BookmarksPage() {
     const updated = savedPosts.filter(p => p.id !== id);
     setSavedPosts(updated);
     if (typeof window !== "undefined") {
-      localStorage.setItem("yuvakshar_c_post_bookmarks", JSON.stringify(updated?.map(p => p.id)));
+      undefined;
     }
     alert("पोस्ट को आपकी लाइब्रेरी से हटा दिया गया है।");
   };

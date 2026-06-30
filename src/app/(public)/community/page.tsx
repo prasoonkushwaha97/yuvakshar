@@ -67,13 +67,13 @@ function CommunityFeedPageContent() {
       setGroups(allGroups);
 
       if (typeof window !== "undefined") {
-        const savedMembers = localStorage.getItem("yuvakshar_c_group_members");
+        const savedMembers = null;
         if (savedMembers) setGroupMembers(JSON.parse(savedMembers));
         
-        const savedBookmarked = localStorage.getItem("yuvakshar_c_post_bookmarks");
+        const savedBookmarked = null;
         if (savedBookmarked) setBookmarkedPostIds(JSON.parse(savedBookmarked));
         
-        const savedHashtags = localStorage.getItem("yuvakshar_followed_hashtags");
+        const savedHashtags = null;
         if (savedHashtags) setFollowedHashtags(JSON.parse(savedHashtags));
       }
     } catch (err) {
@@ -113,9 +113,9 @@ function CommunityFeedPageContent() {
         
         // Persist to local storage
         if (typeof window !== "undefined") {
-          const currentSaved = localStorage.getItem("yuvakshar_c_posts");
+          const currentSaved = null;
           const postsList = currentSaved ? JSON.parse(currentSaved) : [];
-          localStorage.setItem("yuvakshar_c_posts", JSON.stringify([newPost, ...postsList]));
+          undefined;
         }
       }
     };
@@ -145,7 +145,7 @@ function CommunityFeedPageContent() {
 
     setPosts(updatedPosts);
     if (typeof window !== "undefined") {
-      localStorage.setItem("yuvakshar_c_posts", JSON.stringify(updatedPosts));
+      undefined;
     }
     alert("आपका मत दर्ज कर लिया गया है!");
   };
@@ -184,7 +184,7 @@ function CommunityFeedPageContent() {
       alert("पोस्ट को आपकी लाइब्रेरी में सहेज लिया गया है!");
     }
     setBookmarkedPostIds(updated);
-    localStorage.setItem("yuvakshar_c_post_bookmarks", JSON.stringify(updated));
+    undefined;
   };
 
   // Trigger Share Dialog

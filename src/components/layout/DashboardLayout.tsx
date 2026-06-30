@@ -55,23 +55,23 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
           {
             title: "Content Management",
             items: [
-              { label: "Articles", href: "/editorial/articles", icon: FileText },
-              { label: "Categories", href: "/editorial/categories", icon: Layers },
-              { label: "Magazine", href: "/editorial/magazine", icon: BookOpen },
-              { label: "Videos", href: "/founder/videos", icon: Video },
+              { label: "Articles", href: "/admin/articles", icon: FileText },
+              { label: "Categories", href: "/admin/categories", icon: Layers },
+              { label: "Magazine", href: "/admin/magazine", icon: BookOpen },
+              { label: "Videos", href: "/admin/videos", icon: Video },
             ]
           },
           {
             title: "Editorial",
             items: [
-              { label: "Reviews", href: "/editorial/reviews", icon: CheckSquare },
-              { label: "Workflow", href: "/editorial/workflow", icon: Activity },
+              { label: "Reviews", href: "/admin/reviews", icon: CheckSquare },
+              { label: "Workflow", href: "/admin/workflow", icon: Activity },
             ]
           },
           {
             title: "Community",
             items: [
-              { label: "Authors", href: "/founder/authors", icon: User },
+              { label: "Authors", href: "/admin/authors", icon: User },
               { label: "Communities", href: "/admin/communities", icon: UsersRound },
               { label: "Comments", href: "/admin/comments", icon: MessageSquare },
             ]
@@ -79,18 +79,18 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
           {
             title: "Governance",
             items: [
-              { label: "Users", href: "/founder/users", icon: Users },
-              { label: "Roles", href: "/founder/roles", icon: Shield },
-              { label: "Permissions", href: "/founder/permissions", icon: Key },
-              { label: "Audit Logs", href: "/founder/audit", icon: ClipboardList },
+              { label: "Users", href: "/admin/users", icon: Users },
+              { label: "Roles", href: "/admin/roles", icon: Shield },
+              { label: "Permissions", href: "/admin/permissions", icon: Key },
+              { label: "Audit Logs", href: "/admin/audit", icon: ClipboardList },
             ]
           },
           {
             title: "System",
             items: [
-              { label: "Analytics", href: "/founder/analytics", icon: LineChart },
-              { label: "Monitoring", href: "/founder/monitoring", icon: Server },
-              { label: "Settings", href: "/founder/system", icon: Settings },
+              { label: "Analytics", href: "/admin/analytics", icon: LineChart },
+              { label: "Monitoring", href: "/admin/monitoring", icon: Server },
+              { label: "Settings", href: "/admin/system", icon: Settings },
             ]
           }
         ];
@@ -113,15 +113,15 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
           {
             title: "Publishing",
             items: [
-              { label: "Editorial Desk", href: "/editorial", icon: LayoutDashboard },
-              { label: "Articles", href: "/editorial/articles", icon: FileText, roles: ["editor_in_chief", "managing_editor", "editor"] },
-              { label: "Categories", href: "/editorial/categories", icon: Layers, roles: ["editor_in_chief"] },
-              { label: "Magazine", href: "/editorial/magazine", icon: BookOpen, roles: ["editor_in_chief"] },
-              { label: "Reviews", href: "/editorial/reviews", icon: CheckSquare, roles: ["editor_in_chief", "editor"] },
-              { label: "Workflow", href: "/editorial/workflow", icon: Activity, roles: ["editor_in_chief", "managing_editor", "editor"] },
-              { label: "Assignments", href: "/editorial/assignments", icon: ClipboardList, roles: ["editor_in_chief", "managing_editor"] },
-              { label: "Publishing Queue", href: "/editorial/queue", icon: CheckSquare, roles: ["editor_in_chief", "managing_editor"] },
-              { label: "Fact Check Queue", href: "/editorial/fact-check", icon: Shield, roles: ["fact_checker"] },
+              { label: "Editorial Desk", href: "/admin", icon: LayoutDashboard },
+              { label: "Articles", href: "/admin/articles", icon: FileText, roles: ["editor_in_chief", "managing_editor", "editor"] },
+              { label: "Categories", href: "/admin/categories", icon: Layers, roles: ["editor_in_chief"] },
+              { label: "Magazine", href: "/admin/magazine", icon: BookOpen, roles: ["editor_in_chief"] },
+              { label: "Reviews", href: "/admin/reviews", icon: CheckSquare, roles: ["editor_in_chief", "editor"] },
+              { label: "Workflow", href: "/admin/workflow", icon: Activity, roles: ["editor_in_chief", "managing_editor", "editor"] },
+              { label: "Assignments", href: "/admin/assignments", icon: ClipboardList, roles: ["editor_in_chief", "managing_editor"] },
+              { label: "Publishing Queue", href: "/admin/queue", icon: CheckSquare, roles: ["editor_in_chief", "managing_editor"] },
+              { label: "Fact Check Queue", href: "/admin/fact-check", icon: Shield, roles: ["fact_checker"] },
             ]
           }
         ];

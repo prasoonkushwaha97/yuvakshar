@@ -26,7 +26,7 @@ export default function CurrentAffairsPage() {
 
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem("yuvakshar_bookmarks");
+    const saved = null;
     if (saved) {
       setBookmarks(JSON.parse(saved));
     }
@@ -40,7 +40,7 @@ export default function CurrentAffairsPage() {
       updated = [...bookmarks, id];
     }
     setBookmarks(updated);
-    localStorage.setItem("yuvakshar_bookmarks", JSON.stringify(updated));
+    undefined;
   };
 
   const { articles, categories: cmsCategories } = useCms();

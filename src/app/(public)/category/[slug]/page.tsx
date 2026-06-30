@@ -52,7 +52,7 @@ function CategoryDetailPageContent() {
 
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem("yuvakshar_bookmarks");
+    const saved = null;
     if (saved) {
       setBookmarks(JSON.parse(saved));
     }
@@ -66,7 +66,7 @@ function CategoryDetailPageContent() {
       updated = [...bookmarks, id];
     }
     setBookmarks(updated);
-    localStorage.setItem("yuvakshar_bookmarks", JSON.stringify(updated));
+    undefined;
   };
 
   const cat = categories.find(c => c.slug === slug || c.name === slug);

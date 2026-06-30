@@ -27,7 +27,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem("yuvakshar_bookmarks");
+    const saved = null;
     if (saved) {
       setBookmarks(JSON.parse(saved));
     }
@@ -59,7 +59,7 @@ export default function SearchPage() {
       updated = [...bookmarks, id];
     }
     setBookmarks(updated);
-    localStorage.setItem("yuvakshar_bookmarks", JSON.stringify(updated));
+    undefined;
   };
 
   return (

@@ -5,7 +5,7 @@ import { ArrowLeft, Save, Image as ImageIcon, Settings, Check, List } from "luci
 import Link from "next/link";
 import { toast } from "sonner";
 import { createArticle, updateArticle, updateArticleStatus } from "@/lib/actions/articleActions";
-import EditorialSidebar from "./EditorialSidebar";
+import EditorSettingsSidebar from "./EditorSettingsSidebar";
 
 export default function EditorClient({ article, isNew, reviewNotes }: { article: any, isNew: boolean, reviewNotes: any[] }) {
   const [title, setTitle] = useState(article?.title_hi || "");
@@ -21,7 +21,7 @@ export default function EditorClient({ article, isNew, reviewNotes }: { article:
       if (isNew) {
         await createArticle({ title_hi: title, content: content, status: "draft" });
         toast.success("Draft created successfully. Redirecting...");
-        window.location.href = "/founder/articles";
+        window.location.href = "/admin/articles";
       } else {
         await updateArticle(article.id, { title_hi: title, content: content });
         toast.success("Changes saved successfully");
@@ -50,7 +50,7 @@ export default function EditorClient({ article, isNew, reviewNotes }: { article:
         {/* Editor Header */}
         <div className="flex flex-wrap items-center justify-between px-6 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-4">
-            <Link href="/founder/articles" className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+            <Link href="/admin/articles" className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div className="text-sm font-medium text-slate-400">
@@ -121,7 +121,7 @@ export default function EditorClient({ article, isNew, reviewNotes }: { article:
       </div>
 
       {showSidebar && !isNew && article && (
-        <EditorialSidebar articleId={article.id} initialNotes={reviewNotes} />
+        <EditorSettingsSidebar articleId={article.id} initialNotes={reviewNotes} />
       )}
     </div>
   );

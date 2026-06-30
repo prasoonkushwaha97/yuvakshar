@@ -34,7 +34,7 @@ export default function AppHeader() {
 
   useEffect(() => {
     // Theme initialization
-    const savedTheme = localStorage.getItem("yuvakshar_theme") as "light" | "dark" || "light";
+    const savedTheme = "light" as "light" | "dark";
     setTheme(savedTheme);
     if (savedTheme === "dark") {
       document.documentElement.classList.add("dark");
@@ -73,7 +73,7 @@ export default function AppHeader() {
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
-    localStorage.setItem("yuvakshar_theme", newTheme);
+    undefined;
     if (newTheme === "dark") {
       document.documentElement.classList.add("dark");
     } else {

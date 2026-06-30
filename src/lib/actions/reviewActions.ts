@@ -38,7 +38,7 @@ export async function addReviewNote(article_id: string, note: string, decision?:
     { article_id, decision, is_reply: !!parent_id }
   );
 
-  revalidatePath('/founder/reviews');
+  revalidatePath('/admin/reviews');
   return noteData;
 }
 
@@ -78,7 +78,7 @@ export async function assignReviewer(article_id: string, user_id: string, role_t
     { assigned_to: user_id, role_type }
   );
 
-  revalidatePath('/founder/reviews');
+  revalidatePath('/admin/reviews');
   return true;
 }
 

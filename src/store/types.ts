@@ -1,5 +1,5 @@
 /**
- * Yuvakshar CMS Shared Types
+ * Yuvakshar Admin Shared Types
  * 
  * This file contains all shared TypeScript interfaces used across the CMS.
  * Kept in a separate file (not "use client") to avoid Turbopack static analysis 
@@ -7,7 +7,7 @@
  */
 
 // ─── Article & Magazine ────────────────────────────────────────────────────
-// These are re-exported from mockData for convenience
+// These are re-exported from fallbackData for convenience
 export interface Article {
   id: string;
   title: string;
@@ -61,7 +61,7 @@ export interface Profile {
   department?: string; // Hindi department identifier
   org_id?: string;     // e.g. YUV-ED-0001
   suspended_by?: string | null;
-  temporary_password?: boolean;
+  provisional_password?: boolean;
   force_password_change?: boolean;
   state?: string;
   district?: string;
@@ -166,6 +166,7 @@ export interface Submission {
 export interface EditorialAssignment {
   id: string;
   article_id: string;
+  submission_id?: string;
   article_title?: string;
   author_name?: string;
   reviewer_name?: string;
@@ -173,7 +174,7 @@ export interface EditorialAssignment {
   reviewer_id?: string;
   section_editor_id?: string;
   deadline?: string;
-  status: "Assigned" | "In Progress" | "Under Review" | "Completed";
+  status: "Assigned" | "In Progress" | "Under Review" | "Completed" | "Revision Requested";
   created_at: string;
 }
 

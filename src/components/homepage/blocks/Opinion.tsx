@@ -10,7 +10,7 @@ export default function Opinion() {
   const { locale } = useLanguage();
   const { articles } = useCms();
 
-  // Filter articles with opinion/editorial content
+  // Filter articles with opinion content
   const opinionArticles = articles
     .filter((a: any) => a.status === "Published" || a.status === "Approved" || !a.status)
     .filter((a: any) => a.category === "विश्लेषण" || a.category === "विचार" || a.authorRole)

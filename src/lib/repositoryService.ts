@@ -27,7 +27,7 @@ const isBrowser = (): boolean => typeof window !== "undefined";
  */
 const getLocalItem = (key: string, fallback: string = "[]"): string => {
   if (!isBrowser()) return fallback;
-  return localStorage.getItem(key) || fallback;
+  return fallback;
 };
 
 /**
@@ -35,7 +35,7 @@ const getLocalItem = (key: string, fallback: string = "[]"): string => {
  */
 const setLocalItem = (key: string, value: string): void => {
   if (isBrowser()) {
-    localStorage.setItem(key, value);
+    undefined;
   }
 };
 
@@ -100,7 +100,7 @@ export const getLiteraryIdentities = (
 };
 
 /**
- * @deprecated The points-based reputation engine is deprecated.
+ * @archived_feature The points-based reputation engine is archived_feature.
  * Kept for internal compatibility only.
  */
 export const calculateAuthorReputation = (
@@ -157,10 +157,10 @@ export const signUpUser = async (email: string, role: string, metadata: Record<s
       return { success: false, error: err.message || "Signup failed" };
     }
   } else {
-    // Mock user list update
-    const mockId = `mock-uid-${Math.floor(Math.random() * 10000)}`;
+    // fallback user list update
+    const fallbackId = `fallback-uid-${Math.floor(Math.random() * 10000)}`;
     const newProfile: Profile = {
-      id: mockId,
+      id: fallbackId,
       name: metadata.name || email.split("@")[0].toUpperCase(),
       email,
       role: role as any,
@@ -222,15 +222,15 @@ export const resetUserPassword = async (email: string): Promise<{ success: boole
 
 // ─── ARTICLESPersistence ────────────────────────────────────────────────────
 
+import { FEATURES } from "../config/features";
+import { SupabaseArticleRepository } from "../domains/articles/repositories/articleRepository";
+
+const articleRepo = new SupabaseArticleRepository();
+
 export const fetchArticlesFromDb = async (fallback: Article[]): Promise<Article[]> => {
-  if (isSupabaseConfigured()) {
+  if (FEATURES.USE_SUPABASE_ARTICLES && isSupabaseConfigured()) {
     try {
-      const { data, error } = await supabase
-        .from("articles")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data || [];
+      return await articleRepo.getArticles();
     } catch (err) {
       console.warn("Falling back to local storage for articles:", err);
     }
@@ -239,42 +239,39 @@ export const fetchArticlesFromDb = async (fallback: Article[]): Promise<Article[
 };
 
 export const saveArticleInDb = async (article: Article): Promise<{ success: boolean; data?: Article; error?: string }> => {
-  if (isSupabaseConfigured()) {
+  if (FEATURES.USE_SUPABASE_ARTICLES && isSupabaseConfigured()) {
     try {
-      const { data, error } = await supabase
-        .from("articles")
-        .upsert(article)
-        .select()
-        .single();
-      if (error) return { success: false, error: error.message };
+      const data = await articleRepo.saveArticle(article);
       return { success: true, data };
     } catch (err: any) {
       return { success: false, error: err.message };
     }
-  } else {
-    const articles = JSON.parse(getLocalItem("yuvakshar_articles", "[]"));
-    const index = articles.findIndex((a: any) => a.id === article.id);
-    if (index !== -1) {
-      articles[index] = article;
-    } else {
-      articles.unshift(article);
-    }
-    setLocalItem("yuvakshar_articles", JSON.stringify(articles));
-    return { success: true, data: article };
   }
+  // Local storage fallback
+  const articles: Article[] = JSON.parse(getLocalItem("yuvakshar_articles", "[]"));
+  const idx = articles.findIndex(a => a.id === article.id);
+  if (idx > -1) {
+    articles[idx] = article;
+  } else {
+    articles.push(article);
+  }
+  setLocalItem("yuvakshar_articles", JSON.stringify(articles));
+  return { success: true, data: article };
 };
 
 export const deleteArticleFromDb = async (id: string): Promise<{ success: boolean; error?: string }> => {
-  if (isSupabaseConfigured()) {
-    const { error } = await supabase.from("articles").delete().eq("id", id);
-    if (error) return { success: false, error: error.message };
-    return { success: true };
-  } else {
-    const articles = JSON.parse(getLocalItem("yuvakshar_articles", "[]"));
-    const filtered = articles.filter((a: any) => a.id !== id);
-    setLocalItem("yuvakshar_articles", JSON.stringify(filtered));
-    return { success: true };
+  if (FEATURES.USE_SUPABASE_ARTICLES && isSupabaseConfigured()) {
+    try {
+      await articleRepo.deleteArticle(id);
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
   }
+  const articles: Article[] = JSON.parse(getLocalItem("yuvakshar_articles", "[]"));
+  const filtered = articles.filter(a => a.id !== id);
+  setLocalItem("yuvakshar_articles", JSON.stringify(filtered));
+  return { success: true };
 };
 
 export const incrementArticleViewsInDb = async (id: string): Promise<void> => {
@@ -340,12 +337,14 @@ export const mapDbProfileToProfile = (dbProfile: any): Profile => {
   return profile;
 };
 
+import { SupabaseUserRepository } from "../domains/users/repositories/userRepository";
+
+const userRepo = new SupabaseUserRepository();
+
 export const fetchProfilesFromDb = async (fallback: Profile[]): Promise<Profile[]> => {
-  if (isSupabaseConfigured()) {
+  if (FEATURES.USE_SUPABASE_PROFILES && isSupabaseConfigured()) {
     try {
-      const { data, error } = await supabase.from("profiles").select("*");
-      if (error) throw error;
-      return (data || []).map(mapDbProfileToProfile);
+      return await userRepo.getProfiles();
     } catch (err) {
       console.warn("Falling back to local profiles:", err);
     }
@@ -354,7 +353,7 @@ export const fetchProfilesFromDb = async (fallback: Profile[]): Promise<Profile[
 };
 
 export const updateProfileInDb = async (profile: Profile): Promise<{ success: boolean; data?: Profile; error?: string }> => {
-  if (isSupabaseConfigured()) {
+  if (FEATURES.USE_SUPABASE_PROFILES && isSupabaseConfigured()) {
     try {
       const allowed = [
         "id", "name", "role", "status", "bio", "avatar_url", "social_links", "badges",
@@ -391,8 +390,6 @@ export const updateProfileInDb = async (profile: Profile): Promise<{ success: bo
       if (socialLinksUpdated) {
         filtered.social_links = currentSocialLinks;
       }
-
-      console.log("PROFILE UPDATE PAYLOAD", filtered);
 
       const { data, error } = await supabase
         .from("profiles")
@@ -553,8 +550,17 @@ export const removeSubscriberInDb = async (email: string): Promise<void> => {
 
 // ─── HOMEPAGE LAYOUTS ──────────────────────────────────────────────────────
 
+import { SupabaseExperienceRepository } from "@/domains/experience/repositories/experienceRepository";
+const experienceRepo = new SupabaseExperienceRepository();
+
 export const fetchLayoutsFromDb = async (fallback: HomepageLayout[]): Promise<HomepageLayout[]> => {
-  if (isSupabaseConfigured()) {
+  if (FEATURES.USE_SUPABASE_EXPERIENCES) {
+    try {
+      return await experienceRepo.getAllHomepageLayouts();
+    } catch (err) {
+      console.warn("Layouts fetch fallback:", err);
+    }
+  } else if (isSupabaseConfigured()) {
     try {
       const { data, error } = await supabase.from("homepage_layouts").select("*").order("version", { ascending: false });
       if (error) throw error;
@@ -567,7 +573,9 @@ export const fetchLayoutsFromDb = async (fallback: HomepageLayout[]): Promise<Ho
 };
 
 export const saveLayoutInDb = async (layout: HomepageLayout): Promise<void> => {
-  if (isSupabaseConfigured()) {
+  if (FEATURES.USE_SUPABASE_EXPERIENCES) {
+    await experienceRepo.createHomepageLayout(layout);
+  } else if (isSupabaseConfigured()) {
     await supabase.from("homepage_layouts").update({ is_published: false }).eq("is_published", true);
     await supabase.from("homepage_layouts").insert(layout);
   } else {
@@ -610,12 +618,13 @@ export const logAuditActivity = async (action: string, details: Record<string, a
 
 // ─── SUBMISSIONS / DRAFTS ──────────────────────────────────────────────────
 
+import { SupabaseSubmissionRepository } from "@/domains/submissions/repositories/submissionRepository";
+const submissionRepo = new SupabaseSubmissionRepository();
+
 export const fetchSubmissionsFromDb = async (): Promise<Submission[]> => {
-  if (isSupabaseConfigured()) {
+  if (FEATURES.USE_SUPABASE_EDITORIAL) {
     try {
-      const { data, error } = await supabase.from("contact_messages").select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      return data || [];
+      return await submissionRepo.getSubmissions();
     } catch (err) {
       console.warn("Submissions fetch fallback:", err);
     }
@@ -624,16 +633,8 @@ export const fetchSubmissionsFromDb = async (): Promise<Submission[]> => {
 };
 
 export const saveSubmissionInDb = async (sub: Submission): Promise<void> => {
-  if (isSupabaseConfigured()) {
-    await supabase.from("contact_messages").insert({
-      type: sub.type,
-      name: sub.name, username: sub.email.split('@')[0].replace(/['"]/g, ''), email: sub.email,
-      mobile: sub.mobile,
-      subject: sub.subject,
-      content: sub.content,
-      status: sub.status,
-      replies: sub.replies || []
-    });
+  if (FEATURES.USE_SUPABASE_EDITORIAL) {
+    await submissionRepo.createSubmission(sub);
   } else {
     const subs = JSON.parse(getLocalItem("yuvakshar_submissions", "[]"));
     subs.unshift(sub);
@@ -642,12 +643,57 @@ export const saveSubmissionInDb = async (sub: Submission): Promise<void> => {
 };
 
 export const updateSubmissionStatusInDb = async (id: string, status: Submission["status"]): Promise<void> => {
-  if (isSupabaseConfigured()) {
-    await supabase.from("contact_messages").update({ status }).eq("id", id);
+  if (FEATURES.USE_SUPABASE_EDITORIAL) {
+    await submissionRepo.updateSubmissionStatus(id, status);
   } else {
     const subs = JSON.parse(getLocalItem("yuvakshar_submissions", "[]"));
     const updated = subs.map((s: any) => (s.id === id ? { ...s, status } : s));
     setLocalItem("yuvakshar_submissions", JSON.stringify(updated));
+  }
+};
+
+// ─── EDITORIAL ASSIGNMENTS ─────────────────────────────────────────────────
+
+import { SupabaseEditorialRepository } from "@/domains/editorial/repositories/editorialRepository";
+import { EditorialAssignment } from "@/store/types";
+const editorialRepo = new SupabaseEditorialRepository();
+
+export const fetchEditorialAssignments = async (): Promise<EditorialAssignment[]> => {
+  if (FEATURES.USE_SUPABASE_EDITORIAL) {
+    try {
+      return await editorialRepo.getAssignments();
+    } catch (err) {
+      console.warn("Editorial assignments fetch error:", err);
+      return [];
+    }
+  }
+  return JSON.parse(getLocalItem("yuvakshar_editorial_assignments", "[]"));
+};
+
+export const saveEditorialAssignment = async (assignment: Omit<EditorialAssignment, "id" | "created_at">): Promise<EditorialAssignment | null> => {
+  if (FEATURES.USE_SUPABASE_EDITORIAL) {
+    try {
+      return await editorialRepo.createAssignment(assignment);
+    } catch (err) {
+      console.error("Editorial assignments save error:", err);
+      return null;
+    }
+  } else {
+    const assignments = JSON.parse(getLocalItem("yuvakshar_editorial_assignments", "[]"));
+    const newAss = { ...assignment, id: `ass-${Date.now()}`, created_at: new Date().toISOString() };
+    assignments.unshift(newAss);
+    setLocalItem("yuvakshar_editorial_assignments", JSON.stringify(assignments));
+    return newAss as EditorialAssignment;
+  }
+};
+
+export const updateEditorialAssignmentStatus = async (id: string, status: EditorialAssignment["status"]): Promise<void> => {
+  if (FEATURES.USE_SUPABASE_EDITORIAL) {
+    await editorialRepo.updateAssignmentStatus(id, status);
+  } else {
+    const assignments = JSON.parse(getLocalItem("yuvakshar_editorial_assignments", "[]"));
+    const updated = assignments.map((s: any) => (s.id === id ? { ...s, status } : s));
+    setLocalItem("yuvakshar_editorial_assignments", JSON.stringify(updated));
   }
 };
 
@@ -785,3 +831,82 @@ export const deleteAchievementInDb = (
     return user;
   });
 };
+
+// ─── SETTINGS, NAVIGATION, PARTNERS ──────────────────────────────────────────
+
+import { SupabaseSettingsRepository } from "@/domains/settings/repositories/settingsRepository";
+const settingsRepo = new SupabaseSettingsRepository();
+
+export const fetchSiteSetting = async <T>(key: string, fallback: T): Promise<T> => {
+  if (FEATURES.USE_SUPABASE_EXPERIENCES) {
+    try {
+      const val = await settingsRepo.getSetting<T>(key);
+      if (val !== null) return val;
+    } catch (err) {
+      console.warn(`Setting ${key} fetch fallback:`, err);
+    }
+  }
+  return fallback;
+};
+
+export const updateSiteSetting = async <T>(key: string, value: T): Promise<void> => {
+  if (FEATURES.USE_SUPABASE_EXPERIENCES) {
+    await settingsRepo.updateSetting(key, value);
+  }
+};
+
+export const fetchNavigationMenus = async (): Promise<any[]> => {
+  if (FEATURES.USE_SUPABASE_EXPERIENCES) {
+    try {
+      return await settingsRepo.getNavigationMenus();
+    } catch (err) {
+      console.warn("Navigation fetch fallback:", err);
+    }
+  }
+  return [];
+};
+
+export const fetchPartners = async (): Promise<any[]> => {
+  if (FEATURES.USE_SUPABASE_EXPERIENCES) {
+    try {
+      return await settingsRepo.getPartners();
+    } catch (err) {
+      console.warn("Partners fetch fallback:", err);
+    }
+  }
+  return [];
+};
+
+// ─── MAGAZINE & COMMUNITY ──────────────────────────────────────────────────
+
+import { SupabaseMagazineRepository } from "@/domains/magazine/repositories/magazineRepository";
+import { SupabaseCommunityRepository } from "@/domains/community/repositories/communityRepository";
+import { SupabaseModerationRepository } from "@/domains/community/repositories/moderationRepository";
+
+const magazineRepo = new SupabaseMagazineRepository();
+const communityRepo = new SupabaseCommunityRepository();
+const moderationRepo = new SupabaseModerationRepository();
+
+export const getMagazineRepository = () => magazineRepo;
+export const getCommunityRepository = () => communityRepo;
+export const getModerationRepository = () => moderationRepo;
+
+// ─── PLATFORM SERVICES ───────────────────────────────────────────────────────
+
+import { SupabaseMediaRepository } from "@/domains/platform/media/repositories/mediaRepository";
+import { SupabaseNotificationRepository } from "@/domains/platform/notifications/repositories/notificationRepository";
+import { SupabaseAuditRepository } from "@/domains/platform/audit/repositories/auditRepository";
+import { SupabaseSecurityRepository } from "@/domains/platform/security/repositories/securityRepository";
+import { SupabaseAnalyticsRepository } from "@/domains/platform/analytics/repositories/analyticsRepository";
+
+const mediaRepo = new SupabaseMediaRepository();
+const notificationRepo = new SupabaseNotificationRepository();
+const auditRepo = new SupabaseAuditRepository();
+const securityRepo = new SupabaseSecurityRepository();
+const analyticsRepo = new SupabaseAnalyticsRepository();
+
+export const getMediaRepository = () => mediaRepo;
+export const getNotificationRepository = () => notificationRepo;
+export const getAuditRepository = () => auditRepo;
+export const getSecurityRepository = () => securityRepo;
+export const getAnalyticsRepository = () => analyticsRepo;

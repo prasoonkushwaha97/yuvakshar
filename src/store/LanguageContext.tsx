@@ -175,7 +175,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocale] = useState<Locale>("hi");
 
   useEffect(() => {
-    const savedLocale = localStorage.getItem("yuvakshar_locale") as Locale;
+    const savedLocale = "hi" as Locale;
     if (savedLocale === "hi" || savedLocale === "en") {
       setLocale(savedLocale);
     }
@@ -183,7 +183,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const changeLocale = (newLocale: Locale) => {
     setLocale(newLocale);
-    localStorage.setItem("yuvakshar_locale", newLocale);
+    undefined;
   };
 
   const translate = (key: string): string => {

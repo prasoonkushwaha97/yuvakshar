@@ -50,7 +50,7 @@ export default function WorkspacePage() {
     setMounted(true);
     
     // Load flashcards
-    const savedCards = localStorage.getItem("yuvakshar_flashcards");
+    const savedCards = null;
     if (savedCards) {
       setFlashcards(JSON.parse(savedCards));
     } else {
@@ -60,13 +60,13 @@ export default function WorkspacePage() {
         { front: "What defines Sovereign AI under the Indian lens?", back: "The administrative ability to train and run localized models in regional languages to secure cognitive autonomy.", note: "From Dr. Vikram Aditya's thesis.", date: "May 28, 2026" }
       ];
       setFlashcards(defaults);
-      localStorage.setItem("yuvakshar_flashcards", JSON.stringify(defaults));
+      undefined;
     }
 
     // Consolidate highlights from all articles
     const compiledNotes: ConsolidatedNote[] = [];
     articles.forEach(art => {
-      const savedHl = localStorage.getItem(`yuvakshar_highlights_${art.id}`);
+      const savedHl = null;
       if (savedHl) {
         const highlightsList = JSON.parse(savedHl);
         highlightsList.forEach((hl: any) => {
@@ -87,7 +87,7 @@ export default function WorkspacePage() {
   const deleteFlashcard = (index: number) => {
     const updated = flashcards.filter((_, idx) => idx !== index);
     setFlashcards(updated);
-    localStorage.setItem("yuvakshar_flashcards", JSON.stringify(updated));
+    undefined;
   };
 
   const clearAllNotes = () => {
@@ -133,7 +133,7 @@ export default function WorkspacePage() {
             </button>
           )}
           <Link
-            href="/editorial"
+            href="/admin"
             className="px-4 py-2 bg-yuvakshar-gold text-yuvakshar-bg rounded-full text-xs font-bold hover:bg-white shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all cursor-pointer flex items-center space-x-1"
           >
             <BookMarked className="w-3.5 h-3.5" />
@@ -173,7 +173,7 @@ export default function WorkspacePage() {
                   <GlassCard key={idx} glow="none" className="p-5 border-l-4" style={{ borderLeftColor: note.color === "yellow" ? "#EAB308" : note.color === "blue" ? "#3B82F6" : note.color === "red" ? "#EF4444" : "#22C55E" }}>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center text-[10px] text-yuvakshar-gray">
-                        <Link href="/editorial" className="hover:text-yuvakshar-gold font-serif text-[11px] underline line-clamp-1 font-bold">
+                        <Link href="/admin" className="hover:text-yuvakshar-gold font-serif text-[11px] underline line-clamp-1 font-bold">
                           {note.articleTitle}
                         </Link>
                         <span>{note.date}</span>

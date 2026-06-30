@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 
 /**
- * Base Analytics Service for Yuvakshar CMS
+ * Base Analytics Service for Yuvakshar Admin
  * Provides generic analytics functions across modules.
  */
 export const analyticsService = {

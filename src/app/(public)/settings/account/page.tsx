@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useCms } from "@/store/CmsContext";
 import { updateUserAccount } from "@/lib/actions/settingsActions";
-import { User, AlertCircle, CheckCircle2, RotateCw, Camera } from "lucide-react";
+import { User, AlertCircle, CheckCircle2, RotateCw } from "lucide-react";
+import AvatarUploader from "@/components/yuvakshar/AvatarUploader";
 
 export default function AccountSettingsPage() {
   const { currentUser } = useCms();
@@ -12,7 +13,6 @@ export default function AccountSettingsPage() {
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [socialLinks, setSocialLinks] = useState({ twitter: "", linkedin: "", website: "" });
-  const [avatarUrl, setAvatarUrl] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -23,7 +23,6 @@ export default function AccountSettingsPage() {
       setName(currentUser.name || "");
       setUsername(currentUser.username || "");
       setBio(currentUser.bio || "");
-      setAvatarUrl(currentUser.avatar_url || "");
       if (currentUser.social_links) {
         setSocialLinks({
           twitter: currentUser.social_links.twitter || "",
@@ -68,25 +67,10 @@ export default function AccountSettingsPage() {
 
       <form onSubmit={handleSave} className="space-y-6">
         
-        {/* Avatar (Mocked for now, assumes direct URL entry for simplicity unless a file uploader is built) */}
+        {/* Avatar Upload System */}
         <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">प्रोफ़ाइल फ़ोटो URL</label>
-          <div className="flex items-center gap-4">
-             <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden shrink-0">
-               {avatarUrl ? (
-                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-               ) : (
-                 <User className="w-8 h-8 m-4 text-slate-400" />
-               )}
-             </div>
-             <input
-              type="url"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              className="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white"
-              placeholder="https://example.com/avatar.jpg"
-            />
-          </div>
+          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">प्रोफ़ाइल फ़ोटो</label>
+          <AvatarUploader currentAvatarUrl={currentUser.avatar_url || ""} />
         </div>
 
         {/* Name Field */}

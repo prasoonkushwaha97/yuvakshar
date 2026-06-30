@@ -34,7 +34,7 @@ export default function Popular() {
           .sort((a, b) => (parseInt(b.id) || 0) % 7 - (parseInt(a.id) || 0) % 7)
           .slice(0, 5);
       case "comments":
-        // Sort by length of content as a proxy for comments, or mock counts
+        // Sort by length of content as a proxy for comments, or fallback counts
         return [...published]
           .sort((a, b) => (b.content?.length || 0) - (a.content?.length || 0))
           .slice(0, 5);

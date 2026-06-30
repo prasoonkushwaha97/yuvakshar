@@ -171,7 +171,7 @@ export async function createArticle(data: Partial<Article>) {
   if (error) throw new Error(error.message);
 
   await logGovernanceAction("create", "article", result.id, { title: data.title_hi, status: insertData.status });
-  revalidatePath("/founder/articles");
+  revalidatePath("/admin/articles");
   revalidatePath("/admin/articles");
   return { success: true, id: result.id };
 }
@@ -192,9 +192,9 @@ export async function updateArticle(id: string, data: Partial<Article>) {
   if (error) throw new Error(error.message);
 
   await logGovernanceAction("update", "article", id, { fields_updated: Object.keys(updateData), new_status: data.status });
-  revalidatePath("/founder/articles");
   revalidatePath("/admin/articles");
-  revalidatePath(`/founder/articles/${id}`);
+  revalidatePath("/admin/articles");
+  revalidatePath(`/admin/articles/${id}`);
   return { success: true };
 }
 
@@ -212,7 +212,7 @@ export async function deleteArticle(id: string) {
   if (error) throw new Error(error.message);
 
   await logGovernanceAction("delete", "article", id);
-  revalidatePath("/founder/articles");
+  revalidatePath("/admin/articles");
   revalidatePath("/admin/articles");
   return { success: true };
 }
@@ -231,7 +231,7 @@ export async function bulkDeleteArticles(ids: string[]) {
   if (error) throw new Error(error.message);
 
   await logGovernanceAction("bulk_delete", "article", null, { deleted_count: ids.length });
-  revalidatePath("/founder/articles");
+  revalidatePath("/admin/articles");
   return { success: true };
 }
 
@@ -288,9 +288,9 @@ export async function updateArticleStatus(id: string, status: ArticleStatus | st
   if (error) throw new Error(error.message);
 
   await logGovernanceAction("status_change", "article", id, { new_status: status });
-  revalidatePath("/founder/articles");
   revalidatePath("/admin/articles");
-  revalidatePath(`/founder/articles/${id}`);
+  revalidatePath("/admin/articles");
+  revalidatePath(`/admin/articles/${id}`);
   return { success: true };
 }
 

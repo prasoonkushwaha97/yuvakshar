@@ -15,7 +15,7 @@ export default function BookmarkButton({ articleId, className = "" }: BookmarkBu
 
   useEffect(() => {
     const checkBookmark = () => {
-      const stored = localStorage.getItem("yuvakshar_bookmarks");
+      const stored = null;
       if (stored) {
         try {
           const list = JSON.parse(stored) as string[];
@@ -41,7 +41,7 @@ export default function BookmarkButton({ articleId, className = "" }: BookmarkBu
       return;
     }
 
-    const stored = localStorage.getItem("yuvakshar_bookmarks");
+    const stored = null;
     let list: string[] = [];
     if (stored) {
       try {
@@ -60,7 +60,7 @@ export default function BookmarkButton({ articleId, className = "" }: BookmarkBu
       setIsBookmarked(true);
     }
 
-    localStorage.setItem("yuvakshar_bookmarks", JSON.stringify(newList));
+    undefined;
     // Dispatch standard storage event so other components update
     window.dispatchEvent(new Event("storage"));
   };

@@ -8,7 +8,7 @@ import { Article } from "./types";
 export type { Article };
 import { QuizQuestion, ArticleQuiz, preseededQuizzes, generateFallbackQuestions } from "@/lib/defaultQuizzes";
 import { callOpenAi, callGemini } from "@/lib/aiService";
-import { generateMockAiResponse } from "@/lib/mockAiResponse";
+import { generatefallbackAiResponse } from "@/lib/fallbackAiResponse";
 import {
   calculateAuthorReputation,
   generateAuthorSlug,
@@ -436,7 +436,7 @@ interface CmsContextType {
 
 const CmsContext = createContext<CmsContextType | undefined>(undefined);
 
-const initialMockVideos: Video[] = [
+const initialfallbackVideos: Video[] = [
   {
     id: "vid-1",
     title: "विशेष चर्चा: भारत में डिजिटल संप्रभुता और सुपरकंप्यूटिंग क्रांति का भविष्य",
@@ -815,13 +815,13 @@ export function CmsProvider({
               console.log("PROFILE UPDATE PAYLOAD", payload);
               await supabase.from("profiles").update(payload).eq("id", profile.id);
             }
-            profile.role = highestRole as any; // Legacy sync
+            profile.role = highestRole as any; // archived sync
             // Augment profile with auth email (profiles table has no email column)
             if (!profile.email && session.user.email) {
               profile.email = session.user.email;
             }
             setCurrentUser(profile);
-            localStorage.setItem("yuvakshar_session_user", JSON.stringify(profile));
+            undefined;
           } else {
             // Profile does not exist yet - create it dynamically!
             const newProfile: Profile = {
@@ -848,12 +848,12 @@ export function CmsProvider({
               
             if (!insertError) {
               setCurrentUser(newProfile);
-              localStorage.setItem("yuvakshar_session_user", JSON.stringify(newProfile));
+              undefined;
             } else {
               console.error("Error inserting profile on auth state change:", insertError.message);
               // Fallback
               setCurrentUser(newProfile);
-              localStorage.setItem("yuvakshar_session_user", JSON.stringify(newProfile));
+              undefined;
             }
           }
         } catch (err) {
@@ -994,62 +994,62 @@ export function CmsProvider({
 
   function loadDataFromLocalStorage() {
     // General Settings
-    const localSettings = localStorage.getItem("yuvakshar_settings");
+    const localSettings = null;
     if (localSettings) setSettings(JSON.parse(localSettings));
 
-    const localIcons = localStorage.getItem("yuvakshar_site_icons");
+    const localIcons = null;
     if (localIcons) setSiteIcons(JSON.parse(localIcons));
 
     // Articles
-    const localArticles = localStorage.getItem("yuvakshar_articles");
+    const localArticles = null;
     let loadedArticles: Article[] = [];
     if (localArticles) {
       const parsed = JSON.parse(localArticles);
-      // Use saved articles if they exist (even 1), otherwise fall back to mock data
+      // Use saved articles if they exist (even 1), otherwise fall back to fallback data
       loadedArticles = parsed.length > 0 ? parsed : [];
     } else {
       loadedArticles = [];
-      localStorage.setItem("yuvakshar_articles", JSON.stringify([]));
+      undefined;
     }
     setArticles(loadedArticles);
 
     // Magazines
-    const localMagazines = localStorage.getItem("yuvakshar_magazines");
+    const localMagazines = null;
     if (localMagazines && JSON.parse(localMagazines).length >= 3) {
       setMagazines(JSON.parse(localMagazines));
     } else {
       setMagazines([]);
-      localStorage.setItem("yuvakshar_magazines", JSON.stringify([]));
+      undefined;
     }
 
     // Submissions
-    const localSubmissions = localStorage.getItem("yuvakshar_submissions") || "[]";
+    const localSubmissions = "[]";
     setSubmissions(JSON.parse(localSubmissions));
 
     // Comments
-    const localComments = localStorage.getItem("yuvakshar_comments");
+    const localComments = null;
     if (localComments && JSON.parse(localComments).length >= 8) {
       setComments(JSON.parse(localComments));
     } else {
       setComments([] as Comment[]);
-      localStorage.setItem("yuvakshar_comments", JSON.stringify([]));
+      undefined;
     }
 
     // Subscribers
-    const localSubscribers = localStorage.getItem("yuvakshar_subscribers");
+    const localSubscribers = null;
     if (localSubscribers && JSON.parse(localSubscribers).length >= 15) {
       setSubscribers(JSON.parse(localSubscribers));
     } else {
       setSubscribers([]);
-      localStorage.setItem("yuvakshar_subscribers", JSON.stringify([]));
+      undefined;
     }
 
     // Newsletter Campaigns
-    const localCampaigns = localStorage.getItem("yuvakshar_campaigns") || "[]";
+    const localCampaigns = "[]";
     setCampaigns(JSON.parse(localCampaigns));
 
     // Ads Settings
-    const localAds = localStorage.getItem("yuvakshar_ads");
+    const localAds = null;
     if (localAds) {
       setAds(JSON.parse(localAds));
     } else {
@@ -1058,19 +1058,19 @@ export function CmsProvider({
         { id: "ad-2", name: "Google AdSense Placeholder", zone: "mid_content", type: "adsense", code: "<div style='background:#f3ece0;padding:20px;text-align:center;font-size:11px;color:#EA580C;font-weight:bold;border:1px dashed #EA580C'>[Google AdSense Mid Content Banner]</div>", active: true, click_count: 0, impression_count: 0 }
       ];
       setAds(initial);
-      localStorage.setItem("yuvakshar_ads", JSON.stringify(initial));
+      undefined;
     }
 
     // Assignments
-    const localAssignments = localStorage.getItem("yuvakshar_assignments") || "[]";
+    const localAssignments = "[]";
     setAssignments(JSON.parse(localAssignments));
 
     // Search Logs
-    const localSearchLogs = localStorage.getItem("yuvakshar_search_logs") || "[]";
+    const localSearchLogs = "[]";
     setSearchLogs(JSON.parse(localSearchLogs));
 
     // Layouts
-    const localLayouts = localStorage.getItem("yuvakshar_layouts");
+    const localLayouts = null;
     if (localLayouts) {
       setLayouts(JSON.parse(localLayouts));
     } else {
@@ -1086,15 +1086,15 @@ export function CmsProvider({
         is_published: true
       };
       setLayouts([initial]);
-      localStorage.setItem("yuvakshar_layouts", JSON.stringify([initial]));
+      undefined;
     }
 
     // Activity Logs
-    const localActivityLogs = localStorage.getItem("yuvakshar_activity_logs") || "[]";
+    const localActivityLogs = "[]";
     setActivityLogs(JSON.parse(localActivityLogs));
 
     // Categories
-    const localCategories = localStorage.getItem("yuvakshar_categories");
+    const localCategories = null;
     if (localCategories && JSON.parse(localCategories).length >= 8) {
       setCategories(JSON.parse(localCategories));
     } else {
@@ -1111,26 +1111,26 @@ export function CmsProvider({
         { id: "cat-10", name: "पत्रिका", slug: "patrika", language_code: "hi" }
       ];
       setCategories(initial);
-      localStorage.setItem("yuvakshar_categories", JSON.stringify(initial));
+      undefined;
     }
 
     // Users
-    const localUsers = localStorage.getItem("yuvakshar_users");
+    const localUsers = null;
     let finalUsers: Profile[] = [];
     if (localUsers) {
       const parsedUsers: Profile[] = JSON.parse(localUsers);
       finalUsers = enrichUsersList(parsedUsers, loadedArticles);
-      localStorage.setItem("yuvakshar_users", JSON.stringify(finalUsers));
+      undefined;
       setUsers(finalUsers);
     } else {
       const initialUsers: Profile[] = [];
       finalUsers = enrichUsersList(initialUsers, loadedArticles);
       setUsers(finalUsers);
-      localStorage.setItem("yuvakshar_users", JSON.stringify(finalUsers));
+      undefined;
     }
 
-    // Active Mock Auth session load
-    const savedUser = localStorage.getItem("yuvakshar_session_user");
+    // Active fallback Auth session load
+    const savedUser = null;
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
       // Migrate role from Super Admin to Owner
@@ -1140,12 +1140,12 @@ export function CmsProvider({
       // Try to find the fully enriched profile from enriched list
       const matchingEnriched = finalUsers.find(u => u.id === parsedUser.id || (u.email && u.email === parsedUser.email));
       const enrichedSelf = matchingEnriched || enrichUsersList([parsedUser], loadedArticles)[0];
-      localStorage.setItem("yuvakshar_session_user", JSON.stringify(enrichedSelf));
+      undefined;
       setCurrentUser(enrichedSelf);
     }
 
     // Load Quizzes
-    const localQuizzes = localStorage.getItem("yuvakshar_quizzes");
+    const localQuizzes = null;
     let initialQuizzes: ArticleQuiz[] = [];
     if (localQuizzes) {
       initialQuizzes = JSON.parse(localQuizzes);
@@ -1159,18 +1159,18 @@ export function CmsProvider({
           return { articleId: art.id, questions: generateFallbackQuestions(art.id, art.title, art.content) };
         }
       });
-      localStorage.setItem("yuvakshar_quizzes", JSON.stringify(initialQuizzes));
+      undefined;
     }
     setQuizzes(initialQuizzes);
 
     // Load Quiz Attempts
-    const localAttempts = localStorage.getItem("yuvakshar_quiz_attempts") || "[]";
+    const localAttempts = "[]";
     setQuizAttempts(JSON.parse(localAttempts));
 
     // Load Quiz Certificates
 
     // Load Quiz Settings
-    const localSettingsData = localStorage.getItem("yuvakshar_quiz_settings");
+    const localSettingsData = null;
     if (localSettingsData) {
       setQuizSettings(JSON.parse(localSettingsData));
     } else {
@@ -1184,47 +1184,47 @@ export function CmsProvider({
         };
       });
       setQuizSettings(initial);
-      localStorage.setItem("yuvakshar_quiz_settings", JSON.stringify(initial));
+      undefined;
     }
 
     // Load Leaderboard
-    const localLeaderboard = localStorage.getItem("yuvakshar_quiz_leaderboard");
+    const localLeaderboard = null;
     if (localLeaderboard) {
       setLeaderboard(JSON.parse(localLeaderboard));
     } else {
       const initial: QuizLeaderboardEntry[] = [
       ];
       setLeaderboard(initial);
-      localStorage.setItem("yuvakshar_quiz_leaderboard", JSON.stringify(initial));
+      undefined;
     }
 
     // Load AI Settings & Notes
-    const localAiSettings = localStorage.getItem("yuvakshar_ai_settings");
+    const localAiSettings = null;
     if (localAiSettings) {
       setAiSettings(JSON.parse(localAiSettings));
     } else {
-      localStorage.setItem("yuvakshar_ai_settings", JSON.stringify(aiSettings));
+      undefined;
     }
 
-    const localAiNotes = localStorage.getItem("yuvakshar_ai_notes");
+    const localAiNotes = null;
     if (localAiNotes) {
       setAiNotes(JSON.parse(localAiNotes));
     } else {
-      localStorage.setItem("yuvakshar_ai_notes", JSON.stringify([]));
+      undefined;
     }
 
 
     // Load Videos
-    const localVideos = localStorage.getItem("yuvakshar_videos");
+    const localVideos = null;
     if (localVideos) {
       setVideos(JSON.parse(localVideos));
     } else {
-      setVideos(initialMockVideos);
-      localStorage.setItem("yuvakshar_videos", JSON.stringify(initialMockVideos));
+      setVideos(initialfallbackVideos);
+      undefined;
     }
 
     // Load Tasks
-    const localTasks = localStorage.getItem("yuvakshar_tasks");
+    const localTasks = null;
     if (localTasks) {
       setTasks(JSON.parse(localTasks));
     } else {
@@ -1234,11 +1234,11 @@ export function CmsProvider({
         { id: "task-3", title: "वेबसाइट वर्तनी सुधार", description: "मुखपृष्ठ पर हाल ही में प्रकाशित लेखों की भाषा और वर्तनी सुधार करें।", assigned_by: "staff-chief", assigned_by_name: "Prasoon Chief", assigned_to: "staff-factchecker", assigned_to_name: "Nitin Checker", department: "गुणवत्ता", priority: "Low", due_date: "2026-06-18", status: "Needs Revision", created_at: "2026-06-12T09:30:00Z" }
       ];
       setTasks(initial);
-      localStorage.setItem("yuvakshar_tasks", JSON.stringify(initial));
+      undefined;
     }
 
     // Load Verifications
-    const localVerifications = localStorage.getItem("yuvakshar_verifications");
+    const localVerifications = null;
     if (localVerifications) {
       setVerifications(JSON.parse(localVerifications));
     } else {
@@ -1247,11 +1247,11 @@ export function CmsProvider({
         { id: "ver-2", user_id: "u-3", user_name: "Guest Author", badge_requested: "सत्यापित साहित्यकार", status: "Approved", supporting_docs: "३ साहित्यिक पुस्तकों के आईएसबीएन विवरण", review_notes: "मान्य राष्ट्रीय साहित्यिक योगदान", decided_by: "u-1", decided_by_name: "Owner", decided_at: "2026-06-10T15:00:00Z", created_at: "2026-06-09T08:00:00Z" }
       ];
       setVerifications(initial);
-      localStorage.setItem("yuvakshar_verifications", JSON.stringify(initial));
+      undefined;
     }
 
     // Load Audit Logs
-    const localOrgAuditLogs = localStorage.getItem("yuvakshar_org_audit_logs");
+    const localOrgAuditLogs = null;
     if (localOrgAuditLogs) {
       setOrgAuditLogs(JSON.parse(localOrgAuditLogs));
     } else {
@@ -1260,11 +1260,11 @@ export function CmsProvider({
         { id: "log-2", user_id: "u-2", user_name: "प्रसून कुशवाहा", action: "सुरक्षा घटना", details: "अनधिकृत उपयोगकर्ता u-4 द्वारा /admin पर पहुंच का प्रयास - अस्वीकृत", severity: "Warning", timestamp: "2026-06-12T15:30:00Z" }
       ];
       setOrgAuditLogs(initial);
-      localStorage.setItem("yuvakshar_org_audit_logs", JSON.stringify(initial));
+      undefined;
     }
 
     // Load Role Transfers
-    const localRoleTransfers = localStorage.getItem("yuvakshar_role_transfers");
+    const localRoleTransfers = null;
     if (localRoleTransfers) {
       setRoleTransfers(JSON.parse(localRoleTransfers));
     } else {
@@ -1272,11 +1272,11 @@ export function CmsProvider({
         { id: "trans-1", user_id: "staff-admin", user_name: "Amit Admin", old_role: "प्रशासक", new_role: "प्रधान प्रशासक", changed_by: "u-1", changed_by_name: "Owner", date: "10 जून २०२६" }
       ];
       setRoleTransfers(initial);
-      localStorage.setItem("yuvakshar_role_transfers", JSON.stringify(initial));
+      undefined;
     }
 
     // Load Private Messages
-    const localPrivateMessages = localStorage.getItem("yuvakshar_private_messages");
+    const localPrivateMessages = null;
     if (localPrivateMessages) {
       setPrivateMessages(JSON.parse(localPrivateMessages));
     } else {
@@ -1285,7 +1285,7 @@ export function CmsProvider({
         { id: "msg-2", sender_id: "staff-editor", sender_name: "Ravi Sharma", receiver_id: "u-2", receiver_name: "प्रसून कुशवाहा", content: "जी प्रसून जी, ७०% आलेख संपादित हो चुके हैं, कल दोपहर तक ड्राफ्ट भेज दूँगा।", timestamp: "2026-06-12T09:15:00Z", read: true, reply_to: "msg-1" }
       ];
       setPrivateMessages(initial);
-      localStorage.setItem("yuvakshar_private_messages", JSON.stringify(initial));
+      undefined;
     }
   };
 
@@ -1756,7 +1756,7 @@ export function CmsProvider({
           const newBookmarks = currentBookmarks.filter(id => id !== articleId);
           const updatedUser = { ...currentUser, bookmarks: newBookmarks };
           setCurrentUser(updatedUser);
-          localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+          undefined;
         } else {
           await supabase
             .from("bookmarks")
@@ -1768,7 +1768,7 @@ export function CmsProvider({
           const newBookmarks = [...currentBookmarks, articleId];
           const updatedUser = { ...currentUser, bookmarks: newBookmarks };
           setCurrentUser(updatedUser);
-          localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+          undefined;
         }
         logActivity(isBookmarked ? `Removed bookmark: ${articleId}` : `Added bookmark: ${articleId}`);
       } catch (err) {
@@ -1784,7 +1784,7 @@ export function CmsProvider({
       
     const updatedUser = { ...currentUser, bookmarks: newBookmarks };
     setCurrentUser(updatedUser);
-    localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+    undefined;
     
     setUsers((prev: Profile[]) => prev.map((u: Profile) => u.id === currentUser.id ? updatedUser : u));
     logActivity(currentBookmarks.includes(articleId) ? `Removed bookmark: ${articleId}` : `Added bookmark: ${articleId}`);
@@ -1838,7 +1838,7 @@ export function CmsProvider({
 
     const updatedUsers = [...users, newProfile];
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
 
     logActivity(`Created user: ${user.email} (${user.role || "Subscriber"})`, {
       performer: currentUser?.name || "System",
@@ -1894,12 +1894,12 @@ export function CmsProvider({
 
     const updatedUsers = users.map(u => u.id === userId ? { ...u, ...data } : u);
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
 
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = { ...currentUser, ...data };
       setCurrentUser(updatedSelf);
-      localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+      undefined;
     }
 
     logActivity(`Updated user details for ${targetUser.email}`, {
@@ -1935,7 +1935,7 @@ export function CmsProvider({
 
     const updatedUsers = users.filter(u => u.id !== userId);
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
 
     logActivity(`Deleted user account: ${targetUser.email}`, {
       performer: currentUser?.name || "System",
@@ -1967,12 +1967,12 @@ export function CmsProvider({
     });
 
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
 
     if (currentUser) {
       const updatedSelf = { ...currentUser, role: "Admin" as const, badges: ["Admin"] };
       setCurrentUser(updatedSelf);
-      localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+      undefined;
     }
 
     logActivity(`Transferred ownership to ${targetUser.email}`, {
@@ -2004,7 +2004,7 @@ export function CmsProvider({
     const tempPassword = "temp_" + Math.floor(10000 + Math.random() * 90000);
     const updatedUsers = users.map(u => u.id === userId ? { ...u, password: tempPassword } : u);
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
 
     logActivity(`Password reset for ${targetUser.email}`, {
       performer: currentUser?.name || "System",
@@ -2029,7 +2029,7 @@ export function CmsProvider({
       const dbKey = type === "general" ? "general_settings" : type === "appearance" ? "appearance_settings" : "footer_settings";
       await supabase.from("site_settings").upsert({ key: dbKey, value: data, updated_at: new Date().toISOString() });
     } else {
-      localStorage.setItem("yuvakshar_settings", JSON.stringify(updatedSettings));
+      undefined;
     }
     logActivity(`Site Settings update: ${type}`);
   };
@@ -2048,7 +2048,7 @@ export function CmsProvider({
         updated_at: new Date().toISOString()
       });
     } else {
-      localStorage.setItem("yuvakshar_site_icons", JSON.stringify(updatedValue));
+      undefined;
     }
 
     // Set custom favicon_url in appearance settings so other pages reflect the change
@@ -2089,7 +2089,7 @@ export function CmsProvider({
       if (error) throw error;
       saved = data;
     } else {
-      // Mock Save
+      // fallback Save
       const targetId = article.id || `art-${Date.now()}`;
       const existing = articles.find(a => a.id === targetId);
       
@@ -2119,7 +2119,7 @@ export function CmsProvider({
         : [saved, ...articles];
       
       setArticles(updated);
-      localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
+      undefined;
     }
     logActivity(`Saved Article: ${saved.title} (Status: ${saved.status})`);
     return saved;
@@ -2131,7 +2131,7 @@ export function CmsProvider({
     } else {
       const updated = articles.filter(a => a.id !== id);
       setArticles(updated);
-      localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
+      undefined;
     }
     logActivity(`Deleted Article: ${id}`);
   };
@@ -2192,7 +2192,7 @@ export function CmsProvider({
     }
 
     setVideos(updated);
-    localStorage.setItem("yuvakshar_videos", JSON.stringify(updated));
+    undefined;
     logActivity(`Saved Video: ${video.title} (Featured: ${video.isFeatured})`);
     return updated.find(v => v.id === video.id || (video.id === undefined && v.id === updated[0].id))!;
   };
@@ -2200,7 +2200,7 @@ export function CmsProvider({
   const deleteVideo = async (id: string) => {
     const updated = videos.filter(v => v.id !== id);
     setVideos(updated);
-    localStorage.setItem("yuvakshar_videos", JSON.stringify(updated));
+    undefined;
     logActivity(`Deleted Video: ${id}`);
   };
 
@@ -2214,7 +2214,7 @@ export function CmsProvider({
     } else {
       const updated = comments.map(c => c.id === id ? { ...c, likes: (c.likes || 0) + 1 } : c);
       setComments(updated);
-      localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+      undefined;
     }
   };
 
@@ -2224,7 +2224,7 @@ export function CmsProvider({
     } else {
       const updated = comments.map(c => c.id === id ? { ...c, content: newContent } : c);
       setComments(updated);
-      localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+      undefined;
     }
   };
 
@@ -2234,7 +2234,7 @@ export function CmsProvider({
     } else {
       const updated = comments.filter(c => c.id !== id);
       setComments(updated);
-      localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+      undefined;
     }
   };
 
@@ -2244,7 +2244,7 @@ export function CmsProvider({
       isFeatured: v.id === id
     }));
     setVideos(updated);
-    localStorage.setItem("yuvakshar_videos", JSON.stringify(updated));
+    undefined;
     logActivity(`Set Featured Video: ${id}`);
   };
 
@@ -2278,7 +2278,7 @@ export function CmsProvider({
         ? magazines.map(m => m.id === targetId ? saved : m)
         : [...magazines, saved];
       setMagazines(updated);
-      localStorage.setItem("yuvakshar_magazines", JSON.stringify(updated));
+      undefined;
     }
     logActivity(`Saved Magazine: ${saved.issue} (Status: ${saved.status})`);
     return saved;
@@ -2290,7 +2290,7 @@ export function CmsProvider({
     } else {
       const updated = magazines.filter(m => m.id !== id);
       setMagazines(updated);
-      localStorage.setItem("yuvakshar_magazines", JSON.stringify(updated));
+      undefined;
     }
     logActivity(`Deleted Magazine: ${id}`);
   };
@@ -2301,7 +2301,7 @@ export function CmsProvider({
     } else {
       const updated = articles.map(a => a.id === id ? { ...a, views: (a.views || 0) + 1 } : a);
       setArticles(updated);
-      localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
+      undefined;
     }
 
     if (currentUser) {
@@ -2325,11 +2325,11 @@ export function CmsProvider({
         };
 
         setCurrentUser(updatedProfile);
-        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedProfile));
+        undefined;
 
         const updatedUsers = users.map(u => u.id === currentUser.id ? updatedProfile : u);
         setUsers(updatedUsers);
-        localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+        undefined;
       }
     }
   };
@@ -2340,7 +2340,7 @@ export function CmsProvider({
     } else {
       const updated = articles.map(a => a.id === id ? { ...a, likes: (a.likes || 0) + 1 } : a);
       setArticles(updated);
-      localStorage.setItem("yuvakshar_articles", JSON.stringify(updated));
+      undefined;
     }
   };
 
@@ -2364,7 +2364,7 @@ export function CmsProvider({
         ? assignments.map(a => a.id === id ? newAssign : a)
         : [...assignments, newAssign];
       setAssignments(updated);
-      localStorage.setItem("yuvakshar_assignments", JSON.stringify(updated));
+      undefined;
     }
   };
 
@@ -2391,7 +2391,7 @@ export function CmsProvider({
     } else {
       const updated = [newSub, ...submissions];
       setSubmissions(updated);
-      localStorage.setItem("yuvakshar_submissions", JSON.stringify(updated));
+      undefined;
     }
     
     // Dynamic routing to primary mail configured
@@ -2405,7 +2405,7 @@ export function CmsProvider({
     } else {
       const updated = submissions.map(s => s.id === id ? { ...s, status } : s);
       setSubmissions(updated);
-      localStorage.setItem("yuvakshar_submissions", JSON.stringify(updated));
+      undefined;
     }
     logActivity(`Submission status updated for ${id} to ${status}`);
   };
@@ -2435,7 +2435,7 @@ export function CmsProvider({
     } else {
       const updated = [newComment, ...comments];
       setComments(updated);
-      localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+      undefined;
     }
     logActivity(`Comment added to article ${articleId} by ${name}`);
   };
@@ -2446,7 +2446,7 @@ export function CmsProvider({
     } else {
       const updated = comments.map(c => c.id === id ? { ...c, status } : c);
       setComments(updated);
-      localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+      undefined;
     }
     logActivity(`Comment moderated: ${id} status updated to ${status}`);
   };
@@ -2457,7 +2457,7 @@ export function CmsProvider({
     } else {
       const updated = comments.map(c => c.id === id ? { ...c, is_reported: true } : c);
       setComments(updated);
-      localStorage.setItem("yuvakshar_comments", JSON.stringify(updated));
+      undefined;
     }
   };
 
@@ -2468,7 +2468,7 @@ export function CmsProvider({
     } else {
       const updated = ads.map(a => a.id === ad.id ? { ...a, ...ad } : a);
       setAds(updated);
-      localStorage.setItem("yuvakshar_ads", JSON.stringify(updated));
+      undefined;
     }
     logActivity(`Ad settings saved: ${ad.name}`);
   };
@@ -2479,7 +2479,7 @@ export function CmsProvider({
     } else {
       const updated = ads.map(a => a.id === id ? { ...a, click_count: a.click_count + 1 } : a);
       setAds(updated);
-      localStorage.setItem("yuvakshar_ads", JSON.stringify(updated));
+      undefined;
     }
   };
 
@@ -2493,7 +2493,7 @@ export function CmsProvider({
       if (subscribers.includes(email)) return "Already Subscribed.";
       const updated = [email, ...subscribers];
       setSubscribers(updated);
-      localStorage.setItem("yuvakshar_subscribers", JSON.stringify(updated));
+      undefined;
       return "Subscribed Successfully (Demo Auto-Opt-In).";
     }
   };
@@ -2504,7 +2504,7 @@ export function CmsProvider({
     } else {
       const updated = subscribers.filter(s => s !== email);
       setSubscribers(updated);
-      localStorage.setItem("yuvakshar_subscribers", JSON.stringify(updated));
+      undefined;
     }
   };
 
@@ -2512,7 +2512,7 @@ export function CmsProvider({
     if (supabaseConfigured) {
       await supabase.from("subscribers").update({ status }).eq("email", email);
     } else {
-      // mock update
+      // fallback update
       logActivity(`Subscriber ${email} status updated to ${status}`);
     }
   };
@@ -2535,7 +2535,7 @@ export function CmsProvider({
     } else {
       const updated = [newCamp, ...campaigns];
       setCampaigns(updated);
-      localStorage.setItem("yuvakshar_campaigns", JSON.stringify(updated));
+      undefined;
     }
     
     // Telemetry output report to official address
@@ -2567,7 +2567,7 @@ export function CmsProvider({
       const resetLayouts = layouts.map(l => ({ ...l, is_published: false }));
       const updated = [newLayout, ...resetLayouts];
       setLayouts(updated);
-      localStorage.setItem("yuvakshar_layouts", JSON.stringify(updated));
+      undefined;
     }
 
     const lJson = layoutJson as any;
@@ -2627,7 +2627,7 @@ export function CmsProvider({
           is_published: l.id === versionId
         }));
         setLayouts(updated);
-        localStorage.setItem("yuvakshar_layouts", JSON.stringify(updated));
+        undefined;
         
         const lJson = target.layout_json as any;
         if (Array.isArray(lJson)) {
@@ -2682,13 +2682,13 @@ export function CmsProvider({
       if (parsed.settings) setSettings(parsed.settings);
       
       if (!supabaseConfigured) {
-        if (parsed.articles) localStorage.setItem("yuvakshar_articles", JSON.stringify(parsed.articles));
-        if (parsed.magazines) localStorage.setItem("yuvakshar_magazines", JSON.stringify(parsed.magazines));
-        if (parsed.submissions) localStorage.setItem("yuvakshar_submissions", JSON.stringify(parsed.submissions));
-        if (parsed.comments) localStorage.setItem("yuvakshar_comments", JSON.stringify(parsed.comments));
-        if (parsed.subscribers) localStorage.setItem("yuvakshar_subscribers", JSON.stringify(parsed.subscribers));
-        if (parsed.campaigns) localStorage.setItem("yuvakshar_campaigns", JSON.stringify(parsed.campaigns));
-        if (parsed.settings) localStorage.setItem("yuvakshar_settings", JSON.stringify(parsed.settings));
+        if (parsed.articles) undefined;
+        if (parsed.magazines) undefined;
+        if (parsed.submissions) undefined;
+        if (parsed.comments) undefined;
+        if (parsed.subscribers) undefined;
+        if (parsed.campaigns) undefined;
+        if (parsed.settings) undefined;
       }
       
       logActivity("Restored Database from JSON import");
@@ -2722,7 +2722,7 @@ export function CmsProvider({
         }];
       }
       setSearchLogs(updated);
-      localStorage.setItem("yuvakshar_search_logs", JSON.stringify(updated));
+      undefined;
     }
   };
 
@@ -2787,10 +2787,10 @@ export function CmsProvider({
 
     const updatedUser = { ...currentUser, ...data };
     setCurrentUser(updatedUser);
-    localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+    undefined;
     const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
   };
 
   // 13. Audit logs internal helper
@@ -2807,7 +2807,7 @@ export function CmsProvider({
     const updated = [newLog, ...activityLogs].slice(0, 100);
     setActivityLogs(updated);
     if (!supabaseConfigured) {
-      localStorage.setItem("yuvakshar_activity_logs", JSON.stringify(updated));
+      undefined;
     }
   };
 
@@ -2817,7 +2817,7 @@ export function CmsProvider({
       ? quizzes.map(q => q.articleId === quiz.articleId ? quiz : q)
       : [...quizzes, quiz];
     setQuizzes(updated);
-    localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updated));
+    undefined;
     logActivity(`Quiz saved/updated for article: ${quiz.articleId}`);
   };
 
@@ -2830,7 +2830,7 @@ export function CmsProvider({
 
     const updatedAttempts = [...quizAttempts, newAttempt];
     setQuizAttempts(updatedAttempts);
-    localStorage.setItem("yuvakshar_quiz_attempts", JSON.stringify(updatedAttempts));
+    undefined;
 
     // Anti-Cheat: Leaderboard registers FIRST completed attempt only.
     const alreadyCompleted = quizAttempts.some(att => att.userId === newAttempt.userId && att.articleId === newAttempt.articleId);
@@ -2861,7 +2861,7 @@ export function CmsProvider({
         updatedLeaderboard = [...leaderboard, newEntry];
       }
       setLeaderboard(updatedLeaderboard);
-      localStorage.setItem("yuvakshar_quiz_leaderboard", JSON.stringify(updatedLeaderboard));
+      undefined;
     }
 
     logActivity(`Quiz attempt submitted by user: ${newAttempt.userName} (Score: ${newAttempt.score}/${newAttempt.totalQuestions})`);
@@ -2889,7 +2889,7 @@ export function CmsProvider({
       }
     };
     setQuizSettings(updatedSettings);
-    localStorage.setItem("yuvakshar_quiz_settings", JSON.stringify(updatedSettings));
+    undefined;
 
     const updatedQuizzes = quizzes.map(q => {
       if (q.articleId === articleId) {
@@ -2898,7 +2898,7 @@ export function CmsProvider({
       return q;
     });
     setQuizzes(updatedQuizzes);
-    localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+    undefined;
 
     logActivity(`Quiz regenerated for article: ${articleId} (Count: ${questionCount}, Diff: ${difficulty})`);
   };
@@ -2919,7 +2919,7 @@ export function CmsProvider({
       }
     };
     setQuizSettings(updatedSettings);
-    localStorage.setItem("yuvakshar_quiz_settings", JSON.stringify(updatedSettings));
+    undefined;
     logActivity(`Quiz status toggled for article: ${articleId} (Enabled: ${isEnabled})`);
   };
 
@@ -2939,7 +2939,7 @@ export function CmsProvider({
       return q;
     });
     setQuizzes(updatedQuizzes);
-    localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+    undefined;
     logActivity(`Quiz question edited in article: ${articleId} (ID: ${questionId})`);
   };
 
@@ -2954,7 +2954,7 @@ export function CmsProvider({
       return q;
     });
     setQuizzes(updatedQuizzes);
-    localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+    undefined;
     logActivity(`Quiz question deleted from article: ${articleId} (ID: ${questionId})`);
   };
 
@@ -2974,7 +2974,7 @@ export function CmsProvider({
       return q;
     });
     setQuizzes(updatedQuizzes);
-    localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+    undefined;
     logActivity(`Bulk imported ${importQuestions.length} questions to article: ${articleId}`);
   };
 
@@ -2994,7 +2994,7 @@ export function CmsProvider({
       return q;
     });
     setQuizzes(updatedQuizzes);
-    localStorage.setItem("yuvakshar_quizzes", JSON.stringify(updatedQuizzes));
+    undefined;
     logActivity(`Draft question approved for article: ${articleId} (ID: ${questionId})`);
   };
 
@@ -3025,10 +3025,10 @@ export function CmsProvider({
       interests: [expertise]
     };
     setCurrentUser(updatedUser);
-    localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedUser));
+    undefined;
     const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
   };
 
 
@@ -3036,14 +3036,14 @@ export function CmsProvider({
   const followAuthor = async (authorId: string, followerId: string) => {
     const updatedUsers = toggleFollowAuthorInDb(users, authorId, followerId);
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
     
     if (currentUser) {
       if (currentUser.id === authorId || currentUser.id === followerId) {
         const updatedSelf = updatedUsers.find(u => u.id === currentUser.id) || null;
         if (updatedSelf) {
           setCurrentUser(updatedSelf);
-          localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+          undefined;
         }
       }
     }
@@ -3052,12 +3052,12 @@ export function CmsProvider({
   const addTimelineEvent = async (userId: string, event: { title: string; description: string; date: string; type?: string }) => {
     const updatedUsers = addTimelineEventInDb(users, userId, event);
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
       if (updatedSelf) {
         setCurrentUser(updatedSelf);
-        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+        undefined;
       }
     }
   };
@@ -3065,12 +3065,12 @@ export function CmsProvider({
   const deleteTimelineEvent = async (userId: string, eventId: string) => {
     const updatedUsers = deleteTimelineEventInDb(users, userId, eventId);
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
       if (updatedSelf) {
         setCurrentUser(updatedSelf);
-        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+        undefined;
       }
     }
   };
@@ -3078,12 +3078,12 @@ export function CmsProvider({
   const addPortfolioItem = async (userId: string, item: { name: string; url: string; type: "book" | "research_paper" | "report" | "white_paper" | "resume" | "other"; is_public: boolean }) => {
     const updatedUsers = addPortfolioItemInDb(users, userId, item);
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
       if (updatedSelf) {
         setCurrentUser(updatedSelf);
-        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+        undefined;
       }
     }
   };
@@ -3091,12 +3091,12 @@ export function CmsProvider({
   const deletePortfolioItem = async (userId: string, itemId: string) => {
     const updatedUsers = deletePortfolioItemInDb(users, userId, itemId);
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
       if (updatedSelf) {
         setCurrentUser(updatedSelf);
-        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+        undefined;
       }
     }
   };
@@ -3104,12 +3104,12 @@ export function CmsProvider({
   const addAchievement = async (userId: string, achievement: { title: string; description?: string; year?: string; image_url?: string }) => {
     const updatedUsers = addAchievementInDb(users, userId, achievement);
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
       if (updatedSelf) {
         setCurrentUser(updatedSelf);
-        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+        undefined;
       }
     }
   };
@@ -3117,12 +3117,12 @@ export function CmsProvider({
   const deleteAchievement = async (userId: string, achievementId: string) => {
     const updatedUsers = deleteAchievementInDb(users, userId, achievementId);
     setUsers(updatedUsers);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+    undefined;
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
       if (updatedSelf) {
         setCurrentUser(updatedSelf);
-        localStorage.setItem("yuvakshar_session_user", JSON.stringify(updatedSelf));
+        undefined;
       }
     }
   };
@@ -3142,7 +3142,7 @@ export function CmsProvider({
   // In-App Notification Helper
   const sendInAppNotification = (userId: string, senderId: string, senderName: string, type: string, content: string, relatedId?: string) => {
     try {
-      const localNots = localStorage.getItem("yuvakshar_c_notifications");
+      const localNots = null;
       const nots = localNots ? JSON.parse(localNots) : [];
       const newNot = {
         id: `not-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -3156,7 +3156,7 @@ export function CmsProvider({
         created_at: new Date().toISOString()
       };
       nots.unshift(newNot);
-      localStorage.setItem("yuvakshar_c_notifications", JSON.stringify(nots));
+      undefined;
     } catch (e) {
       console.error("Error creating in-app notification:", e);
     }
@@ -3176,7 +3176,7 @@ export function CmsProvider({
     };
     const updated = [newLog, ...orgAuditLogs];
     setOrgAuditLogs(updated);
-    localStorage.setItem("yuvakshar_org_audit_logs", JSON.stringify(updated));
+    undefined;
   };
 
   const assignTask = async (taskData: Omit<OrgTask, "id" | "created_at">) => {
@@ -3188,7 +3188,7 @@ export function CmsProvider({
     };
     const updated = [newTask, ...tasks];
     setTasks(updated);
-    localStorage.setItem("yuvakshar_tasks", JSON.stringify(updated));
+    undefined;
 
     // Audit Log
     logAuditAction(taskData.assigned_by, "कार्य असाइनमेंट", `कार्य "${taskData.title}" को ${taskData.assigned_to_name} को सौंपा गया।`, "Info");
@@ -3223,7 +3223,7 @@ Body: नमस्कार, आपको "${taskData.assigned_by_name}" द्�
       return t;
     });
     setTasks(updated);
-    localStorage.setItem("yuvakshar_tasks", JSON.stringify(updated));
+    undefined;
   };
 
   const createCandidate = async (candidateData: any) => {
@@ -3234,14 +3234,14 @@ Body: नमस्कार, आपको "${taskData.assigned_by_name}" द्�
       id: `cand-${Date.now()}`,
       status: "Pending Approval",
       password: simulatedHash,
-      temporary_password: true,
+      provisional_password: true,
       force_password_change: true,
       joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" })
     };
     
     const updated = [...users, newCandidate];
     setUsers(updated);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+    undefined;
 
     if (currentUser) {
       logAuditAction(currentUser.id, "उम्मीदवार निर्माण", `नया उम्मीदवार ${candidateData.name} (${candidateData.role}) अप्रूवल कतार में जोड़ा गया।`, "Info");
@@ -3284,14 +3284,14 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
           ...u,
           status: "active" as any,
           org_id: orgId,
-          temporary_password: true,
+          provisional_password: true,
           force_password_change: true
         };
       }
       return u;
     });
     setUsers(updated);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+    undefined;
   };
 
   const rejectCandidate = async (candidateId: string, approverId: string) => {
@@ -3303,7 +3303,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
       return u;
     });
     setUsers(updated);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+    undefined;
   };
 
   const updateTeamMemberProfile = async (userId: string, data: Partial<Profile>, authorizerId: string) => {
@@ -3337,11 +3337,11 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
             changed_by_name: authorizer.name,
             date: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" })
           };
-          const savedTransfers = localStorage.getItem("yuvakshar_role_transfers");
+          const savedTransfers = null;
           const transfers = savedTransfers ? JSON.parse(savedTransfers) : [];
           transfers.unshift(transfer);
           setRoleTransfers(transfers);
-          localStorage.setItem("yuvakshar_role_transfers", JSON.stringify(transfers));
+          undefined;
         }
 
         if (data.department && data.department !== u.department) {
@@ -3358,13 +3358,13 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
     });
 
     setUsers(updated);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+    undefined;
 
     if (currentUser && currentUser.id === userId) {
       const self = updated.find(u => u.id === userId) || null;
       if (self) {
         setCurrentUser(self);
-        localStorage.setItem("yuvakshar_session_user", JSON.stringify(self));
+        undefined;
       }
     }
   };
@@ -3396,7 +3396,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
             return u;
           });
           setUsers(updatedUsers);
-          localStorage.setItem("yuvakshar_users", JSON.stringify(updatedUsers));
+          undefined;
         }
 
         return {
@@ -3412,7 +3412,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
     });
 
     setVerifications(updatedReqs);
-    localStorage.setItem("yuvakshar_verifications", JSON.stringify(updatedReqs));
+    undefined;
   };
 
   const assignBadge = async (userId: string, badge: string, assignerId: string) => {
@@ -3426,7 +3426,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
       return u;
     });
     setUsers(updated);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+    undefined;
   };
 
   const removeBadge = async (userId: string, badge: string, removerId: string) => {
@@ -3439,7 +3439,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
       return u;
     });
     setUsers(updated);
-    localStorage.setItem("yuvakshar_users", JSON.stringify(updated));
+    undefined;
   };
 
   const sendPrivateMessage = async (senderId: string, receiverId: string, content: string, replyTo?: string) => {
@@ -3462,7 +3462,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
 
     const updated = [...privateMessages, newMsg];
     setPrivateMessages(updated);
-    localStorage.setItem("yuvakshar_private_messages", JSON.stringify(updated));
+    undefined;
   };
 
   const toggleMessageReaction = async (msgId: string, userId: string, reaction: string) => {
@@ -3482,7 +3482,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
       return m;
     });
     setPrivateMessages(updated);
-    localStorage.setItem("yuvakshar_private_messages", JSON.stringify(updated));
+    undefined;
   };
 
   const addAnnouncement = async (ann: { title: string; content: string; target: string; created_by: string; created_by_name: string }) => {
@@ -3493,7 +3493,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
     };
     const updated = [newAnn, ...announcements];
     setAnnouncements(updated);
-    localStorage.setItem("yuvakshar_announcements", JSON.stringify(updated));
+    undefined;
 
     // Audit
     logAuditAction(ann.created_by, "सांस्थानिक घोषणा", `घोषणा जारी की गई: "${ann.title}"। लक्षित समूह: ${ann.target}`, "Info");
@@ -3615,7 +3615,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
   const updateAiSettings = async (newSettings: Partial<AiSettings>) => {
     setAiSettings(prev => {
       const updated = { ...prev, ...newSettings };
-      localStorage.setItem("yuvakshar_ai_settings", JSON.stringify(updated));
+      undefined;
       return updated;
     });
   };
@@ -3628,7 +3628,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
     };
     setAiNotes(prev => {
       const updated = [newNote, ...prev];
-      localStorage.setItem("yuvakshar_ai_notes", JSON.stringify(updated));
+      undefined;
       return updated;
     });
   };
@@ -3636,7 +3636,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
   const deleteAiNote = async (id: string) => {
     setAiNotes(prev => {
       const updated = prev.filter(n => n.id !== id);
-      localStorage.setItem("yuvakshar_ai_notes", JSON.stringify(updated));
+      undefined;
       return updated;
     });
   };
@@ -3662,7 +3662,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
           { date: new Date().toISOString().split("T")[0], tokensUsed: tokens, cost: estimatedCost, feature: featureName }
         ]
       };
-      localStorage.setItem("yuvakshar_ai_settings", JSON.stringify(updated));
+      undefined;
       return updated;
     });
 
@@ -3672,7 +3672,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
       const category = activeArticle?.category || "विशेष लेख";
       const content = activeArticle?.content || "";
       await new Promise(resolve => setTimeout(resolve, 800));
-      return generateMockAiResponse(featureName, title, category, content, prompt);
+      return generatefallbackAiResponse(featureName, title, category, content, prompt);
     }
 
     try {
@@ -3682,12 +3682,12 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         return await callGemini(apiKey, prompt, customSystemPrompt);
       }
     } catch (error: any) {
-      console.warn("AI Service Call failed. Falling back to dynamic mock.", error);
+      console.warn("AI Service Call failed. Falling back to dynamic fallback.", error);
       const activeArticle = articles.find(art => prompt.includes(art.title) || prompt.includes(art.id));
       const title = activeArticle?.title || "सक्रिय विमर्श";
       const category = activeArticle?.category || "विशेष लेख";
       const content = activeArticle?.content || "";
-      return generateMockAiResponse(featureName, title, category, content, prompt);
+      return generatefallbackAiResponse(featureName, title, category, content, prompt);
     }
   };
 

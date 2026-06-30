@@ -111,7 +111,7 @@ export async function createCategory(data: Partial<Category>) {
   if (error) throw new Error(error.message);
 
   await logGovernanceAction("create", "category", result.id, { name_hi: data.name_hi });
-  revalidatePath("/founder/categories");
+  revalidatePath("/admin/categories");
   return { success: true };
 }
 
@@ -143,7 +143,7 @@ export async function updateCategory(id: string, data: Partial<Category>) {
   if (error) throw new Error(error.message);
 
   await logGovernanceAction("update", "category", id, { fields_updated: Object.keys(updateData) });
-  revalidatePath("/founder/categories");
+  revalidatePath("/admin/categories");
   return { success: true };
 }
 
@@ -183,7 +183,7 @@ export async function deleteCategory(id: string) {
   if (error) throw new Error(error.message);
 
   await logGovernanceAction("delete", "category", id);
-  revalidatePath("/founder/categories");
+  revalidatePath("/admin/categories");
   return { success: true };
 }
 
@@ -211,7 +211,7 @@ export async function mergeCategories(sourceId: string, targetId: string) {
   if (deleteError) throw new Error(`Failed to delete source category: ${deleteError.message}`);
 
   await logGovernanceAction("merge", "category", targetId, { merged_source_id: sourceId });
-  revalidatePath("/founder/categories");
+  revalidatePath("/admin/categories");
   return { success: true };
 }
 
@@ -229,7 +229,7 @@ export async function reorderCategories(updates: { id: string; sort_order: numbe
   }
 
   await logGovernanceAction("reorder", "category", null, { updated_count: updates.length });
-  revalidatePath("/founder/categories");
+  revalidatePath("/admin/categories");
   return { success: true };
 }
 

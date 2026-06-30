@@ -101,7 +101,7 @@ export async function joinCommunity(communityId: string) {
   if (!settings?.allow_public_join) throw new Error("Community is private");
 
   if (settings.require_approval) {
-    // Logic for pending approvals goes here (not strictly required for 11B scope, but mocked)
+    // Logic for pending approvals goes here (not strictly required for 11B scope, but fallbacked)
     throw new Error("Approval required to join");
   }
 

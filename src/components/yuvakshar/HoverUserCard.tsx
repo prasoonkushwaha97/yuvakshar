@@ -86,7 +86,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
     if (!currentUser || !user) return;
     const nowFollowing = await toggleFollowUser(currentUser.id, user.id);
     setIsFollowing(nowFollowing);
-    // Optimistically update local mock profile state
+    // Optimistically update local fallback profile state
     setUser(prev => {
       if (!prev) return prev;
       const followers = prev.followers || [];
