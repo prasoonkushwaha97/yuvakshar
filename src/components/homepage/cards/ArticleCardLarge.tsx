@@ -18,9 +18,9 @@ export default function ArticleCardLarge({ article }: ArticleCardLargeProps) {
   const imageUrl = article.coverImage || article.cover_image || article.image || "/images/placeholder-news.jpg";
 
   return (
-    <div className="group flex flex-col w-full h-full bg-white dark:bg-[#0E1322] rounded-3xl overflow-hidden border border-gray-150/80 dark:border-gray-850/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300">
+    <div className="group flex flex-col w-full h-full bg-transparent rounded-none overflow-hidden border-b border-stone-200 dark:border-stone-800 pb-4 transition-all duration-300">
       {/* Image Block */}
-      <Link href={`/articles/${article.slug || article.id}`} className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-50 dark:bg-gray-900 border-b border-gray-150/60 dark:border-gray-850/60 shrink-0">
+      <Link href={`/articles/${article.slug || article.id}`} className="block relative aspect-[16/10] w-full overflow-hidden bg-stone-100 dark:bg-stone-900 shrink-0">
         <img
           src={imageUrl}
           alt={title}
@@ -34,14 +34,14 @@ export default function ArticleCardLarge({ article }: ArticleCardLargeProps) {
       </Link>
 
       {/* Content Block */}
-      <div className="flex-1 flex flex-col p-5">
-        <Link href={`/articles/${article.slug || article.id}`} className="block group-hover:text-[#f97316] transition-colors duration-200">
-          <h3 className="text-xl font-bold font-serif leading-[1.3] text-gray-900 dark:text-gray-150 mb-2.5 line-clamp-2">
+      <div className="flex-1 flex flex-col py-4 px-1">
+        <Link href={`/articles/${article.slug || article.id}`} className="block group-hover:text-stone-600 dark:group-hover:text-stone-400 transition-colors duration-200">
+          <h3 className="text-xl md:text-2xl font-semibold font-serif leading-[1.3] text-stone-900 dark:text-stone-100 mb-2.5 line-clamp-2">
             {title}
           </h3>
         </Link>
 
-        <p className="text-gray-600 dark:text-gray-400 text-xs md:text-sm leading-relaxed mb-4 font-serif line-clamp-3">
+        <p className="text-stone-600 dark:text-stone-400 text-sm md:text-base leading-relaxed mb-5 font-serif line-clamp-3">
           {summary}
         </p>
 

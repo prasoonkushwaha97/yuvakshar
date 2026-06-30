@@ -6,6 +6,7 @@ import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
 import { Award, Clock, ArrowRight } from "lucide-react";
+import SectionContainer from "../layout/SectionContainer";
 
 interface EditorialPicksProps {
   excludeIds?: string[];
@@ -35,12 +36,13 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
   if (picks.length === 0) return null;
 
   return (
-    <div className="w-full">
+    <SectionContainer bgClassName="bg-[#FAFAF9] dark:bg-[#1C1917]">
+      <div className="w-full">
       {/* Section Header */}
       <div className="flex items-center justify-between mb-6 border-b border-gray-150 dark:border-gray-850 pb-3">
         <div className="flex items-center space-x-2">
-          <Award className="w-5 h-5 text-[#f97316]" />
-          <h2 className="font-serif font-black text-lg md:text-xl text-gray-900 dark:text-white uppercase tracking-tight">
+          <Award className="w-5 h-5 text-stone-800 dark:text-stone-300" />
+          <h2 className="font-serif font-medium text-lg md:text-xl text-stone-900 dark:text-stone-100 uppercase tracking-widest">
             {locale === "hi" ? "संपादकीय चयन" : "Editorial Picks"}
           </h2>
         </div>
@@ -60,12 +62,12 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
           return (
             <div 
               key={art.id} 
-              className="group flex flex-col w-[80vw] sm:w-auto shrink-0 sm:shrink bg-white dark:bg-[#0E1322] rounded-3xl overflow-hidden border border-gray-150/80 dark:border-gray-850/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300 snap-start"
+              className="group flex flex-col w-[80vw] sm:w-auto shrink-0 sm:shrink bg-transparent rounded-none overflow-hidden border-b sm:border-r sm:border-b-0 border-stone-200 dark:border-stone-800 last:border-0 hover:-translate-y-0.5 transition-transform duration-300 snap-start"
             >
               {/* Image Section */}
               <Link 
                 href={`/articles/${art.slug || art.id}`} 
-                className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-50 dark:bg-gray-900 border-b border-gray-150/60 dark:border-gray-850/60 shrink-0"
+                className="block relative aspect-[16/10] w-full overflow-hidden bg-stone-100 dark:bg-stone-900 mb-3 shrink-0"
               >
                 <img
                   src={imageUrl}
@@ -74,30 +76,30 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
                   loading="lazy"
                 />
                 <div className="absolute top-2.5 left-2.5 z-10">
-                  <span className="bg-[#f97316] text-white text-[8px] font-sans font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
+                  <span className="bg-white/90 dark:bg-black/90 text-stone-800 dark:text-stone-300 text-[10px] font-sans font-medium uppercase tracking-widest px-2 py-0.5 rounded-sm">
                     {art.category || "संपादकीय"}
                   </span>
                 </div>
               </Link>
 
               {/* Text Section */}
-              <div className="flex-1 flex flex-col p-4">
+              <div className="flex-1 flex flex-col px-1">
                 {/* Title */}
-                <Link href={`/articles/${art.slug || art.id}`} className="block hover:text-[#f97316] transition-colors duration-250 mb-2">
-                  <h3 className="text-sm md:text-base font-bold font-serif leading-snug text-gray-900 dark:text-white line-clamp-2">
+                <Link href={`/articles/${art.slug || art.id}`} className="block hover:text-stone-600 dark:hover:text-stone-400 transition-colors duration-250 mb-2">
+                  <h3 className="text-base md:text-lg font-serif font-semibold leading-tight text-stone-900 dark:text-stone-100 line-clamp-2">
                     {title}
                   </h3>
                 </Link>
 
                 {/* Summary */}
-                <p className="text-gray-550 dark:text-gray-400 text-xs leading-relaxed mb-4 font-serif line-clamp-2">
+                <p className="text-stone-600 dark:text-stone-400 text-sm leading-relaxed mb-4 font-serif line-clamp-2">
                   {summary}
                 </p>
 
                 {/* Footer details */}
-                <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-850 flex items-center justify-between text-[10px] text-gray-400 font-sans">
+                <div className="mt-auto pt-3 flex items-center justify-between text-xs text-stone-500 font-sans tracking-wide uppercase">
                   <span>{art.author || "युवाक्षर डेस्क"}</span>
-                  <span className="flex items-center space-x-0.5 text-[#f97316] font-bold">
+                  <span className="flex items-center space-x-0.5 font-medium">
                     <span>{readTimeVal} मि.</span>
                   </span>
                 </div>
@@ -107,5 +109,6 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
         })}
       </div>
     </div>
+    </SectionContainer>
   );
 }

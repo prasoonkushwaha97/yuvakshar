@@ -6,6 +6,7 @@ import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import SectionTitle from "../shared/SectionTitle";
 import VideoCard from "../cards/VideoCard";
+import SectionContainer from "../layout/SectionContainer";
 
 export default function Videos() {
   const { locale } = useLanguage();
@@ -37,15 +38,16 @@ export default function Videos() {
   const hasValidVideo = activeVideo && activeVideo.youtubeUrl;
 
   return (
-    <div className="w-full py-0.5 text-white">
+    <SectionContainer bgClassName="bg-[#FAFAF9] dark:bg-[#1C1917]">
+      <div className="w-full py-0.5 text-stone-900 dark:text-stone-100">
       {/* Title */}
       <SectionTitle 
         title={locale === "hi" ? "वीडियो डेस्क" : "Video Desk"} 
         link="/category/वीडियो" 
-        className="border-b-gray-800"
+        className="border-b-stone-200 dark:border-b-stone-800"
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-[#111] p-6 rounded-lg border border-gray-850 shadow-2xl">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-transparent lg:bg-stone-50 lg:dark:bg-stone-900 lg:p-6 lg:rounded-none lg:border-t border-stone-200 dark:border-stone-800 shadow-none">
         {/* Left Column: Featured Video Player (8 cols) */}
         <div className="lg:col-span-8 flex flex-col space-y-4">
           <div className="aspect-video w-full relative overflow-hidden bg-black rounded-lg border border-gray-800 shadow-md">
@@ -68,10 +70,10 @@ export default function Videos() {
             <span className="bg-[#f97316]/20 text-[#f97316] border border-[#f97316]/30 px-2 py-0.5 rounded text-[9.5px] uppercase font-bold tracking-widest font-sans inline-block">
               {activeVideo?.category || "विशेष वीडियो रिपोर्ट"}
             </span>
-            <h3 className="font-serif font-black text-lg md:text-xl text-white leading-snug">
+            <h3 className="font-serif font-medium text-xl md:text-2xl text-stone-900 dark:text-stone-100 leading-snug">
               {activeVideo?.title}
             </h3>
-            <p className="text-gray-400 text-xs md:text-sm font-sans leading-relaxed">
+            <p className="text-stone-600 dark:text-stone-400 text-sm md:text-base font-serif leading-relaxed">
               {activeVideo?.description}
             </p>
           </div>
@@ -80,8 +82,8 @@ export default function Videos() {
         {/* Right Column: Playlist Sidebar (4 cols) */}
         <div className="lg:col-span-4 flex flex-col h-full">
           <div className="flex items-center space-x-1.5 border-b border-gray-800 pb-3 mb-4">
-            <Film className="w-4 h-4 text-[#f97316]" />
-            <h4 className="font-serif font-black text-xs uppercase tracking-widest text-gray-400">
+            <Film className="w-4 h-4 text-stone-500" />
+            <h4 className="font-serif font-medium text-sm uppercase tracking-widest text-stone-900 dark:text-stone-100">
               {locale === "hi" ? "वीडियो प्लेलिस्ट" : "Video Playlist"}
             </h4>
           </div>
@@ -108,10 +110,10 @@ export default function Videos() {
                   </div>
                   {/* Text details */}
                   <div className="flex flex-col justify-center min-w-0">
-                    <h5 className="font-serif font-bold text-xs text-white line-clamp-2 leading-snug group-hover:text-[#f97316] transition-colors">
+                    <h5 className="font-serif font-medium text-sm text-stone-800 dark:text-stone-200 line-clamp-2 leading-snug group-hover:text-stone-500 transition-colors">
                       {video.title}
                     </h5>
-                    <div className="flex items-center space-x-2 mt-1.5 text-[9px] text-gray-500 font-sans uppercase">
+                    <div className="flex items-center space-x-2 mt-1.5 text-[10px] text-stone-500 font-sans uppercase tracking-widest">
                       <span className="flex items-center">
                         <Clock className="w-2.5 h-2.5 mr-1" />
                         {video.duration || "05:00"}
@@ -129,5 +131,6 @@ export default function Videos() {
         </div>
       </div>
     </div>
+    </SectionContainer>
   );
 }

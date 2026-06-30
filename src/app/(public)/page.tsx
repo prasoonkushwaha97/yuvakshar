@@ -18,7 +18,6 @@ import {
 
 // Layout
 import AppHeader from "@/components/layout/AppHeader";
-import SectionContainer from "@/components/homepage/layout/SectionContainer";
 import PartnerSection from "@/components/homepage/PartnerSection";
 
 // Blocks
@@ -26,7 +25,6 @@ import Hero from "@/components/homepage/blocks/Hero";
 import CategoryBlock from "@/components/homepage/blocks/CategoryBlock";
 import Videos from "@/components/homepage/blocks/Videos";
 import Magazine from "@/components/homepage/blocks/Magazine";
-import Authors from "@/components/homepage/blocks/Authors";
 import TopStories from "@/components/homepage/blocks/TopStories";
 import EditorialPicks from "@/components/homepage/blocks/EditorialPicks";
 import LatestNews from "@/components/homepage/blocks/LatestNews";
@@ -265,16 +263,17 @@ export default function Home() {
       case "popular":
         return null;
       case "categoryblock":
+        if (!catName || catName.trim() === "") return null;
         return <CategoryBlock categoryName={catName} limit={artLimit} excludeIds={excludeIdsForCategories} />;
       case "authors":
-        return <Authors />;
+        return null;
       default:
         return null;
     }
   };
 
   return (
-    <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] text-[#111] dark:text-[#F5F5F5] pb-2 font-sans overflow-x-hidden transition-colors duration-300">
+    <div className="w-full min-h-screen bg-[#FAFAF9] dark:bg-[#1C1917] text-[#292524] dark:text-[#E7E5E4] pb-2 font-sans overflow-x-hidden transition-colors duration-300">
       
       {/* Unified Homepage Layout Pipeline (Strict Ordering) */}
       
@@ -283,19 +282,30 @@ export default function Home() {
         activeDbSections.map((section: any, idx: number) => {
           const type = (section.section_type || section.type || "").toLowerCase().replace(/_/, "").trim();
           const isHero = type === "hero";
-          
+          console.log({
+            id: section.id,
+            type: section.type,
+            title: section.title,
+            enabled: section.is_visible,
+            articleCount: articles?.length ?? 0
+          });
+          console.log("Rendering " + type);
+
           return (
-            <SectionContainer key={section.id || idx} noTopPadding={isHero} bgClassName={!isHero ? "bg-white dark:bg-[#0A0A0A]" : ""}>
-              <SectionErrorBoundary>
-                {renderDbSection(section)}
-              </SectionErrorBoundary>
-            </SectionContainer>
+            <SectionErrorBoundary key={section.id || idx}>
+              {renderDbSection(section)}
+            </SectionErrorBoundary>
           );
         })
       ) : (
-        <div className="text-center py-20 text-gray-500">
-          No layout configuration found. Please publish a layout from the CMS.
-        </div>
+        <>
+          <SectionErrorBoundary><Hero /></SectionErrorBoundary>
+          <SectionErrorBoundary><EditorialPicks excludeIds={finalExcludesBeforeEditorial} /></SectionErrorBoundary>
+          <SectionErrorBoundary><LatestNews excludeIds={excludeIdsForLatest} /></SectionErrorBoundary>
+          <SectionErrorBoundary><CategoryBlock categoryName="" limit={4} excludeIds={excludeIdsForCategories} /></SectionErrorBoundary>
+          <SectionErrorBoundary><Magazine /></SectionErrorBoundary>
+          <SectionErrorBoundary><Videos /></SectionErrorBoundary>
+        </>
       )}
 
       <PartnerSection />

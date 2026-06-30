@@ -6,6 +6,7 @@ import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
 import { Clock, Calendar, ArrowRight } from "lucide-react";
+import SectionContainer from "../layout/SectionContainer";
 
 export default function TopStories() {
   const { locale } = useLanguage();
@@ -29,7 +30,8 @@ export default function TopStories() {
   if (topStories.length === 0) return null;
 
   return (
-    <div className="w-full">
+    <SectionContainer bgClassName="bg-[#FAFAF9] dark:bg-[#1C1917]">
+      <div className="w-full">
       {/* Section Header */}
       <div className="flex items-center justify-between mb-6 border-b border-gray-150 dark:border-gray-850 pb-3">
         <div className="flex items-center space-x-2">
@@ -120,5 +122,6 @@ export default function TopStories() {
         })}
       </div>
     </div>
+    </SectionContainer>
   );
 }

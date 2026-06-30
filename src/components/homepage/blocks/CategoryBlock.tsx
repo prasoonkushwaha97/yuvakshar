@@ -5,6 +5,7 @@ import { useCms } from "@/store/CmsContext";
 import SectionTitle from "../shared/SectionTitle";
 import ArticleCardLarge from "../cards/ArticleCardLarge";
 import ArticleCardMedium from "../cards/ArticleCardMedium";
+import SectionContainer from "../layout/SectionContainer";
 
 interface CategoryBlockProps {
   categoryName: string; // Hindi name matching category field, e.g. "शिक्षा", "साहित्य"
@@ -32,7 +33,8 @@ export default function CategoryBlock({ categoryName, englishName, limit = 4, ex
   const secondary = categoryArticles.slice(1, limit);
 
   return (
-    <div className="w-full py-0.5">
+    <SectionContainer bgClassName="bg-[#FAFAF9] dark:bg-[#1C1917]">
+      <div className="w-full py-0.5">
       {/* Category Section Header */}
       <SectionTitle title={categoryName} link={`/category/${encodeURIComponent(categoryName)}`} />
 
@@ -56,5 +58,6 @@ export default function CategoryBlock({ categoryName, englishName, limit = 4, ex
         </div>
       </div>
     </div>
+    </SectionContainer>
   );
 }

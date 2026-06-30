@@ -84,7 +84,7 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL("https://yuvakshar.org"),
     title: "युवाक्षर | लेखन, चिंतन और परिवर्तन - Premium Devanagari Editorial & Magazine Platform",
     description: "युवाक्षर is a modern, premium Hindi digital platform focused on News, Magazine Publishing, Articles, Expression, Career and Scholarships, and AI-powered learning assistance. विचारों को आवाज़ दीजिए।",
-    keywords: "युवाक्षर, युवाक्षर, Hindi Digital Magazine, Youth Expression Hub, Hindi Articles, Career Hub, Career guidance, AI learning, Indian current affairs, Nation building",
+    keywords: "युवाक्षर, युवाक्षर, Hindi पत्रिका, Youth Expression Hub, Hindi Articles, Career Hub, Career guidance, AI learning, Indian current affairs, Nation building",
     authors: [{ name: "युवाक्षर संपादकीय कक्ष" }],
     manifest: manifestUrl,
     icons: {
@@ -119,7 +119,7 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title: "युवाक्षर - हिन्दी डिजिटल मंच",
-      description: "Modern Hindi Digital Magazine & Youth Expression Hub",
+      description: "Modern Hindi पत्रिका & Youth Expression Hub",
       images: [`${iconBaseUrl}?size=512&v=${version}`],
     },
   };

@@ -43,12 +43,12 @@ export default function HomepageSidebar() {
   return (
     <aside className="w-full space-y-8 font-sans">
       
-      {/* 1. MOST READ ARTICLES */}
-      <div className="space-y-4 border border-gray-150/80 dark:border-gray-850/80 p-5 rounded-3xl bg-white dark:bg-[#0E1322] shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-        <div className="flex items-center space-x-2 border-b border-gray-100/60 dark:border-gray-800/60 pb-3">
-          <Flame className="w-4 h-4 text-[#f97316]" />
-          <h3 className="font-serif font-black text-sm uppercase tracking-tight text-gray-900 dark:text-gray-250">
-            {locale === "hi" ? "चर्चित लेख" : "Most Read"}
+      {/* 1. RECOMMENDED READING */}
+      <div className="space-y-4 border-b border-stone-200 dark:border-stone-800 p-5 rounded-none bg-transparent shadow-none">
+        <div className="flex items-center space-x-2 border-b border-stone-100 dark:border-stone-800 pb-3">
+          <Flame className="w-4 h-4 text-stone-500" />
+          <h3 className="font-serif font-medium text-sm uppercase tracking-widest text-stone-900 dark:text-stone-100">
+            {locale === "hi" ? "अनुशंसित पठन" : "Recommended Reading"}
           </h3>
         </div>
         <div className="divide-y divide-gray-100/70 dark:divide-gray-850/70">
@@ -58,14 +58,14 @@ export default function HomepageSidebar() {
               href={`/articles/${art.slug || art.id}`}
               className="flex gap-3.5 py-3 items-start group first:pt-0 last:pb-0"
             >
-              <span className="text-base font-black text-gray-300 dark:text-gray-700 font-sans w-5 text-right shrink-0 select-none">
+              <span className="text-base font-semibold text-stone-300 dark:text-stone-700 font-sans w-5 text-right shrink-0 select-none">
                 {idx + 1}
               </span>
               <div className="flex-1 min-w-0">
-                <h4 className="font-serif font-bold text-xs md:text-sm text-gray-855 dark:text-gray-200 leading-snug group-hover:text-[#f97316] transition-colors line-clamp-2">
+                <h4 className="font-serif font-medium text-sm md:text-base text-stone-800 dark:text-stone-200 leading-snug group-hover:text-stone-500 transition-colors line-clamp-2">
                   {stripMarkdown(art.title || art.title_hi || "")}
                 </h4>
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 block">
+                <span className="text-[10px] text-stone-400 dark:text-stone-500 mt-1 block tracking-wide uppercase">
                   {art.author}
                 </span>
               </div>
@@ -75,10 +75,10 @@ export default function HomepageSidebar() {
       </div>
 
       {/* 2. INTERACTIVE OPINION POLL */}
-      <div className="space-y-4 border border-gray-150/80 dark:border-gray-850/80 p-5 rounded-3xl bg-white dark:bg-[#0E1322] shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-        <div className="flex items-center space-x-2 border-b border-gray-100/60 dark:border-gray-800/60 pb-3">
-          <Vote className="w-4 h-4 text-[#f97316]" />
-          <h3 className="font-serif font-black text-sm uppercase tracking-tight text-gray-900 dark:text-gray-250">
+      <div className="space-y-4 border-b border-stone-200 dark:border-stone-800 p-5 rounded-none bg-transparent shadow-none">
+        <div className="flex items-center space-x-2 border-b border-stone-100 dark:border-stone-800 pb-3">
+          <Vote className="w-4 h-4 text-stone-500" />
+          <h3 className="font-serif font-medium text-sm uppercase tracking-widest text-stone-900 dark:text-stone-100">
             {locale === "hi" ? "युवा मत (सर्वे)" : "Opinion Poll"}
           </h3>
         </div>
@@ -143,7 +143,7 @@ export default function HomepageSidebar() {
       </div>
 
       {/* 3. DIGITAL MAGAZINE WIDGET */}
-      <div className="border border-gray-150/80 dark:border-gray-850/80 p-5 rounded-3xl bg-gradient-to-br from-[#FAFAF9] to-[#FAF8F5] dark:from-[#111] dark:to-[#0E1322] flex gap-4 items-center shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+      <div className="border border-stone-200 dark:border-stone-800 p-5 rounded-none bg-stone-50 dark:bg-stone-900 flex gap-4 items-center shadow-none">
         <img
           src={sidebarMag.coverImage}
           alt="Mag cover"
@@ -166,14 +166,14 @@ export default function HomepageSidebar() {
       </div>
 
       {/* 4. DAILY WISDOM QUOTE */}
-      <div className="border border-gray-150/80 dark:border-gray-850/80 p-5 rounded-3xl bg-white dark:bg-[#0E1322] relative overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-        <Quote className="w-16 h-16 text-gray-50 dark:text-gray-900 absolute -right-2 -bottom-2 z-0" />
+      <div className="border-t border-stone-200 dark:border-stone-800 p-5 rounded-none bg-transparent relative overflow-hidden shadow-none">
+        <Quote className="w-16 h-16 text-stone-100 dark:text-stone-900 absolute -right-2 -bottom-2 z-0" />
         <div className="relative z-10 space-y-2">
-          <span className="text-[9px] text-gray-400 dark:text-gray-550 uppercase tracking-widest font-bold">संपादकीय विचार</span>
-          <p className="font-serif text-xs md:text-sm text-gray-650 dark:text-gray-300 leading-relaxed italic">
+          <span className="text-[10px] text-stone-400 dark:text-stone-500 uppercase tracking-widest font-medium">संपादकीय विचार</span>
+          <p className="font-serif text-sm md:text-base text-stone-700 dark:text-stone-300 leading-relaxed italic">
             "विचारों का आदान-प्रदान ही किसी भी सशक्त लोकतांत्रिक राष्ट्र की नींव होता है। अपनी कलम को एक रचनात्मक हथियार बनाएं।"
           </p>
-          <p className="text-[10px] text-gray-400 font-bold uppercase text-right">— युवाक्षर संपादकीय</p>
+          <p className="text-[10px] text-stone-400 font-medium uppercase tracking-wider text-right">— युवाक्षर संपादकीय</p>
         </div>
       </div>
 

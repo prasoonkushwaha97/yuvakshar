@@ -7,6 +7,7 @@ import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import SectionTitle from "../shared/SectionTitle";
 import MagazineCard from "../cards/MagazineCard";
+import SectionContainer from "../layout/SectionContainer";
 
 export default function Magazine() {
   const { locale } = useLanguage();
@@ -27,21 +28,22 @@ export default function Magazine() {
   const archives = publishedMags.slice(1, 6);
 
   return (
-    <div className="w-full py-0.5">
+    <SectionContainer bgClassName="bg-[#FAFAF9] dark:bg-[#1C1917]">
+      <div className="w-full py-0.5">
       {/* Title */}
       <SectionTitle 
-        title={locale === "hi" ? "डिजिटल पत्रिका डेस्क" : "Digital Magazine Desk"} 
+        title={locale === "hi" ? "पत्रिका डेस्क" : "Magazine Desk"} 
         link="/magazine" 
       />
 
-      <div className="bg-[#FAF9F6] dark:bg-[#121212] border border-gray-150 dark:border-gray-850 p-6 md:p-10 rounded-lg shadow-sm">
+      <div className="bg-transparent border-t border-stone-200 dark:border-stone-800 py-10 md:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-center">
           
           {/* Left Column: Spotlight cover (4 cols) */}
           <div className="lg:col-span-4 flex justify-center perspective-[1000px]">
             <div className="relative group w-[220px] md:w-[260px]">
               <div className="absolute inset-0 bg-black/10 dark:bg-black/50 blur-xl transform translate-y-4 translate-x-4 scale-95 group-hover:translate-x-6 group-hover:translate-y-6 transition-transform duration-700" />
-              <div className="relative transform rotate-y-[-6deg] rotate-x-[3deg] group-hover:rotate-y-[0deg] group-hover:rotate-x-[0deg] transition-all duration-700 border border-gray-250 dark:border-gray-800 shadow-2xl bg-white dark:bg-black rounded-sm overflow-hidden">
+              <div className="relative transform rotate-y-[-4deg] rotate-x-[2deg] group-hover:rotate-y-[0deg] group-hover:rotate-x-[0deg] transition-all duration-700 border border-stone-200 dark:border-stone-800 shadow-xl bg-stone-50 dark:bg-stone-900 rounded-sm overflow-hidden">
                 <img
                   src={currentMag.coverImage}
                   alt={currentMag.issue}
@@ -50,7 +52,7 @@ export default function Magazine() {
                   loading="lazy"
                 />
               </div>
-              <div className="absolute -bottom-3 -right-3 bg-[#f97316] text-white text-[9px] font-sans font-bold px-3 py-1.5 uppercase tracking-widest shadow-lg transform rotate-2 z-20">
+              <div className="absolute -bottom-3 -right-3 bg-stone-900 dark:bg-stone-100 text-stone-100 dark:text-stone-900 text-[10px] font-sans font-medium px-4 py-2 uppercase tracking-widest shadow-lg transform rotate-2 z-20">
                 {locale === "hi" ? "नया संस्करण" : "New Edition"}
               </div>
             </div>
@@ -59,29 +61,29 @@ export default function Magazine() {
           {/* Right Column: Description + Buttons + Archives List (8 cols) */}
           <div className="lg:col-span-8 flex flex-col space-y-6 text-center lg:text-left">
             <div>
-              <span className="text-[#f97316] font-bold uppercase tracking-[0.25em] text-xs mb-2 block">
+              <span className="text-stone-500 font-medium font-sans uppercase tracking-[0.25em] text-xs mb-3 block">
                 {locale === "hi" ? "ताजा संस्करण / मासिक विशेषांक" : "LATEST EDITION / MONTHLY ISSUE"}
               </span>
-              <h3 className="text-4xl md:text-5xl font-black font-serif text-gray-900 dark:text-gray-150 leading-tight tracking-tight mb-4">
+              <h3 className="text-3xl md:text-5xl font-medium font-serif text-stone-900 dark:text-stone-100 leading-[1.15] tracking-normal mb-5">
                 {currentMag.issue} ({currentMag.month})
               </h3>
-              <p className="text-gray-650 dark:text-gray-400 text-sm md:text-base font-serif max-w-xl mx-auto lg:mx-0 leading-relaxed italic">
+              <p className="text-stone-600 dark:text-stone-400 text-base md:text-lg font-serif max-w-xl mx-auto lg:mx-0 leading-relaxed italic">
                 "{currentMag.description || "राष्ट्रीय विमर्श, गहन साहित्य और विशेष शोध रिपोर्ट पढ़ें। पत्रिका का नवीनतम अंक अब उपलब्ध है।"}"
               </p>
             </div>
 
             {/* Read / Archive buttons */}
-            <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
+            <div className="flex flex-wrap gap-4 justify-center lg:justify-start pt-2">
               <Link 
                 href="/magazine" 
-                className="bg-[#f97316] hover:bg-[#EA580C] text-white px-8 py-3.5 rounded-full text-xs font-bold font-sans tracking-widest shadow-md transition-all duration-300 uppercase flex items-center space-x-1.5 cursor-pointer"
+                className="bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-stone-200 text-stone-100 dark:text-stone-900 px-8 py-3.5 rounded-sm text-xs font-medium font-sans tracking-widest transition-all duration-300 uppercase flex items-center space-x-2 cursor-pointer"
               >
                 <BookOpen className="w-4 h-4" />
                 <span>{locale === "hi" ? "पत्रिका पढ़ें" : "Read Magazine"}</span>
               </Link>
               <Link 
                 href="/magazine/archive" 
-                className="bg-transparent border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-black px-8 py-3.5 rounded-full text-xs font-bold font-sans tracking-widest transition-all duration-300 uppercase cursor-pointer"
+                className="bg-transparent border border-stone-300 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 px-8 py-3.5 rounded-sm text-xs font-medium font-sans tracking-widest transition-all duration-300 uppercase cursor-pointer"
               >
                 {locale === "hi" ? "पुराने अंक" : "Archives"}
               </Link>
@@ -89,8 +91,8 @@ export default function Magazine() {
 
             {/* Archives slider strip */}
             {archives.length > 0 && (
-              <div className="border-t border-gray-200 dark:border-gray-800 pt-6">
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-sans uppercase font-bold tracking-widest block mb-4">
+              <div className="border-t border-stone-200 dark:border-stone-800 pt-8 mt-4">
+                <span className="text-[10px] text-stone-400 dark:text-stone-500 font-sans uppercase font-medium tracking-widest block mb-5">
                   {locale === "hi" ? "पत्रिका संग्रह के अन्य अंक" : "OTHER COVERS FROM ARCHIVES"}
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -107,5 +109,6 @@ export default function Magazine() {
         </div>
       </div>
     </div>
+    </SectionContainer>
   );
 }

@@ -7,6 +7,7 @@ import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
 import { Clock, Eye, Calendar, ArrowRight, Play } from "lucide-react";
+import SectionContainer from "../layout/SectionContainer";
 
 export default function Hero() {
   const { locale } = useLanguage();
@@ -59,36 +60,11 @@ export default function Hero() {
   };
 
   return (
-    <div className="relative w-full overflow-hidden select-none">
+    <SectionContainer noTopPadding={true} bgClassName="">
+      <div className="relative w-full overflow-hidden select-none">
       
-      {/* Premium Apple-like blurred bubble backgrounds */}
-      <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-[#f97316]/6 blur-[120px] pointer-events-none animate-pulse duration-[8000ms]" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-white/5 dark:bg-orange-500/3 blur-[140px] pointer-events-none" />
-
-      {/* Floating Bubble particles */}
-      <div 
-        className="absolute w-14 h-14 rounded-full bg-[#f97316]/8 blur-xl pointer-events-none"
-        style={{
-          animation: "floatSlow 18s ease-in-out infinite",
-          top: "15%",
-          left: "8%"
-        }}
-      />
-      <div 
-        className="absolute w-20 h-20 rounded-full bg-white/8 dark:bg-orange-600/5 blur-2xl pointer-events-none"
-        style={{
-          animation: "floatSlow 24s ease-in-out infinite",
-          bottom: "20%",
-          right: "12%"
-        }}
-      />
-
-      <style jsx global>{`
-        @keyframes floatSlow {
-          0%, 100% { transform: translateY(0) translateX(0) scale(1); }
-          50% { transform: translateY(-25px) translateX(15px) scale(1.05); }
-        }
-      `}</style>
+      {/* Subtle Editorial Background Glow */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-stone-200/20 dark:bg-stone-800/20 blur-[120px] pointer-events-none" />
 
       {/* Main Grid container */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch min-h-[460px] lg:h-[calc(100vh-160px)] max-h-[620px] w-full">
@@ -108,18 +84,18 @@ export default function Hero() {
               <img
                 src={currentArticle.coverImage || currentArticle.cover_image || currentArticle.image || "/images/placeholder-news.jpg"}
                 alt={currentArticle.title}
-                className="w-full h-full object-cover brightness-[0.82] contrast-[1.02] hover:scale-[1.015] transition-transform duration-[8000ms] ease-out"
+                className="w-full h-full object-cover object-center brightness-[0.85] contrast-100 hover:scale-105 transition-transform duration-[10000ms] ease-out"
                 loading="eager"
               />
-              {/* Glassmorphic Dark Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+              {/* Smooth Editorial Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
             </motion.div>
           </AnimatePresence>
 
           {/* Saffron Category Badge Overlay */}
           <div className="absolute top-5 left-5 z-20">
-            <span className="backdrop-blur-md bg-black/30 border border-white/10 text-[#f97316] text-[10px] font-sans font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full shadow-lg">
-              {currentArticle.category || "समाचार"}
+            <span className="bg-stone-100 text-stone-800 dark:bg-stone-800 dark:text-stone-300 text-xs font-sans font-medium uppercase tracking-widest px-4 py-1.5 rounded-sm">
+              {currentArticle.category || "मुख्य समाचार"}
             </span>
           </div>
 
@@ -133,21 +109,21 @@ export default function Hero() {
           {/* Bottom Left Content Area */}
           <div className="relative z-20 p-6 md:p-8 lg:p-10 text-white w-full max-w-3xl pointer-events-none">
             {/* Slide Metadata */}
-            <div className="flex flex-wrap items-center gap-3 text-[10.5px] font-sans font-bold text-gray-300 uppercase tracking-widest mb-4">
+            <div className="flex flex-wrap items-center gap-3 text-xs font-sans text-stone-300 uppercase tracking-widest mb-6">
               <span className="flex items-center space-x-1">
-                <Calendar className="w-3.5 h-3.5" />
+                <Calendar className="w-4 h-4" />
                 <span>
                   {currentArticle.published_at 
-                    ? new Date(currentArticle.published_at).toLocaleDateString("hi-IN", { year: "numeric", month: "short", day: "numeric" })
+                    ? new Date(currentArticle.published_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
                     : currentArticle.created_at
-                      ? new Date(currentArticle.created_at).toLocaleDateString("hi-IN", { year: "numeric", month: "short", day: "numeric" })
+                      ? new Date(currentArticle.created_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
                       : ""
                   }
                 </span>
               </span>
-              <span>•</span>
+              <span className="opacity-50">|</span>
               <span className="flex items-center space-x-1">
-                <Clock className="w-3.5 h-3.5" />
+                <Clock className="w-4 h-4" />
                 <span>
                   {currentArticle.content
                     ? `${Math.max(1, Math.ceil(currentArticle.content.split(/\s+/).length / 150))} मिनट पठन`
@@ -155,26 +131,23 @@ export default function Hero() {
                   }
                 </span>
               </span>
-              {currentArticle.view_count !== undefined && (
-                <>
-                  <span>•</span>
-                  <span className="flex items-center space-x-1">
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>{currentArticle.view_count} व्यूज</span>
-                  </span>
-                </>
-              )}
             </div>
 
             {/* Slider Title */}
-            <h1 className="text-3xl md:text-4xl lg:text-[42px] font-serif font-black leading-tight text-white transition-colors duration-300 tracking-tight mb-5 drop-shadow-md">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium leading-[1.15] text-white transition-colors duration-300 tracking-normal mb-6 drop-shadow-sm">
               {stripMarkdown(currentArticle.title || currentArticle.title_hi || "")}
             </h1>
 
             {/* Slider Summary */}
-            <p className="text-gray-200 text-sm md:text-base leading-relaxed font-serif line-clamp-3 opacity-95 max-w-2xl drop-shadow-sm">
+            <p className="text-stone-200 text-base md:text-lg lg:text-xl leading-relaxed font-serif line-clamp-3 opacity-90 max-w-3xl drop-shadow-sm">
               {stripMarkdown(currentArticle.summary || currentArticle.summary_hi || currentArticle.content || "")}
             </p>
+
+            {/* Reading CTA */}
+            <div className="mt-8 flex items-center text-stone-100 font-sans text-sm font-semibold tracking-wider group-hover:text-white transition-colors">
+              <span className="border-b border-stone-100/30 pb-0.5">पूरा लेख पढ़ें</span>
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </div>
 
             {/* Slider Indicators */}
             {sliderArticles.length > 1 && (
@@ -231,17 +204,15 @@ export default function Hero() {
 
                 {/* Details */}
                 <div className="flex-grow min-w-0">
-                  <div className="flex items-center space-x-1.5 text-[9px] uppercase tracking-wider font-black text-[#f97316] mb-1">
-                    <span>{sectionTitle}</span>
-                    <span>•</span>
-                    <span className="text-gray-400 dark:text-gray-500">{readTimeVal} मिनट पठन</span>
+                  <div className="flex items-center space-x-1.5 text-xs tracking-widest font-sans font-medium text-stone-500 dark:text-stone-400 mb-2">
+                    <span className="uppercase">{sectionTitle}</span>
                   </div>
 
                   <Link 
                     href={`/articles/${article.slug || article.id}`}
                     className="block group-hover/card:text-[#f97316] transition-colors duration-250"
                   >
-                    <h4 className="font-bold font-serif text-[13.5px] leading-snug text-gray-900 dark:text-gray-200 line-clamp-2">
+                    <h4 className="font-serif text-base lg:text-lg leading-snug text-stone-800 dark:text-stone-200 line-clamp-2 hover:text-stone-600 dark:hover:text-stone-300 transition-colors">
                       {title}
                     </h4>
                   </Link>
@@ -252,7 +223,7 @@ export default function Hero() {
         </div>
 
       </div>
-
     </div>
+    </SectionContainer>
   );
 }

@@ -26,7 +26,7 @@ export interface NavigationLink {
 export const primaryLinks: NavigationLink[] = [
   { labelHi: "मुख्य पृष्ठ", labelEn: "Home", href: "/", icon: Home },
   { labelHi: "समाचार", labelEn: "News", href: "/current-affairs", icon: Newspaper },
-  { labelHi: "डिजिटल पत्रिका", labelEn: "Magazine", href: "/magazine", icon: BookOpen },
+  { labelHi: "पत्रिका", labelEn: "पत्रिका", href: "/magazine", icon: BookOpen },
   { labelHi: "वीडियो", labelEn: "Videos", href: "/admin/videos", icon: Video },
   { labelHi: "युवाक्षर चौपाल", labelEn: "Community", href: "/community", icon: MessageSquare },
   { labelHi: "हमारे बारे में", labelEn: "About", href: "/about", icon: Info },
@@ -46,7 +46,7 @@ export const profileActions = [
 export const bottomNavLinks = [
   { labelHi: "मुख्य", labelEn: "Home", href: "/", icon: Home },
   { labelHi: "समाचार", labelEn: "News", href: "/current-affairs", icon: Newspaper },
-  { labelHi: "पत्रिका", labelEn: "Magazine", href: "/magazine", icon: BookOpen },
+  { labelHi: "पत्रिका", labelEn: "पत्रिका", href: "/magazine", icon: BookOpen },
   { labelHi: "चौपाल", labelEn: "Community", href: "/community", icon: MessageSquare },
   { labelHi: "प्रोफ़ाइल", labelEn: "Profile", href: "#profile", icon: User }
 ];

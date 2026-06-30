@@ -31,7 +31,7 @@ const PRESETS = {
     { section_type: "categoryblock", title: "शिक्षा", is_visible: true, category: "शिक्षा" },
     { section_type: "popular", title: "चर्चित रैंकिंग सूचियां", is_visible: true, category: "" },
     { section_type: "videos", title: "वीडियो डेस्क", is_visible: true, category: "" },
-    { section_type: "magazine", title: "डिजिटल पत्रिका डेस्क", is_visible: true, category: "" },
+    { section_type: "magazine", title: "पत्रिका डेस्क", is_visible: true, category: "" },
     { section_type: "community", title: "युवाक्षर चौपाल", is_visible: true, category: "" }
   ],
   breaking: [

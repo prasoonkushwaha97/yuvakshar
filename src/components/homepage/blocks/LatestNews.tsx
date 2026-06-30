@@ -6,6 +6,7 @@ import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { ChevronDown } from "lucide-react";
 import ArticleCardMedium from "../cards/ArticleCardMedium";
+import SectionContainer from "../layout/SectionContainer";
 
 interface LatestNewsProps {
   excludeIds?: string[];
@@ -35,13 +36,14 @@ export default function LatestNews({ excludeIds = [] }: LatestNewsProps) {
   };
 
   return (
-    <div className="w-full">
+    <SectionContainer bgClassName="bg-[#FAFAF9] dark:bg-[#1C1917]">
+      <div className="w-full">
       {/* Section Header */}
       <div className="flex items-center justify-between mb-6 border-b border-gray-150 dark:border-gray-850 pb-3">
         <div className="flex items-center space-x-2">
-          <span className="w-2 h-2 rounded-full bg-[#f97316]" />
-          <h2 className="font-serif font-black text-lg md:text-xl text-gray-900 dark:text-white uppercase tracking-tight">
-            {locale === "hi" ? "ताजा समाचार" : "Latest News"}
+          <span className="w-1.5 h-1.5 rounded-full bg-stone-400 dark:bg-stone-500" />
+          <h2 className="font-serif font-medium text-lg md:text-xl text-stone-900 dark:text-stone-100 uppercase tracking-widest">
+            {locale === "hi" ? "हाल ही में प्रकाशित" : "Recently Published"}
           </h2>
         </div>
       </div>
@@ -58,13 +60,14 @@ export default function LatestNews({ excludeIds = [] }: LatestNewsProps) {
         <div className="flex justify-center mt-6">
           <button 
             onClick={handleLoadMore}
-            className="inline-flex items-center space-x-1.5 px-6 py-2.5 bg-gray-100 hover:bg-[#f97316]/10 text-gray-700 hover:text-[#f97316] dark:bg-gray-900 dark:text-gray-300 border border-gray-200 dark:border-gray-800 hover:border-[#f97316]/30 font-sans text-xs font-bold rounded-full transition-all duration-300 cursor-pointer shadow-sm"
+            className="inline-flex items-center space-x-2 px-6 py-2 bg-transparent hover:bg-stone-100 text-stone-600 hover:text-stone-900 dark:hover:bg-stone-800 dark:text-stone-400 dark:hover:text-stone-200 border border-stone-200 dark:border-stone-800 font-sans text-xs uppercase tracking-widest font-medium transition-all duration-300 cursor-pointer"
           >
             <span>{locale === "hi" ? "और अधिक लेख लोड करें" : "Load More Articles"}</span>
             <ChevronDown className="w-4 h-4" />
           </button>
         </div>
       )}
-    </div>
+      </div>
+    </SectionContainer>
   );
 }

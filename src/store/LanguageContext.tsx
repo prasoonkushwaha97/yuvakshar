@@ -15,7 +15,7 @@ const translations: Record<Locale, Record<string, string>> = {
     // Nav Links
     "nav.home": "मुख्य पृष्ठ",
     "nav.news": "समाचार",
-    "nav.magazine": "डिजिटल पत्रिका",
+    "nav.magazine": "पत्रिका",
     "nav.expression": "लेख व विचार",
     "nav.workspace": "ज्ञान केंद्र",
     "nav.dashboard": "डैशबोर्ड",
