@@ -3,14 +3,12 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
-  Search, 
   Filter, 
   Calendar, 
   Clock, 
   Bookmark, 
   BookmarkCheck, 
-  ArrowRight,
-  ChevronDown
+  ArrowRight
 } from "lucide-react";
 
 import { useCms, Article } from "@/store/CmsContext";
@@ -68,47 +66,8 @@ export default function CurrentAffairsPage() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 min-h-screen space-y-10">
+    <div className="max-w-7xl mx-auto px-4 md:px-8 pt-2 pb-8 min-h-screen space-y-6">
       
-      {/* Title */}
-      <div className="border-b border-yuvakshar-gold/15 pb-6">
-        <h1 className="font-serif text-3xl md:text-5xl text-gradient-gold font-bold">Current Affairs Ledger</h1>
-        <p className="text-xs text-yuvakshar-gray uppercase tracking-wider mt-2">
-          Daily analytical records, political reports, and institutional assessments
-        </p>
-      </div>
-
-      {/* Advanced Filter and Search Bar row */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-yuvakshar-card/40 p-4 rounded-2xl border border-yuvakshar-gold/10">
-        
-        {/* Search */}
-        <div className="relative w-full md:max-w-md">
-          <input
-            type="text"
-            placeholder="Search debates, policies, or topics..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-yuvakshar-bg border border-yuvakshar-gold/20 hover:border-yuvakshar-gold/45 rounded-full px-4 py-2.5 text-xs text-yuvakshar-text pl-9 focus:outline-none focus:border-yuvakshar-gold"
-          />
-          <Search className="w-4 h-4 text-yuvakshar-gray absolute left-3 top-3.5" />
-        </div>
-
-        {/* Sorting controls */}
-        <div className="flex space-x-3 w-full md:w-auto shrink-0 justify-end">
-          <div className="flex items-center space-x-2 text-xs">
-            <span className="text-[#8E8A80]">क्रमबद्ध करें:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="bg-yuvakshar-bg border border-yuvakshar-gold/20 hover:border-yuvakshar-gold rounded-lg px-3 py-1.5 text-xs text-yuvakshar-text focus:outline-none"
-            >
-              <option value="latest">Latest Updates</option>
-              <option value="time">Reading Time</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
       {/* Category selector row */}
       <div className="flex overflow-x-auto space-x-2 pb-2 select-none scrollbar-none border-b border-yuvakshar-gold/5">
         {categories?.map((cat) => (
