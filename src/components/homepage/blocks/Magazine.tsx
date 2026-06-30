@@ -36,7 +36,7 @@ export default function Magazine() {
         link="/magazine" 
       />
       <div className="bg-transparent border-t border-stone-200 dark:border-stone-800 pt-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-start">
           
           {/* Left Column: Spotlight cover (4 cols) */}
           <div className="lg:col-span-4 flex justify-center perspective-[1000px]">
