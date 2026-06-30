@@ -15,16 +15,9 @@ export default function Magazine() {
 
   const publishedMags = (magazines ?? []).filter((m: any) => m.status === "Published" || !m.status);
 
-  // Fallback default issue if magazines context is empty
-  const currentMag = publishedMags[0] || {
-    id: "mag-default",
-    issue: "अंक 15",
-    month: "जून 2025",
-    year: "2025",
-    coverImage: "/images/placeholder-news.jpg",
-    description: "राष्ट्रीय विमर्श, गहन इतिहास, पर्यावरण संरक्षण और आधुनिक तकनीक पर विशेष बौद्धिक विमर्श।"
-  };
+  if (publishedMags.length === 0) return null;
 
+  const currentMag = publishedMags[0];
   const archives = publishedMags.slice(1, 6);
 
   return (

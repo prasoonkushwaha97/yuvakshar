@@ -302,7 +302,6 @@ export default function Home() {
           <SectionErrorBoundary><Hero /></SectionErrorBoundary>
           <SectionErrorBoundary><EditorialPicks excludeIds={finalExcludesBeforeEditorial} /></SectionErrorBoundary>
           <SectionErrorBoundary><LatestNews excludeIds={excludeIdsForLatest} /></SectionErrorBoundary>
-          <SectionErrorBoundary><CategoryBlock categoryName="" limit={4} excludeIds={excludeIdsForCategories} /></SectionErrorBoundary>
           <SectionErrorBoundary><Magazine /></SectionErrorBoundary>
           <SectionErrorBoundary><Videos /></SectionErrorBoundary>
         </>
