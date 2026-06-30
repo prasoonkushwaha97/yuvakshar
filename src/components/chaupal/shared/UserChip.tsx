@@ -28,13 +28,13 @@ export default function UserChip({
 
   return (
     <div className="flex items-center gap-2.5">
-      <Link href={`/profile/${username || id}`} className="shrink-0 hover:opacity-80 transition-opacity">
+      <Link href={`/profile/${username || id || "unknown"}`} className="shrink-0 hover:opacity-80 transition-opacity">
         <ChaupalAvatar src={avatarUrl} name={name} size={size} />
       </Link>
       <div className="flex flex-col">
         <div className="flex items-center gap-1.5 flex-wrap">
           <Link 
-            href={`/profile/${username || id}`} 
+            href={`/profile/${username || id || "unknown"}`} 
             className={`font-serif font-bold text-slate-900 dark:text-white hover:text-[#F97316] dark:hover:text-[#F97316] transition-colors ${isSmall ? 'text-sm' : 'text-base'}`}
           >
             {name}

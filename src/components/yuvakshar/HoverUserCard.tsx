@@ -99,7 +99,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
     });
   };
 
-  const userLink = `/profile/${user?.slug || user?.id || userId}`;
+  const userLink = `/profile/${user?.slug || user?.username || user?.id || userId || "unknown"}`;
 
   return (
     <div 
@@ -154,7 +154,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
               <Link href={userLink} className="block text-base font-bold text-slate-900 dark:text-white font-hindi hover:underline decoration-primary">
                 {user.name}
               </Link>
-              <div className="text-[11px] text-slate-500 font-mono">@{user.slug || user.id}</div>
+              <div className="text-[11px] text-slate-500 font-mono">@{user.username || user.slug || user.id}</div>
               {(user as any).roles && <div className="mt-2"><RoleBadgeList roles={(user as any).roles} /></div>}
             </div>
 

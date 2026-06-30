@@ -25,7 +25,12 @@ export default function ProfilePage() {
   }
 
   // Find articles published by this user
-  const userArticles = articles.filter(a => (a as any).author === currentUser.name && a.status === "Published");
+  const userArticles = articles.filter(a => {
+    const isPublished = a.status === "Published";
+    const matchId = (a as any).author_id === currentUser.id;
+    const matchName = (a as any).author === currentUser.name && !["NEW USER", "पाठक (Reader)", "Admin"].includes(currentUser.name);
+    return isPublished && (matchId || matchName);
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1D] text-slate-900 dark:text-slate-100 font-hindi pb-20">
@@ -56,7 +61,7 @@ export default function ProfilePage() {
                 </h1>
                 {/* Username handle */}
                 <p className="text-slate-500 font-mono text-sm mt-1">
-                  @{currentUser.username}
+                  @{currentUser.username || "अनाम"}
                 </p>
               </div>
               

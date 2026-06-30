@@ -2,7 +2,7 @@
 
 import React, {  createContext, useContext, useState, useEffect , useCallback } from "react";
 import { supabase, isSupabaseConfigured, getSupabaseConfigError, checkConnectionHealth, checkStorageHealth } from "@/lib/supabaseClient";
-import { validateUsername } from "@/utils/username";
+import { validateUsername, generateFallbackUsername } from "@/utils/username";
 
 import { Article } from "./types";
 export type { Article };
@@ -822,11 +822,11 @@ export function CmsProvider({
             // Profile does not exist yet - create it dynamically!
             const newProfile: Profile = {
               id: session.user.id,
-              name: session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "NEW USER", username: session.user.email || "".split('@')[0].replace(/['"]/g, ''), email: session.user.email || "",
+              name: session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "NEW USER", username: generateFallbackUsername(session.user.email), email: session.user.email || "",
               role: highestRole as any,
               status: "active",
               joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
-              slug: generateAuthorSlug(session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "user")
+              slug: generateAuthorSlug(generateFallbackUsername(session.user.email))
             };
             
             // Write to database

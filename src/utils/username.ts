@@ -48,14 +48,36 @@ export function generateDeterministicUsername(email: string, existingUsernames: 
   if (base.length > 30) base = base.substring(0, 30);
   
   base = base.replace(/_+/g, '_').replace(/^_/, '').replace(/_$/, '');
+  if (base.length < 3) base = base.padEnd(3, '0'); // ensure still >= 3 after trimming
   
   let test = base;
   let counter = 1;
   
   while (existingUsernames.has(test.toLowerCase()) || RESERVED_USERNAMES.includes(test.toLowerCase())) {
-    test = `${base}${counter}`;
+    const counterStr = counter.toString();
+    const allowedLength = 30 - counterStr.length;
+    const truncatedBase = base.substring(0, allowedLength).replace(/_$/, '');
+    test = `${truncatedBase}${counterStr}`;
     counter++;
   }
   
   return test;
+}
+
+export function generateFallbackUsername(email: string | undefined): string {
+  if (!email) {
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    return `user_${randomNum}`;
+  }
+  
+  let base = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
+  
+  if (base.length < 3) base = base.padEnd(3, '0');
+  if (base.length > 25) base = base.substring(0, 25);
+  
+  base = base.replace(/_+/g, '_').replace(/^_/, '').replace(/_$/, '');
+  if (base.length < 3) base = base.padEnd(3, '0'); 
+  
+  const randomNum = Math.floor(1000 + Math.random() * 9000);
+  return `${base}${randomNum}`;
 }

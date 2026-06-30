@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, notFound } from "next/navigation";
 import { Send, X, MessageSquare, Download, ExternalLink } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { Profile } from "@/store/types";
@@ -43,41 +43,11 @@ export default function UserProfile() {
     return users.find(u => u.slug === slug);
   }, [users, slug]);
 
-  const user = useMemo(() => {
-    if (dbUser) return dbUser;
-    
-    const derivedName = slug
-      ? slug
-          .split("-")
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ")
-      : "पाठक (Reader)";
-      
-    return {
-      id: "fallback-" + (slug || "reader"),
-      name: derivedName,
-      slug: slug || "reader",
-      username: slug || "reader",
-      bio: "युवाक्षर का उत्साही पाठक एवं सदस्य।",
-      role: null,
-      status: "active",
-      location: "भारत",
-      joinDate: "जून २०२६",
-      expertise_tags: [],
-      followers: [] as string[],
-      reputation_score: 10,
-      reputation_tier: "Bronze",
-      cover_banner: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
-      avatar_url: "",
-      verification_badge: undefined,
-      social_links: {},
-      orcid_id: undefined,
-      google_scholar_url: undefined,
-      portfolio: [] as any[],
-      timeline: [] as any[],
-      achievements: [] as any[]
-    } as Profile;
-  }, [dbUser, slug]);
+  if (!dbUser) {
+    notFound();
+  }
+
+  const user = dbUser;
 
   const isOwner = currentUser?.id === user.id;
 
