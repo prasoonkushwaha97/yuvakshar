@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { 
@@ -196,7 +197,7 @@ export default function UserProfile() {
       {/* Profile Cover Banner */}
       <div className="relative h-64 sm:h-80 w-full overflow-hidden bg-slate-105 dark:bg-slate-900">
         {user.cover_banner ? (
-          <img src={user.cover_banner} alt="Cover Banner" className="w-full h-full object-cover" />
+          <Image src={user.cover_banner} alt="Cover Banner" className="w-full h-full object-cover" fill />
         ) : (
           <div className="w-full h-full bg-gradient-to-tr from-[#EA580C]/20 to-[#0F172A]" />
         )}
@@ -225,7 +226,7 @@ export default function UserProfile() {
               <div className="flex flex-col sm:flex-row gap-6 items-start">
                 <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-4 border-white dark:border-[#0F172A] overflow-hidden bg-white dark:bg-slate-900 shadow-md shrink-0">
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                    <Image src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" fill />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-400">
                       <span className="text-3xl font-bold uppercase">{user.name[0]}</span>
@@ -420,7 +421,7 @@ export default function UserProfile() {
                         <GlassCard key={art.id} className="p-5 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row gap-5 items-stretch group hover:shadow-md transition-all">
                           {art.coverImage && (
                             <div className="w-full sm:w-40 h-28 rounded-xl overflow-hidden bg-slate-105 shrink-0">
-                              <img src={art.coverImage} alt={art.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                              <Image src={art.coverImage} alt={art.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" fill />
                             </div>
                           )}
                           <div className="flex-grow flex flex-col justify-between py-0.5 space-y-2 font-serif">
@@ -614,7 +615,7 @@ export default function UserProfile() {
                           <GlassCard key={vid.id} className="overflow-hidden border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col justify-between hover:shadow-md transition-all group">
                             {vid.thumbnailUrl && (
                               <div className="h-40 w-full overflow-hidden bg-slate-105 shrink-0 relative">
-                                <img src={vid.thumbnailUrl} alt={vid.title} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300" />
+                                <Image src={vid.thumbnailUrl} alt={vid.title} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300" fill />
                                 <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                                   <span className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-md shadow-primary/25">▶</span>
                                 </div>

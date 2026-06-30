@@ -39,3 +39,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# Audit and temporary automation scripts
+*.log
+scratch/
+*_report.md
+*_check*.json
+fix_*.js
+check_db.sql
+schema_snapshot_before.sql
+seed_homepage_layout.sql
+supabase_schema.sql
+*_output.txt
+*_output.json
+latest_lint.json
+final_eslint.json

@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
@@ -119,7 +121,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
           {/* Cover Banner */}
           <div className="h-20 bg-gradient-to-r from-primary/80 to-blue-600/80 w-full relative">
             {user.cover_banner && (
-              <img src={user.cover_banner} alt="Cover" className="w-full h-full object-cover" />
+              <Image src={user.cover_banner} alt="Cover" className="w-full h-full object-cover" fill />
             )}
           </div>
 
@@ -127,7 +129,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
             <div className="flex justify-between items-end mb-3">
               <Link href={userLink} className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 border-4 border-white dark:border-[#070B14] shrink-0 overflow-hidden flex items-center justify-center font-bold text-primary text-2xl relative z-10 hover:opacity-90 transition-opacity">
                 {user.avatar_url ? (
-                  <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                  <Image src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" fill />
                 ) : (
                   user.name[0]
                 )}

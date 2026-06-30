@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React, { useEffect, useState, useMemo } from "react";
 import { getAdminUsersList, AdminUserRecord } from "@/lib/actions/userManagementActions";
@@ -177,7 +179,7 @@ export default function UsersManagementPage() {
                         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FF5A1F] to-amber-400 p-[1.5px] shrink-0">
                           <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center text-xs font-bold text-primary overflow-hidden">
                             {user.avatar_url ? (
-                              <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                              <Image src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" fill />
                             ) : (
                               user.name ? user.name[0].toUpperCase() : "U"
                             )}

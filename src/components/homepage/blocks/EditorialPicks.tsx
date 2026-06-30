@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React from "react";
 import Link from "next/link";
@@ -69,12 +71,7 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
                 href={`/articles/${art.slug || art.id}`} 
                 className="block relative aspect-[16/10] w-full overflow-hidden bg-stone-100 dark:bg-stone-900 mb-3 shrink-0"
               >
-                <img
-                  src={imageUrl}
-                  alt={title}
-                  className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700 ease-out"
-                  loading="lazy"
-                />
+                <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700 ease-out" loading="lazy" fill />
                 <div className="absolute top-2.5 left-2.5 z-10">
                   <span className="bg-white/90 dark:bg-black/90 text-stone-800 dark:text-stone-300 text-[10px] font-sans font-medium uppercase tracking-widest px-2 py-0.5 rounded-sm">
                     {art.category || "संपादकीय"}

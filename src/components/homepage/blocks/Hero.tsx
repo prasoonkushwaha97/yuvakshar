@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -81,12 +83,7 @@ export default function Hero() {
               transition={{ duration: 0.55, ease: "easeInOut" }}
               className="absolute inset-0 w-full h-full"
             >
-              <img
-                src={currentArticle.coverImage || currentArticle.cover_image || currentArticle.image || "/images/placeholder-news.jpg"}
-                alt={currentArticle.title}
-                className="w-full h-full object-cover object-center brightness-[0.85] contrast-100 hover:scale-105 transition-transform duration-[10000ms] ease-out"
-                loading="eager"
-              />
+              <Image src={currentArticle.coverImage || currentArticle.cover_image || currentArticle.image || "/images/placeholder-news.jpg"} alt={currentArticle.title} className="w-full h-full object-cover object-center brightness-[0.85] contrast-100 hover:scale-105 transition-transform duration-[10000ms] ease-out" loading="eager" fill />
               {/* Smooth Editorial Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
             </motion.div>
@@ -194,12 +191,7 @@ export default function Hero() {
                   href={`/articles/${article.slug || article.id}`}
                   className="block relative w-20 h-20 shrink-0 overflow-hidden bg-gray-55 dark:bg-gray-900 rounded-2xl border border-gray-150/60 dark:border-gray-850/60"
                 >
-                  <img
-                    src={imageUrl}
-                    alt={title}
-                    className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
+                  <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" loading="lazy" fill />
                 </Link>
 
                 {/* Details */}

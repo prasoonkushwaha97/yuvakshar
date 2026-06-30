@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React from "react";
 import Link from "next/link";
@@ -21,13 +23,7 @@ export default function ArticleCardHero({ article }: ArticleCardHeroProps) {
     <div className="group flex flex-col w-full h-full bg-white dark:bg-[#0A0A0A] rounded-lg overflow-hidden border border-gray-150 dark:border-gray-850 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_25px_-5px_rgba(0,0,0,0.08)] transition-all duration-500">
       {/* 1. Large Cover Image */}
       <Link href={`/articles/${article.slug || article.id}`} className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-100 dark:bg-gray-900 border-b border-gray-150 dark:border-gray-850 shrink-0">
-        <img
-          src={imageUrl}
-          alt={title}
-          className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out"
-          onError={(e) => { e.currentTarget.src = "/images/placeholder-news.jpg"; }}
-          loading="eager"
-        />
+        <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out" onError={(e) => { e.currentTarget.src = "/images/placeholder-news.jpg"; }} loading="eager" fill />
         {/* Category Badge overlay */}
         <div className="absolute top-4 left-4 z-10">
           <CategoryBadge category={article.category || "समाचार"} />

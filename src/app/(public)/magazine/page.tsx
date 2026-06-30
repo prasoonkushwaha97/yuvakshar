@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
@@ -79,7 +80,7 @@ export default function MagazineLibraryPage() {
                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
                    className="relative z-20 shadow-2xl rounded-sm overflow-hidden border border-slate-200/50 dark:border-slate-700/50 w-2/3 max-w-sm perspective-1000"
                  >
-                   <img src={featuredIssue.coverImage} alt={featuredIssue.issue} className="w-full h-auto object-cover" />
+                   <Image src={featuredIssue.coverImage} alt={featuredIssue.issue} className="w-full h-auto object-cover" fill />
                    {/* Magazine Spine Highlight effect */}
                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-r from-white/40 to-transparent" />
                  </motion.div>
@@ -149,7 +150,7 @@ function MagazineCoverCard({ mag, compact = false }: { mag: MagazineIssue, compa
   return (
     <Link href={`/magazine/${mag.id}`} className="group block">
       <div className="relative rounded-sm overflow-hidden shadow-md border border-slate-200 dark:border-slate-800 transition-all duration-300 group-hover:shadow-2xl group-hover:-translate-y-2 mb-4 bg-slate-100 dark:bg-slate-800 aspect-[3/4]">
-        <img src={mag.coverImage} alt={mag.issue} className="w-full h-full object-cover" loading="lazy" />
+        <Image src={mag.coverImage} alt={mag.issue} className="w-full h-full object-cover" loading="lazy" fill />
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
            <span className="bg-white text-slate-900 px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all">
              <BookOpen className="w-4 h-4" /> विवरण

@@ -3,6 +3,7 @@
 import React from "react";
 import { useCms } from "@/store/CmsContext";
 import { User, MapPin, Calendar, Globe, Edit, BookOpen, Share2 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function ProfilePage() {
@@ -41,7 +42,7 @@ export default function ProfilePage() {
           
           <div className="w-32 h-32 md:w-40 md:h-40 shrink-0 rounded-full border-4 border-white dark:border-slate-900 bg-slate-100 dark:bg-slate-800 shadow-lg flex items-center justify-center text-4xl font-bold text-primary overflow-hidden">
             {currentUser.avatar_url ? (
-              <img src={currentUser.avatar_url} alt={currentUser.name} className="w-full h-full object-cover" />
+              <Image src={currentUser.avatar_url} alt={currentUser.name} fill className="object-cover" />
             ) : (
               currentUser.name[0]?.toUpperCase() || "U"
             )}
@@ -118,7 +119,7 @@ export default function ProfilePage() {
                 <Link key={article.id} href={`/articles/${article.slug}`} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col h-full">
                   {article.coverImage && (
                     <div className="h-48 w-full overflow-hidden relative">
-                      <img src={article.coverImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <Image src={article.coverImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" fill />
                       {article.category && (
                         <span className="absolute top-4 left-4 bg-primary text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">
                           {article.category}

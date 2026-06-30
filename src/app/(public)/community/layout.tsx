@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { 
   Home, Users, MessageSquare, Calendar, Bell, 
@@ -259,7 +260,7 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
             {currentUser && (
               <Link href={`/profile/${currentUser.slug || currentUser.id}`} className="w-10 h-10 rounded-full bg-slate-200 border-2 border-slate-100 dark:border-slate-800 flex items-center justify-center text-sm font-bold text-slate-600 uppercase shrink-0 overflow-hidden hover:scale-105 transition-all">
                 {currentUser.avatar_url ? (
-                  <img src={currentUser.avatar_url} alt={currentUser.name} className="w-full h-full object-cover" />
+                  <Image src={currentUser.avatar_url} alt={currentUser.name} width={40} height={40} className="w-full h-full object-cover" />
                 ) : (
                   currentUser.name[0]
                 )}
@@ -311,7 +312,7 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
                   <div className="bg-white dark:bg-[#111827] rounded-2xl p-4 border border-slate-200/60 dark:border-slate-800/40 flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-[#1A2234] transition-colors">
                     <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0 overflow-hidden flex justify-center items-center font-bold text-primary">
                       {currentUser.avatar_url ? (
-                        <img src={currentUser.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                        <Image src={currentUser.avatar_url} alt="Profile" width={40} height={40} className="w-full h-full object-cover" />
                       ) : currentUser.name[0]}
                     </div>
                     <div className="flex flex-col min-w-0 flex-1">
@@ -361,7 +362,7 @@ function CommunityLayoutContent({ children }: { children: React.ReactNode }) {
           </Link>
           <Link href={currentUser ? `/profile/${currentUser.slug || currentUser.id}` : "/community"} className={`flex flex-col items-center justify-center w-full h-full ${pathname?.includes("/profile/") ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}>
             {currentUser?.avatar_url ? (
-              <img src={currentUser.avatar_url} alt="Profile" className="w-6 h-6 rounded-full border-2 border-transparent" />
+              <Image src={currentUser.avatar_url} alt="Profile" width={24} height={24} className="w-6 h-6 rounded-full border-2 border-transparent" />
             ) : (
               <Users className={`w-6 h-6 ${pathname?.includes("/profile/") ? "stroke-[2.5px]" : "stroke-[2px]"}`} />
             )}

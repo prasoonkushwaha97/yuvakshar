@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React, { useState } from "react";
 import { PlayCircle, Film, Clock } from "lucide-react";
@@ -97,12 +99,7 @@ export default function Videos() {
                 >
                   {/* Small video thumbnail */}
                   <div className="w-24 aspect-video bg-black relative rounded-sm overflow-hidden shrink-0">
-                    <img
-                      src={video.thumbnailUrl || "/images/placeholder-news.jpg"}
-                      alt={video.title}
-                      className="w-full h-full object-cover"
-                      onError={(e) => { e.currentTarget.src = "/images/placeholder-news.jpg"; }}
-                    />
+                    <Image src={video.thumbnailUrl || "/images/placeholder-news.jpg"} alt={video.title} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = "/images/placeholder-news.jpg"; }} fill />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40">
                       <PlayCircle className="w-6 h-6 text-white opacity-80 group-hover:scale-110 transition-transform" />
                     </div>

@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React from "react";
 import Link from "next/link";
@@ -36,13 +38,7 @@ export default function ArticleCardSmall({
 
       {showThumbnail && (
         <Link href={`/articles/${article.slug || article.id}`} className="block relative w-16 h-16 shrink-0 overflow-hidden bg-gray-55 dark:bg-gray-900 rounded-xl border border-gray-150/60 dark:border-gray-850/60">
-          <img
-            src={imageUrl}
-            alt={title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            onError={(e) => { e.currentTarget.src = "/images/placeholder-news.jpg"; }}
-            loading="lazy"
-          />
+          <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.currentTarget.src = "/images/placeholder-news.jpg"; }} loading="lazy" fill />
         </Link>
       )}
 

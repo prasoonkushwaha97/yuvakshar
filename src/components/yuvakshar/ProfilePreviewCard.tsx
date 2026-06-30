@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
@@ -155,11 +157,7 @@ export default function ProfilePreviewWrapper({
               <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-amber-500 p-0.5 shrink-0">
                 <div className="w-full h-full rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500 dark:text-slate-400 text-sm uppercase">
                   {targetUser.avatar_url ? (
-                    <img
-                      src={targetUser.avatar_url}
-                      alt={targetUser.name}
-                      className="w-full h-full rounded-full object-cover"
-                    />
+                    <Image src={targetUser.avatar_url} alt={targetUser.name} className="w-full h-full rounded-full object-cover" width={48} height={48} />
                   ) : (
                     targetUser.name[0]
                   )}

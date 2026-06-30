@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
 import {
@@ -310,7 +311,7 @@ export default function MagazineReaderPage() {
                   }}
                   className={`relative aspect-[3/4] rounded-md overflow-hidden cursor-pointer border-2 transition-all hover:scale-105 ${currentPage === idx ? "border-primary shadow-lg shadow-primary/30" : "border-transparent opacity-60 hover:opacity-100"}`}
                 >
-                  <img src={p} alt={`Page ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                  <Image src={p} alt={`Page ${idx + 1}`} fill className="object-cover" />
                   <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] text-center py-1 font-mono">
                     {idx + 1}
                   </div>

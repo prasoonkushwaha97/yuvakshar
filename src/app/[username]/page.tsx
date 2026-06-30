@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React, { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
@@ -65,7 +67,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
           {/* Avatar */}
           <div className="w-32 h-32 sm:w-40 sm:h-40 shrink-0 rounded-2xl bg-gradient-to-br from-primary to-orange-400 p-1 shadow-lg ring-4 ring-white dark:ring-[#0A0F1D] overflow-hidden flex items-center justify-center text-4xl font-black text-white uppercase">
             {user.avatar_url ? (
-              <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover rounded-xl" />
+              <Image src={user.avatar_url} alt={user.name} className="w-full h-full object-cover rounded-xl" fill />
             ) : (
               user.name[0]?.toUpperCase() || "U"
             )}
@@ -131,7 +133,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                 <Link href={`/articles/${article.slug}`} key={article.id} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 flex flex-col h-full">
                   <div className="relative h-48 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
                     {(article as any).imageUrl || (article as any).coverImage ? (
-                      <img src={(article as any).imageUrl || (article as any).coverImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <Image src={(article as any).imageUrl || (article as any).coverImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" fill />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center opacity-20">
                         <BookOpen className="w-12 h-12" />

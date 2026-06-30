@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React, { useState, useCallback, useRef } from "react";
 import Cropper from "react-easy-crop";
@@ -125,11 +127,7 @@ export default function AvatarUploader({ currentAvatarUrl }: AvatarUploaderProps
           onClick={triggerFileSelect}
         >
           {currentAvatarUrl ? (
-            <img 
-              src={currentAvatarUrl} 
-              alt="Profile" 
-              className="w-full h-full object-cover transition-transform group-hover:scale-105" 
-            />
+            <Image src={currentAvatarUrl} alt="Profile" className="w-full h-full object-cover transition-transform group-hover:scale-105" fill />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-600">
               <ImageIcon className="w-10 h-10" />

@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -222,7 +224,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                             {results.authors.map(u => (
                               <button key={u.id} onClick={() => handleSelectResult(`/profile/${u.slug || u.username || u.id}`, query)} className="w-full text-left p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors flex items-center gap-3">
                                 {u.avatar_url ? (
-                                  <img src={u.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                                  <Image src={u.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" width={48} height={48} />
                                 ) : (
                                   <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center"><User className="w-4 h-4 text-slate-500" /></div>
                                 )}

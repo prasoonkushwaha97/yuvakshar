@@ -1,3 +1,4 @@
+import Image from "next/image";
 import React from "react";
 import { getMagazineIssues } from "@/lib/actions/magazineActions";
 import { hasPermission } from "@/lib/rbacService";
@@ -28,7 +29,7 @@ export default async function MagazineDashboard() {
           <div key={issue.id} className="bg-white border rounded-lg shadow-sm overflow-hidden flex flex-col">
             <div className="h-40 bg-gray-200 flex items-center justify-center text-gray-400">
               {issue.cover_image ? (
-                 <img src={issue.cover_image} alt="cover" className="w-full h-full object-cover" />
+                 <Image src={issue.cover_image} alt="cover" className="w-full h-full object-cover" fill />
               ) : (
                 "No Cover Image"
               )}

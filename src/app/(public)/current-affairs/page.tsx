@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { 
   Calendar, 
@@ -92,11 +93,7 @@ export default function CurrentAffairsPage() {
                 <div>
                   {/* Image cover */}
                   <div className="relative h-[220px] w-full overflow-hidden">
-                    <img 
-                      src={art.coverImage} 
-                      alt={art.title}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 brightness-95"
-                    />
+                    <Image src={art.coverImage} alt={art.title} fill className="object-cover hover:scale-105 transition-transform duration-500 brightness-95" />
                     <div className="absolute top-3 left-3 bg-yuvakshar-bg border border-yuvakshar-gold/25 px-2.5 py-0.5 rounded text-[9px] text-yuvakshar-gold font-bold tracking-wider uppercase">
                       {art.category}
                     </div>

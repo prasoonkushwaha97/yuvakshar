@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React, { useState } from "react";
 import Link from "next/link";
@@ -30,12 +32,7 @@ export default function AuthorCard({
       <Link href={`/profile/${authorSlug}`} className="flex items-center space-x-3 flex-1 min-w-0 group/author cursor-pointer">
         {/* Avatar */}
         <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-100 dark:border-gray-800 bg-gray-50 group-hover/author:border-[#f97316]">
-          <img
-            src={finalAvatar}
-            alt={authorName}
-            className="w-full h-full object-cover"
-            onError={(e) => { e.currentTarget.src = "https://api.dicebear.com/7.x/adventurer/svg?seed=avatar"; }}
-          />
+          <Image src={finalAvatar} alt={authorName} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = "https://api.dicebear.com/7.x/adventurer/svg?seed=avatar"; }} fill />
         </div>
 
         {/* Profile Details */}

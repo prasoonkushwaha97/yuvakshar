@@ -1,3 +1,4 @@
+import Image from "next/image";
 import React from "react";
 import { EditorBlock, ContentDocument } from "../types/schema";
 
@@ -26,11 +27,7 @@ export const ParagraphRenderer = ({ block }: { block: EditorBlock & { type: "par
 export const ImageRenderer = ({ block }: { block: EditorBlock & { type: "image" } }) => {
   return (
     <figure className={`my-8 ${block.settings?.layout === 'wide' ? '-mx-8' : ''}`}>
-      <img 
-        src={block.content.url} 
-        alt={block.content.altText || ""} 
-        className="w-full rounded-xl bg-slate-100 dark:bg-slate-800"
-      />
+      <Image src={block.content.url} alt={block.content.altText || ""} className="w-full rounded-xl bg-slate-100 dark:bg-slate-800" fill />
       {(block.content.caption || block.content.photographerCredit) && (
         <figcaption className="text-sm text-slate-500 mt-3 text-center">
           {block.content.caption}

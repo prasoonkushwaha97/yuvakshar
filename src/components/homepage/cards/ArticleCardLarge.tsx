@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React from "react";
 import Link from "next/link";
@@ -21,13 +23,7 @@ export default function ArticleCardLarge({ article }: ArticleCardLargeProps) {
     <div className="group flex flex-col w-full h-full bg-transparent rounded-none overflow-hidden border-b border-stone-200 dark:border-stone-800 pb-4 transition-all duration-300">
       {/* Image Block */}
       <Link href={`/articles/${article.slug || article.id}`} className="block relative aspect-[16/10] w-full overflow-hidden bg-stone-100 dark:bg-stone-900 shrink-0">
-        <img
-          src={imageUrl}
-          alt={title}
-          className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
-          onError={(e) => { e.currentTarget.src = "/images/placeholder-news.jpg"; }}
-          loading="lazy"
-        />
+        <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" onError={(e) => { e.currentTarget.src = "/images/placeholder-news.jpg"; }} loading="lazy" fill />
         <div className="absolute top-3 left-3 z-10">
           <CategoryBadge category={article.category} />
         </div>

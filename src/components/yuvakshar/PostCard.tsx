@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React, { useState } from "react";
 import Link from "next/link";
@@ -145,7 +147,7 @@ export default function PostCard({
           <HoverUserCard userId={hoverUserId}>
             <Link href={`/profile/${authorProfile?.slug || post.user_id}`} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-200 flex items-center justify-center font-bold text-sm text-slate-500 uppercase shrink-0 overflow-hidden hover:opacity-90 block border border-slate-300 dark:border-slate-700">
               {authorProfile?.avatar_url ? (
-                <img src={authorProfile.avatar_url} alt={post.user_name} className="w-full h-full object-cover" />
+                <Image src={authorProfile.avatar_url} alt={post.user_name} className="w-full h-full object-cover" fill />
               ) : (
                 post.user_name[0]
               )}
@@ -312,7 +314,7 @@ export default function PostCard({
       {/* Render Image attachment */}
       {post.post_type === "image" && post.media_url && (
         <div className="relative w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
-          <img src={post.media_url} alt="Post Attachment" className="w-full h-auto max-h-[500px] object-cover" />
+          <Image src={post.media_url} alt="Post Attachment" className="w-full h-auto max-h-[500px] object-cover" fill />
         </div>
       )}
 

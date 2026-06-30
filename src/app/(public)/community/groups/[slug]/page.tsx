@@ -31,6 +31,7 @@ import {
 } from "@/lib/communityService";
 import HoverUserCard from "@/components/yuvakshar/HoverUserCard";
 import GlassCard from "@/components/yuvakshar/GlassCard";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -620,7 +621,7 @@ export default function GroupDetailPage() {
                       <Link href={`/profile/${member.user_id}`} className="flex items-center space-x-2 min-w-0 hover:opacity-80 transition-opacity">
                         <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center font-bold text-[9px] text-slate-500 uppercase shrink-0 overflow-hidden">
                           {userProfile?.avatar_url ? (
-                            <img src={userProfile.avatar_url} alt={userProfile.name} className="w-full h-full object-cover" />
+                            <Image src={userProfile.avatar_url} alt={userProfile.name} width={24} height={24} className="w-full h-full object-cover" />
                           ) : (
                             userProfile?.name[0] || "M"
                           )}

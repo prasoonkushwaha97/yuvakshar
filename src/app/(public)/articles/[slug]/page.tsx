@@ -2,6 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getArticleBySlug, getArticleById } from "@/lib/actions/articleActions";
+import Image from "next/image";
 import Link from "next/link";
 import { stripMarkdown } from "@/lib/markdown";
 import Sidebar from "@/components/homepage/layout/Sidebar";
@@ -139,9 +140,10 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
             {/* Author Profile and Metadata */}
             <div className="flex flex-wrap items-center justify-between gap-4 border-t border-b border-gray-100 dark:border-gray-850 py-4 mb-6">
               <Link href={article?.profiles ? `/profile/${(article.profiles as any).slug || (article.profiles as any).username || article.profiles.id}` : "#"} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-                <img 
+                <Image 
                   src={article?.profiles?.avatar_url || "/images/default-avatar.png"} 
                   alt={article?.profiles?.name || "युवाक्षर लेखक"}
+                  width={40} height={40}
                   className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-800"
                 />
                 <div>
@@ -171,10 +173,12 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
             {/* Cover Image */}
             {article?.cover_image && (
               <div className="relative rounded-lg overflow-hidden mb-8 border border-gray-150 dark:border-gray-850 aspect-[16/9] bg-gray-100 dark:bg-gray-900">
-                <img 
+                <Image 
                   src={article.cover_image} 
                   alt={title}
-                  className="w-full h-full object-cover"
+                  fill
+                  priority
+                  className="object-cover"
                 />
               </div>
             )}

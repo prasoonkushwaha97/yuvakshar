@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { useCms } from "@/store/CmsContext";
 import { Bookmark, Lock, Search, Filter, BookOpen } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function BookmarksPage() {
@@ -96,7 +97,7 @@ export default function BookmarksPage() {
                   <Link href={`/articles/${article.slug}`} className="flex flex-col flex-1">
                     {article.coverImage && (
                       <div className="h-40 w-full overflow-hidden relative">
-                        <img src={article.coverImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <Image src={article.coverImage} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                         {article.category && (
                           <span className="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">
                             {article.category}

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import { 
   Search, 
@@ -177,10 +178,11 @@ function CategoryDetailPageContent() {
                 <div>
                   {/* Image cover */}
                   <div className="relative h-[220px] w-full overflow-hidden">
-                    <img 
+                    <Image 
                       src={art.coverImage} 
                       alt={art.title}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 brightness-95"
+                      fill
+                      className="object-cover hover:scale-105 transition-transform duration-500 brightness-95"
                     />
                     <div className="absolute top-3 left-3 bg-background border border-border px-2.5 py-0.5 rounded text-[9px] text-primary font-bold tracking-wider uppercase">
                       {art.category}

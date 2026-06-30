@@ -16,6 +16,7 @@ import {
   CommunityGroupMember
 } from "@/lib/communityService";
 import GlassCard from "@/components/yuvakshar/GlassCard";
+import Image from "next/image";
 import Link from "next/link";
 import PostCard from "@/components/yuvakshar/PostCard";
 
@@ -302,7 +303,7 @@ function CommunityFeedPageContent() {
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 dark:border-slate-700 flex items-center justify-center text-xs font-bold text-slate-500 uppercase shrink-0 overflow-hidden">
               {currentUser.avatar_url ? (
-                <img src={currentUser.avatar_url} alt={currentUser.name} className="w-full h-full object-cover" />
+                <Image src={currentUser.avatar_url} alt={currentUser.name} className="w-full h-full object-cover" fill />
               ) : (
                 currentUser.name[0]
               )}

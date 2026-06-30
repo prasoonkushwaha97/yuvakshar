@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React, { useState } from "react";
 import { Plus, Trash2, Edit3, Star } from "lucide-react";
@@ -234,14 +236,9 @@ export default function VideoManagementTab({ currentUser }: VideoManagementTabPr
               <GlassCard key={v.id} glow={v.isFeatured ? "gold" : "none"} className="p-4 flex flex-col justify-between space-y-4">
                 <div className="flex gap-4">
                   <div className="relative w-28 h-20 bg-slate-900 rounded-lg overflow-hidden shrink-0 border border-slate-200 dark:border-slate-800">
-                    <img 
-                      src={v.thumbnailUrl || "/yuvakshar_logo.jpg"} 
-                      alt={v.title} 
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/yuvakshar_logo.jpg";
-                      }}
-                    />
+                    <Image src={v.thumbnailUrl || "/yuvakshar_logo.jpg"} alt={v.title} className="w-full h-full object-cover" onError={(e) => {
+                                                    (e.target as HTMLImageElement).src = "/yuvakshar_logo.jpg";
+                                                  }} fill />
                     <span className="absolute bottom-1 right-1 bg-black/75 text-white px-1 py-0.5 rounded text-[8px] font-mono">{v.duration || "5:00"}</span>
                     {v.isShorts && (
                       <span className="absolute top-1 left-1 bg-red-650 text-white px-1.5 py-0.2 rounded text-[8px] font-bold font-sans uppercase">Shorts</span>

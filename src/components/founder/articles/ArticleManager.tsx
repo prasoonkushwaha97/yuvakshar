@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import { useState, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -349,7 +351,7 @@ export default function ArticleManager({
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         {article.profiles?.avatar_url ? (
-                          <img src={article.profiles.avatar_url} alt="" className="w-6 h-6 rounded-full bg-slate-200" />
+                          <Image src={article.profiles.avatar_url} alt="" className="w-6 h-6 rounded-full bg-slate-200" width={24} height={24} />
                         ) : (
                           <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
                             {article.profiles?.name?.charAt(0) || "U"}

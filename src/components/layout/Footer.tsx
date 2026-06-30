@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React, { useState } from "react";
 import Link from "next/link";
@@ -43,14 +45,9 @@ export default function Footer() {
         {/* Left Area: Brand & Tagline */}
         <div className="md:col-span-3 space-y-1.5 md:space-y-2">
           <div className="flex items-center">
-            <img 
-              src={settings.appearance.logo_url || "/yuvakshar_logo_official.png"} 
-              alt="युवाक्षर लोगो" 
-              className="h-[36px] w-auto object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = "/yuvakshar_logo_official.png";
-              }}
-            />
+            <Image src={settings.appearance.logo_url || "/yuvakshar_logo_official.png"} alt="युवाक्षर लोगो" className="h-[36px] w-auto object-contain" onError={(e) => {
+                                      (e.target as HTMLImageElement).src = "/yuvakshar_logo_official.png";
+                                    }} width={400} height={400} />
           </div>
           <p className="text-slate-600 dark:text-slate-400 font-serif leading-relaxed">
             {settings.general.tagline} — लेखन, चिंतन और परिवर्तन।

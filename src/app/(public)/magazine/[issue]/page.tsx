@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { useCms } from "@/store/CmsContext";
 import { ArrowLeft, BookOpen, Download, Share2, Star, Calendar, FileText, ChevronRight } from "lucide-react";
@@ -71,7 +72,7 @@ export default function MagazineIssueDetailsPage() {
               animate={{ opacity: 1, y: 0 }}
               className="relative w-full max-w-[320px] aspect-[3/4] shadow-2xl rounded-sm overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900"
             >
-              <img src={mag.coverImage} alt={mag.issue} className="w-full h-full object-cover" />
+              <Image src={mag.coverImage} alt={mag.issue} className="w-full h-full object-cover" fill />
               <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-r from-white/40 to-transparent" />
             </motion.div>
           </div>
@@ -144,7 +145,7 @@ export default function MagazineIssueDetailsPage() {
               {relatedIssues?.map(related => (
                 <Link key={related.id} href={`/magazine/${related.id}`} className="group block">
                   <div className="relative rounded-sm overflow-hidden shadow-md border border-slate-200 dark:border-slate-800 mb-4 bg-slate-100 dark:bg-slate-800 aspect-[3/4]">
-                    <img src={related.coverImage} alt={related.issue} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <Image src={related.coverImage} alt={related.issue} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" fill />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <span className="bg-white text-slate-900 px-3 py-1.5 rounded-full font-bold text-xs flex items-center gap-1">
                         <BookOpen className="w-3 h-3" /> विवरण

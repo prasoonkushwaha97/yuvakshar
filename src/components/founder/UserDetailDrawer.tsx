@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 
 import React, { useEffect, useState } from "react";
 import { Drawer } from "@/components/ui/Drawer";
@@ -44,7 +46,7 @@ export function UserDetailDrawer({ open, onOpenChange, user }: Props) {
         <div className="flex items-center space-x-4">
           <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden shrink-0">
             {user.avatar_url ? (
-              <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+              <Image src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" fill />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-slate-400">
                 <User className="w-8 h-8" />
