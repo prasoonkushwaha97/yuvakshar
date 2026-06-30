@@ -21,7 +21,7 @@ export default function MagazineCard({ magazine }: MagazineCardProps) {
     <div className="group flex flex-col bg-white dark:bg-[#0A0A0A] border border-gray-150 dark:border-gray-850 p-4 rounded-lg hover:shadow-[0_8px_20px_-6px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300 w-full">
       {/* 3D-effect book cover container */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-50 dark:bg-gray-900 shadow-md group-hover:shadow-lg transition-shadow mb-4 flex items-center justify-center rounded-sm">
-        <Image src={imageUrl} alt={magazine.issue} className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-500" onError={(e) => { e.currentTarget.src = "/images/placeholder-news.jpg"; }} loading="lazy" fill />
+        <Image src={imageUrl} alt={magazine.issue} className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-500" loading="lazy" fill />
         {/* Hover Read Indicator Overlay */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
           <Link

@@ -26,7 +26,7 @@ export default function ArticleCardMedium({ article, showImage = true }: Article
       
       {showImage && (
         <Link href={`/articles/${article.slug || article.id}`} className="block relative w-full aspect-[16/10] mb-4 shrink-0 overflow-hidden bg-stone-100 dark:bg-stone-900">
-          <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.currentTarget.src = "/images/placeholder-news.jpg"; }} loading="lazy" fill />
+          <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" fill />
         </Link>
       )}
 

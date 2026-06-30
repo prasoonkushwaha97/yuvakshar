@@ -313,8 +313,8 @@ export default function PostCard({
 
       {/* Render Image attachment */}
       {post.post_type === "image" && post.media_url && (
-        <div className="relative w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
-          <Image src={post.media_url} alt="Post Attachment" className="w-full h-auto max-h-[500px] object-cover" fill />
+        <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
+          <Image src={post.media_url} alt="Post Attachment" className="w-full h-full object-cover" fill />
         </div>
       )}
 

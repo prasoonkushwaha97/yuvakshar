@@ -145,7 +145,7 @@ export default function Sidebar() {
 
       {/* 3. DIGITAL MAGAZINE WIDGET */}
       <div className="border border-gray-150 dark:border-gray-850 p-5 rounded-lg bg-gradient-to-br from-[#FAFAF9] to-[#FAF8F5] dark:from-[#111] dark:to-[#0A0A0A] flex gap-4 items-center">
-        <Image src={sidebarMag.coverImage} alt="Mag cover" className="w-16 h-22 object-cover rounded shadow border border-gray-200 dark:border-gray-800" onError={(e) => { e.currentTarget.src = "/images/placeholder-news.jpg"; }} fill />
+        <Image src={sidebarMag.coverImage} alt="Mag cover" className="w-16 h-22 object-cover rounded shadow border border-gray-200 dark:border-gray-800" width={64} height={88} />
         <div className="flex-1 flex flex-col justify-center">
           <span className="text-[9px] text-[#f97316] font-bold uppercase tracking-widest block mb-0.5">मासिक पत्रिका</span>
           <h4 className="font-serif font-black text-sm text-gray-855 dark:text-gray-200 mb-2 leading-tight">
@@ -184,7 +184,7 @@ export default function Sidebar() {
                 <div dangerouslySetInnerHTML={{ __html: activeAd.code }} />
               ) : activeAd.image_url ? (
                 <a href={activeAd.link_url || "#"} target="_blank" rel="noopener noreferrer" className="block">
-                  <Image src={activeAd.image_url} alt={activeAd.name} className="w-full h-auto rounded border border-gray-200 dark:border-gray-800" fill />
+                  <Image src={activeAd.image_url} alt={activeAd.name} className="w-full h-auto rounded border border-gray-200 dark:border-gray-800" width={400} height={300} />
                 </a>
               ) : (
                 <div className="p-4 bg-gray-50 dark:bg-[#121212] rounded text-center text-xs text-gray-500">

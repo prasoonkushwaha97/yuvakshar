@@ -252,7 +252,7 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FF5A1F] to-amber-400 p-[1.5px] overflow-hidden shrink-0 flex items-center justify-center">
                   <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center text-xs font-bold uppercase text-primary">
                     {currentUser?.avatar_url ? (
-                      <Image src={currentUser.avatar_url} alt={currentUser?.name} className="w-full h-full object-cover" fill />
+                      <Image src={currentUser.avatar_url} alt={currentUser?.name} className="w-full h-full object-cover" fill sizes="40px" />
                     ) : (
                       currentUser?.name ? currentUser.name[0] : "U"
                     )}

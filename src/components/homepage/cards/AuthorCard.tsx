@@ -31,8 +31,8 @@ export default function AuthorCard({
     <div className="flex items-center space-x-3 bg-white dark:bg-[#0E1322] p-3.5 border border-gray-150/80 dark:border-gray-850/80 rounded-3xl min-w-[220px] shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-0.5 hover:border-[#f97316]/30 transition-all duration-300">
       <Link href={`/profile/${authorSlug}`} className="flex items-center space-x-3 flex-1 min-w-0 group/author cursor-pointer">
         {/* Avatar */}
-        <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-100 dark:border-gray-800 bg-gray-50 group-hover/author:border-[#f97316]">
-          <Image src={finalAvatar} alt={authorName} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = "https://api.dicebear.com/7.x/adventurer/svg?seed=avatar"; }} fill />
+        <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-100 dark:border-gray-800 bg-gray-50 group-hover/author:border-[#f97316]">
+          <Image src={finalAvatar} alt={authorName} className="w-full h-full object-cover" fill sizes="40px" />
         </div>
 
         {/* Profile Details */}

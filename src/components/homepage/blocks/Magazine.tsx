@@ -37,8 +37,8 @@ export default function Magazine() {
           <div className="lg:col-span-4 flex justify-center items-start perspective-[1000px]">
             <div className="relative group w-[220px] md:w-[260px]">
               <div className="absolute inset-0 bg-black/10 dark:bg-black/50 blur-xl transform translate-y-4 translate-x-4 scale-95 group-hover:translate-x-6 group-hover:translate-y-6 transition-transform duration-700" />
-              <div className="relative transform rotate-y-[-4deg] rotate-x-[2deg] group-hover:rotate-y-[0deg] group-hover:rotate-x-[0deg] transition-all duration-700 border border-stone-200 dark:border-stone-800 shadow-xl bg-stone-50 dark:bg-stone-900 rounded-sm overflow-hidden">
-                <Image src={currentMag.coverImage} alt={currentMag.issue} className="w-full h-auto object-cover" onError={(e) => { e.currentTarget.src = "/images/placeholder-news.jpg"; }} loading="lazy" fill />
+              <div className="relative aspect-[3/4] w-full transform rotate-y-[-4deg] rotate-x-[2deg] group-hover:rotate-y-[0deg] group-hover:rotate-x-[0deg] transition-all duration-700 border border-stone-200 dark:border-stone-800 shadow-xl bg-stone-50 dark:bg-stone-900 rounded-sm overflow-hidden">
+                <Image src={currentMag.coverImage} alt={currentMag.issue} className="w-full h-full object-cover" loading="lazy" fill />
               </div>
               <div className="absolute -bottom-3 -right-3 bg-stone-900 dark:bg-stone-100 text-stone-100 dark:text-stone-900 text-[10px] font-sans font-medium px-4 py-2 uppercase tracking-widest shadow-lg transform rotate-2 z-20">
                 {locale === "hi" ? "नया संस्करण" : "New Edition"}

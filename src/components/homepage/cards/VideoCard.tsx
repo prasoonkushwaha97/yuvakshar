@@ -24,7 +24,7 @@ export default function VideoCard({ video }: VideoCardProps) {
     >
       {/* Video Thumbnail */}
       <div className="aspect-video w-full relative overflow-hidden bg-gray-900 shrink-0">
-        <Image src={thumbnailUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 opacity-80 group-hover:opacity-100" onError={(e) => { e.currentTarget.src = "/images/placeholder-news.jpg"; }} loading="lazy" fill />
+        <Image src={thumbnailUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 opacity-80 group-hover:opacity-100" loading="lazy" fill />
 
         {/* Play Overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/40 transition-colors">

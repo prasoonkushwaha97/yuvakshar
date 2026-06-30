@@ -76,7 +76,6 @@ export default function AvatarUploader({ currentAvatarUrl }: AvatarUploaderProps
         .from("avatars")
         .upload(filePath, croppedBlob, {
           contentType: "image/jpeg",
-          upsert: true,
         });
 
       if (uploadError) {

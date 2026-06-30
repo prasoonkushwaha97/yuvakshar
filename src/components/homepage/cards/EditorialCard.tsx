@@ -27,7 +27,7 @@ export default function EditorialCard({ article }: EditorialCardProps) {
       <Link href={`/profile/${authorSlug}`} className="group/avatar flex flex-col items-center cursor-pointer">
         {/* Columnist Avatar */}
         <div className="relative w-16 h-16 rounded-full overflow-hidden mb-3 border-2 border-gray-105 dark:border-gray-800 group-hover/avatar:border-[#f97316] transition-colors shrink-0 bg-gray-55">
-          <Image src={authorAvatar} alt={article.author} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = "https://api.dicebear.com/7.x/adventurer/svg?seed=avatar"; }} fill />
+          <Image src={authorAvatar} alt={article.author} className="w-full h-full object-cover" fill sizes="64px" />
         </div>
 
         {/* Columnist Metadata */}
