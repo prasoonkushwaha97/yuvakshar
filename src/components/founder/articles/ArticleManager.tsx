@@ -170,7 +170,7 @@ export default function ArticleManager({
           <p className="text-sm text-slate-500">Manage all editorial content, workflow, and publication</p>
         </div>
         <Link
-          href="/admin/editor/new"
+          href="/admin/articles/new"
           className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm text-sm font-medium"
         >
           <Plus className="w-4 h-4" />
@@ -385,7 +385,7 @@ export default function ArticleManager({
                         <Link href={`/${article.slug}`} target="_blank" className="p-1.5 text-slate-400 hover:text-primary transition-colors" title="View Live">
                           <Eye className="w-4 h-4" />
                         </Link>
-                        <Link href={`/admin/articles/editor/${article.id}`} className="p-1.5 text-slate-400 hover:text-primary transition-colors" title="Edit">
+                        <Link href={`/admin/articles/${article.id}`} className="p-1.5 text-slate-400 hover:text-primary transition-colors" title="Edit">
                           <Edit2 className="w-4 h-4" />
                         </Link>
                         <button onClick={() => handleDelete(article.id)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors" title="Delete">

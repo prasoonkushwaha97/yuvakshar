@@ -35,14 +35,14 @@ export default function AdminSidebar() {
     { name: "Videos", href: "/admin/videos", icon: Video, requiredPermission: "publish_article" as const },
     
     // Homepage / Builder
-    { name: "Homepage Builder", href: "/admin/homepage", icon: LayoutTemplate, requiredPermission: "manage_homepage" as const },
+    { name: "Homepage Builder", href: "/admin/cms/homepage", icon: LayoutTemplate, requiredPermission: "manage_homepage" as const },
     
     // Community
     { name: "Community", href: "/admin/community", icon: MessageSquare, requiredPermission: "manage_users" as const },
     
     // Users & System
     { name: "Users & Roles", href: "/admin/users", icon: Users, requiredPermission: "manage_users" as const },
-    { name: "Settings", href: "/admin/settings", icon: Settings, requiredPermission: "manage_settings" as const },
+    { name: "Settings", href: "/admin/cms/settings", icon: Settings, requiredPermission: "manage_settings" as const },
   ];
 
   const visibleItems = navItems.filter(item => 
@@ -51,8 +51,8 @@ export default function AdminSidebar() {
 
   return (
     <aside className="w-64 bg-white dark:bg-[#0F172A] border-r border-slate-200 dark:border-slate-800 flex flex-col h-screen sticky top-0">
-      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
-        <h1 className="text-2xl font-serif font-black text-primary tracking-tight">Yuvakshar<span className="text-slate-800 dark:text-white">Admin</span></h1>
+      <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center">
+        <h1 className="text-2xl font-serif font-black text-primary tracking-tight whitespace-nowrap">Yuvakshar<span className="text-slate-800 dark:text-white">Admin</span></h1>
       </div>
       
       <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">

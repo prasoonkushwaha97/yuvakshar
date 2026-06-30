@@ -1,13 +1,24 @@
 import React from "react";
-import { Users, ShieldAlert, MessageSquare } from "lucide-react";
+import { Users, FileText, MessageSquare, BookOpen } from "lucide-react";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export const dynamic = 'force-dynamic';
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const [usersRes, articlesRes, communityRes] = await Promise.all([
+    supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }),
+    supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }),
+    supabaseAdmin.from('community_posts').select('*', { count: 'exact', head: true })
+  ]);
+
+  const totalUsers = usersRes.count || 0;
+  const totalArticles = articlesRes.count || 0;
+  const totalPosts = communityRes.count || 0;
+
   const statCards = [
-    { label: "Total Users", value: 0, icon: Users, color: "text-blue-500" },
-    { label: "Pending Reports", value: 0, icon: ShieldAlert, color: "text-red-500" },
-    { label: "Flagged Comments", value: 0, icon: MessageSquare, color: "text-pink-500" },
+    { label: "Total Users", value: totalUsers, icon: Users, color: "text-blue-500" },
+    { label: "Total Articles", value: totalArticles, icon: FileText, color: "text-emerald-500" },
+    { label: "Community Posts", value: totalPosts, icon: MessageSquare, color: "text-purple-500" },
   ];
 
   return (
@@ -22,7 +33,7 @@ export default function AdminDashboardPage() {
               </div>
               <div>
                 <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.label}</h3>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{stat.value || 0}</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{stat.value}</p>
               </div>
             </div>
           ))}

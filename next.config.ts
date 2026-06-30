@@ -37,6 +37,26 @@ const nextConfig: NextConfig = {
         source: '/community/authors/:slug*',
         destination: '/profile/:slug*',
         permanent: true,
+      },
+      {
+        source: '/cms/:path*',
+        destination: '/admin',
+        permanent: true,
+      },
+      {
+        source: '/founder/:path*',
+        destination: '/admin',
+        permanent: true,
+      },
+      {
+        source: '/editorial/:path*',
+        destination: '/admin',
+        permanent: true,
+      },
+      {
+        source: '/submit-article',
+        destination: '/contribute',
+        permanent: true,
       }
     ];
   },
