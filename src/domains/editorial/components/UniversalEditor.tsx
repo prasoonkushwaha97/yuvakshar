@@ -16,7 +16,7 @@ export function UniversalEditor({
 
   const addBlock = (type: EditorBlock["type"]) => {
     // Scaffold a new block based on type
-    let newBlock: any = {
+    const newBlock: any = {
       id: crypto.randomUUID(),
       type,
       order: doc.blocks.length,
@@ -25,7 +25,7 @@ export function UniversalEditor({
     if (type === "heading") newBlock.content = { text: "New Heading", level: 2 };
     if (type === "paragraph") newBlock.content = { text: "Start writing..." };
     if (type === "quote") newBlock.content = { text: "Quote", author: "" };
-    if (type === "image") newBlock.content = { url: "https://via.placeholder.com/800x400" };
+    if (type === "image") newBlock.content = { url: "" };
     if (type === "divider") newBlock.content = {};
 
     const newDoc = {
@@ -43,12 +43,12 @@ export function UniversalEditor({
       {/* Title Field (implicitly part of metadata or a special block, assuming metadata for now) */}
       <input 
         type="text" 
-        placeholder="Article Title"
+        placeholder="लेख का शीर्षक"
         className="w-full text-5xl font-serif font-black bg-transparent border-none outline-none text-slate-900 dark:text-white mb-8 placeholder-slate-300 dark:placeholder-slate-700"
       />
 
       <div className="space-y-4">
-        {doc.blocks.map((block, index) => (
+        {doc.blocks.map((block, _index) => (
           <div key={block.id} className="group relative flex items-start gap-4 p-4 -mx-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
             
             {/* Block Controls (shown on hover) */}

@@ -52,7 +52,6 @@ export default function MagazineReaderPage() {
   useEffect(() => {
     if (mag) {
       const percentage = Math.round(((currentPage + 1) / mag.pages.length) * 100);
-      undefined;
     }
   }, [currentPage, mag]);
 
@@ -74,6 +73,16 @@ export default function MagazineReaderPage() {
       document.exitFullscreen();
     }
   };
+
+  const [[page, direction], setPage] = useState([currentPage, 0]);
+
+  // Sync internal framer state with actual page state
+  useEffect(() => {
+    setPage((prev) => {
+      const newDirection = currentPage > prev[0] ? 1 : -1;
+      return [currentPage, newDirection];
+    });
+  }, [currentPage]);
 
   if (!mag || !mag.pages || mag.pages.length === 0) {
     return (
@@ -131,15 +140,6 @@ export default function MagazineReaderPage() {
     })
   };
 
-  const [[page, direction], setPage] = useState([currentPage, 0]);
-
-  // Sync internal framer state with actual page state
-  useEffect(() => {
-    setPage((prev) => {
-      const newDirection = currentPage > prev[0] ? 1 : -1;
-      return [currentPage, newDirection];
-    });
-  }, [currentPage]);
 
   const toggleControls = () => setShowControls(!showControls);
 

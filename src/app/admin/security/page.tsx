@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Shield, Key, Users, Activity, Lock, Smartphone, Search, AlertTriangle, Monitor, MoreVertical, XCircle, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Shield, Key, Activity, Smartphone, Search, AlertTriangle, Monitor, XCircle, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { globalSecurityService } from "../../../domains/platform/security/services/securityService";
 import { globalPermissionInspector } from "../../../domains/platform/security/services/permissionInspector";
 import { ActiveSession, APIKey } from "../../../domains/platform/security/types/security";
@@ -165,7 +165,7 @@ export default function SecurityCenter() {
                     type="text" 
                     value={rbacSearch}
                     onChange={(e) => setRbacSearch(e.target.value)}
-                    placeholder="Enter User ID (e.g., admin-1)" 
+                    placeholder="यूजर आईडी दर्ज करें (उदा. admin-1)" 
                     className="pl-11 pr-4 py-3 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none"
                   />
                 </div>

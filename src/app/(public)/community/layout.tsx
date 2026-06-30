@@ -4,18 +4,14 @@ import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { 
-  Home, Users, MessageSquare, Calendar, Bell, Trophy, BookOpen, 
-  Search, Bookmark, Plus, MessageCircle, Clock, Settings, ArrowLeft,
-  TrendingUp, FileText, ChevronRight, X, Check
+  Home, Users, MessageSquare, Calendar, Bell, 
+  Search, Bookmark, Plus, MessageCircle, Settings, ArrowLeft, FileText,  X, Check
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
 import { 
-  initializeCommunityData, fetchChallenges, fetchPosts, CommunityChallenge, CommunityPost, fetchGroups, createPost
+  initializeCommunityData, fetchGroups, createPost
 } from "@/lib/communityService";
-import GlassCard from "@/components/yuvakshar/GlassCard";
-import confetti from "canvas-confetti";
-
 // Sidebar Links - Redesigned to fit user specifications
 const sidebarLinks = [
   { name: "चौपाल होम", href: "/community", icon: Home },

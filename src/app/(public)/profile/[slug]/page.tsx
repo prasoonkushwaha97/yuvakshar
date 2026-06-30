@@ -8,30 +8,22 @@ import {
   Calendar, 
   Users, 
   UserCheck,
-  GraduationCap,
   BookOpen, 
   Eye, 
   Award, 
   Mail, 
   ArrowLeft, 
   CheckCircle2, 
-  FileText, 
   Download, 
   ExternalLink,
-  ChevronRight,
   Send,
-  Sparkles,
-  Heart,
-  Video,
   X,
   MessageSquare,
-  Activity,
   Bookmark
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { Profile } from "@/store/types";
 import GlassCard from "@/components/yuvakshar/GlassCard";
-import { getLiteraryIdentities } from "@/lib/repositoryService";
 import PostCard from "@/components/yuvakshar/PostCard";
 import { CommunityPost, fetchUserPosts, toggleLikePost } from "@/lib/communityService";
 
@@ -172,7 +164,7 @@ export default function UserProfile() {
   const totalArticleViews = userArticles.reduce((sum, a) => sum + (a.views || 0), 0);
   const totalArticleLikes = userArticles.reduce((sum, a) => sum + (a.likes || 0), 0);
 
-  const isLeadership = ["Owner", "Admin", "Editor-in-Chief", "Managing Editor"].includes(user.role || "");
+  const isLeadership = ["संस्थापक", "प्रशासन", "Editor-in-Chief", "Managing Editor"].includes(user.role || "");
 
   const jsonLd = {
     "@context": "https://schema.org",

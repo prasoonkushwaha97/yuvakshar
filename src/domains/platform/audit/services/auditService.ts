@@ -96,7 +96,7 @@ export class AuditService {
   /**
    * Retrieve audit logs
    */
-  public async getLogs(filters?: { module?: string, actorId?: string, action?: string }): Promise<AuditRecord[]> {
+  public async getLogs(_filters?: { module?: string, actorId?: string, action?: string }): Promise<AuditRecord[]> {
     if (FEATURES.USE_SUPABASE_PLATFORM) {
       const repo = getAuditRepository();
       const logs = await repo.getLogs(100);

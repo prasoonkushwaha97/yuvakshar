@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, {  useState, useEffect , useCallback } from "react";
 import { 
   Users, 
-  Plus, 
   ArrowRight, 
   BookOpen, 
   Search, 
-  Check, 
-  Shield 
+  Check 
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { fetchGroups, toggleGroupMembership, isUserGroupMember, CommunityGroup } from "@/lib/communityService";
@@ -23,7 +21,7 @@ export default function GroupsListPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-  const loadGroups = async () => {
+  const loadGroups = useCallback(async () => {
     setLoading(true);
     try {
       const data = await fetchGroups();
@@ -41,7 +39,7 @@ export default function GroupsListPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadGroups();

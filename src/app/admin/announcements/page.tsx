@@ -173,7 +173,7 @@ export default function FounderAnnouncementsPage() {
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="e.g., Scheduled Maintenance"
+              placeholder="उदा., निर्धारित रखरखाव"
               className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-[#0F172A] outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -183,7 +183,7 @@ export default function FounderAnnouncementsPage() {
             <textarea
               value={content}
               onChange={e => setContent(e.target.value)}
-              placeholder="What do you want to say?"
+              placeholder="आप क्या कहना चाहते हैं?"
               className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-[#0F172A] outline-none focus:ring-2 focus:ring-primary min-h-[120px]"
             />
           </div>

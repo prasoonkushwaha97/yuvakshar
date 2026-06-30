@@ -3,23 +3,12 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { 
   Send, 
-  Image as ImageIcon, 
-  FileText, 
-  BarChart2, 
-  Link as LinkIcon, 
-  Heart, 
-  MessageSquare, 
-  Share2, 
-  Bookmark, 
-  FileEdit, 
-  Check, 
   AlertCircle
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { useSearchParams } from "next/navigation";
 import { 
   fetchPosts, 
-  createPost, 
   toggleLikePost, 
   CommunityPost, 
   fetchGroups, 
@@ -29,8 +18,6 @@ import {
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
 import PostCard from "@/components/yuvakshar/PostCard";
-import ProfilePreviewWrapper from "@/components/yuvakshar/ProfilePreviewCard";
-import confetti from "canvas-confetti";
 
 export default function CommunityFeedPage() {
   return (
@@ -115,7 +102,6 @@ function CommunityFeedPageContent() {
         if (typeof window !== "undefined") {
           const currentSaved = null;
           const postsList = currentSaved ? JSON.parse(currentSaved) : [];
-          undefined;
         }
       }
     };
@@ -145,7 +131,6 @@ function CommunityFeedPageContent() {
 
     setPosts(updatedPosts);
     if (typeof window !== "undefined") {
-      undefined;
     }
     alert("आपका मत दर्ज कर लिया गया है!");
   };
@@ -184,7 +169,6 @@ function CommunityFeedPageContent() {
       alert("पोस्ट को आपकी लाइब्रेरी में सहेज लिया गया है!");
     }
     setBookmarkedPostIds(updated);
-    undefined;
   };
 
   // Trigger Share Dialog
@@ -223,7 +207,7 @@ function CommunityFeedPageContent() {
             key={idx} 
             href={`/community?search=${encodeURIComponent("#" + cleanTag)}`}
             className="text-primary hover:underline font-bold transition-all"
-            onClick={(e) => {
+            onClick={(_e) => {
               // Set search in input
               const searchInput = document.querySelector('input[placeholder*="खोजें"]') as HTMLInputElement;
               if (searchInput) {

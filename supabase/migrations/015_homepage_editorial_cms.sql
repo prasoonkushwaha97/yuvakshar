@@ -94,8 +94,9 @@ CREATE TABLE IF NOT EXISTS public.homepage_sections (
 );
 
 -- Index for layout ordered lists
-CREATE INDEX IF NOT EXISTS idx_homepage_sections_layout_order 
-ON public.homepage_sections (homepage_layout_id, display_order ASC);
+-- ALTER TABLE public.homepage_sections ADD COLUMN IF NOT EXISTS homepage_layout_id UUID REFERENCES public.homepage_layouts(id) ON DELETE CASCADE;
+-- CREATE INDEX IF NOT EXISTS idx_homepage_sections_layout_order 
+-- ON public.homepage_sections (homepage_layout_id, display_order ASC);
 
 -- 5. Managed Assets Table
 CREATE TABLE IF NOT EXISTS public.homepage_assets (

@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
-import { NotificationPayload, NotificationPreference, NotificationTemplate } from "../types/notifications";
+import { NotificationPayload, NotificationPreference } from "../types/notifications";
 
 export class SupabaseNotificationRepository {
   async getNotifications(userId: string): Promise<NotificationPayload[]> {

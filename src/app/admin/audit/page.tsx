@@ -39,7 +39,7 @@ export default function AuditCenter() {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder="Search events, users, or modules..." 
+              placeholder="इवेंट, उपयोगकर्ता या मॉड्यूल खोजें..." 
               className="pl-9 pr-4 py-2 w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none"
             />
           </div>

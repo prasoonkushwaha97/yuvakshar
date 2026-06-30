@@ -4,11 +4,10 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, Search, Sun, Moon, User, LogOut, ChevronDown } from "lucide-react";
+import { Menu, Search, Sun, Moon, User } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
-import { primaryLinks, profileActions } from "@/config/navigation.config";
-import { designTokens } from "@/config/designTokens";
+import { primaryLinks } from "@/config/navigation.config";
 import AppDrawer from "./AppDrawer";
 import SearchModal from "./SearchModal";
 
@@ -73,7 +72,7 @@ export default function AppHeader() {
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
-    undefined;
+
     if (newTheme === "dark") {
       document.documentElement.classList.add("dark");
     } else {

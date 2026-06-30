@@ -20,7 +20,7 @@ export interface CommunityGroupMember {
   id: string;
   group_id: string;
   user_id: string;
-  role: "Owner" | "Admin" | "Moderator" | "Mentor" | "Member";
+  role: "संस्थापक" | "प्रशासन" | "Moderator" | "Mentor" | "Member";
   joined_at: string;
 }
 
@@ -458,13 +458,13 @@ export const toggleEventRegistration = async (eventId: string, isRegistering: bo
 
 // These are scoped out of Phase 4C schema requests, returning empty or stubs.
 
-export const creditReputationPoints = async (...args: any[]): Promise<void> => {};
+export const creditReputationPoints = async (..._args: any[]): Promise<void> => {};
 
 export const fetchConversations = async (): Promise<any[]> => [];
 
-export const fetchMessages = async (convId: string): Promise<any[]> => [];
+export const fetchMessages = async (_convId: string): Promise<any[]> => [];
 
-export const sendMessage = async (...args: any[]): Promise<any> => null;
+export const sendMessage = async (..._args: any[]): Promise<any> => null;
 
 export const fetchNotifications = async (): Promise<any[]> => [];
 
@@ -472,21 +472,21 @@ export const markNotificationsRead = async (): Promise<void> => {};
 
 export const fetchChallenges = async (): Promise<any[]> => [];
 
-export const submitChallengeWork = async (...args: any[]): Promise<any> => null;
+export const submitChallengeWork = async (..._args: any[]): Promise<any> => null;
 
-export const fetchChallengeSubmissions = async (challengeId: string): Promise<any[]> => [];
+export const fetchChallengeSubmissions = async (_challengeId: string): Promise<any[]> => [];
 
-export const searchCommunity = async (query: string, ...args: any[]): Promise<any[]> => [];
+export const searchCommunity = async (_query: string, ..._args: any[]): Promise<any[]> => [];
 
-export const toggleFollowUser = async (currentUserId: string, targetUserId: string): Promise<boolean> => false;
+export const toggleFollowUser = async (_currentUserId: string, _targetUserId: string): Promise<boolean> => false;
 
-export const isUserFollowing = async (currentUserId: string, targetUserId: string): Promise<boolean> => false;
+export const isUserFollowing = async (_currentUserId: string, _targetUserId: string): Promise<boolean> => false;
 
-export const getUserSocialTimeline = async (userId: string): Promise<any[]> => [];
+export const getUserSocialTimeline = async (_userId: string): Promise<any[]> => [];
 
-export const fetchReadingProgress = async (groupId: string): Promise<any[]> => [];
+export const fetchReadingProgress = async (_groupId: string): Promise<any[]> => [];
 
-export const saveReadingProgress = async (...args: any[]): Promise<void> => {};
+export const saveReadingProgress = async (..._args: any[]): Promise<void> => {};
 
 export interface CommunityChallenge { id: string; title: string; description: string; type: string; start_date: string; end_date: string; reward_points: number; created_at: string; }
 export interface CommunityChallengeSubmission { id: string; challenge_id: string; user_id: string; user_name: string; title: string; content: string; votes_count: number; is_winner: boolean; created_at: string; }

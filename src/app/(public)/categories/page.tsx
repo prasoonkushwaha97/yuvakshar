@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Globe, BookOpen, Compass, Award, ShieldAlert, ArrowRight } from "lucide-react";
+import { Globe, Compass, Award, ShieldAlert, ArrowRight } from "lucide-react";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 
 export default function CategoriesPage() {

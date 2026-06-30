@@ -61,7 +61,7 @@ export interface QuoteBlock extends BaseBlock {
 
 export interface DividerBlock extends BaseBlock {
   type: "divider";
-  content: {};
+  content: Record<string, never>;
 }
 
 // ... other blocks can be defined similarly as needed ...

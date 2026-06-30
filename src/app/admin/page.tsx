@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, FileText, MessageSquare, BookOpen } from "lucide-react";
+import { Users, FileText, MessageSquare } from "lucide-react";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export const dynamic = 'force-dynamic';

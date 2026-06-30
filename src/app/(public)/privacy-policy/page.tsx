@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Shield, Mail, Globe, BookOpen } from "lucide-react";
+import { Shield } from "lucide-react";
 
 export default function PrivacyPolicyPage() {
   return (
@@ -21,7 +21,7 @@ export default function PrivacyPolicyPage() {
           </p>
         </div>
 
-        {/* Content Body */}
+        {/* सामग्री Body */}
         <div className="space-y-6 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300 font-serif space-y-6">
           <p className="text-justify font-hindi">
             युवाक्षर ("हम", "हमारा", "संस्था", "पोर्टल" या "वेबसाइट") आपके व्यक्तिगत डेटा, गोपनीयता और डिजिटल अधिकारों का सम्मान करता है। यह गोपनीयता नीति बताती है कि जब आप हमारी वेबसाइट, मोबाइल अनुप्रयोग, पत्रिका, न्यूज़लेटर, लेख प्रस्तुति मंच, टिप्पणी प्रणाली अथवा अन्य डिजिटल सेवाओं का उपयोग करते हैं, तब हम आपकी जानकारी किस प्रकार एकत्रित करते हैं, उसका उपयोग करते हैं, सुरक्षित रखते हैं तथा आवश्यक परिस्थितियों में उसका प्रकटीकरण करते हैं।

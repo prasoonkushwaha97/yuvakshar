@@ -3,7 +3,6 @@ import {
   Newspaper, 
   BookOpen, 
   Video, 
-  Users, 
   MessageSquare, 
   Info, 
   Mail, 

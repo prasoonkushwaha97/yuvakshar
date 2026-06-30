@@ -29,9 +29,9 @@ export default function LiveNewsTicker() {
   // Fallback if no articles
   if (tickerItems.length === 0) {
     tickerItems.push({
-      id: "placeholder",
-      category: "News",
-      headline: "Welcome to Yuvakshar",
+      id: "fallback-welcome",
+      category: "समाचार",
+      headline: "युवाक्षर में आपका स्वागत है",
       href: "/",
       isImportant: true
     });

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { getSiteSettings, updateSiteSetting } from '@/lib/actions/globalSettingsActions';
 import { toast } from 'sonner';
-import { Settings, Save, Loader2 } from 'lucide-react';
+import { Settings, Loader2 } from 'lucide-react';
 
 export default function GlobalSettingsPage() {
   const [settings, setSettings] = useState<any[]>([]);

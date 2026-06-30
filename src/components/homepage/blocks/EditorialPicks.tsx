@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
-import { Award, Clock, ArrowRight } from "lucide-react";
+import { Award } from "lucide-react";
 import SectionContainer from "../layout/SectionContainer";
 
 interface EditorialPicksProps {

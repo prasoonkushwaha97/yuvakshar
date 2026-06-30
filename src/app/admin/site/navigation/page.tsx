@@ -36,7 +36,7 @@ export default function NavigationBuilder() {
 
         <div className="p-6">
           <div className="space-y-3">
-            {navItems.map((item, i) => (
+            {navItems.map((item, _i) => (
               <div key={item.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl group cursor-move hover:border-primary transition-colors">
                 
                 <div className="flex items-center gap-4">

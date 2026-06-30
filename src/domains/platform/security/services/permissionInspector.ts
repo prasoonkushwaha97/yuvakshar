@@ -12,7 +12,7 @@ export class PermissionInspector {
 
     return {
       userId,
-      assignedRoles: isSuperAdmin ? ["SuperAdmin"] : ["Contributor", "Subscriber"],
+      assignedRoles: isSuperAdmin ? ["SuperAdmin"] : ["योगदानकर्ता", "Subscriber"],
       effectivePermissions: isSuperAdmin ? ["*"] : [
         "article:read",
         "article:write",

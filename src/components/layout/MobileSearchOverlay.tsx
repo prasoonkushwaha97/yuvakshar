@@ -63,7 +63,6 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
     // Save to recent
     const updated = [term, ...recentSearches.filter(r => r !== term)].slice(0, 6);
     setRecentSearches(updated);
-    undefined;
     onClose();
     router.push(`/search?q=${encodeURIComponent(term)}`);
   };

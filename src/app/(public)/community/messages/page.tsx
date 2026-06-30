@@ -18,12 +18,10 @@ import {
   AlertTriangle,
   Paperclip,
   Trash2,
-  Lock,
   Flag,
   ArrowLeft
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
-import GlassCard from "@/components/yuvakshar/GlassCard";
 
 interface Message {
   id: string;
@@ -191,7 +189,6 @@ export default function MessagesPage() {
       ];
       setThreads(fallbackThreads);
       setActiveThreadId(fallbackThreads[0].id);
-      undefined;
     }
   }, [currentUser]);
 
@@ -209,7 +206,6 @@ export default function MessagesPage() {
   // Save threads to localStorage helper
   const saveThreads = (updated: ChatThread[]) => {
     setThreads(updated);
-    undefined;
   };
 
   const activeThread = threads.find(t => t.id === activeThreadId) || null;

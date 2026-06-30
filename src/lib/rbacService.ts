@@ -182,7 +182,7 @@ export const hasPermission = async (permissionSlug: string): Promise<boolean> =>
 };
 
 // 5. Role Resolution Helper
-const ROLE_PRIORITY = ['Founder', 'Admin', 'Moderator', 'Editor', 'Author', 'Member'];
+const ROLE_PRIORITY = ['Founder', 'प्रशासन', 'Moderator', 'Editor', 'Author', 'Member'];
 
 export const getHighestRole = (roles: { name: string }[]): string => {
   if (!roles || roles.length === 0) return 'Member';

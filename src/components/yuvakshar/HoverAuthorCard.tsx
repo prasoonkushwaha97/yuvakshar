@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { UserPlus, MessageCircle, BookOpen, Users } from "lucide-react";
+import { MessageCircle, BookOpen } from "lucide-react";
 import { RoleBadgeList } from "@/components/ui/RoleBadge";
 
 interface AuthorData {
@@ -40,7 +40,7 @@ export default function HoverAuthorCard({ author, children }: HoverAuthorCardPro
 
   // Mobile long press logic
   const touchStartRef = useRef<number>(0);
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (_e: React.TouchEvent) => {
     if (window.innerWidth >= 1024) return;
     touchStartRef.current = Date.now();
     timeoutRef.current = setTimeout(() => {

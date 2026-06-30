@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
-import { Clock, Calendar, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import SectionContainer from "../layout/SectionContainer";
 
 export default function TopStories() {

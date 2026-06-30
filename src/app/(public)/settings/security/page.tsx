@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { getUserSettings, updateUserSettings, getUserLoginHistory } from "@/lib/actions/settingsActions";
 import { supabase } from "@/lib/supabaseClient";
-import { Lock, Smartphone, Monitor, Clock, ShieldAlert, AlertCircle, CheckCircle2, RotateCw } from "lucide-react";
+import { Lock, Monitor, Clock, ShieldAlert, AlertCircle, CheckCircle2, RotateCw } from "lucide-react";
 
 export default function SecuritySettingsPage() {
   const [securitySettings, setSecuritySettings] = useState<any>({

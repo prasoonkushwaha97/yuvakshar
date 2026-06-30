@@ -238,12 +238,12 @@ export async function pinArticlesToSection(layoutId: string, sectionId: string, 
 }
 
 // 8. Dynamic Section Locks heartbeat
-export async function refreshSectionLock(sectionId: string): Promise<{ success: boolean; locked: boolean; lockedBy?: string; error?: string }> {
+export async function refreshSectionLock(_sectionId: string): Promise<{ success: boolean; locked: boolean; lockedBy?: string; error?: string }> {
   return { success: true, locked: false };
 }
 
 // 9. Fetch Section Performance & CTR Stats
-export async function getSectionAnalyticsStats(sectionId: string) {
+export async function getSectionAnalyticsStats(_sectionId: string) {
   return [];
 }
 

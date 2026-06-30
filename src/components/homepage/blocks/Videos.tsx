@@ -5,7 +5,6 @@ import { PlayCircle, Film, Clock } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import SectionTitle from "../shared/SectionTitle";
-import VideoCard from "../cards/VideoCard";
 import SectionContainer from "../layout/SectionContainer";
 
 export default function Videos() {

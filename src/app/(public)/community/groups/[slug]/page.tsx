@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, {  useState, useEffect , useCallback } from "react";
 import { 
   Users, 
   BookOpen, 
   Send, 
   Heart, 
-  Check, 
   ArrowLeft,
-  Award,
   Pin,
   Shield,
   Trash2,
@@ -31,7 +29,6 @@ import {
   CommunityReadingProgress,
   CommunityGroupMember
 } from "@/lib/communityService";
-import ProfilePreviewWrapper from "@/components/yuvakshar/ProfilePreviewCard";
 import HoverUserCard from "@/components/yuvakshar/HoverUserCard";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
@@ -61,7 +58,7 @@ export default function GroupDetailPage() {
   const [notes, setNotes] = useState("");
   const [progressLogs, setProgressLogs] = useState<CommunityReadingProgress[]>([]);
 
-  const loadGroupData = async () => {
+  const loadGroupData = useCallback(async () => {
     setLoading(true);
     try {
       const allGroups = await fetchGroups();
@@ -84,12 +81,11 @@ export default function GroupDetailPage() {
           // Seed group members if empty
           if (members.length === 0) {
             members = [
-              { id: "gm-1", group_id: match.id, user_id: match.owner_id, role: "Owner", joined_at: match.created_at },
+              { id: "gm-1", group_id: match.id, user_id: match.owner_id, role: "संस्थापक", joined_at: match.created_at },
               { id: "gm-2", group_id: match.id, user_id: "usr-author-1", role: "Moderator", joined_at: match.created_at },
               { id: "gm-3", group_id: match.id, user_id: "usr-author-2", role: "Mentor", joined_at: match.created_at }
             ];
             const allSavedMembers = savedMembers ? JSON.parse(savedMembers) : [];
-            undefined;
           }
           setGroupMembers(members);
 
@@ -100,7 +96,6 @@ export default function GroupDetailPage() {
           } else {
             const defaults = ["सभी समूह सदस्यों का स्वागत है! मर्यादा बनाए रखें और सार्थक विमर्श करें।"];
             setAnnouncements(defaults);
-            undefined;
           }
         }
         
@@ -117,7 +112,7 @@ export default function GroupDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug]);
 
   useEffect(() => {
     loadGroupData();
@@ -144,7 +139,6 @@ export default function GroupDetailPage() {
       } else {
         members = members.filter(m => !(m.group_id === group.id && m.user_id === currentUser.id));
       }
-      undefined;
       setGroupMembers(members.filter(m => m.group_id === group.id));
 
       const allGroups = await fetchGroups();
@@ -229,7 +223,6 @@ export default function GroupDetailPage() {
     if (!announcementText.trim() || !group) return;
     const updated = [announcementText.trim(), ...announcements];
     setAnnouncements(updated);
-    undefined;
     setAnnouncementText("");
     alert("घोषणा सफलतापूर्वक पिन कर दी गई है!");
   };
@@ -238,7 +231,6 @@ export default function GroupDetailPage() {
     if (!group) return;
     const updated = announcements.filter((_, i) => i !== idx);
     setAnnouncements(updated);
-    undefined;
   };
 
   // Pinned Posts Mod Panel toggle
@@ -252,7 +244,6 @@ export default function GroupDetailPage() {
       return p;
     });
     setPosts(updated);
-    undefined;
   };
 
   if (loading) {
@@ -273,8 +264,8 @@ export default function GroupDetailPage() {
 
   // Roles verification
   const userMemberObj = groupMembers.find(m => m.user_id === currentUser?.id);
-  const userRoleInGroup = userMemberObj?.role || (group.owner_id === currentUser?.id ? "Owner" : null);
-  const isModerator = ["Owner", "Admin", "Moderator"].includes(userRoleInGroup || "") || hasRole("Admin");
+  const userRoleInGroup = userMemberObj?.role || (group.owner_id === currentUser?.id ? "संस्थापक" : null);
+  const isModerator = ["संस्थापक", "प्रशासन", "Moderator"].includes(userRoleInGroup || "") || hasRole("प्रशासन");
 
   const isReadingClub = group.category === "Reading Club";
 
@@ -480,7 +471,7 @@ export default function GroupDetailPage() {
                   .sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0))
                   .map(p => {
                     const postMemberObj = groupMembers.find(m => m.user_id === p.user_id || users.find(u => u.id === p.user_id)?.name === p.user_name);
-                    const memberRole = postMemberObj?.role || (group.owner_id === p.user_id ? "Owner" : "Member");
+                    const memberRole = postMemberObj?.role || (group.owner_id === p.user_id ? "संस्थापक" : "Member");
                     
                     return (
                       <div key={p.id} className={`p-4 rounded-2xl border transition-all space-y-2 text-xs relative bg-white dark:bg-[#0E1527] ${
@@ -506,7 +497,7 @@ export default function GroupDetailPage() {
                             
                             {/* Role Badge inside group */}
                             <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold ${
-                              memberRole === "Owner" || memberRole === "Moderator"
+                              memberRole === "संस्थापक" || memberRole === "Moderator"
                                 ? "bg-red-500/10 text-red-500"
                                 : memberRole === "Mentor"
                                 ? "bg-amber-500/10 text-amber-500"
@@ -641,7 +632,7 @@ export default function GroupDetailPage() {
                     </HoverUserCard>
 
                     <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${
-                      member.role === "Owner" || member.role === "Moderator"
+                      member.role === "संस्थापक" || member.role === "Moderator"
                         ? "bg-red-500/10 text-red-500"
                         : member.role === "Mentor"
                         ? "bg-amber-500/10 text-amber-500"

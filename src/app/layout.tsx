@@ -185,6 +185,20 @@ export default async function RootLayout({
 
   return (
     <html lang="hi" className={`h-full scroll-smooth ${notoSansDeva.variable} ${notoSerifDeva.variable} ${hindFont.variable} ${muktaFont.variable} ${interFont.variable}`}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "युवाक्षर",
+              url: "https://yuvakshar.org",
+              logo: "https://yuvakshar.org/yuvakshar_logo_official.png"
+            })
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-white text-[#0F172A] dark:bg-[#0A0F1D] dark:text-slate-200 font-sans antialiased pb-16 lg:pb-0">
         <CmsProvider initialSettings={mergedSettings} initialNavigation={navigationMenus} initialHomepageSections={homepageSections} initialAds={advertisements}>
           <LanguageProvider>

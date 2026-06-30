@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import { 
   Trophy, 
-  Star, 
   BookOpen, 
   RotateCcw, 
   Lock, 
@@ -70,7 +69,7 @@ export default function ArticleQuiz({ articleId }: ArticleQuizProps) {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [article?.content]);
 
   // Initialize Quiz questions and options
   useEffect(() => {

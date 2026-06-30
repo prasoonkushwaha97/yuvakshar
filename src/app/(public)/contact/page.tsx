@@ -120,8 +120,7 @@ export default function ContactPage() {
   useEffect(() => {
     if (isSubmitting || submitSuccess) return;
     const draftData = { name, email, mobile, category, message };
-    undefined;
-  }, [name, email, mobile, category, message, isSubmitting, submitSuccess]);
+  }, [name, email, mobile, email, mobile, name, category, message, isSubmitting, submitSuccess]);
 
   const handleRestoreDraft = () => {
     if (draftToRestore) {

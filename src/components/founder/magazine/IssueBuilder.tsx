@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { addSectionToIssue, updateIssueStatus } from "@/lib/actions/magazineActions";
-import { MagazineIssue, MagazineSection, MagazineIssueArticle } from "@/types/content";
 import AddArticleToSectionModal from "./AddArticleToSectionModal";
 
 export default function IssueBuilder({ initialIssue }: { initialIssue: any }) {
@@ -83,7 +82,7 @@ export default function IssueBuilder({ initialIssue }: { initialIssue: any }) {
             type="text" 
             value={newSectionTitle} 
             onChange={e => setNewSectionTitle(e.target.value)} 
-            placeholder="New Section Title..." 
+            placeholder="नया अनुभाग शीर्षक..." 
             className="flex-1 border rounded px-3 py-2 text-sm"
           />
           <button 
@@ -125,7 +124,7 @@ export default function IssueBuilder({ initialIssue }: { initialIssue: any }) {
           <h3 className="font-bold mb-2">Editorial Note</h3>
           <textarea 
             className="w-full border rounded p-2 text-sm h-32" 
-            placeholder="Write an editorial note..."
+            placeholder="संपादकीय नोट लिखें..."
             defaultValue={issue.editorial_note || ""}
           ></textarea>
           <button className="mt-2 px-3 py-1 bg-slate-900 text-white rounded text-xs w-full">Save Note</button>

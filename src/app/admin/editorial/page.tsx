@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Plus, Search, Filter, GripHorizontal, FileText, ArrowRight } from "lucide-react";
+import { Plus, Search, Filter, GripHorizontal, ArrowRight } from "lucide-react";
 
 export default function EditorialQueuePage() {
   const [columns] = useState([
@@ -37,7 +37,7 @@ export default function EditorialQueuePage() {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder="Search content..."
+              placeholder="सामग्री खोजें..."
               className="w-full bg-slate-100 dark:bg-slate-900 border-none rounded-xl pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
             />
           </div>

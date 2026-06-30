@@ -25,7 +25,7 @@ export default function AdminSidebar() {
   const role = currentUser?.role || "Reader";
 
   const navItems = [
-    { name: "Dashboard", href: "/admin", icon: LayoutDashboard, requiredPermission: null },
+    { name: "कार्यक्षेत्र", href: "/admin", icon: LayoutDashboard, requiredPermission: null },
     
     // Content Domain
     { name: "Editorial Queue", href: "/admin/reviews", icon: BookOpen, requiredPermission: "review_article" as const },

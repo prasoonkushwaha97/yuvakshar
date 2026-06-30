@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { 
   ArrowLeft, 
   Send, 
   CheckCircle, 
   Star, 
   Heart, 
-  MessageSquare, 
   Pin, 
   Award,
   CornerUpLeft
@@ -17,7 +16,6 @@ import {
   fetchPosts, 
   fetchComments, 
   addComment, 
-  toggleLikePost, 
   toggleLikeComment,
   creditReputationPoints,
   CommunityPost, 
@@ -26,7 +24,6 @@ import {
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import ProfilePreviewWrapper from "@/components/yuvakshar/ProfilePreviewCard";
 
 export default function DiscussionThreadPage() {
   const params = useParams();
@@ -41,7 +38,7 @@ export default function DiscussionThreadPage() {
   const [activeReplyBox, setActiveReplyBox] = useState<string | null>(null);
   const [nestedReplyText, setNestedReplyText] = useState("");
 
-  const loadThreadDetails = async () => {
+  const loadThreadDetails = useCallback(async () => {
     setLoading(true);
     try {
       const allPosts = await fetchPosts();
@@ -55,11 +52,11 @@ export default function DiscussionThreadPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [threadId]);
 
   useEffect(() => {
     loadThreadDetails();
-  }, [threadId]);
+  }, [loadThreadDetails]);
 
   // Submit main comment
   const handleCommentSubmit = async (e: React.FormEvent) => {
@@ -144,7 +141,7 @@ export default function DiscussionThreadPage() {
   // Mark Best Answer Workflow
   const handleAcceptAnswer = async (comment: CommunityComment) => {
     if (!currentUser || !thread) return;
-    if (thread.user_id !== currentUser.id && !hasRole("Admin")) {
+    if (thread.user_id !== currentUser.id && !hasRole("प्रशासन")) {
       alert("केवल धागा शुरू करने वाले लेखक ही 'सर्वश्रेष्ठ उत्तर' का चयन कर सकते हैं।");
       return;
     }
@@ -365,7 +362,7 @@ export default function DiscussionThreadPage() {
                     </div>
 
                     {/* Mark as Best Answer */}
-                    {currentUser && (thread.user_id === currentUser.id || hasRole("Admin")) && !thread.is_solved && (
+                    {currentUser && (thread.user_id === currentUser.id || hasRole("प्रशासन")) && !thread.is_solved && (
                       <button
                         onClick={() => handleAcceptAnswer(comment)}
                         className="text-green-600 hover:text-green-700 font-bold font-hindi flex items-center space-x-1 cursor-pointer"

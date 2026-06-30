@@ -2,23 +2,23 @@
 
 import React, { useState } from "react";
 import { useCms } from "@/store/CmsContext";
-import type { Profile, OrgTask, VerificationRequest, OrgAuditLog } from "@/store/types";
+import type { Profile, OrgTask, OrgAuditLog } from "@/store/types";
 import GlassCard from "./GlassCard";
-import { Trash2, AlertTriangle, CheckCircle, Clock, Plus, Search, Calendar, ShieldCheck, Check } from "lucide-react";
+import { Search } from "lucide-react";
 
 // Helper to translate roles into Hindi
 const translateRole = (role?: string | null) => {
   if (role === null || role === "Subscriber" || role === "subscriber" || role === "सदस्य") return "सदस्य";
   if (!role) return "अतिथि";
   switch (role) {
-    case "Owner": return "संस्थापक";
-    case "Admin": return "प्रधान प्रशासक";
+    case "संस्थापक": return "संस्थापक";
+    case "प्रशासन": return "प्रधान प्रशासक";
     case "Editor-in-Chief": return "प्रधान संपादक";
     case "Managing Editor": return "कार्यकारी संपादक";
     case "Editor": return "संपादक";
     case "Fact Check Reviewer": return "भाषा समीक्षक";
     case "Author": return "लेखक";
-    case "Contributor": return "योगदानकर्ता";
+    case "योगदानकर्ता": return "योगदानकर्ता";
     default: return role;
   }
 };
@@ -38,7 +38,7 @@ export function CandidateManagement({ currentUser }: { currentUser: Profile }) {
   const [district, setDistrict] = useState("");
   const [state, setState] = useState("");
 
-  const isAuthorized = currentUser && (hasRole("Founder") || hasRole("Owner") || hasRole("Admin"));
+  const isAuthorized = currentUser && (hasRole("Founder") || hasRole("संस्थापक") || hasRole("प्रशासन"));
 
   if (!isAuthorized) {
     return (
@@ -309,9 +309,9 @@ export function VerificationQueue({ currentUser }: { currentUser: Profile }) {
               // Governance checks
               let hasPermission = false;
               if (isSahityakar) {
-                hasPermission = hasRole("Founder") || hasRole("Owner");
+                hasPermission = hasRole("Founder") || hasRole("संस्थापक");
               } else {
-                hasPermission = hasRole("Founder") || hasRole("Owner") || hasRole("Admin") || hasRole("Editor-in-Chief");
+                hasPermission = hasRole("Founder") || hasRole("संस्थापक") || hasRole("प्रशासन") || hasRole("Editor-in-Chief");
               }
 
               return (
@@ -480,7 +480,7 @@ export function TaskBoard({ currentUser }: { currentUser: Profile }) {
   return (
     <div className="space-y-6">
       {/* Assign Task Section */}
-      {currentUser && (hasRole("Founder") || hasRole("Owner") || hasRole("Admin") || hasRole("Editor-in-Chief") || hasRole("Managing Editor") || hasRole("Editor")) && (
+      {currentUser && (hasRole("Founder") || hasRole("संस्थापक") || hasRole("प्रशासन") || hasRole("Editor-in-Chief") || hasRole("Managing Editor") || hasRole("Editor")) && (
         <GlassCard glow="saffron" className="p-5 space-y-4">
           <h3 className="font-serif font-bold text-sm text-primary">नए कार्य का आवंटन (Assign Task)</h3>
           <form onSubmit={handleAssign} className="space-y-3 text-xs">

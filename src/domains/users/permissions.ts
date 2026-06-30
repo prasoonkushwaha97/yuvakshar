@@ -1,6 +1,6 @@
 export type CmsRole = 
   | "Reader" 
-  | "Contributor" 
+  | "योगदानकर्ता" 
   | "Author" 
   | "Sub Editor" 
   | "Editor" 
@@ -29,7 +29,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<CmsRole, RolePermissions> = {
     manage_users: false,
     manage_settings: false,
   },
-  "Contributor": {
+  "योगदानकर्ता": {
     create_article: true,
     review_article: false,
     publish_article: false,

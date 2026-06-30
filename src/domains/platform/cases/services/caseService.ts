@@ -1,4 +1,4 @@
-import { BaseCase, CaseStatus, CasePriority, CaseNote } from "../types/case";
+import { BaseCase, CaseStatus, CaseNote } from "../types/case";
 import { EventBus } from "../../events/eventBus";
 
 /**

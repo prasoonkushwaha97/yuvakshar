@@ -10,6 +10,22 @@ export default function BookmarksPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
 
+  const bookmarkedArticles = useMemo(() => {
+    // Assuming bookmarks are stored as an array of article IDs in currentUser.bookmarks
+    // or through a separate relation. For now, we simulate fetching bookmarked articles.
+    // If the schema uses a different property, update accordingly.
+    const userBookmarks = currentUser?.bookmarks || [];
+    return articles.filter(a => userBookmarks.includes(a.id));
+  }, [currentUser?.bookmarks, articles]);
+
+  const categories = Array.from(new Set(bookmarkedArticles?.map(a => a.category).filter(Boolean)));
+
+  const filteredBookmarks = bookmarkedArticles.filter(a => {
+    if (filterCategory !== "all" && a.category !== filterCategory) return false;
+    if (searchQuery && !a.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
+
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1D] flex items-center justify-center p-4">
@@ -25,21 +41,6 @@ export default function BookmarksPage() {
     );
   }
 
-  const bookmarkedArticles = useMemo(() => {
-    // Assuming bookmarks are stored as an array of article IDs in currentUser.bookmarks
-    // or through a separate relation. For now, we simulate fetching bookmarked articles.
-    // If the schema uses a different property, update accordingly.
-    const userBookmarks = currentUser.bookmarks || [];
-    return articles.filter(a => userBookmarks.includes(a.id));
-  }, [currentUser.bookmarks, articles]);
-
-  const categories = Array.from(new Set(bookmarkedArticles?.map(a => a.category).filter(Boolean)));
-
-  const filteredBookmarks = bookmarkedArticles.filter(a => {
-    if (filterCategory !== "all" && a.category !== filterCategory) return false;
-    if (searchQuery && !a.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    return true;
-  });
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1D] text-slate-900 dark:text-slate-100 font-hindi pb-20">

@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, X, Clock, TrendingUp, ChevronRight, ArrowRight, User, BookOpen, Tag } from "lucide-react";
+import { Search, X, Clock, TrendingUp, User, BookOpen, Tag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
 
@@ -119,7 +118,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     if (term) {
       const updated = [term, ...recentSearches.filter(r => r !== term)].slice(0, 8);
       setRecentSearches(updated);
-      undefined;
+
     }
     onClose();
     router.push(url);

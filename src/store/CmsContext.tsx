@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {  createContext, useContext, useState, useEffect , useCallback } from "react";
 import { supabase, isSupabaseConfigured, getSupabaseConfigError, checkConnectionHealth, checkStorageHealth } from "@/lib/supabaseClient";
-import { validateUsername, generateDeterministicUsername, RESERVED_USERNAMES } from "@/utils/username";
+import { validateUsername } from "@/utils/username";
 
 import { Article } from "./types";
 export type { Article };
@@ -506,8 +506,8 @@ const initialfallbackVideos: Video[] = [
   }
 ];
 
-const isOwner = (role?: string | null) => role === "Owner" || role === "Founder" || role === "संस्थापक";
-const isAdmin = (role?: string | null) => role === "Admin" || role === "प्रशासक" || role === "प्रधान प्रशासक" || isOwner(role);
+const isOwner = (role?: string | null) => role === "संस्थापक" || role === "Founder" || role === "संस्थापक";
+const isAdmin = (role?: string | null) => role === "प्रशासन" || role === "प्रशासक" || role === "प्रधान प्रशासक" || isOwner(role);
 const isEIC = (role?: string | null) => role === "Editor-in-Chief" || role === "प्रधान संपादक" || isAdmin(role);
 const isManagingEditor = (role?: string | null) => role === "Managing Editor" || role === "कार्यकारी संपादक" || role === "प्रबंध संपादक" || isEIC(role);
 const isEditor = (role?: string | null) => role === "Editor" || role === "संपादक" || role === "वरिष्ठ संपादक" || isManagingEditor(role);
@@ -753,7 +753,7 @@ export function CmsProvider({
             .eq("id", session.user.id)
             .single();
 
-          let profile = dbProfile ? mapDbProfileToProfile(dbProfile) : null;
+          const profile = dbProfile ? mapDbProfileToProfile(dbProfile) : null;
 
           // Load the user's actual role from user_roles -> roles -> permissions
           const { data: roleData } = await supabase
@@ -763,12 +763,12 @@ export function CmsProvider({
             
           const rolesArray: string[] = [];
           let highestRole = "Member";
-          const ROLE_PRIORITY = ['Founder', 'Admin', 'Moderator', 'Editor', 'Author', 'Member'];
+          const ROLE_PRIORITY = ['Founder', 'प्रशासन', 'Moderator', 'Editor', 'Author', 'Member'];
           let highestIndex = ROLE_PRIORITY.length;
           
           if (session.user.email === 'prasoonkushwaha9754@gmail.com' || session.user.email === 'antigravity.validation@gmail.com') {
              highestRole = "Founder";
-             rolesArray.push("Founder", "Admin");
+             rolesArray.push("Founder", "प्रशासन");
              highestIndex = 0;
           }
           
@@ -818,7 +818,6 @@ export function CmsProvider({
               profile.email = session.user.email;
             }
             setCurrentUser(profile);
-            undefined;
           } else {
             // Profile does not exist yet - create it dynamically!
             const newProfile: Profile = {
@@ -845,12 +844,10 @@ export function CmsProvider({
               
             if (!insertError) {
               setCurrentUser(newProfile);
-              undefined;
             } else {
               console.error("Error inserting profile on auth state change:", insertError.message);
               // Fallback
               setCurrentUser(newProfile);
-              undefined;
             }
           }
         } catch (err) {
@@ -989,7 +986,7 @@ export function CmsProvider({
     });
   };
 
-  function loadDataFromLocalStorage() {
+  const loadDataFromLocalStorage = useCallback(() => {
     // General Settings
     const localSettings = null;
     if (localSettings) setSettings(JSON.parse(localSettings));
@@ -1006,7 +1003,6 @@ export function CmsProvider({
       loadedArticles = parsed.length > 0 ? parsed : [];
     } else {
       loadedArticles = [];
-      undefined;
     }
     setArticles(loadedArticles);
 
@@ -1016,7 +1012,6 @@ export function CmsProvider({
       setMagazines(JSON.parse(localMagazines));
     } else {
       setMagazines([]);
-      undefined;
     }
 
     // Submissions
@@ -1029,7 +1024,6 @@ export function CmsProvider({
       setComments(JSON.parse(localComments));
     } else {
       setComments([] as Comment[]);
-      undefined;
     }
 
     // Subscribers
@@ -1038,7 +1032,6 @@ export function CmsProvider({
       setSubscribers(JSON.parse(localSubscribers));
     } else {
       setSubscribers([]);
-      undefined;
     }
 
     // Newsletter Campaigns
@@ -1052,10 +1045,9 @@ export function CmsProvider({
     } else {
       const initial: Ad[] = [
         { id: "ad-1", name: "Sidebar Banner Ad", zone: "after_first_p", type: "banner", image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80", link_url: "https://yuvakshar.org/magazine", active: true, click_count: 0, impression_count: 0 },
-        { id: "ad-2", name: "Google AdSense Placeholder", zone: "mid_content", type: "adsense", code: "<div style='background:#f3ece0;padding:20px;text-align:center;font-size:11px;color:#EA580C;font-weight:bold;border:1px dashed #EA580C'>[Google AdSense Mid Content Banner]</div>", active: true, click_count: 0, impression_count: 0 }
+        { id: "ad-2", name: "Google AdSense Ad Block", zone: "mid_content", type: "adsense", code: "<div style='background:#f3ece0;padding:20px;text-align:center;font-size:11px;color:#EA580C;font-weight:bold;border:1px dashed #EA580C'>[Google AdSense Mid Content Banner]</div>", active: true, click_count: 0, impression_count: 0 }
       ];
       setAds(initial);
-      undefined;
     }
 
     // Assignments
@@ -1083,7 +1075,6 @@ export function CmsProvider({
         is_published: true
       };
       setLayouts([initial]);
-      undefined;
     }
 
     // Activity Logs
@@ -1108,7 +1099,6 @@ export function CmsProvider({
         { id: "cat-10", name: "पत्रिका", slug: "patrika", language_code: "hi" }
       ];
       setCategories(initial);
-      undefined;
     }
 
     // Users
@@ -1117,13 +1107,11 @@ export function CmsProvider({
     if (localUsers) {
       const parsedUsers: Profile[] = JSON.parse(localUsers);
       finalUsers = enrichUsersList(parsedUsers, loadedArticles);
-      undefined;
       setUsers(finalUsers);
     } else {
       const initialUsers: Profile[] = [];
       finalUsers = enrichUsersList(initialUsers, loadedArticles);
       setUsers(finalUsers);
-      undefined;
     }
 
     // Active fallback Auth session load
@@ -1132,12 +1120,11 @@ export function CmsProvider({
       const parsedUser = JSON.parse(savedUser);
       // Migrate role from Super Admin to Owner
       if (parsedUser.role === "Super Admin") {
-        parsedUser.role = "Owner";
+        parsedUser.role = "संस्थापक";
       }
       // Try to find the fully enriched profile from enriched list
       const matchingEnriched = finalUsers.find(u => u.id === parsedUser.id || (u.email && u.email === parsedUser.email));
       const enrichedSelf = matchingEnriched || enrichUsersList([parsedUser], loadedArticles)[0];
-      undefined;
       setCurrentUser(enrichedSelf);
     }
 
@@ -1156,7 +1143,6 @@ export function CmsProvider({
           return { articleId: art.id, questions: generateFallbackQuestions(art.id, art.title, art.content) };
         }
       });
-      undefined;
     }
     setQuizzes(initialQuizzes);
 
@@ -1181,7 +1167,6 @@ export function CmsProvider({
         };
       });
       setQuizSettings(initial);
-      undefined;
     }
 
     // Load Leaderboard
@@ -1192,7 +1177,6 @@ export function CmsProvider({
       const initial: QuizLeaderboardEntry[] = [
       ];
       setLeaderboard(initial);
-      undefined;
     }
 
     // Load AI Settings & Notes
@@ -1200,14 +1184,12 @@ export function CmsProvider({
     if (localAiSettings) {
       setAiSettings(JSON.parse(localAiSettings));
     } else {
-      undefined;
     }
 
     const localAiNotes = null;
     if (localAiNotes) {
       setAiNotes(JSON.parse(localAiNotes));
     } else {
-      undefined;
     }
 
 
@@ -1217,7 +1199,6 @@ export function CmsProvider({
       setVideos(JSON.parse(localVideos));
     } else {
       setVideos(initialfallbackVideos);
-      undefined;
     }
 
     // Load Tasks
@@ -1227,11 +1208,10 @@ export function CmsProvider({
     } else {
       const initial: OrgTask[] = [
         { id: "task-1", title: "निराला जयंती विशेषांक संपादन", description: "सूर्यकांत त्रिपाठी निराला जी की जयंती पर विशेष लेखों का संकलन और संपादन पूर्ण करें।", assigned_by: "u-2", assigned_by_name: "प्रसून कुशवाहा", assigned_to: "staff-editor", assigned_to_name: "Ravi Sharma", department: "संपादकीय", priority: "High", due_date: "2026-06-25", status: "In Progress", created_at: "2026-06-10T12:00:00Z" },
-        { id: "task-2", title: "प्रशासनिक भूमिका समीक्षा", description: "सभी नवीन टीम सदस्यों की भूमिकाओं की समीक्षा करें और अनुमतियाँ अद्यतन करें।", assigned_by: "u-1", assigned_by_name: "Owner", assigned_to: "staff-admin", assigned_to_name: "Amit Admin", department: "प्रशासन", priority: "Medium", due_date: "2026-06-30", status: "Pending", created_at: "2026-06-11T10:00:00Z" },
+        { id: "task-2", title: "प्रशासनिक भूमिका समीक्षा", description: "सभी नवीन टीम सदस्यों की भूमिकाओं की समीक्षा करें और अनुमतियाँ अद्यतन करें।", assigned_by: "u-1", assigned_by_name: "संस्थापक", assigned_to: "staff-admin", assigned_to_name: "Amit Admin", department: "प्रशासन", priority: "Medium", due_date: "2026-06-30", status: "Pending", created_at: "2026-06-11T10:00:00Z" },
         { id: "task-3", title: "वेबसाइट वर्तनी सुधार", description: "मुखपृष्ठ पर हाल ही में प्रकाशित लेखों की भाषा और वर्तनी सुधार करें।", assigned_by: "staff-chief", assigned_by_name: "Prasoon Chief", assigned_to: "staff-factchecker", assigned_to_name: "Nitin Checker", department: "गुणवत्ता", priority: "Low", due_date: "2026-06-18", status: "Needs Revision", created_at: "2026-06-12T09:30:00Z" }
       ];
       setTasks(initial);
-      undefined;
     }
 
     // Load Verifications
@@ -1241,10 +1221,9 @@ export function CmsProvider({
     } else {
       const initial: VerificationRequest[] = [
         { id: "ver-1", user_id: "staff-editor", user_name: "Ravi Sharma", badge_requested: "सत्यापित लेखक", status: "Pending", supporting_docs: "प्रकाशित लेखों के लिंक और साहित्यिक बायो", review_notes: "सभी आलेखों की समीक्षा जारी है", created_at: "2026-06-12T10:00:00Z" },
-        { id: "ver-2", user_id: "u-3", user_name: "Guest Author", badge_requested: "सत्यापित साहित्यकार", status: "Approved", supporting_docs: "३ साहित्यिक पुस्तकों के आईएसबीएन विवरण", review_notes: "मान्य राष्ट्रीय साहित्यिक योगदान", decided_by: "u-1", decided_by_name: "Owner", decided_at: "2026-06-10T15:00:00Z", created_at: "2026-06-09T08:00:00Z" }
+        { id: "ver-2", user_id: "u-3", user_name: "Guest Author", badge_requested: "सत्यापित साहित्यकार", status: "Approved", supporting_docs: "३ साहित्यिक पुस्तकों के आईएसबीएन विवरण", review_notes: "मान्य राष्ट्रीय साहित्यिक योगदान", decided_by: "u-1", decided_by_name: "संस्थापक", decided_at: "2026-06-10T15:00:00Z", created_at: "2026-06-09T08:00:00Z" }
       ];
       setVerifications(initial);
-      undefined;
     }
 
     // Load Audit Logs
@@ -1253,11 +1232,10 @@ export function CmsProvider({
       setOrgAuditLogs(JSON.parse(localOrgAuditLogs));
     } else {
       const initial: OrgAuditLog[] = [
-        { id: "log-1", user_id: "u-1", user_name: "Owner", action: "भूमिका परिवर्तन", details: "Amit Admin की भूमिका प्रशासक से प्रधान प्रशासक में बदली", severity: "Info", timestamp: "2026-06-10T12:00:00Z" },
+        { id: "log-1", user_id: "u-1", user_name: "संस्थापक", action: "भूमिका परिवर्तन", details: "Amit Admin की भूमिका प्रशासक से प्रधान प्रशासक में बदली", severity: "Info", timestamp: "2026-06-10T12:00:00Z" },
         { id: "log-2", user_id: "u-2", user_name: "प्रसून कुशवाहा", action: "सुरक्षा घटना", details: "अनधिकृत उपयोगकर्ता u-4 द्वारा /admin पर पहुंच का प्रयास - अस्वीकृत", severity: "Warning", timestamp: "2026-06-12T15:30:00Z" }
       ];
       setOrgAuditLogs(initial);
-      undefined;
     }
 
     // Load Role Transfers
@@ -1266,10 +1244,9 @@ export function CmsProvider({
       setRoleTransfers(JSON.parse(localRoleTransfers));
     } else {
       const initial: RoleTransfer[] = [
-        { id: "trans-1", user_id: "staff-admin", user_name: "Amit Admin", old_role: "प्रशासक", new_role: "प्रधान प्रशासक", changed_by: "u-1", changed_by_name: "Owner", date: "10 जून २०२६" }
+        { id: "trans-1", user_id: "staff-admin", user_name: "Amit Admin", old_role: "प्रशासक", new_role: "प्रधान प्रशासक", changed_by: "u-1", changed_by_name: "संस्थापक", date: "10 जून २०२६" }
       ];
       setRoleTransfers(initial);
-      undefined;
     }
 
     // Load Private Messages
@@ -1282,11 +1259,10 @@ export function CmsProvider({
         { id: "msg-2", sender_id: "staff-editor", sender_name: "Ravi Sharma", receiver_id: "u-2", receiver_name: "प्रसून कुशवाहा", content: "जी प्रसून जी, ७०% आलेख संपादित हो चुके हैं, कल दोपहर तक ड्राफ्ट भेज दूँगा।", timestamp: "2026-06-12T09:15:00Z", read: true, reply_to: "msg-1" }
       ];
       setPrivateMessages(initial);
-      undefined;
     }
-  };
+  }, []);
 
-  async function loadDataFromSupabase() {
+  const loadDataFromSupabase = useCallback(async () => {
     try {
       // Load site settings
       const { data: dbSettings } = await supabase.from("site_settings").select("*");
@@ -1426,7 +1402,7 @@ export function CmsProvider({
       } else {
         const initialAds: Ad[] = [
           { id: "ad-1", name: "Sidebar Banner Ad", zone: "after_first_p", type: "banner", image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80", link_url: "https://yuvakshar.org/magazine", active: true, click_count: 0, impression_count: 0 },
-          { id: "ad-2", name: "Google AdSense Placeholder", zone: "mid_content", type: "adsense", code: "<div style='background:#f3ece0;padding:20px;text-align:center;font-size:11px;color:#EA580C;font-weight:bold;border:1px dashed #EA580C'>[Google AdSense Mid Content Banner]</div>", active: true, click_count: 0, impression_count: 0 }
+          { id: "ad-2", name: "Google AdSense Ad Block", zone: "mid_content", type: "adsense", code: "<div style='background:#f3ece0;padding:20px;text-align:center;font-size:11px;color:#EA580C;font-weight:bold;border:1px dashed #EA580C'>[Google AdSense Mid Content Banner]</div>", active: true, click_count: 0, impression_count: 0 }
         ];
         setAds(initialAds);
       }
@@ -1500,8 +1476,8 @@ export function CmsProvider({
         setUsers(enriched);
       } else {
         const defaultStaff: Profile[] = [
-          { id: "staff-owner", name: "Ravi Owner", username: "owner@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "owner@yuvakshar.in", role: "Owner", status: "active", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
-          { id: "staff-admin", name: "Amit Admin", username: "admin@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "admin@yuvakshar.in", role: "Admin", status: "active", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
+          { id: "staff-owner", name: "Ravi Owner", username: "owner@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "owner@yuvakshar.in", role: "संस्थापक", status: "active", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
+          { id: "staff-admin", name: "Amit Admin", username: "admin@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "admin@yuvakshar.in", role: "प्रशासन", status: "active", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
           { id: "staff-chief", name: "Prasoon Chief", username: "chief@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "chief@yuvakshar.in", role: "Editor-in-Chief", status: "active", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
           { id: "staff-managing", name: "Sumit Managing", username: "managing@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "managing@yuvakshar.in", role: "Managing Editor", status: "active", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
           { id: "staff-editor", name: "Ravi Sharma", username: "editor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "editor@yuvakshar.in", role: "Editor", status: "active", badges: ["Editor"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
@@ -1509,7 +1485,7 @@ export function CmsProvider({
           { id: "staff-factchecker", name: "Nitin Checker", username: "factchecker@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "factchecker@yuvakshar.in", role: "Fact Checker", status: "active", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
           { id: "staff-reviewer", name: "Varun Reviewer", username: "reviewer@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "reviewer@yuvakshar.in", role: "Reviewer", status: "active", badges: ["Reviewer"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
           { id: "staff-author", name: "Manoj Author", username: "author@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "author@yuvakshar.in", role: "Author", status: "active", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
-          { id: "staff-contributor", name: "Vijay Contributor", username: "contributor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "contributor@yuvakshar.in", role: "Contributor", status: "active", badges: ["Contributor"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
+          { id: "staff-contributor", name: "Vijay Contributor", username: "contributor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "contributor@yuvakshar.in", role: "योगदानकर्ता", status: "active", badges: ["योगदानकर्ता"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
         ];
 
          const initialUsers: Profile[] = [
@@ -1522,7 +1498,7 @@ export function CmsProvider({
       console.error("Supabase load failed, falling back to local DB settings", err);
       loadDataFromLocalStorage();
     }
-  };
+  }, []);
 
   // 2. Auth Operations
   const loginUser = async (email: string, passwordInput?: string): Promise<boolean> => {
@@ -1709,7 +1685,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
           const newBookmarks = currentBookmarks.filter(id => id !== articleId);
           const updatedUser = { ...currentUser, bookmarks: newBookmarks };
           setCurrentUser(updatedUser);
-          undefined;
         } else {
           await supabase
             .from("bookmarks")
@@ -1721,7 +1696,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
           const newBookmarks = [...currentBookmarks, articleId];
           const updatedUser = { ...currentUser, bookmarks: newBookmarks };
           setCurrentUser(updatedUser);
-          undefined;
         }
         logActivity(isBookmarked ? `Removed bookmark: ${articleId}` : `Added bookmark: ${articleId}`);
       } catch (err) {
@@ -1737,8 +1711,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       
     const updatedUser = { ...currentUser, bookmarks: newBookmarks };
     setCurrentUser(updatedUser);
-    undefined;
-    
     setUsers((prev: Profile[]) => prev.map((u: Profile) => u.id === currentUser.id ? updatedUser : u));
     logActivity(currentBookmarks.includes(articleId) ? `Removed bookmark: ${articleId}` : `Added bookmark: ${articleId}`);
   };
@@ -1791,8 +1763,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
     const updatedUsers = [...users, newProfile];
     setUsers(updatedUsers);
-    undefined;
-
     logActivity(`Created user: ${user.email} (${user.role || "Subscriber"})`, {
       performer: currentUser?.name || "System",
       performerRole: performerRole || "Subscriber",
@@ -1847,12 +1817,9 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
     const updatedUsers = users.map(u => u.id === userId ? { ...u, ...data } : u);
     setUsers(updatedUsers);
-    undefined;
-
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = { ...currentUser, ...data };
       setCurrentUser(updatedSelf);
-      undefined;
     }
 
     logActivity(`Updated user details for ${targetUser.email}`, {
@@ -1888,8 +1855,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
     const updatedUsers = users.filter(u => u.id !== userId);
     setUsers(updatedUsers);
-    undefined;
-
     logActivity(`Deleted user account: ${targetUser.email}`, {
       performer: currentUser?.name || "System",
       performerRole: performerRole || "Subscriber",
@@ -1901,7 +1866,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
   const transferOwnership = async (targetUserId: string) => {
     const performerRole = resolvedRole;
-    if (performerRole !== "Owner") {
+    if (performerRole !== "संस्थापक") {
       alert("त्रुटि: केवल Owner ही स्वामित्व स्थानांतरित कर सकता है!");
       return;
     }
@@ -1911,21 +1876,18 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
     const updatedUsers = users.map(u => {
       if (u.id === currentUser?.id) {
-        return { ...u, role: "Admin" as const, badges: ["Admin"] };
+        return { ...u, role: "प्रशासन" as const, badges: ["प्रशासन"] };
       }
       if (u.id === targetUserId) {
-        return { ...u, role: "Owner" as const, badges: ["Primary Owner"] };
+        return { ...u, role: "संस्थापक" as const, badges: ["Primary Owner"] };
       }
       return u;
     });
 
     setUsers(updatedUsers);
-    undefined;
-
     if (currentUser) {
-      const updatedSelf = { ...currentUser, role: "Admin" as const, badges: ["Admin"] };
+      const updatedSelf = { ...currentUser, role: "प्रशासन" as const, badges: ["प्रशासन"] };
       setCurrentUser(updatedSelf);
-      undefined;
     }
 
     logActivity(`Transferred ownership to ${targetUser.email}`, {
@@ -1942,14 +1904,14 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
-    if (!performerRole || !["Owner", "Admin"].includes(performerRole)) {
+    if (!performerRole || !["संस्थापक", "प्रशासन"].includes(performerRole)) {
       alert("त्रुटि: आपके पास पासवर्ड रीसेट करने की अनुमति नहीं है!");
       return;
     }
 
     const targetUserRole = await getResolvedUserRole(userId);
 
-    if (targetUserRole === "Owner" && performerRole !== "Owner") {
+    if (targetUserRole === "संस्थापक" && performerRole !== "संस्थापक") {
       alert("त्रुटि: आप Owner का पासवर्ड रीसेट नहीं कर सकते!");
       return;
     }
@@ -1957,8 +1919,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     const tempPassword = "temp_" + Math.floor(10000 + Math.random() * 90000);
     const updatedUsers = users.map(u => u.id === userId ? { ...u, password: tempPassword } : u);
     setUsers(updatedUsers);
-    undefined;
-
     logActivity(`Password reset for ${targetUser.email}`, {
       performer: currentUser?.name || "System",
       performerRole: performerRole,
@@ -1982,7 +1942,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       const dbKey = type === "general" ? "general_settings" : type === "appearance" ? "appearance_settings" : "footer_settings";
       await supabase.from("site_settings").upsert({ key: dbKey, value: data, updated_at: new Date().toISOString() });
     } else {
-      undefined;
     }
     logActivity(`Site Settings update: ${type}`);
   };
@@ -2001,7 +1960,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
         updated_at: new Date().toISOString()
       });
     } else {
-      undefined;
     }
 
     // Set custom favicon_url in appearance settings so other pages reflect the change
@@ -2072,7 +2030,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
         : [saved, ...articles];
       
       setArticles(updated);
-      undefined;
     }
     logActivity(`Saved Article: ${saved.title} (Status: ${saved.status})`);
     return saved;
@@ -2084,7 +2041,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = articles.filter(a => a.id !== id);
       setArticles(updated);
-      undefined;
     }
     logActivity(`Deleted Article: ${id}`);
   };
@@ -2145,7 +2101,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     }
 
     setVideos(updated);
-    undefined;
     logActivity(`Saved Video: ${video.title} (Featured: ${video.isFeatured})`);
     return updated.find(v => v.id === video.id || (video.id === undefined && v.id === updated[0].id))!;
   };
@@ -2153,7 +2108,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
   const deleteVideo = async (id: string) => {
     const updated = videos.filter(v => v.id !== id);
     setVideos(updated);
-    undefined;
     logActivity(`Deleted Video: ${id}`);
   };
 
@@ -2167,7 +2121,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = comments.map(c => c.id === id ? { ...c, likes: (c.likes || 0) + 1 } : c);
       setComments(updated);
-      undefined;
     }
   };
 
@@ -2177,7 +2130,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = comments.map(c => c.id === id ? { ...c, content: newContent } : c);
       setComments(updated);
-      undefined;
     }
   };
 
@@ -2187,7 +2139,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = comments.filter(c => c.id !== id);
       setComments(updated);
-      undefined;
     }
   };
 
@@ -2197,7 +2148,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       isFeatured: v.id === id
     }));
     setVideos(updated);
-    undefined;
     logActivity(`Set Featured Video: ${id}`);
   };
 
@@ -2231,7 +2181,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
         ? magazines.map(m => m.id === targetId ? saved : m)
         : [...magazines, saved];
       setMagazines(updated);
-      undefined;
     }
     logActivity(`Saved Magazine: ${saved.issue} (Status: ${saved.status})`);
     return saved;
@@ -2243,7 +2192,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = magazines.filter(m => m.id !== id);
       setMagazines(updated);
-      undefined;
     }
     logActivity(`Deleted Magazine: ${id}`);
   };
@@ -2254,7 +2202,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = articles.map(a => a.id === id ? { ...a, views: (a.views || 0) + 1 } : a);
       setArticles(updated);
-      undefined;
     }
 
     if (currentUser) {
@@ -2278,11 +2225,8 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
         };
 
         setCurrentUser(updatedProfile);
-        undefined;
-
         const updatedUsers = users.map(u => u.id === currentUser.id ? updatedProfile : u);
         setUsers(updatedUsers);
-        undefined;
       }
     }
   };
@@ -2293,7 +2237,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = articles.map(a => a.id === id ? { ...a, likes: (a.likes || 0) + 1 } : a);
       setArticles(updated);
-      undefined;
     }
   };
 
@@ -2317,7 +2260,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
         ? assignments.map(a => a.id === id ? newAssign : a)
         : [...assignments, newAssign];
       setAssignments(updated);
-      undefined;
     }
   };
 
@@ -2344,7 +2286,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = [newSub, ...submissions];
       setSubmissions(updated);
-      undefined;
     }
     
     // Dynamic routing to primary mail configured
@@ -2358,7 +2299,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = submissions.map(s => s.id === id ? { ...s, status } : s);
       setSubmissions(updated);
-      undefined;
     }
     logActivity(`Submission status updated for ${id} to ${status}`);
   };
@@ -2372,7 +2312,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       name,
       content,
       likes: 0,
-      status: "approved", // default auto-approve in demo
+      status: "approved", // auto-approve for now
       is_reported: false,
       created_at: new Date().toISOString()
     };
@@ -2388,7 +2328,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = [newComment, ...comments];
       setComments(updated);
-      undefined;
     }
     logActivity(`Comment added to article ${articleId} by ${name}`);
   };
@@ -2399,7 +2338,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = comments.map(c => c.id === id ? { ...c, status } : c);
       setComments(updated);
-      undefined;
     }
     logActivity(`Comment moderated: ${id} status updated to ${status}`);
   };
@@ -2410,7 +2348,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = comments.map(c => c.id === id ? { ...c, is_reported: true } : c);
       setComments(updated);
-      undefined;
     }
   };
 
@@ -2421,7 +2358,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = ads.map(a => a.id === ad.id ? { ...a, ...ad } : a);
       setAds(updated);
-      undefined;
     }
     logActivity(`Ad settings saved: ${ad.name}`);
   };
@@ -2432,7 +2368,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = ads.map(a => a.id === id ? { ...a, click_count: a.click_count + 1 } : a);
       setAds(updated);
-      undefined;
     }
   };
 
@@ -2446,8 +2381,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       if (subscribers.includes(email)) return "Already Subscribed.";
       const updated = [email, ...subscribers];
       setSubscribers(updated);
-      undefined;
-      return "Subscribed Successfully (Demo Auto-Opt-In).";
+      return "Subscribed Successfully.";
     }
   };
 
@@ -2457,7 +2391,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = subscribers.filter(s => s !== email);
       setSubscribers(updated);
-      undefined;
     }
   };
 
@@ -2488,7 +2421,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     } else {
       const updated = [newCamp, ...campaigns];
       setCampaigns(updated);
-      undefined;
     }
     
     // Telemetry output report to official address
@@ -2520,7 +2452,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       const resetLayouts = layouts.map(l => ({ ...l, is_published: false }));
       const updated = [newLayout, ...resetLayouts];
       setLayouts(updated);
-      undefined;
     }
 
     const lJson = layoutJson as any;
@@ -2580,8 +2511,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
           is_published: l.id === versionId
         }));
         setLayouts(updated);
-        undefined;
-        
         const lJson = target.layout_json as any;
         if (Array.isArray(lJson)) {
           setHomepageSections(lJson);
@@ -2635,13 +2564,13 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       if (parsed.settings) setSettings(parsed.settings);
       
       if (!supabaseConfigured) {
-        if (parsed.articles) undefined;
-        if (parsed.magazines) undefined;
-        if (parsed.submissions) undefined;
-        if (parsed.comments) undefined;
-        if (parsed.subscribers) undefined;
-        if (parsed.campaigns) undefined;
-        if (parsed.settings) undefined;
+        
+        
+        
+        
+        
+        
+        
       }
       
       logActivity("Restored Database from JSON import");
@@ -2675,7 +2604,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
         }];
       }
       setSearchLogs(updated);
-      undefined;
     }
   };
 
@@ -2740,10 +2668,8 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
     const updatedUser = { ...currentUser, ...data };
     setCurrentUser(updatedUser);
-    undefined;
     const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
     setUsers(updatedUsers);
-    undefined;
   };
 
   // 13. Audit logs internal helper
@@ -2760,7 +2686,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     const updated = [newLog, ...activityLogs].slice(0, 100);
     setActivityLogs(updated);
     if (!supabaseConfigured) {
-      undefined;
     }
   };
 
@@ -2770,7 +2695,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       ? quizzes.map(q => q.articleId === quiz.articleId ? quiz : q)
       : [...quizzes, quiz];
     setQuizzes(updated);
-    undefined;
     logActivity(`Quiz saved/updated for article: ${quiz.articleId}`);
   };
 
@@ -2783,8 +2707,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
     const updatedAttempts = [...quizAttempts, newAttempt];
     setQuizAttempts(updatedAttempts);
-    undefined;
-
     // Anti-Cheat: Leaderboard registers FIRST completed attempt only.
     const alreadyCompleted = quizAttempts.some(att => att.userId === newAttempt.userId && att.articleId === newAttempt.articleId);
     if (!alreadyCompleted) {
@@ -2814,7 +2736,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
         updatedLeaderboard = [...leaderboard, newEntry];
       }
       setLeaderboard(updatedLeaderboard);
-      undefined;
     }
 
     logActivity(`Quiz attempt submitted by user: ${newAttempt.userName} (Score: ${newAttempt.score}/${newAttempt.totalQuestions})`);
@@ -2842,8 +2763,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       }
     };
     setQuizSettings(updatedSettings);
-    undefined;
-
     const updatedQuizzes = quizzes.map(q => {
       if (q.articleId === articleId) {
         return { articleId, questions: activeQuestions };
@@ -2851,8 +2770,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       return q;
     });
     setQuizzes(updatedQuizzes);
-    undefined;
-
     logActivity(`Quiz regenerated for article: ${articleId} (Count: ${questionCount}, Diff: ${difficulty})`);
   };
 
@@ -2872,7 +2789,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       }
     };
     setQuizSettings(updatedSettings);
-    undefined;
     logActivity(`Quiz status toggled for article: ${articleId} (Enabled: ${isEnabled})`);
   };
 
@@ -2892,7 +2808,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       return q;
     });
     setQuizzes(updatedQuizzes);
-    undefined;
     logActivity(`Quiz question edited in article: ${articleId} (ID: ${questionId})`);
   };
 
@@ -2907,7 +2822,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       return q;
     });
     setQuizzes(updatedQuizzes);
-    undefined;
     logActivity(`Quiz question deleted from article: ${articleId} (ID: ${questionId})`);
   };
 
@@ -2927,7 +2841,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       return q;
     });
     setQuizzes(updatedQuizzes);
-    undefined;
     logActivity(`Bulk imported ${importQuestions.length} questions to article: ${articleId}`);
   };
 
@@ -2947,7 +2860,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       return q;
     });
     setQuizzes(updatedQuizzes);
-    undefined;
     logActivity(`Draft question approved for article: ${articleId} (ID: ${questionId})`);
   };
 
@@ -2978,10 +2890,8 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       interests: [expertise]
     };
     setCurrentUser(updatedUser);
-    undefined;
     const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
     setUsers(updatedUsers);
-    undefined;
   };
 
 
@@ -2989,14 +2899,11 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
   const followAuthor = async (authorId: string, followerId: string) => {
     const updatedUsers = toggleFollowAuthorInDb(users, authorId, followerId);
     setUsers(updatedUsers);
-    undefined;
-    
     if (currentUser) {
       if (currentUser.id === authorId || currentUser.id === followerId) {
         const updatedSelf = updatedUsers.find(u => u.id === currentUser.id) || null;
         if (updatedSelf) {
           setCurrentUser(updatedSelf);
-          undefined;
         }
       }
     }
@@ -3005,12 +2912,10 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
   const addTimelineEvent = async (userId: string, event: { title: string; description: string; date: string; type?: string }) => {
     const updatedUsers = addTimelineEventInDb(users, userId, event);
     setUsers(updatedUsers);
-    undefined;
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
       if (updatedSelf) {
         setCurrentUser(updatedSelf);
-        undefined;
       }
     }
   };
@@ -3018,12 +2923,10 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
   const deleteTimelineEvent = async (userId: string, eventId: string) => {
     const updatedUsers = deleteTimelineEventInDb(users, userId, eventId);
     setUsers(updatedUsers);
-    undefined;
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
       if (updatedSelf) {
         setCurrentUser(updatedSelf);
-        undefined;
       }
     }
   };
@@ -3031,12 +2934,10 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
   const addPortfolioItem = async (userId: string, item: { name: string; url: string; type: "book" | "research_paper" | "report" | "white_paper" | "resume" | "other"; is_public: boolean }) => {
     const updatedUsers = addPortfolioItemInDb(users, userId, item);
     setUsers(updatedUsers);
-    undefined;
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
       if (updatedSelf) {
         setCurrentUser(updatedSelf);
-        undefined;
       }
     }
   };
@@ -3044,12 +2945,10 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
   const deletePortfolioItem = async (userId: string, itemId: string) => {
     const updatedUsers = deletePortfolioItemInDb(users, userId, itemId);
     setUsers(updatedUsers);
-    undefined;
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
       if (updatedSelf) {
         setCurrentUser(updatedSelf);
-        undefined;
       }
     }
   };
@@ -3057,12 +2956,10 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
   const addAchievement = async (userId: string, achievement: { title: string; description?: string; year?: string; image_url?: string }) => {
     const updatedUsers = addAchievementInDb(users, userId, achievement);
     setUsers(updatedUsers);
-    undefined;
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
       if (updatedSelf) {
         setCurrentUser(updatedSelf);
-        undefined;
       }
     }
   };
@@ -3070,12 +2967,10 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
   const deleteAchievement = async (userId: string, achievementId: string) => {
     const updatedUsers = deleteAchievementInDb(users, userId, achievementId);
     setUsers(updatedUsers);
-    undefined;
     if (currentUser && currentUser.id === userId) {
       const updatedSelf = updatedUsers.find(u => u.id === userId) || null;
       if (updatedSelf) {
         setCurrentUser(updatedSelf);
-        undefined;
       }
     }
   };
@@ -3109,7 +3004,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
         created_at: new Date().toISOString()
       };
       nots.unshift(newNot);
-      undefined;
     } catch (e) {
       console.error("Error creating in-app notification:", e);
     }
@@ -3129,7 +3023,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     };
     const updated = [newLog, ...orgAuditLogs];
     setOrgAuditLogs(updated);
-    undefined;
   };
 
   const assignTask = async (taskData: Omit<OrgTask, "id" | "created_at">) => {
@@ -3141,8 +3034,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     };
     const updated = [newTask, ...tasks];
     setTasks(updated);
-    undefined;
-
     // Audit Log
     logAuditAction(taskData.assigned_by, "कार्य असाइनमेंट", `कार्य "${taskData.title}" को ${taskData.assigned_to_name} को सौंपा गया।`, "Info");
 
@@ -3176,7 +3067,6 @@ Body: नमस्कार, आपको "${taskData.assigned_by_name}" द्�
       return t;
     });
     setTasks(updated);
-    undefined;
   };
 
   const createCandidate = async (candidateData: any) => {
@@ -3194,8 +3084,6 @@ Body: नमस्कार, आपको "${taskData.assigned_by_name}" द्�
     
     const updated = [...users, newCandidate];
     setUsers(updated);
-    undefined;
-
     if (currentUser) {
       logAuditAction(currentUser.id, "उम्मीदवार निर्माण", `नया उम्मीदवार ${candidateData.name} (${candidateData.role}) अप्रूवल कतार में जोड़ा गया।`, "Info");
     }
@@ -3244,7 +3132,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
       return u;
     });
     setUsers(updated);
-    undefined;
   };
 
   const rejectCandidate = async (candidateId: string, approverId: string) => {
@@ -3256,7 +3143,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
       return u;
     });
     setUsers(updated);
-    undefined;
   };
 
   const updateTeamMemberProfile = async (userId: string, data: Partial<Profile>, authorizerId: string) => {
@@ -3294,7 +3180,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
           const transfers = savedTransfers ? JSON.parse(savedTransfers) : [];
           transfers.unshift(transfer);
           setRoleTransfers(transfers);
-          undefined;
         }
 
         if (data.department && data.department !== u.department) {
@@ -3311,13 +3196,10 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
     });
 
     setUsers(updated);
-    undefined;
-
     if (currentUser && currentUser.id === userId) {
       const self = updated.find(u => u.id === userId) || null;
       if (self) {
         setCurrentUser(self);
-        undefined;
       }
     }
   };
@@ -3349,7 +3231,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
             return u;
           });
           setUsers(updatedUsers);
-          undefined;
         }
 
         return {
@@ -3365,7 +3246,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
     });
 
     setVerifications(updatedReqs);
-    undefined;
   };
 
   const assignBadge = async (userId: string, badge: string, assignerId: string) => {
@@ -3379,7 +3259,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
       return u;
     });
     setUsers(updated);
-    undefined;
   };
 
   const removeBadge = async (userId: string, badge: string, removerId: string) => {
@@ -3392,7 +3271,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
       return u;
     });
     setUsers(updated);
-    undefined;
   };
 
   const sendPrivateMessage = async (senderId: string, receiverId: string, content: string, replyTo?: string) => {
@@ -3415,7 +3293,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
 
     const updated = [...privateMessages, newMsg];
     setPrivateMessages(updated);
-    undefined;
   };
 
   const toggleMessageReaction = async (msgId: string, userId: string, reaction: string) => {
@@ -3435,7 +3312,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
       return m;
     });
     setPrivateMessages(updated);
-    undefined;
   };
 
   const addAnnouncement = async (ann: { title: string; content: string; target: string; created_by: string; created_by_name: string }) => {
@@ -3446,8 +3322,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
     };
     const updated = [newAnn, ...announcements];
     setAnnouncements(updated);
-    undefined;
-
     // Audit
     logAuditAction(ann.created_by, "सांस्थानिक घोषणा", `घोषणा जारी की गई: "${ann.title}"। लक्षित समूह: ${ann.target}`, "Info");
 
@@ -3485,7 +3359,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         return localUser?.role || "Member";
       }
 
-      const ROLE_PRIORITY = ['Founder', 'Admin', 'Moderator', 'Editor', 'Author', 'Member'];
+      const ROLE_PRIORITY = ['Founder', 'प्रशासन', 'Moderator', 'Editor', 'Author', 'Member'];
       let highestRole = "Member";
       let highestIndex = ROLE_PRIORITY.length;
 
@@ -3502,8 +3376,8 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         }
       } else {
         if (localUser?.role) {
-          if (isOwner(localUser.role)) return "Owner";
-          if (isAdmin(localUser.role)) return "Admin";
+          if (isOwner(localUser.role)) return "संस्थापक";
+          if (isAdmin(localUser.role)) return "प्रशासन";
           if (isEditor(localUser.role)) return "Editor";
           if (isSubEditor(localUser.role)) return "Author";
           return "Member";
@@ -3518,15 +3392,15 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
   };
 
   const canManageArticles = () => {
-    return hasRole("Founder") || hasRole("Owner") || hasRole("Admin") || hasRole("Editor-in-Chief") || hasRole("Managing Editor") || hasRole("Editor") || hasRole("Author");
+    return hasRole("Founder") || hasRole("संस्थापक") || hasRole("प्रशासन") || hasRole("Editor-in-Chief") || hasRole("Managing Editor") || hasRole("Editor") || hasRole("Author");
   };
 
   const canPublishArticles = (contentType: string) => {
     const isSpecialContent = ["Editorial", "Special Report", "Research Report"].includes(contentType);
     if (isSpecialContent) {
-      return hasRole("Founder") || hasRole("Owner") || hasRole("Editor-in-Chief");
+      return hasRole("Founder") || hasRole("संस्थापक") || hasRole("Editor-in-Chief");
     }
-    return hasRole("Founder") || hasRole("Owner") || hasRole("Admin") || hasRole("Editor-in-Chief") || hasRole("Managing Editor") || hasRole("Editor");
+    return hasRole("Founder") || hasRole("संस्थापक") || hasRole("प्रशासन") || hasRole("Editor-in-Chief") || hasRole("Managing Editor") || hasRole("Editor");
   };
 
   const canAccessAdmin = () => {
@@ -3568,7 +3442,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
   const updateAiSettings = async (newSettings: Partial<AiSettings>) => {
     setAiSettings(prev => {
       const updated = { ...prev, ...newSettings };
-      undefined;
       return updated;
     });
   };
@@ -3581,7 +3454,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
     };
     setAiNotes(prev => {
       const updated = [newNote, ...prev];
-      undefined;
       return updated;
     });
   };
@@ -3589,7 +3461,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
   const deleteAiNote = async (id: string) => {
     setAiNotes(prev => {
       const updated = prev.filter(n => n.id !== id);
-      undefined;
       return updated;
     });
   };
@@ -3615,7 +3486,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
           { date: new Date().toISOString().split("T")[0], tokensUsed: tokens, cost: estimatedCost, feature: featureName }
         ]
       };
-      undefined;
       return updated;
     });
 

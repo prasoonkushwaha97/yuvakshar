@@ -1,4 +1,3 @@
-import { EventBus } from "../../events/eventBus";
 import { GlobalAnalytics } from "../types/analytics";
 
 /**
@@ -9,7 +8,7 @@ export class AnalyticsEngine {
   
   // In production, this would be computed by querying an Event Warehouse or OLAP DB.
   // For the UI, we fallback the current state of these metrics.
-  public async getExecutiveMetrics(dateRange: string = "Month"): Promise<GlobalAnalytics> {
+  public async getExecutiveMetrics(_dateRange: string = "Month"): Promise<GlobalAnalytics> {
     return {
       editorial: {
         pendingReviewCount: 14,

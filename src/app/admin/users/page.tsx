@@ -3,12 +3,11 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { getAdminUsersList, AdminUserRecord } from "@/lib/actions/userManagementActions";
 import { RoleBadge } from "@/components/ui/RoleBadge";
-import { Search, SlidersHorizontal, ShieldAlert, UserCog, UserMinus, Eye, MoreVertical, Ban, RefreshCw, ChevronLeft, ChevronRight, Shield, Users } from "lucide-react";
+import { Search, Eye, MoreVertical, Ban, RefreshCw, ChevronLeft, ChevronRight, Shield, Users } from "lucide-react";
 import { RoleAssignmentModal } from "@/components/founder/RoleAssignmentModal";
 import { RoleRemovalModal } from "@/components/founder/RoleRemovalModal";
 import { UserDetailDrawer } from "@/components/founder/UserDetailDrawer";
 import { toast } from "sonner";
-import { CreateStaffModal, ResetPasswordModal } from "@/components/admin/StaffModals";
 import { formatDistanceToNow } from "date-fns";
 
 export default function UsersManagementPage() {
@@ -108,7 +107,7 @@ export default function UsersManagementPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder="उपयोगकर्ता खोजें..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full sm:w-64 pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"

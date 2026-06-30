@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, GripVertical, Settings2, Trash2, Eye, Monitor, Tablet, Smartphone, Save, Calendar, CheckCircle2, Layout } from "lucide-react";
+import { GripVertical, Settings2, Trash2, Monitor, Tablet, Smartphone, Save, Calendar, Layout } from "lucide-react";
 
 export default function ExperienceBuilderCanvas() {
   const [previewMode, setPreviewMode] = useState<"desktop" | "tablet" | "mobile">("desktop");
@@ -103,7 +103,7 @@ export default function ExperienceBuilderCanvas() {
             {/* fallback Visual Render of Sections */}
             <div className="p-10 space-y-8 pointer-events-none opacity-50">
                <div className="h-64 bg-slate-100 dark:bg-slate-900 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center">
-                 <h2 className="text-2xl font-black text-slate-400">Hero Render Placeholder</h2>
+                <h2 className="text-2xl font-black text-slate-400">Hero Render Container</h2>
                </div>
                <div className="grid grid-cols-2 gap-4">
                  <div className="h-40 bg-slate-100 dark:bg-slate-900 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center">

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { getPermissionsMatrix } from "@/lib/actions/permissionActions";
-import { Check, Minus, ShieldCheck, KeyRound } from "lucide-react";
+import { Check, Minus, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 
 export default function PermissionsCenterPage() {

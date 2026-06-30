@@ -56,7 +56,7 @@ export default function AddArticleToSectionModal({ issueId, sectionId }: { issue
                 onChange={e => setSearch(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSearch()}
                 className="flex-1 border rounded p-2 text-sm"
-                placeholder="Search published articles..."
+                placeholder="प्रकाशित लेख खोजें..."
               />
               <button 
                 onClick={handleSearch}

@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { 
-  Layout, Save, Send, History, Heart, PlayCircle, Eye, ShieldAlert,
-  ArrowRight, Search, PlusCircle, Trash2, Copy, EyeOff, Monitor, Tablet, Smartphone, Laptop,
-  HelpCircle, Settings, Award, AlertTriangle, CheckCircle, BarChart3, Clock, Lock
+  Layout, Save, Send, History, ShieldAlert, Search, PlusCircle, Trash2, Copy, EyeOff, Monitor, Tablet, Smartphone, Laptop, Settings, Award, AlertTriangle, CheckCircle, BarChart3, Clock, Lock
 } from "lucide-react";
 import { toast } from "sonner";
 import { 
@@ -183,7 +181,7 @@ export default function HomepageBuilderPage() {
     e.dataTransfer.effectAllowed = "move";
   };
 
-  const handleDragOver = (e: React.DragEvent, index: number) => {
+  const handleDragOver = (e: React.DragEvent, _index: number) => {
     e.preventDefault();
   };
 

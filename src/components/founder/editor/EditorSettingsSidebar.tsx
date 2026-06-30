@@ -78,7 +78,7 @@ export default function EditorSettingsSidebar({ articleId, initialNotes = [] }: 
           <textarea
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
-            placeholder="Add a review note..."
+            placeholder="समीक्षा टिप्पणी जोड़ें..."
             className="w-full text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 outline-none focus:ring-2 focus:ring-primary min-h-[80px]"
             required
           />

@@ -6,12 +6,8 @@ import {
   PenTool, 
   ThumbsUp, 
   Send,
-  CalendarDays,
-  Award,
   Sparkles,
-  CheckCircle2,
-  Clock,
-  Search
+  CheckCircle2
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { 

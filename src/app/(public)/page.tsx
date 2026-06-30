@@ -7,17 +7,7 @@ import { useLanguage } from "@/store/LanguageContext";
 import { getSectionsForLayout } from "@/lib/actions/homepageCmsActions";
 
 // Skeletons
-import { 
-  HeroSkeleton, 
-  CategorySkeleton, 
-  VideoSkeleton, 
-  MagazineSkeleton, 
-  OpinionSkeleton, 
-  SidebarSkeleton 
-} from "@/components/homepage/shared/Skeleton";
-
 // Layout
-import AppHeader from "@/components/layout/AppHeader";
 import PartnerSection from "@/components/homepage/PartnerSection";
 
 // Blocks
@@ -40,7 +30,7 @@ class SectionErrorBoundary extends React.Component<{ children: React.ReactNode }
     return { hasError: true };
   }
 
-  componentDidCatch(error: any, errorInfo: any) {
+  componentDidCatch(_error: any, _errorInfo: any) {
     // Gracefully handle section render errors in production
   }
 
@@ -90,7 +80,7 @@ export default function Home() {
           {/* Main 70/30 Hero Skeleton Deck */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[460px] lg:h-[calc(100vh-160px)] max-h-[620px] w-full">
             
-            {/* Left Main Hero Slide Placeholder */}
+            {/* Left Main Hero Slide Container */}
             <div className="lg:col-span-8 bg-gray-100 dark:bg-[#0E1322] rounded-3xl animate-pulse flex flex-col justify-end p-6 md:p-8 lg:p-10">
               <div className="w-24 h-4 bg-gray-200 dark:bg-gray-800 rounded-full mb-3" />
               <div className="w-full lg:w-3/4 h-8 bg-gray-200 dark:bg-gray-800 rounded-full mb-4" />
@@ -101,7 +91,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right Stacked Editorial Cards Placeholders */}
+            {/* Right Stacked Editorial Cards Containers */}
             <div className="lg:col-span-4 flex flex-col justify-between gap-4 h-full">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="flex-1 bg-gray-100 dark:bg-[#0E1322] rounded-3xl animate-pulse p-4 flex items-center gap-4">

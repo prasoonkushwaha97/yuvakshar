@@ -14,14 +14,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
   const [userArticles, setUserArticles] = useState<Article[]>([]);
   // Decode URL parameter
   const decodedParam = decodeURIComponent(params.username);
-  
-  // Enforce the @ prefix
-  if (!decodedParam.startsWith("@")) {
-    // If we want to strictly NOT implement /username, we can just 404 here.
-    return notFound();
-  }
-
-  const actualUsername = decodedParam.substring(1);
+  const actualUsername = decodedParam.startsWith("@") ? decodedParam.substring(1) : decodedParam;
 
   useEffect(() => {
     if (users.length > 0) {
@@ -35,6 +28,10 @@ export default function PublicProfilePage({ params }: { params: { username: stri
       }
     }
   }, [users, articles, actualUsername]);
+
+  if (!decodedParam.startsWith("@")) {
+    return notFound();
+  }
 
   if (user === undefined) {
     return <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1D] flex items-center justify-center p-4">Loading...</div>;

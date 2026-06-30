@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search as SearchIcon, Calendar, Clock, Bookmark, BookmarkCheck, ArrowRight } from "lucide-react";
+import { Search as SearchIcon, Bookmark, BookmarkCheck, ArrowRight } from "lucide-react";
 
 import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
@@ -59,7 +59,6 @@ export default function SearchPage() {
       updated = [...bookmarks, id];
     }
     setBookmarks(updated);
-    undefined;
   };
 
   return (

@@ -7,7 +7,6 @@ import {
   BookOpen, 
   FileText, 
   ArrowRight,
-  BookmarkCheck,
   FolderOpen
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
@@ -16,7 +15,7 @@ import GlassCard from "@/components/yuvakshar/GlassCard";
 import Link from "next/link";
 
 export default function BookmarksPage() {
-  const { articles, currentUser } = useCms();
+  const { articles, currentUser: _currentUser } = useCms();
   const [activeTab, setActiveTab] = useState<"articles" | "posts">("articles");
   const [savedArticleIds, setSavedArticleIds] = useState<string[]>([]);
   const [savedPosts, setSavedPosts] = useState<CommunityPost[]>([]);
@@ -42,10 +41,7 @@ export default function BookmarksPage() {
           const ids: string[] = JSON.parse(savedPostsKeys);
           setSavedPosts(allPosts.filter(p => ids.includes(p.id)));
         } else {
-          // Preseed one saved post if empty for demo
-          const defaultSaved = allPosts.slice(0, 1);
-          setSavedPosts(defaultSaved);
-          undefined;
+          setSavedPosts([]);
         }
       }
     } catch (err) {
@@ -63,7 +59,6 @@ export default function BookmarksPage() {
     const updated = savedArticleIds.filter(artId => artId !== id);
     setSavedArticleIds(updated);
     if (typeof window !== "undefined") {
-      undefined;
     }
     alert("लेख को आपकी लाइब्रेरी से हटा दिया गया है।");
   };
@@ -72,7 +67,6 @@ export default function BookmarksPage() {
     const updated = savedPosts.filter(p => p.id !== id);
     setSavedPosts(updated);
     if (typeof window !== "undefined") {
-      undefined;
     }
     alert("पोस्ट को आपकी लाइब्रेरी से हटा दिया गया है।");
   };

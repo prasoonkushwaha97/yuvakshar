@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Menu, X, Search, Bell, Moon, Sun, 
+  Menu, X, Search, Bell, Moon, 
   LayoutDashboard, FileText, Layers, BookOpen, Video,
   CheckSquare, Activity,
   Users, UsersRound, MessageSquare,
@@ -225,7 +225,7 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
               <Search className="w-4 h-4 text-slate-400 mr-2" />
               <input 
                 type="text" 
-                placeholder="Search anything..." 
+                placeholder="कुछ भी खोजें..." 
                 className="bg-transparent text-sm w-full outline-none text-slate-700 dark:text-slate-200 placeholder:text-slate-400"
               />
             </div>
@@ -257,7 +257,7 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
                   </div>
                 </div>
                 <div className="hidden sm:flex flex-col items-start text-left">
-                  <span className="text-sm font-medium leading-none mb-1">{currentUser?.name || "Admin"}</span>
+                  <span className="text-sm font-medium leading-none mb-1">{currentUser?.name || "प्रशासन"}</span>
                   <span className="text-[10px] text-slate-500 uppercase tracking-wider leading-none">{workspace}</span>
                 </div>
                 <ChevronDown className="w-4 h-4 text-slate-400 hidden sm:block" />

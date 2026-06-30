@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Vote, ArrowRight, Quote, Flame, BookOpen } from "lucide-react";
+import { Vote, ArrowRight, Quote, Flame } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";

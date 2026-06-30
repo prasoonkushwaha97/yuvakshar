@@ -46,7 +46,7 @@ function NoteThread({ note, depth = 0 }: { note: ReviewNote; depth?: number }) {
             value={replyText} 
             onChange={e => setReplyText(e.target.value)} 
             className="flex-1 text-sm border rounded px-2 py-1" 
-            placeholder="Write a reply..."
+            placeholder="उत्तर लिखें..."
           />
           <button onClick={handleReply} className="px-3 py-1 bg-blue-600 text-white text-xs rounded">Send</button>
         </div>
@@ -103,7 +103,7 @@ export default function ReviewPanel({ article, initialNotes }: { article: Articl
             onChange={e => setNewNote(e.target.value)}
             className="w-full border rounded-lg p-2 text-sm mb-2 focus:ring-2 focus:ring-blue-500 outline-none"
             rows={3}
-            placeholder="Leave a review note..."
+            placeholder="समीक्षा टिप्पणी छोड़ें..."
           />
           <div className="flex justify-between items-center">
             <select 

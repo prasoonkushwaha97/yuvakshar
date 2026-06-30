@@ -2,13 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { 
-  BookOpen, 
   Search, 
   Download, 
   FileText, 
   Plus, 
   ThumbsUp, 
-  Share2, 
   FolderPlus,
   Send
 } from "lucide-react";
@@ -56,7 +54,6 @@ export default function KnowledgeHubPage() {
   const saveResources = (items: ResourceItem[]) => {
     setResources(items);
     if (typeof window !== "undefined") {
-      undefined;
     }
   };
 

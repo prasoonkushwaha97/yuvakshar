@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { updateArticleStatus, deleteArticle, bulkDeleteArticles } from "@/lib/actions/articleActions";
-import { Search, Plus, Edit2, Trash2, FileText, CheckCircle, Clock, Archive, MoreVertical, Eye, ArrowUpDown, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
+import { Search, Plus, Edit2, Trash2, FileText, CheckCircle, Clock, Eye, ArrowUpDown, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -225,7 +225,7 @@ export default function ArticleManager({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search title..."
+              placeholder="शीर्षक खोजें..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 dark:text-white"

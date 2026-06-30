@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, {  useEffect, useState , useCallback } from "react";
 import { getNavigationMenus, createNavigationItem, deleteNavigationItem } from '@/lib/actions/globalSettingsActions';
 import { toast } from 'sonner';
 import { Network, Plus, Trash2, Loader2, Link as LinkIcon } from 'lucide-react';
@@ -13,11 +13,7 @@ export default function GlobalNavigationPage() {
   const [newItem, setNewItem] = useState({ menu_id: '', label: '', url: '', sort_order: 0 });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchMenus();
-  }, []);
-
-  const fetchMenus = async () => {
+  const fetchMenus = useCallback(async () => {
     try {
       const data = await getNavigationMenus();
       setMenus(data);
@@ -29,7 +25,11 @@ export default function GlobalNavigationPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [newItem.menu_id]);
+
+  useEffect(() => {
+    fetchMenus();
+  }, [fetchMenus]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,7 +116,7 @@ export default function GlobalNavigationPage() {
                 <label className="block text-sm font-medium mb-1">Display Label</label>
                 <input 
                   type="text"
-                  placeholder="e.g. Current Affairs"
+                  placeholder="उदा. करेंट अफेयर्स"
                   value={newItem.label}
                   onChange={(e) => setNewItem({...newItem, label: e.target.value})}
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm"
@@ -127,7 +127,7 @@ export default function GlobalNavigationPage() {
                 <label className="block text-sm font-medium mb-1">URL / Path</label>
                 <input 
                   type="text"
-                  placeholder="e.g. /current-affairs"
+                  placeholder="उदा. /current-affairs"
                   value={newItem.url}
                   onChange={(e) => setNewItem({...newItem, url: e.target.value})}
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm"

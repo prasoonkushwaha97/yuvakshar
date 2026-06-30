@@ -4,13 +4,10 @@ import React, { useState } from "react";
 import { UniversalEditor } from "@/domains/editorial/components/UniversalEditor";
 import { ContentDocument } from "@/domains/editorial/types/schema";
 import { 
-  Save, 
   Settings, 
-  History, 
-  MessageSquare,
+  History,
   CheckCircle2,
   AlertCircle,
-  Eye,
   Monitor,
   Tablet,
   Smartphone

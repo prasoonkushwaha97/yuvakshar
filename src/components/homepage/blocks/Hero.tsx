@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
-import { Clock, Eye, Calendar, ArrowRight, Play } from "lucide-react";
+import { Clock, Calendar, ArrowRight } from "lucide-react";
 import SectionContainer from "../layout/SectionContainer";
 
 export default function Hero() {

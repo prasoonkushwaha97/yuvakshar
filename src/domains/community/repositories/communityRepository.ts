@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
-import { CommunityPost, CommunityComment } from "@/lib/communityService";
+import { CommunityPost } from "@/lib/communityService";
 
 export class SupabaseCommunityRepository {
   async getPosts(groupId?: string): Promise<CommunityPost[]> {

@@ -6,24 +6,13 @@ import {
   Sparkles, 
   Send, 
   X, 
-  BookOpen, 
-  FileText, 
-  HelpCircle, 
   Plus, 
-  Volume2, 
-  VolumeX,
+  Volume2,
   Play,
   Pause,
   Square,
   Cpu,
-  BrainCircuit,
-  MessageSquare,
-  Bookmark,
-  ChevronRight,
-  BookmarkCheck,
-  Lock,
-  Download,
-  AlertTriangle
+  BrainCircuit
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { stripMarkdown } from "@/lib/markdown";
@@ -108,7 +97,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
   }, [chatMessages, isTyping]);
 
   // Premium / Authorization check helper
-  const checkAccess = (featureName: string): boolean => {
+  const checkAccess = (_featureName: string): boolean => {
     if (!currentUser) {
       openAuthModal(undefined, "Please login or create an account to continue.");
       return false;
@@ -457,7 +446,7 @@ export default function AiAssistantSidebar({ articleId }: { articleId?: string }
                         {presetChatChips?.map((chip, idx) => (
                           <button
                             key={idx}
-                            onClick={(e) => handleSendChat(undefined, chip)}
+                            onClick={(_e) => handleSendChat(undefined, chip)}
                             className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary/40 rounded-xl px-2.5 py-1.5 text-[9.5px] text-slate-500 hover:text-slate-800 dark:hover:text-white font-serif transition-all cursor-pointer"
                           >
                             {chip}

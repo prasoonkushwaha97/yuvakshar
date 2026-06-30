@@ -104,14 +104,14 @@ export default function EditorClient({ article, isNew, reviewNotes }: { article:
 
             <input 
               type="text" 
-              placeholder="Article Title..." 
+              placeholder="लेख का शीर्षक..." 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full text-4xl font-bold bg-transparent border-0 border-b border-transparent hover:border-slate-200 focus:border-primary focus:ring-0 px-0 py-2 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-700"
             />
 
             <textarea 
-              placeholder="Tell your story..." 
+              placeholder="अपनी कहानी लिखें..." 
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="w-full min-h-[500px] text-lg leading-relaxed bg-transparent border-0 focus:ring-0 px-0 py-4 dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-700 resize-none outline-none"

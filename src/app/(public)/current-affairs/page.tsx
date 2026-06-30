@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
-  Filter, 
   Calendar, 
   Clock, 
   Bookmark, 
@@ -11,7 +10,7 @@ import {
   ArrowRight
 } from "lucide-react";
 
-import { useCms, Article } from "@/store/CmsContext";
+import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import { stripMarkdown } from "@/lib/markdown";
 
@@ -38,7 +37,6 @@ export default function CurrentAffairsPage() {
       updated = [...bookmarks, id];
     }
     setBookmarks(updated);
-    undefined;
   };
 
   const { articles, categories: cmsCategories } = useCms();

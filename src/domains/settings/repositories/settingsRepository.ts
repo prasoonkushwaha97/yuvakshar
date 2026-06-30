@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabaseClient";
-import { GeneralSettings, AppearanceSettings, FooterSettings } from "@/store/types";
 
 export interface NavigationMenu {
   id: string;

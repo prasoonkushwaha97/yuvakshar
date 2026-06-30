@@ -420,7 +420,7 @@ export const preseededQuizzes: Record<string, QuizQuestion[]> = {
 
 // Smart Fallback Dynamic Quiz Generator
 // Generates 30 comprehension/analysis questions based on any article's metadata
-export const generateFallbackQuestions = (articleId: string, title: string, content: string): QuizQuestion[] => {
+export const generateFallbackQuestions = (articleId: string, title: string, _content: string): QuizQuestion[] => {
   const cleanTitle = title.replace(/[#*`>]/g, "").trim();
   const list: QuizQuestion[] = [];
   

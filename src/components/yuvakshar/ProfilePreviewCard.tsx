@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserPlus, UserMinus, MessageSquare, ExternalLink, ShieldCheck } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
-import type { Profile } from "@/store/types";
 import GlassCard from "./GlassCard";
 import { RoleBadgeList } from "@/components/ui/RoleBadge";
 

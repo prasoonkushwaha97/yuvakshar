@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Plus, Layout, Globe, MonitorSmartphone, Settings, History } from "lucide-react";
+import { Plus, Layout, Settings } from "lucide-react";
 
 export default function ExperienceBuilderList() {
   const experiences = [

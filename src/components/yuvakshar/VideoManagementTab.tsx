@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Video, Trash2, Edit3, Star } from "lucide-react";
+import { Plus, Trash2, Edit3, Star } from "lucide-react";
 import { useCms, Profile, Video as VideoType } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 

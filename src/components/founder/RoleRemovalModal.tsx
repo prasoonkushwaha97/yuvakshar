@@ -10,7 +10,7 @@ export const ALL_ROLES = [
   { id: "10000000-0000-0000-0000-000000000001", slug: "founder", name: "Founder", rank: 0 },
   { id: "10000000-0000-0000-0000-000000000002", slug: "co_founder", name: "Co-Founder", rank: 1 },
   { id: "10000000-0000-0000-0000-000000000003", slug: "super_admin", name: "Super Admin", rank: 2 },
-  { id: "10000000-0000-0000-0000-000000000004", slug: "admin", name: "Admin", rank: 3 },
+  { id: "10000000-0000-0000-0000-000000000004", slug: "admin", name: "प्रशासन", rank: 3 },
   { id: "10000000-0000-0000-0000-000000000005", slug: "editor_in_chief", name: "Editor-in-Chief", rank: 4 },
   { id: "10000000-0000-0000-0000-000000000006", slug: "editor", name: "Editor", rank: 5 },
   { id: "10000000-0000-0000-0000-000000000007", slug: "moderator", name: "Moderator", rank: 6 },
@@ -98,7 +98,7 @@ export function RoleRemovalModal({ open, onOpenChange, targetUserId, targetUserN
           </label>
           <textarea 
             className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0F172A] text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary outline-none resize-none"
-            placeholder="Reason for removing this role..."
+            placeholder="भूमिका हटाने का कारण..."
             rows={3}
             value={note}
             onChange={(e) => setNote(e.target.value)}

@@ -8,22 +8,7 @@ import Link from "next/link";
 export default function LiteraryJourneyPage() {
   const { currentUser, quizAttempts, articles } = useCms();
 
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1D] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm text-center border border-slate-200 dark:border-slate-800">
-          <Lock className="w-12 h-12 text-primary mx-auto mb-4" />
-          <h2 className="text-2xl font-bold font-serif mb-2">लॉगिन आवश्यक है</h2>
-          <p className="text-sm text-slate-500 mb-6">अपनी साहित्यिक यात्रा और पठन अंतर्दृष्टि देखने के लिए कृपया लॉगिन करें।</p>
-          <Link href="/" className="bg-primary text-white px-6 py-2 rounded-xl font-bold transition-all hover:bg-primary/90">
-            मुख्य पृष्ठ पर लौटें
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const userAttempts = useMemo(() => quizAttempts.filter(att => att.userId === currentUser.id), [quizAttempts, currentUser.id]);
+  const userAttempts = useMemo(() => quizAttempts.filter(att => att.userId === currentUser?.id), [quizAttempts, currentUser?.id]);
 
   // Calculate literary metrics (simulated from quiz attempts/article views for now)
   const totalReadArticles = new Set(userAttempts?.map(att => att.articleId)).size;
@@ -38,6 +23,21 @@ export default function LiteraryJourneyPage() {
 
   const readWords = totalReadArticles * 1250; // Approximating 1250 words per article
   const totalMinutes = userAttempts.reduce((acc, curr) => acc + curr.durationSeconds, 0) / 60;
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1D] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm text-center border border-slate-200 dark:border-slate-800">
+          <Lock className="w-12 h-12 text-primary mx-auto mb-4" />
+          <h2 className="text-2xl font-bold font-serif mb-2">लॉगिन आवश्यक है</h2>
+          <p className="text-sm text-slate-500 mb-6">अपनी साहित्यिक यात्रा और पठन अंतर्दृष्टि देखने के लिए कृपया लॉगिन करें।</p>
+          <Link href="/" className="bg-primary text-white px-6 py-2 rounded-xl font-bold transition-all hover:bg-primary/90">
+            मुख्य पृष्ठ पर लौटें
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1D] text-slate-900 dark:text-slate-100 font-hindi pb-20">

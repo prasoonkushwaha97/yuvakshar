@@ -6,7 +6,6 @@ import {
   Bell, 
   Eye, 
   BookOpen, 
-  ShieldCheck, 
   Save 
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";

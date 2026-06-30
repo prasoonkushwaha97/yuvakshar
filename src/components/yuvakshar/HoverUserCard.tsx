@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { UserPlus, MessageCircle, BookOpen, Star, UserCheck } from "lucide-react";
+import { UserPlus, MessageCircle, BookOpen, UserCheck } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { isUserFollowing, toggleFollowUser } from "@/lib/communityService";
 import type { Profile } from "@/store/types";
@@ -49,7 +49,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
 
   // Mobile long press logic
   const touchStartRef = useRef<number>(0);
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (_e: React.TouchEvent) => {
     if (window.innerWidth >= 1024) return;
     touchStartRef.current = Date.now();
     timeoutRef.current = setTimeout(() => {

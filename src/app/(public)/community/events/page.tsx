@@ -117,7 +117,6 @@ export default function EventsPage() {
       if (saved) {
         setEvents(JSON.parse(saved));
       } else {
-        undefined;
       }
     }
   }, []);
@@ -125,7 +124,6 @@ export default function EventsPage() {
   const saveEvents = (items: CommunityEvent[]) => {
     setEvents(items);
     if (typeof window !== "undefined") {
-      undefined;
     }
   };
 
@@ -205,7 +203,7 @@ export default function EventsPage() {
           <span>साहित्यिक एवं शैक्षणिक कार्यक्रम (Events)</span>
         </div>
         
-        {currentUser && (hasRole("Admin") || hasRole("Owner") || hasRole("Editor") || hasRole("Author")) && (
+        {currentUser && (hasRole("प्रशासन") || hasRole("संस्थापक") || hasRole("Editor") || hasRole("Author")) && (
           <button
             onClick={() => setShowEventForm(!showEventForm)}
             className="bg-primary hover:bg-primary/95 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center space-x-1.5 cursor-pointer font-hindi"

@@ -82,7 +82,7 @@ export default function WorkspacePage() {
       }
     });
     setNotes(compiledNotes);
-  }, []);
+  }, [articles]);
 
   const deleteFlashcard = (index: number) => {
     const updated = flashcards.filter((_, idx) => idx !== index);

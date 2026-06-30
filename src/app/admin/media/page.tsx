@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Upload, FolderPlus, Search, Filter, Image as ImageIcon, FileText, Video, MoreVertical, Info, HardDrive, FileImage } from "lucide-react";
+import { Upload, FolderPlus, Search, Filter, Image as ImageIcon, FileText, Video, HardDrive, FileImage } from "lucide-react";
 
 // Using Lucide icons for UI representation
 export default function MediaLibrary() {
@@ -36,7 +36,7 @@ export default function MediaLibrary() {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder="Search assets, tags, alt text..." 
+              placeholder="एसेट्स, टैग्स या ऑल्ट टेक्स्ट खोजें..." 
               className="pl-9 pr-4 py-2 w-64 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none"
             />
           </div>

@@ -90,8 +90,8 @@ export default function PostCard({
 
   const canManage = currentUser && (
     currentUser.id === post.user_id || 
-    hasRole("Admin") || 
-    hasRole("Owner") || 
+    hasRole("प्रशासन") || 
+    hasRole("संस्थापक") || 
     hasRole("Founder") ||
     hasRole("Super Admin")
   );
@@ -368,7 +368,7 @@ export default function PostCard({
         </div>
 
         {/* Convert to Article Draft (Admin/Editor/Author role check) */}
-        {onConvert && currentUser && (hasRole("Admin") || hasRole("Owner") || hasRole("Editor") || hasRole("Author") || hasRole("Contributor")) && (
+        {onConvert && currentUser && (hasRole("प्रशासन") || hasRole("संस्थापक") || hasRole("Editor") || hasRole("Author") || hasRole("योगदानकर्ता")) && (
           <button
             onClick={() => onConvert(post)}
             className="hidden sm:flex items-center space-x-1.5 text-[11px] text-primary hover:bg-primary/10 px-2 py-1.5 rounded-lg transition-colors font-bold cursor-pointer font-hindi"

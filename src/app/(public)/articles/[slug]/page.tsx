@@ -4,11 +4,10 @@ import { notFound } from "next/navigation";
 import { getArticleBySlug, getArticleById } from "@/lib/actions/articleActions";
 import Link from "next/link";
 import { stripMarkdown } from "@/lib/markdown";
-import AppHeader from "@/components/layout/AppHeader";
 import Sidebar from "@/components/homepage/layout/Sidebar";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
 import { ContentRenderer } from "@/components/content/ContentRenderer";
-import { Calendar, Clock, Eye, Award, MessageSquare } from "lucide-react";
+import { Calendar, Clock, Eye } from "lucide-react";
 import ArticleActions from "@/components/articles/ArticleActions";
 import CommentSection from "@/components/articles/CommentSection";
 

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { getAuthorsList, AdminUserRecord } from "@/lib/actions/userManagementActions";
 import { assignAuthorRoleByEmail, removeAuthorRoleByUserId } from "@/lib/actions/roleActions";
-import { Search, PenTool, ShieldAlert, CheckCircle, XCircle } from "lucide-react";
+import { Search, PenTool, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AuthorsPage() {
@@ -109,7 +109,7 @@ export default function AuthorsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input 
                 type="text" 
-                placeholder="Search authors..."
+                placeholder="लेखक खोजें..."
                 className="w-full pl-9 pr-4 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#1E293B] text-sm outline-none focus:ring-2 focus:ring-primary"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}

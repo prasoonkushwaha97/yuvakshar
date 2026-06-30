@@ -1,10 +1,3 @@
-/**
- * Storage Provider Interface
- * 
- * Ensures the CMS is never tightly coupled to Supabase Storage, AWS S3, or Local file system.
- */
-import { MediaAsset } from "../types/media";
-
 export interface StorageUploadResult {
   url: string;
   thumbnailUrl?: string;

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useCms } from "@/store/CmsContext";
 import { updateUserAccount } from "@/lib/actions/settingsActions";
-import { User, AlertCircle, CheckCircle2, RotateCw } from "lucide-react";
+import { AlertCircle, CheckCircle2, RotateCw } from "lucide-react";
 import AvatarUploader from "@/components/yuvakshar/AvatarUploader";
 
 export default function AccountSettingsPage() {
@@ -119,21 +119,21 @@ export default function AccountSettingsPage() {
             value={socialLinks.twitter}
             onChange={(e) => setSocialLinks({...socialLinks, twitter: e.target.value})}
             className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white"
-            placeholder="Twitter URL"
+            placeholder="ट्विटर (Twitter) लिंक"
           />
           <input
             type="url"
             value={socialLinks.linkedin}
             onChange={(e) => setSocialLinks({...socialLinks, linkedin: e.target.value})}
             className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white"
-            placeholder="LinkedIn URL"
+            placeholder="लिंक्डइन (LinkedIn) लिंक"
           />
           <input
             type="url"
             value={socialLinks.website}
             onChange={(e) => setSocialLinks({...socialLinks, website: e.target.value})}
             className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white"
-            placeholder="Personal Website URL"
+            placeholder="व्यक्तिगत वेबसाइट लिंक"
           />
         </div>
 

@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { hi } from "date-fns/locale";
 import { useCms } from "@/store/CmsContext";
-import { MessageSquare, Heart, Flag, Edit2, Trash2, Reply, MoreVertical, ShieldAlert, Pin, User, ChevronDown, ChevronUp, X } from "lucide-react";
+import { Heart, Flag, Edit2, Trash2, Reply, MoreVertical, User, ChevronDown, ChevronUp, X } from "lucide-react";
 
 interface CommentSectionProps {
   articleId: string;
@@ -13,7 +13,7 @@ interface CommentSectionProps {
 // Basic formatting for rich text (bold, italic)
 const formatRichText = (text: string) => {
   if (!text) return "";
-  let html = text
+  const html = text
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
     .replace(/\n/g, "<br />");

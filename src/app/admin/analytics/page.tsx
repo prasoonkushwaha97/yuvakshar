@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { BarChart3, TrendingUp, Download, Calendar, Users, FileText, ShieldAlert, Bell, LayoutTemplate, MessageSquare } from "lucide-react";
+import { BarChart3, TrendingUp, Download, Users, FileText, ShieldAlert, Bell, LayoutTemplate, MessageSquare } from "lucide-react";
 import { globalAnalyticsEngine } from "../../../domains/platform/analytics/services/analyticsEngine";
 import { GlobalAnalytics } from "../../../domains/platform/analytics/types/analytics";
 

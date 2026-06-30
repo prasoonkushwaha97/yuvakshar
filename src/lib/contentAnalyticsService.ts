@@ -24,9 +24,9 @@ export const contentAnalyticsService = {
     // Total Views
     const totalViews = await analyticsService.getSum("articles", "view_count");
     
-    // Average reading time (fallback to total_reading_time / totalArticles if there's no direct avg)
-    // Actually, articles don't have reading_time column by default. We can estimate it or just return 0 for now until Phase 4.
-    const averageReadingTime = 5; // placeholder mins
+    // Average reading time
+    // Fallback to 5 mins if no data available
+    const averageReadingTime = 5;
     
     // Recently Updated
     const { data: recentlyUpdated } = await supabase

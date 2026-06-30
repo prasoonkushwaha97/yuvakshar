@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { getRoleGovernanceData } from "@/lib/actions/roleGovernanceActions";
-import { Shield, Users, Layers, CornerDownRight } from "lucide-react";
+import { Users, Layers, CornerDownRight } from "lucide-react";
 import { RoleBadge } from "@/components/ui/RoleBadge";
 import { toast } from "sonner";
 

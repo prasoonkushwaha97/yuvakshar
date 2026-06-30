@@ -1,5 +1,3 @@
-import { createCategory, updateCategory, deleteCategory } from './src/lib/actions/categoryActions';
-import { updateArticleStatus } from './src/lib/actions/articleActions';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });

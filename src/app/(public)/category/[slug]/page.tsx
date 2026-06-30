@@ -13,7 +13,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 
-import { useCms, Article } from "@/store/CmsContext";
+import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import { stripMarkdown } from "@/lib/markdown";
 
@@ -66,7 +66,6 @@ function CategoryDetailPageContent() {
       updated = [...bookmarks, id];
     }
     setBookmarks(updated);
-    undefined;
   };
 
   const cat = categories.find(c => c.slug === slug || c.name === slug);

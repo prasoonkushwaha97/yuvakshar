@@ -19,15 +19,6 @@ export default async function AdminLayout({
     redirect('/admin/login');
   }
 
-  const { createClient } = await import('@/utils/supabase/server');
-  const supabase = await createClient();
-  const { data: profile } = await supabase.from('profiles').select('terms_accepted, terms_version, privacy_version').eq('id', user.id).single();
-  const { LEGAL } = await import('@/config/legal');
-
-  if (!profile?.terms_accepted || profile?.terms_version !== LEGAL.TERMS_VERSION || profile?.privacy_version !== LEGAL.PRIVACY_VERSION) {
-    redirect('/terms/accept');
-  }
-
   // Ensure they have at least one valid backend role
   // Any role except standard 'reader' is allowed in some capacity
   const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator', 'sub_editor', 'author', 'contributor']);

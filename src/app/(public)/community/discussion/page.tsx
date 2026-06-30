@@ -2,14 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { 
-  MessageSquare, 
   Plus, 
-  HelpCircle, 
-  BookOpen, 
-  Lock, 
   Pin,
   CheckCircle,
-  Clock,
   ArrowRight
 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";

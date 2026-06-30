@@ -59,8 +59,6 @@ export default function BookmarkButton({ articleId, className = "" }: BookmarkBu
       newList = [...list, articleId];
       setIsBookmarked(true);
     }
-
-    undefined;
     // Dispatch standard storage event so other components update
     window.dispatchEvent(new Event("storage"));
   };

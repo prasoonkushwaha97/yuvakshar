@@ -5,16 +5,7 @@ import {
   Magazine, 
   Comment, 
   Submission, 
-  Ad, 
-  HomepageLayout, 
-  ActivityLog,
-  Category,
-  Tag,
-  QuizAttempt,
-
-  QuizSettings,
-  DonationRecord,
-  Video
+  HomepageLayout
 } from "@/store/types";
 
 /**
@@ -33,9 +24,8 @@ const getLocalItem = (key: string, fallback: string = "[]"): string => {
 /**
  * Helper to safely set item in localStorage
  */
-const setLocalItem = (key: string, value: string): void => {
+const setLocalItem = (_key: string, _value: string): void => {
   if (isBrowser()) {
-    undefined;
   }
 };
 
@@ -51,7 +41,7 @@ export const getLiteraryIdentities = (
   const identities: string[] = [];
 
   // 1. Role-based identities
-  if (profile.role === "Owner" || profile.role === "Editor-in-Chief") {
+  if (profile.role === "संस्थापक" || profile.role === "Editor-in-Chief") {
     identities.push("संपादकीय सहयोगी");
   } else if (profile.role === "Reviewer" || profile.role === "Fact Checker" || profile.role === "Fact Check Reviewer") {
     identities.push("समीक्षक");
@@ -82,7 +72,7 @@ export const getLiteraryIdentities = (
     identities.push("वरिष्ठ लेखक");
   } else if (articlesCount >= 3) {
     identities.push("सक्रिय लेखक");
-  } else if (profile.role === "Author" || profile.role === "Contributor" || articlesCount > 0) {
+  } else if (profile.role === "Author" || profile.role === "योगदानकर्ता" || articlesCount > 0) {
     identities.push("लेखक");
   }
 
@@ -105,7 +95,7 @@ export const getLiteraryIdentities = (
  */
 export const calculateAuthorReputation = (
   profile: Profile,
-  authorArticles: Article[] = []
+  _authorArticles: Article[] = []
 ): { score: number; tier: "Bronze" | "Silver" | "Gold" | "Platinum" } => {
   return { score: 100, tier: "Bronze" };
 };

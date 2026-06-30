@@ -43,7 +43,7 @@ export default function CreateIssueModal() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Issue Title</label>
-                <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full border rounded-lg p-2" placeholder="e.g. June 2026 Edition" />
+                <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full border rounded-lg p-2" placeholder="उदा. जून 2026 संस्करण" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>

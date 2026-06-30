@@ -96,7 +96,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "nav.magazine": "Magazine",
     "nav.expression": "Articles & Expression",
     "nav.workspace": "Workspace",
-    "nav.dashboard": "Dashboard",
+    "nav.dashboard": "कार्यक्षेत्र",
     "nav.admin": "Admin Panel",
     "nav.submit": "Submit Article",
     "nav.search": "Search",
@@ -151,8 +151,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "submit.labelType": "Submission Type",
     "submit.labelAuthor": "Author Name",
     "submit.labelContent": "Content Body",
-    "submit.placeholderTitle": "Enter article title...",
-    "submit.placeholderContent": "Start writing here (markdown supported)...",
+    "submit.placeholderTitle": "लेख का शीर्षक दर्ज करें...",
+    "submit.placeholderContent": "यहाँ लिखना प्रारंभ करें (मार्कडाउन समर्थित)...",
     "submit.btnSubmit": "Send for Review",
     "submit.statusDraft": "Draft",
     "submit.statusReview": "Under Review",
@@ -183,7 +183,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const changeLocale = (newLocale: Locale) => {
     setLocale(newLocale);
-    undefined;
+
   };
 
   const translate = (key: string): string => {

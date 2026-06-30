@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
-import { BookOpen, Download, ArrowRight, ChevronRight, Bookmark, PlayCircle } from "lucide-react";
+import { BookOpen, ChevronRight } from "lucide-react";
 import type { MagazineIssue } from "@/store/types";
 
 export default function MagazineLibraryPage() {

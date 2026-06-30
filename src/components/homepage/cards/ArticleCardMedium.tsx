@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import { stripMarkdown } from "@/lib/markdown";
-import CategoryBadge from "../shared/CategoryBadge";
 import ReadingTime from "../shared/ReadingTime";
 
 import { formatDisplayDate } from "@/utils/date";
