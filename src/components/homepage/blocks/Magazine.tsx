@@ -28,14 +28,14 @@ export default function Magazine() {
   const archives = publishedMags.slice(1, 6);
 
   return (
-    <SectionContainer bgClassName="bg-[#FAFAF9] dark:bg-[#1C1917]">
-      <div className="w-full py-0.5">
+    <SectionContainer bgClassName="bg-[#FAFAF9] dark:bg-[#1C1917]" noTopPadding={true}>
+      <div className="w-full">
       {/* Title */}
       <SectionTitle 
         title={locale === "hi" ? "पत्रिका डेस्क" : "Magazine Desk"} 
         link="/magazine" 
       />
-      <div className="bg-transparent border-t border-stone-200 dark:border-stone-800 pt-6 mt-4">
+      <div className="bg-transparent border-t border-stone-200 dark:border-stone-800 pt-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-center">
           
           {/* Left Column: Spotlight cover (4 cols) */}
