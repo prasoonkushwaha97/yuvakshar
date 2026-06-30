@@ -184,7 +184,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang="hi" className={`h-full scroll-smooth ${notoSansDeva.variable} ${notoSerifDeva.variable} ${hindFont.variable} ${muktaFont.variable} ${interFont.variable}`}>
+    <html lang="hi" suppressHydrationWarning className={`h-full scroll-smooth ${notoSansDeva.variable} ${notoSerifDeva.variable} ${hindFont.variable} ${muktaFont.variable} ${interFont.variable}`}>
       <head>
         <script
           type="application/ld+json"
