@@ -32,7 +32,7 @@ export default function Magazine() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-start">
           
           {/* Left Column: Spotlight cover (4 cols) */}
-          <div className="lg:col-span-4 flex justify-center perspective-[1000px]">
+          <div className="lg:col-span-4 flex justify-center items-start perspective-[1000px]">
             <div className="relative group w-[220px] md:w-[260px]">
               <div className="absolute inset-0 bg-black/10 dark:bg-black/50 blur-xl transform translate-y-4 translate-x-4 scale-95 group-hover:translate-x-6 group-hover:translate-y-6 transition-transform duration-700" />
               <div className="relative transform rotate-y-[-4deg] rotate-x-[2deg] group-hover:rotate-y-[0deg] group-hover:rotate-x-[0deg] transition-all duration-700 border border-stone-200 dark:border-stone-800 shadow-xl bg-stone-50 dark:bg-stone-900 rounded-sm overflow-hidden">
