@@ -31,7 +31,7 @@ export default function Authors() {
       {/* Title */}
       <SectionTitle 
         title={locale === "hi" ? "हमारे लेखक और योगदानकर्ता" : "Our Authors & Contributors"} 
-        link="/authors" 
+        link="/community" 
       />
 
       {/* Horizontal List */}

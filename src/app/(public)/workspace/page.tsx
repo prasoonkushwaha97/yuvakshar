@@ -133,7 +133,7 @@ export default function WorkspacePage() {
             </button>
           )}
           <Link
-            href="/admin"
+            href="/current-affairs"
             className="px-4 py-2 bg-yuvakshar-gold text-yuvakshar-bg rounded-full text-xs font-bold hover:bg-white shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all cursor-pointer flex items-center space-x-1"
           >
             <BookMarked className="w-3.5 h-3.5" />

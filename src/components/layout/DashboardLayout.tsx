@@ -75,7 +75,7 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
             title: "Community",
             items: [
               { label: "Authors", href: "/admin/authors", icon: User },
-              { label: "Communities", href: "/admin/communities", icon: UsersRound },
+              { label: "Communities", href: "/admin/community", icon: UsersRound },
               { label: "Comments", href: "/admin/comments", icon: MessageSquare },
             ]
           },
@@ -104,7 +104,7 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
             items: [
               { label: "Admin Dashboard", href: "/admin", icon: LayoutDashboard },
               { label: "Users", href: "/admin/users", icon: Users, roles: ["admin"] },
-              { label: "Communities", href: "/admin/communities", icon: UsersRound, roles: ["admin", "moderator"] },
+              { label: "Communities", href: "/admin/community", icon: UsersRound, roles: ["admin", "moderator"] },
               { label: "Comments", href: "/admin/comments", icon: MessageSquare, roles: ["admin", "moderator"] },
               { label: "Moderation", href: "/admin/moderation", icon: Shield, roles: ["admin", "moderator"] },
               { label: "Reports", href: "/admin/reports", icon: ClipboardList, roles: ["admin", "moderator"] },
@@ -122,9 +122,9 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
               { label: "Magazine", href: "/admin/magazine", icon: BookOpen, roles: ["editor_in_chief"] },
               { label: "Reviews", href: "/admin/reviews", icon: CheckSquare, roles: ["editor_in_chief", "editor"] },
               { label: "Workflow", href: "/admin/workflow", icon: Activity, roles: ["editor_in_chief", "managing_editor", "editor"] },
-              { label: "Assignments", href: "/admin/assignments", icon: ClipboardList, roles: ["editor_in_chief", "managing_editor"] },
-              { label: "Publishing Queue", href: "/admin/queue", icon: CheckSquare, roles: ["editor_in_chief", "managing_editor"] },
-              { label: "Fact Check Queue", href: "/admin/fact-check", icon: Shield, roles: ["fact_checker"] },
+              { label: "Assignments", href: "/admin/workflow", icon: ClipboardList, roles: ["editor_in_chief", "managing_editor"] },
+              { label: "Publishing Queue", href: "/admin/workflow", icon: CheckSquare, roles: ["editor_in_chief", "managing_editor"] },
+              { label: "Fact Check Queue", href: "/admin/workflow", icon: Shield, roles: ["fact_checker"] },
             ]
           }
         ];
@@ -134,8 +134,8 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
             title: "Author Workspace",
             items: [
               { label: "My Articles", href: "/author", icon: LayoutDashboard },
-              { label: "Drafts", href: "/author/drafts", icon: FileText },
-              { label: "Review Notes", href: "/author/reviews", icon: MessageSquare },
+              { label: "Drafts", href: "/author", icon: FileText },
+              { label: "Review Notes", href: "/author", icon: MessageSquare },
             ]
           }
         ];

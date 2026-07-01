@@ -12,9 +12,7 @@ export async function updateSession(request: NextRequest) {
 
     const pathname = request.nextUrl.pathname;
     const isProtectedRoute = 
-      
-      pathname.startsWith('/admin') ||
-      
+      (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) ||
       pathname.startsWith('/author');
 
     // Validate environment variables explicitly as per strict production requirements
@@ -79,9 +77,7 @@ export async function updateSession(request: NextRequest) {
     // Ultimate Fallback: allow public routes, block protected routes
     const pathname = request.nextUrl.pathname;
     const isProtectedRoute = 
-      
-      pathname.startsWith('/admin') ||
-      
+      (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) ||
       pathname.startsWith('/author');
 
     if (isProtectedRoute) {

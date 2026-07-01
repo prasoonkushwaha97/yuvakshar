@@ -75,7 +75,7 @@ export class SupabaseArticleRepository implements IArticleRepository {
       views: row.views,
       likes: row.likes,
       readTime: row.read_time,
-      tags: [], // Tags need a separate join mapping via article_tags
+      tags: row.tags || [],
       versions: [], // Needs article_versions join
       language: row.language_code === 'en' ? 'English' : 'Hindi'
     };
@@ -98,6 +98,7 @@ export class SupabaseArticleRepository implements IArticleRepository {
       views: article.views,
       likes: article.likes,
       read_time: article.readTime,
+      tags: article.tags || [],
       language_code: article.language === 'English' ? 'en' : 'hi'
     };
   }

@@ -96,9 +96,16 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<CmsRole, RolePermissions> = {
 
 export const hasPermission = (role: string | null | undefined, permission: keyof RolePermissions): boolean => {
   if (!role) return false;
-  // If the role exists in our matrix, check it
-  if (role in DEFAULT_ROLE_PERMISSIONS) {
-    return DEFAULT_ROLE_PERMISSIONS[role as CmsRole][permission];
+  
+  // Normalize Hindi roles and specific casing/special roles
+  let normalizedRole = role;
+  if (role === "संस्थापक") normalizedRole = "Founder";
+  else if (role === "प्रशासन") normalizedRole = "Administrator";
+  else if (role === "Editor-in-Chief") normalizedRole = "Founder";
+  else if (role === "Reviewer" || role === "Fact Checker" || role === "Fact Check Reviewer") normalizedRole = "Sub Editor";
+
+  if (normalizedRole in DEFAULT_ROLE_PERMISSIONS) {
+    return DEFAULT_ROLE_PERMISSIONS[normalizedRole as CmsRole][permission];
   }
   return false;
 };

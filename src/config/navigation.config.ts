@@ -30,7 +30,7 @@ export const primaryLinks: NavigationLink[] = [
   { labelHi: "युवाक्षर चौपाल", labelEn: "Community", href: "/community", icon: MessageSquare },
   { labelHi: "हमारे बारे में", labelEn: "About", href: "/about", icon: Info },
   { labelHi: "संपर्क करें", labelEn: "Contact", href: "/contact", icon: Mail },
-  { labelHi: "लेख सबमिट करें", labelEn: "Submit Article", href: "/submit-article", icon: PenTool }
+  { labelHi: "लेख सबमिट करें", labelEn: "Submit Article", href: "/contribute", icon: PenTool }
 ];
 
 export const profileActions = [

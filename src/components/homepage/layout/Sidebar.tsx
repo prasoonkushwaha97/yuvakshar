@@ -211,7 +211,7 @@ export default function Sidebar() {
               </p>
             </div>
             <Link
-              href="/submit-article"
+              href="/contribute"
               className="w-full text-center bg-[#f97316] hover:bg-[#EA580C] text-white py-2 rounded font-sans font-bold text-xs shadow-sm flex items-center justify-center space-x-1 transition-all cursor-pointer"
             >
               <span>✍️ {locale === "hi" ? "लेखन शुरू करें" : "Start Writing"}</span>

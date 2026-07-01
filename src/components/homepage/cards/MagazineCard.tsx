@@ -25,7 +25,7 @@ export default function MagazineCard({ magazine }: MagazineCardProps) {
         {/* Hover Read Indicator Overlay */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
           <Link
-            href={`/magazine`}
+            href={`/magazine/read/${magazine.slug || magazine.id}`}
             className="flex items-center space-x-1 bg-[#f97316] text-white px-4 py-2 rounded-full text-xs font-bold font-sans shadow-md transform scale-90 group-hover:scale-100 transition-transform duration-300"
           >
             <BookOpen className="w-3.5 h-3.5" />

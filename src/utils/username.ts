@@ -95,6 +95,12 @@ export function getCanonicalProfileUrl(profile: any): string {
     return `/u/${username}`;
   }
   
+  // Fallback to user ID if username is not pre-fetched
+  if (profile.id) {
+    console.log("getCanonicalProfileUrl called with:", profile, "=> returning", `/u/${profile.id}`);
+    return `/u/${profile.id}`;
+  }
+  
   console.log("getCanonicalProfileUrl called with:", profile, "=> returning /u/unknown (no canonical username found)");
   return "/u/unknown";
 }

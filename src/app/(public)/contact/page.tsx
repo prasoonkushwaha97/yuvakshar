@@ -771,7 +771,7 @@ export default function ContactPage() {
             
             <div className="shrink-0 font-sans">
               <Link 
-                href="/submit-article" 
+                href="/contribute" 
                 className="inline-flex items-center space-x-2 px-6 py-3.5 bg-slate-950 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-all hover:scale-[1.03] active:scale-[0.98] shadow-lg"
               >
                 <span>लेखक पोर्टल पर जाएँ</span>

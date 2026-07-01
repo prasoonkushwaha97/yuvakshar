@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { 
   Calendar, 
   Clock, 
@@ -15,12 +16,21 @@ import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import { stripMarkdown } from "@/lib/markdown";
 
-export default function CurrentAffairsPage() {
+function CurrentAffairsPageContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("latest"); // latest, popular, time
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
+
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams ? searchParams.get("category") : null;
+
+  useEffect(() => {
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [categoryParam]);
 
   useEffect(() => {
     setMounted(true);
@@ -162,5 +172,17 @@ export default function CurrentAffairsPage() {
       </div>
 
     </div>
+  );
+}
+
+export default function CurrentAffairsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1D] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <CurrentAffairsPageContent />
+    </Suspense>
   );
 }

@@ -5,7 +5,7 @@ import { Profile } from "@/store/types";
 import { useCms } from "@/store/CmsContext";
 
 export default function ProfileSettingsTab({ user }: { user: Profile }) {
-  const { updateUser } = useCms();
+  const { updateUserProfile } = useCms();
   const [formData, setFormData] = useState({
     display_name: user.display_name || user.name || "",
     username: user.username || "",
@@ -21,7 +21,7 @@ export default function ProfileSettingsTab({ user }: { user: Profile }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await updateUser(user.id, formData);
+      await updateUserProfile(formData);
       alert("प्रोफ़ाइल सेटिंग्स सफलतापूर्वक अपडेट की गईं!");
     } catch (err) {
       alert("सेटिंग्स अपडेट करने में विफल।");

@@ -232,7 +232,7 @@ export default function AboutPage() {
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
           <Link
-            href="/submit-article"
+            href="/contribute"
             className="px-6 py-2.5 rounded-xl bg-orange-600 text-white font-bold text-sm hover:bg-orange-700 transition duration-300"
           >
             लेख भेजें

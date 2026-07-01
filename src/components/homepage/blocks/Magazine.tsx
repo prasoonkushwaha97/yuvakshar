@@ -70,7 +70,7 @@ export default function Magazine() {
                 <span>{locale === "hi" ? "पत्रिका पढ़ें" : "Read Magazine"}</span>
               </Link>
               <Link 
-                href="/magazine/archive" 
+                href="/magazine" 
                 className="bg-transparent border border-stone-300 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 px-8 py-3.5 rounded-sm text-xs font-medium font-sans tracking-widest transition-all duration-300 uppercase cursor-pointer"
               >
                 {locale === "hi" ? "पुराने अंक" : "Archives"}

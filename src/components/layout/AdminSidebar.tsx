@@ -81,7 +81,7 @@ export default function AdminSidebar() {
       
       <div className="p-4 border-t border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-3 px-3 py-2">
-          <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0">
+          <div className="relative w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0">
              {currentUser?.avatar_url ? (
                <Image src={currentUser.avatar_url} alt="" className="w-full h-full object-cover" fill sizes="40px" />
              ) : (
