@@ -18,6 +18,7 @@ import {
 import { useCms } from "@/store/CmsContext";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
+import { getCanonicalProfileUrl } from "@/utils/username";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -280,7 +281,7 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
                         <p className="text-xs text-slate-500 truncate">{currentUser?.email}</p>
                       </div>
                       <div className="py-1">
-                        <Link href={`/u/${currentUser?.username || currentUser?.id || ""}`} className="flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900">
+                        <Link href={getCanonicalProfileUrl(currentUser)} className="flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900">
                           <User className="w-4 h-4 mr-3 text-slate-400" />
                           My Profile
                         </Link>

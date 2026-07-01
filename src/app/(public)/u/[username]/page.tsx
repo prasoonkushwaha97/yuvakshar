@@ -9,6 +9,7 @@ import { useCms } from "@/store/CmsContext";
 import { Profile } from "@/store/types";
 import { CommunityPost, fetchUserPosts, toggleLikePost } from "@/lib/communityService";
 import PostCard from "@/components/yuvakshar/PostCard";
+import { getCanonicalProfileUrl } from "@/utils/username";
 
 import ProfileCover from "@/components/profile/ProfileCover";
 import ProfileIdentityCard from "@/components/profile/ProfileIdentityCard";
@@ -50,17 +51,24 @@ export default function UserProfile() {
     if (users.length === 0) return null;
     const lowerUsername = username.toLowerCase();
     
-    // Priority 1: Exact match on canonical username (handles both dedicated column and legacy mapping)
+    // Priority 1: Exact match on canonical username
     const matchByUsername = users.find(u => u.username?.toLowerCase() === lowerUsername);
     if (matchByUsername) return matchByUsername;
     
-    // Priority 2: Generated slug fallback (only if an explicit username has never been assigned)
+    // Priority 2: Generated slug fallback
     const matchBySlug = users.find(u => u.slug?.toLowerCase() === lowerUsername);
-    if (matchBySlug && !matchBySlug.username) return matchBySlug;
+    if (matchBySlug) return matchBySlug;
     
     // Priority 3: Internal ID
     return users.find(u => u.id === username);
   }, [users, username]);
+
+  useEffect(() => {
+    if (dbUser && dbUser.username && dbUser.username.toLowerCase() !== username.toLowerCase()) {
+      // Requested by legacy slug/id, but has canonical username. Redirect to canonical!
+      router.replace(getCanonicalProfileUrl(dbUser));
+    }
+  }, [dbUser, username, router]);
 
   const isLoading = authLoading || cmsDataLoading || (!dbUser && users.length === 0);
   const user = dbUser || ({} as any);
@@ -149,7 +157,7 @@ export default function UserProfile() {
     },
     "description": user.bio,
     "image": user.avatar_url,
-    "url": `https://yuvakshar.org/u/${user.username || user.slug}`,
+    "url": `https://yuvakshar.org${getCanonicalProfileUrl(user)}`,
     "sameAs": [
       user.social_links?.twitter || "",
       user.social_links?.linkedin || ""
@@ -178,7 +186,7 @@ export default function UserProfile() {
                 onFollowToggle={handleFollowToggle}
                 onMessageClick={() => setContactOpen(true)}
                 onShareClick={() => {
-                  navigator.clipboard.writeText(`https://yuvakshar.org/u/${user.username || user.slug || user.id}`);
+                  navigator.clipboard.writeText(`https://yuvakshar.org${getCanonicalProfileUrl(user)}`);
                   alert("Link copied to clipboard!");
                 }}
                 onEditClick={() => setActiveTab("settings")}

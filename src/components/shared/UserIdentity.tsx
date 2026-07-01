@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCms } from "@/store/CmsContext";
 import { Profile } from "@/store/types";
+import { getCanonicalProfileUrl } from "@/utils/username";
 
 export interface UserIdentityProps {
   userId?: string | null;
@@ -79,15 +80,13 @@ export default function UserIdentity({
   }
 
   const name = resolvedUser.name || (resolvedUser as any).full_name || "Unknown";
-  // Fallback to id, then to a slugified name for legacy data, then to 'unknown'
-  const slugifiedName = name !== "Unknown" ? encodeURIComponent(name.toLowerCase().trim().replace(/\s+/g, "-")) : null;
-  const username = resolvedUser.username || resolvedUser.id || slugifiedName || "unknown";
   
   const avatarUrl = resolvedUser.avatar_url || (resolvedUser as any).avatar || null;
   const role = resolvedUser.role || "Member";
   const isVerified = (resolvedUser as any).is_verified || (resolvedUser as any).verified || false;
 
-  const profileHref = `/u/${username}`;
+  const profileHref = getCanonicalProfileUrl(resolvedUser);
+  const username = resolvedUser.username || resolvedUser.slug || resolvedUser.id || "unknown";
 
   // Sizes based on variant
   const getAvatarSize = () => {

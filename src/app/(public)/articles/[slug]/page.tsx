@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { getArticleBySlug, getArticleById } from "@/lib/actions/articleActions";
 import Image from "next/image";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
+import { getCanonicalProfileUrl } from "@/utils/username";
 import { stripMarkdown } from "@/lib/markdown";
 import Sidebar from "@/components/homepage/layout/Sidebar";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
@@ -139,7 +141,7 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
 
             {/* Author Profile and Metadata */}
             <div className="flex flex-wrap items-center justify-between gap-4 border-t border-b border-gray-100 dark:border-gray-850 py-4 mb-6">
-              <Link href={article?.profiles ? `/u/${(article.profiles as any).slug || (article.profiles as any).username || article.profiles.id}` : "#"} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+              <Link href={article?.profiles ? getCanonicalProfileUrl(article.profiles) : "#"} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
                 <Image 
                   src={article?.profiles?.avatar_url || "/images/default-avatar.png"} 
                   alt={article?.profiles?.name || "युवाक्षर लेखक"}

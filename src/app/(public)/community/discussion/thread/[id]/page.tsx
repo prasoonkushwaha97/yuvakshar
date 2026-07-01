@@ -11,6 +11,8 @@ import {
   Award,
   CornerUpLeft
 } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
+import { getCanonicalProfileUrl } from "@/utils/username";
 import { useCms } from "@/store/CmsContext";
 import { 
   fetchPosts, 
@@ -175,7 +177,7 @@ export default function DiscussionThreadPage() {
         return (
           <Link 
             key={idx} 
-            href={`/u/${username || "unknown"}`}
+            href={getCanonicalProfileUrl({ username: username || "unknown" })}
             className="text-primary hover:underline font-bold"
           >
             {part}

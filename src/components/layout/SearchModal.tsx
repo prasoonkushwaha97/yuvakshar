@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Search, X, Clock, TrendingUp, User, BookOpen, Tag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
+import { getCanonicalProfileUrl } from "@/utils/username";
 
 const RECENT_SEARCHES_KEY = "yuvakshar_recent_searches";
 
@@ -222,7 +223,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">लेखक</h3>
                           <div className="space-y-1">
                             {results.authors.map(u => (
-                              <button key={u.id} onClick={() => handleSelectResult(`/u/${u.slug || u.username || u.id}`, query)} className="w-full text-left p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors flex items-center gap-3">
+                              <button key={u.id} onClick={() => handleSelectResult(getCanonicalProfileUrl(u), query)} className="w-full text-left p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors flex items-center gap-3">
                                 {u.avatar_url ? (
                                   <Image src={u.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" width={48} height={48} />
                                 ) : (

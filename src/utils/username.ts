@@ -81,3 +81,21 @@ export function generateFallbackUsername(email: string | undefined): string {
   const randomNum = Math.floor(1000 + Math.random() * 9000);
   return `${base}${randomNum}`;
 }
+
+export function getCanonicalProfileUrl(profile: any): string {
+  if (!profile) return "/u/unknown";
+  
+  // Try to resolve username first (handling both direct fields and nested Supabase relations)
+  const username = profile.username || profile.profiles?.username || profile.social_links?.username;
+  if (username) return `/u/${username}`;
+  
+  // Fallback to slug for legacy compatibility
+  const slug = profile.slug || profile.profiles?.slug;
+  if (slug) return `/u/${slug}`;
+  
+  // Last resort internal ID
+  const id = profile.id || profile.user_id;
+  if (id) return `/u/${id}`;
+  
+  return "/u/unknown";
+}

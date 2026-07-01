@@ -9,6 +9,7 @@ import { useCms } from "@/store/CmsContext";
 import { isUserFollowing, toggleFollowUser } from "@/lib/communityService";
 import type { Profile } from "@/store/types";
 import { RoleBadgeList } from "@/components/ui/RoleBadge";
+import { getCanonicalProfileUrl } from "@/utils/username";
 
 interface HoverUserCardProps {
   userId: string;
@@ -27,7 +28,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
   // Load user data when hovered/opened to keep it lightweight
   useEffect(() => {
     if (isOpen && !user) {
-      const match = users.find((u: Profile) => u.slug === userId || u.id === userId);
+      const match = users.find((u: Profile) => u.username === userId || u.slug === userId || u.id === userId);
       if (match) {
         setUser(match);
         if (currentUser) {
@@ -99,7 +100,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
     });
   };
 
-  const userLink = `/u/${user?.slug || user?.username || user?.id || userId || "unknown"}`;
+  const userLink = getCanonicalProfileUrl(user || { id: userId });
 
   return (
     <div 

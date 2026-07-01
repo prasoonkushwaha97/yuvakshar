@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import React from 'react';
+import { getCanonicalProfileUrl } from '@/utils/username';
 
 type Props = {
   params: Promise<{ username: string }>;
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
   const bio = `युवाक्षर पर ${name} की आधिकारिक प्रोफ़ाइल।`;
-  const url = `https://yuvakshar.tech/u/${cleanUsername}`;
+  const url = `https://yuvakshar.tech${getCanonicalProfileUrl({ username: cleanUsername })}`;
 
   return {
     title: `${name} - युवाक्षर (Yuvakshar)`,
@@ -48,7 +49,7 @@ export default async function ProfileLayout({
   const resolvedParams = await params;
   const username = resolvedParams.username;
   const cleanUsername = username.startsWith('%40') ? username.substring(3) : username;
-  const url = `https://yuvakshar.tech/u/${cleanUsername}`;
+  const url = `https://yuvakshar.tech${getCanonicalProfileUrl({ username: cleanUsername })}`;
   const name = cleanUsername
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))

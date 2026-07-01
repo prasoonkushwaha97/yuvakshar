@@ -6,9 +6,11 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { MessageCircle, BookOpen } from "lucide-react";
 import { RoleBadgeList } from "@/components/ui/RoleBadge";
+import { getCanonicalProfileUrl } from "@/utils/username";
 
 interface AuthorData {
   id: string;
+  username?: string;
   slug?: string;
   name: string;
   avatar_url?: string | null;
@@ -76,7 +78,7 @@ export default function HoverAuthorCard({ author, children }: HoverAuthorCardPro
     };
   }, [isOpen]);
 
-  const authorLink = `/u/${author.slug || author.id}`;
+  const authorLink = getCanonicalProfileUrl(author);
 
   return (
     <div 
