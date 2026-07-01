@@ -298,7 +298,7 @@ export const mapDbProfileToProfile = (dbProfile: any): Profile => {
   const custom = dbProfile.social_links || {};
   
   const customFields = [
-    "username", "username_changed_at", "previous_username", "slug", "cover_banner",
+    "username", "username_changed_at", "previous_username", "slug", "cover_url",
     "designation", "current_role", "verification_badge", "institution", "expertise_tags",
     "orcid_id", "google_scholar_url", "academic_credentials", "education",
     "academic_background", "research_interests", "professional_experience",
@@ -357,7 +357,7 @@ export const updateProfileInDb = async (profile: Profile): Promise<{ success: bo
       });
 
       const customFields = [
-        "username", "username_changed_at", "previous_username", "slug", "cover_banner",
+        "username", "username_changed_at", "previous_username", "slug", "cover_url",
         "designation", "current_role", "verification_badge", "institution", "expertise_tags",
         "orcid_id", "google_scholar_url", "academic_credentials", "education",
         "academic_background", "research_interests", "professional_experience",

@@ -85,8 +85,8 @@ export function generateFallbackUsername(email: string | undefined): string {
 export function getCanonicalProfileUrl(profile: any): string {
   if (!profile) return "/u/unknown";
   
-  // Try to resolve username first (handling both direct fields and nested Supabase relations)
-  const username = profile.username || profile.profiles?.username || profile.social_links?.username;
+  // Try to resolve username first
+  const username = profile.username || profile.profiles?.username;
   if (username) return `/u/${username}`;
   
   // Fallback to slug for legacy compatibility
@@ -98,4 +98,43 @@ export function getCanonicalProfileUrl(profile: any): string {
   if (id) return `/u/${id}`;
   
   return "/u/unknown";
+}
+
+/**
+ * Resolves an incoming identifier (username, slug, or ID) to a canonical profile.
+ * Returns the matched profile and a boolean indicating if a redirect is needed.
+ */
+export function resolveProfileIdentifier(identifier: string, users: any[]): { profile: any | null, needsRedirect: boolean } {
+  if (!identifier || !users || users.length === 0) {
+    return { profile: null, needsRedirect: false };
+  }
+
+  const lowerIdentifier = identifier.toLowerCase();
+
+  // 1. Priority: Canonical username match
+  const matchByUsername = users.find(u => u.username?.toLowerCase() === lowerIdentifier);
+  if (matchByUsername) {
+    return { profile: matchByUsername, needsRedirect: false };
+  }
+
+  // 2. Priority: Legacy slug match
+  const matchBySlug = users.find(u => u.slug?.toLowerCase() === lowerIdentifier);
+  if (matchBySlug) {
+    // If we matched by slug but they have a canonical username, we must redirect to the username!
+    return { 
+      profile: matchBySlug, 
+      needsRedirect: !!matchBySlug.username 
+    };
+  }
+
+  // 3. Last Resort: Internal ID match (UUID)
+  const matchById = users.find(u => u.id === identifier);
+  if (matchById) {
+    return { 
+      profile: matchById, 
+      needsRedirect: !!matchById.username 
+    };
+  }
+
+  return { profile: null, needsRedirect: false };
 }

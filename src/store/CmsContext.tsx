@@ -909,7 +909,7 @@ export function CmsProvider({
         const enrichedFields = {
           ...user,
           slug,
-          cover_banner: user.cover_banner || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+          cover_url: user.cover_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
           bio: user.bio || "युवाक्षर के सह-संस्थापक एवं संपादक। हिंदी पत्रकारिता, समाजशास्त्र और सामयिक विषयों पर सतत लेखन।",
           designation: user.designation || "सह-संस्थापक एवं प्रधान संपादक",
           current_role: user.current_role || "युवाक्षर संपादकीय बोर्ड",
@@ -943,7 +943,7 @@ export function CmsProvider({
         const enrichedFields = {
           ...user,
           slug,
-          cover_banner: user.cover_banner || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
+          cover_url: user.cover_url || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
           designation: user.designation || "संस्थापक एवं स्वामी",
           current_role: user.current_role || "युवाक्षर मीडिया नेटवर्क",
           verification_badge: user.verification_badge || "Founder",
@@ -963,7 +963,7 @@ export function CmsProvider({
         const enrichedFields = {
           ...user,
           slug,
-          cover_banner: user.cover_banner || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80",
+          cover_url: user.cover_url || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80",
           designation: user.designation || "तकनीकी प्रमुख एवं प्रबंधक",
           current_role: user.current_role || "यूटिलिटी और एडमिनिस्ट्रेशन",
           verification_badge: user.verification_badge || "Editorial Team",
@@ -1618,7 +1618,7 @@ export function CmsProvider({
         });
         
         const customFields = [
-          "username", "username_changed_at", "previous_username", "slug", "cover_banner",
+          "username", "username_changed_at", "previous_username", "slug", "cover_url",
           "designation", "current_role", "verification_badge", "institution", "expertise_tags",
           "orcid_id", "google_scholar_url", "academic_credentials", "education",
           "academic_background", "research_interests", "professional_experience",
@@ -2628,7 +2628,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
         
         // Handle custom fields serialization into social_links
         const customFields = [
-          "username", "username_changed_at", "previous_username", "slug", "cover_banner",
+          "username", "username_changed_at", "previous_username", "slug", "cover_url",
           "designation", "current_role", "verification_badge", "institution", "expertise_tags",
           "orcid_id", "google_scholar_url", "academic_credentials", "education",
           "academic_background", "research_interests", "professional_experience",

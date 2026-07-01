@@ -121,8 +121,8 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
           
           {/* Cover Banner */}
           <div className="h-20 bg-gradient-to-r from-primary/80 to-blue-600/80 w-full relative">
-            {user.cover_banner && (
-              <Image src={user.cover_banner} alt="Cover" className="w-full h-full object-cover" fill />
+            {user.cover_url && (
+              <Image src={user.cover_url} alt="Cover" className="w-full h-full object-cover" fill />
             )}
           </div>
 

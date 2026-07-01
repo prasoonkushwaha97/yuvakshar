@@ -38,7 +38,7 @@ export class SupabaseUserRepository implements IUserRepository {
       
       // Extended fields
       slug: row.slug,
-      cover_banner: row.cover_banner,
+      cover_url: row.cover_url,
       designation: row.designation,
       current_role: row.current_role,
       verification_badge: row.verification_badge,

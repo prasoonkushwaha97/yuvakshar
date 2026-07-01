@@ -35,8 +35,10 @@ export default function ProfileSkeleton() {
         </div>
         
         {/* Tabs Skeleton */}
-        <div className="mt-12">
-          <BaseSkeleton className="h-12 w-full max-w-2xl rounded-lg" />
+        <div className="mt-12 flex space-x-4 overflow-x-auto pb-2">
+          {[...Array(6)].map((_, i) => (
+            <BaseSkeleton key={i} className="h-10 w-24 shrink-0 rounded-full" />
+          ))}
         </div>
         
         {/* Content Skeleton */}

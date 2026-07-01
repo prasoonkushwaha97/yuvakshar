@@ -7,9 +7,13 @@ import { useCms } from "@/store/CmsContext";
 export default function ProfileSettingsTab({ user }: { user: Profile }) {
   const { updateUser } = useCms();
   const [formData, setFormData] = useState({
-    name: user.name || "",
+    display_name: user.display_name || user.name || "",
     username: user.username || "",
     bio: user.bio || "",
+    website: user.website || "",
+    location: user.location || "",
+    cover_url: user.cover_url || "",
+    avatar_url: user.avatar_url || "",
   });
   const [saving, setSaving] = useState(false);
 
@@ -35,9 +39,9 @@ export default function ProfileSettingsTab({ user }: { user: Profile }) {
           <label className="text-sm font-bold text-slate-700 dark:text-slate-300">प्रदर्शन नाम (Display Name)</label>
           <input 
             type="text" 
-            value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
-            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-hindi"
+            value={formData.display_name}
+            onChange={(e) => setFormData({...formData, display_name: e.target.value})}
+            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316] font-hindi"
           />
         </div>
         
@@ -50,10 +54,56 @@ export default function ProfileSettingsTab({ user }: { user: Profile }) {
               value={formData.username}
               onChange={(e) => setFormData({...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')})}
               placeholder="username"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-r-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-r-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
             />
           </div>
           <p className="text-xs text-slate-500 mt-1">सिर्फ अक्षर (a-z), नंबर (0-9) और अंडरस्कोर (_) मान्य हैं।</p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">अवतार URL (Avatar URL)</label>
+          <input 
+            type="text" 
+            value={formData.avatar_url}
+            onChange={(e) => setFormData({...formData, avatar_url: e.target.value})}
+            placeholder="https://..."
+            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">कवर बैनर URL (Cover URL)</label>
+          <input 
+            type="text" 
+            value={formData.cover_url}
+            onChange={(e) => setFormData({...formData, cover_url: e.target.value})}
+            placeholder="https://..."
+            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-700 dark:text-slate-300">स्थान (Location)</label>
+            <input 
+              type="text" 
+              value={formData.location}
+              onChange={(e) => setFormData({...formData, location: e.target.value})}
+              placeholder="e.g. New Delhi, India"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-700 dark:text-slate-300">वेबसाइट (Website)</label>
+            <input 
+              type="text" 
+              value={formData.website}
+              onChange={(e) => setFormData({...formData, website: e.target.value})}
+              placeholder="https://..."
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -62,14 +112,14 @@ export default function ProfileSettingsTab({ user }: { user: Profile }) {
             value={formData.bio}
             onChange={(e) => setFormData({...formData, bio: e.target.value})}
             rows={4}
-            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-hindi"
+            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316] font-hindi"
           />
         </div>
 
         <button 
           type="submit" 
           disabled={saving}
-          className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-xl shadow-sm transition-colors disabled:opacity-50"
+          className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold py-3 px-8 rounded-xl shadow-sm transition-colors disabled:opacity-50"
         >
           {saving ? "सुरक्षित किया जा रहा है..." : "सुरक्षित करें (Save)"}
         </button>

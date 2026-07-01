@@ -9,7 +9,7 @@ import { useCms } from "@/store/CmsContext";
 import { Profile } from "@/store/types";
 import { CommunityPost, fetchUserPosts, toggleLikePost } from "@/lib/communityService";
 import PostCard from "@/components/yuvakshar/PostCard";
-import { getCanonicalProfileUrl } from "@/utils/username";
+import { getCanonicalProfileUrl, resolveProfileIdentifier } from "@/utils/username";
 
 import ProfileCover from "@/components/profile/ProfileCover";
 import ProfileIdentityCard from "@/components/profile/ProfileIdentityCard";
@@ -46,29 +46,17 @@ export default function UserProfile() {
   const [userPosts, setUserPosts] = useState<CommunityPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(false);
 
-  // Find user by username
-  const dbUser = useMemo(() => {
-    if (users.length === 0) return null;
-    const lowerUsername = username.toLowerCase();
-    
-    // Priority 1: Exact match on canonical username
-    const matchByUsername = users.find(u => u.username?.toLowerCase() === lowerUsername);
-    if (matchByUsername) return matchByUsername;
-    
-    // Priority 2: Generated slug fallback
-    const matchBySlug = users.find(u => u.slug?.toLowerCase() === lowerUsername);
-    if (matchBySlug) return matchBySlug;
-    
-    // Priority 3: Internal ID
-    return users.find(u => u.id === username);
+  // Find user by canonical identifier
+  const { profile: dbUser, needsRedirect } = useMemo(() => {
+    return resolveProfileIdentifier(username, users);
   }, [users, username]);
 
   useEffect(() => {
-    if (dbUser && dbUser.username && dbUser.username.toLowerCase() !== username.toLowerCase()) {
+    if (needsRedirect && dbUser) {
       // Requested by legacy slug/id, but has canonical username. Redirect to canonical!
       router.replace(getCanonicalProfileUrl(dbUser));
     }
-  }, [dbUser, username, router]);
+  }, [needsRedirect, dbUser, router]);
 
   const isLoading = authLoading || cmsDataLoading || (!dbUser && users.length === 0);
   const user = dbUser || ({} as any);
@@ -149,7 +137,7 @@ export default function UserProfile() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
-    "name": user.name,
+    "name": user.display_name || user.name,
     "jobTitle": user.designation || user.role,
     "worksFor": {
       "@type": "Organization",
@@ -169,7 +157,7 @@ export default function UserProfile() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Hero Cover Section */}
-      <ProfileCover coverUrl={user.cover_banner} isOwner={isOwner} onCoverUpload={() => {}} />
+      <ProfileCover coverUrl={user.cover_url} isOwner={isOwner} onCoverUpload={() => {}} />
 
       {/* Main Container */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -233,6 +221,13 @@ export default function UserProfile() {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {["overview", "magazine", "media", "activity", "followers", "following", "about", "bookmarks", "drafts"].includes(activeTab) && (
+              <div className="py-24 text-center font-serif">
+                <p className="text-2xl font-bold text-slate-300 dark:text-slate-700">जल्द आ रहा है</p>
+                <p className="text-slate-500 mt-2">यह अनुभाग अभी निर्माणाधीन है।</p>
               </div>
             )}
 
@@ -309,12 +304,6 @@ export default function UserProfile() {
               <ProfileSettingsTab user={user} />
             )}
 
-            {(activeTab === "bookmarks" || activeTab === "drafts" || activeTab === "likes" || activeTab === "comments") && (
-               <div className="py-32 text-center font-serif bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-                 <p className="text-xl font-bold text-slate-500 dark:text-slate-400">अभी कोई डेटा उपलब्ध नहीं है</p>
-                 <p className="text-sm text-slate-400 mt-2">इस अनुभाग में दिखाने के लिए अभी सामग्री नहीं है।</p>
-               </div>
-            )}
           </div>
 
           {/* Right Sidebar */}

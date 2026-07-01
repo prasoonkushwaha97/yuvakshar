@@ -28,6 +28,20 @@ export interface Article {
   [key: string]: any;
 }
 
+export interface UserSummary {
+  id: string;
+  name: string;
+  username: string;
+  display_name?: string;
+  avatar_url?: string;
+  cover_url?: string;
+  website?: string;
+  location?: string;
+  role?: string;
+  status?: string;
+  verified?: boolean;
+}
+
 export interface MagazineIssue {
   id: string;
   issue: string;
@@ -52,7 +66,9 @@ export type Magazine = MagazineIssue;
 export interface Profile {
   id: string;
   name: string;
+  display_name?: string;
   username: string;
+  verified?: boolean;
   username_changed_at?: string;
   previous_username?: string;
   role: "Founder" | "संस्थापक" | "सह-संस्थापक" | "प्रधान प्रशासक" | "प्रशासक" | "प्रधान संपादक" | "कार्यकारी संपादक" | "वरिष्ठ संपादक" | "संपादक" | "सहायक संपादक" | "समुदाय प्रबंधक" | "समुदाय मॉडरेटर" | "समूह व्यवस्थापक" | "समूह मॉडरेटर" | "प्रूफरीडर" | "भाषा समीक्षक" | "कार्यक्रम समन्वयक" | "चुनौती समन्वयक" | "प्रमाणपत्र प्रबंधक" | "स्वयंसेवक" | "प्रशिक्षु" | "सदस्य" | "संस्थापक" | "प्रशासन" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Sub Editor" | "Fact Checker" | "Reviewer" | "Author" | "योगदानकर्ता" | "Fact Check Reviewer" | null;
@@ -86,7 +102,8 @@ export interface Profile {
   
   // Author Ecosystem 2.0 extensions
   slug?: string;
-  cover_banner?: string;
+  cover_url?: string;
+  website?: string;
   designation?: string;
   current_role?: string;
   verification_badge?: "Verified Author" | "Verified Researcher" | "Editorial Team" | "Editor" | "Managing Editor" | "Editor-in-Chief" | "Founder" | null;

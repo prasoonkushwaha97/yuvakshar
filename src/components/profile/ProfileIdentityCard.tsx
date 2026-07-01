@@ -39,14 +39,14 @@ export default function ProfileIdentityCard({ user, isLeadership }: ProfileIdent
           {user.avatar_url ? (
             <Image 
               src={user.avatar_url} 
-              alt={user.name} 
+              alt={user.display_name || user.name} 
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
               fill 
               sizes="160px"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-slate-400">
-              <span className="text-4xl font-bold uppercase">{user.name[0]}</span>
+              <span className="text-4xl font-bold uppercase">{(user.display_name || user.name)?.[0]}</span>
             </div>
           )}
         </div>
@@ -56,8 +56,8 @@ export default function ProfileIdentityCard({ user, isLeadership }: ProfileIdent
           <div>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
               <h1 className="text-3xl sm:text-4xl font-extrabold font-serif text-slate-850 dark:text-white flex items-center gap-2">
-                <span>{user.name}</span>
-                {user.verification_badge && (
+                <span>{user.display_name || user.name}</span>
+                {user.verified && (
                   <CheckCircle2 className="w-7 h-7 text-[#1DA1F2] fill-[#1DA1F2]/10 shrink-0" />
                 )}
               </h1>
@@ -90,8 +90,8 @@ export default function ProfileIdentityCard({ user, isLeadership }: ProfileIdent
               </span>
             )}
             
-            {user.social_links?.website && (
-              <a href={user.social_links.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-[#F97316] transition-colors">
+            {user.website && (
+              <a href={user.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-[#F97316] transition-colors">
                 <LinkIcon className="w-4 h-4" />
                 <span className="underline decoration-slate-300 dark:decoration-slate-700 underline-offset-4">वेबसाइट</span>
               </a>
