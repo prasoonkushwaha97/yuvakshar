@@ -27,3 +27,5 @@ export default function AdminModerationPage() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

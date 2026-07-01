@@ -16,3 +16,5 @@ export default function VideosPage() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

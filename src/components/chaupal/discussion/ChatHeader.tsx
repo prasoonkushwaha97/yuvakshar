@@ -1,6 +1,6 @@
 import React from "react";
 import { Info, MoreVertical, Hash, Users, MessageSquare } from "lucide-react";
-import ChaupalAvatar from "../shared/ChaupalAvatar";
+import UserIdentity from "@/components/shared/UserIdentity";
 import { CH_ANIMATIONS } from "../shared/design";
 
 interface ChatHeaderProps {
@@ -17,7 +17,7 @@ export default function ChatHeader({ room }: ChatHeaderProps) {
   return (
     <div className="flex items-center justify-between px-4 h-16 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shrink-0 z-10">
       <div className="flex items-center gap-3">
-        <ChaupalAvatar name={room.title} size="md" />
+        <UserIdentity user={{ name: room.title }} variant="inline" avatarSize={40} showUsername={false} clickable={false} />
         <div className="flex flex-col">
           <h2 className="font-bold text-[15px] text-slate-900 dark:text-white leading-tight">
             {room.title}

@@ -9,7 +9,7 @@ export async function getFeedPosts(page = 1, limit = 20, filter = 'latest') {
   const start = (page - 1) * limit;
   const end = start + limit - 1;
 
-  let query = supabase
+  const query = supabase
     .from('chaupal_posts')
     .select(`
       id,
@@ -36,8 +36,8 @@ export async function getFeedPosts(page = 1, limit = 20, filter = 'latest') {
   }
 
   // If user is logged in, fetch their likes and bookmarks to set isLiked and isSaved
-  let userLikes = new Set<string>();
-  let userSaves = new Set<string>();
+  const userLikes = new Set<string>();
+  const userSaves = new Set<string>();
 
   if (userId && posts.length > 0) {
     const postIds = posts.map(p => p.id);

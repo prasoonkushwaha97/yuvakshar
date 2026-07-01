@@ -116,3 +116,5 @@ export default function EditorialQueuePage() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

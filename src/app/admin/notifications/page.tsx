@@ -204,3 +204,5 @@ export default function CommunicationHub() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

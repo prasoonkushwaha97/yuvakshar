@@ -156,3 +156,5 @@ export default function ExperienceBuilderCanvas() {
     </div>
   );
 }
+
+export const dynamic = "force-dynamic";

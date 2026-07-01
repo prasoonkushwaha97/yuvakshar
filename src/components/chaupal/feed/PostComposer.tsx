@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Image as ImageIcon, Smile, FileText, ListTodo, Link as LinkIcon, X } from "lucide-react";
-import ChaupalAvatar from "../shared/ChaupalAvatar";
+import UserIdentity from "@/components/shared/UserIdentity";
 import { CH_CLASS, CH_ANIMATIONS, CH_RADIUS } from "../shared/design";
 
 import { createPost } from "@/lib/actions/chaupalFeedActions";
@@ -66,7 +66,7 @@ export default function PostComposer({ currentUser, placeholder = "चौपा�
   return (
     <div className={`${CH_CLASS.card} p-4 sm:p-5 mb-6`}>
       <div className="flex gap-4">
-        <ChaupalAvatar name={currentUser.name} src={currentUser.avatarUrl} size="md" />
+        <UserIdentity user={{ name: currentUser.name, avatar_url: currentUser.avatarUrl }} variant="inline" avatarSize={40} showUsername={false} clickable={false} />
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col pt-1">
           <textarea
             value={content}

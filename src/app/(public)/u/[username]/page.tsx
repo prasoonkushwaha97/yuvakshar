@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, notFound } from "next/navigation";
-import { Send, X, MessageSquare, Download, ExternalLink } from "lucide-react";
+import { Send, X, MessageSquare, Download, ExternalLink, BookOpen } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { Profile } from "@/store/types";
 import { CommunityPost, fetchUserPosts, toggleLikePost } from "@/lib/communityService";
@@ -17,11 +17,17 @@ import ProfileStats from "@/components/profile/ProfileStats";
 import ProfileTabs, { ProfileTabId } from "@/components/profile/ProfileTabs";
 import ProfileArticleCard from "@/components/profile/ProfileArticleCard";
 import ProfileSidebar from "@/components/profile/ProfileSidebar";
+import ProfileSettingsTab from "@/components/profile/ProfileSettingsTab";
 
 export default function UserProfile() {
   const params = useParams();
   const router = useRouter();
-  const slug = params?.slug as string;
+  
+  // Decoding the URL param just in case it's encoded or has an @ prefix
+  const rawParam = params?.username as string;
+  const decodedParam = rawParam ? decodeURIComponent(rawParam) : "";
+  const username = decodedParam.startsWith("@") ? decodedParam.substring(1) : decodedParam;
+
   const { users, articles, videos, currentUser, followAuthor, openAuthModal } = useCms();
 
   // Contact modal state
@@ -38,23 +44,31 @@ export default function UserProfile() {
   const [userPosts, setUserPosts] = useState<CommunityPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(false);
 
-  // Find user by slug
+  // Find user by username
   const dbUser = useMemo(() => {
-    return users.find(u => u.slug === slug);
-  }, [users, slug]);
+    return users.find(u => 
+      u.username?.toLowerCase() === username.toLowerCase() || 
+      u.slug?.toLowerCase() === username.toLowerCase() || 
+      u.id === username
+    );
+  }, [users, username]);
 
   if (!dbUser) {
     notFound();
   }
 
   const user = dbUser;
-
   const isOwner = currentUser?.id === user.id;
 
   // Filter content written by this user
   const userArticles = useMemo(() => {
-    return articles.filter(a => a.author === user.name && a.status === "Published");
-  }, [articles, user.name]);
+    return articles.filter(a => {
+      const isPublished = a.status === "Published";
+      const matchId = (a as any).author_id === user.id;
+      const matchName = (a as any).author === user.name && !["NEW USER", "पाठक (Reader)", "Admin"].includes(user.name);
+      return isPublished && (matchId || matchName);
+    });
+  }, [articles, user.id, user.name]);
 
   useEffect(() => {
     if (activeTab === "community" && user.id) {
@@ -121,7 +135,7 @@ export default function UserProfile() {
     },
     "description": user.bio,
     "image": user.avatar_url,
-    "url": `https://yuvakshar.org/profile/${user.slug}`,
+    "url": `https://yuvakshar.org/u/${user.username || user.slug}`,
     "sameAs": [
       user.social_links?.twitter || "",
       user.social_links?.linkedin || ""
@@ -149,7 +163,12 @@ export default function UserProfile() {
                 isFollowing={isFollowing} 
                 onFollowToggle={handleFollowToggle}
                 onMessageClick={() => setContactOpen(true)}
-                onShareClick={() => {}}
+                onShareClick={() => {
+                  navigator.clipboard.writeText(`https://yuvakshar.org/u/${user.username || user.slug || user.id}`);
+                  alert("Link copied to clipboard!");
+                }}
+                onEditClick={() => setActiveTab("settings")}
+                onSettingsClick={() => setActiveTab("settings")}
               />
             </div>
             
@@ -157,7 +176,7 @@ export default function UserProfile() {
               <ProfileStats 
                 articlesCount={userArticles.length}
                 followersCount={user.followers?.length || 0}
-                followingCount={0}
+                followingCount={user.following?.length || 0}
                 viewsCount={totalArticleViews}
                 likesCount={totalArticleLikes}
               />
@@ -165,7 +184,7 @@ export default function UserProfile() {
           </div>
 
           <div className="hidden xl:block xl:w-1/3 pt-6 relative z-10">
-             {/* We can place the sidebar here or below. In this editorial design, Sidebar is usually on the right alongside content. Let's move it down so it aligns with content, giving the profile card breathing room. */}
+             {/* Sidebar moved below */}
           </div>
         </div>
 
@@ -264,9 +283,13 @@ export default function UserProfile() {
               </div>
             )}
 
+            {activeTab === "settings" && isOwner && (
+              <ProfileSettingsTab user={user} />
+            )}
+
             {(activeTab === "bookmarks" || activeTab === "drafts" || activeTab === "likes" || activeTab === "comments") && (
-               <div className="py-32 text-center font-serif">
-                 <p className="text-xl font-bold text-slate-300 dark:text-slate-700">अभी कोई डेटा उपलब्ध नहीं है</p>
+               <div className="py-32 text-center font-serif bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+                 <p className="text-xl font-bold text-slate-500 dark:text-slate-400">अभी कोई डेटा उपलब्ध नहीं है</p>
                  <p className="text-sm text-slate-400 mt-2">इस अनुभाग में दिखाने के लिए अभी सामग्री नहीं है।</p>
                </div>
             )}

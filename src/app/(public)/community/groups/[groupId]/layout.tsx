@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ChaupalPageHeader from "@/components/chaupal/layout/ChaupalPageHeader";
-import ChaupalAvatar from "@/components/chaupal/shared/ChaupalAvatar";
+import UserIdentity from "@/components/shared/UserIdentity";
 import { CH_CLASS, CH_COLORS, CH_ANIMATIONS } from "@/components/chaupal/shared/design";
 
 export default function GroupLayout({ children, params }: { children: React.ReactNode, params: Promise<{ groupId: string }> }) {
@@ -31,7 +31,7 @@ export default function GroupLayout({ children, params }: { children: React.Reac
       <div className="px-4 sm:px-6 relative pb-6 border-b border-slate-200 dark:border-slate-800">
         <div className="flex justify-between items-end -mt-10 sm:-mt-12 mb-4">
           <div className="p-1 bg-white dark:bg-[#0F172A] rounded-full">
-            <ChaupalAvatar name="युवा लेखक संघ" size="lg" />
+            <UserIdentity user={{ name: "रवि कुमार शर्मा" }} variant="hero" avatarSize={48} showUsername={false} clickable={false} />
           </div>
           <button className={`${CH_CLASS.buttonPrimary}`}>
             शामिल हों

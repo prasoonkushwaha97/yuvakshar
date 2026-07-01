@@ -191,3 +191,5 @@ export default function EditorialWorkspace() {
     </div>
   );
 }
+
+export const dynamic = "force-dynamic";

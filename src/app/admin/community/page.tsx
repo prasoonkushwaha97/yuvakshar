@@ -16,3 +16,5 @@ export default function CommunitiesPage() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

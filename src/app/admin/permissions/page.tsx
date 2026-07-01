@@ -132,3 +132,5 @@ export default function PermissionsCenterPage() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

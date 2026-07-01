@@ -152,3 +152,5 @@ export default function AuditCenter() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

@@ -99,7 +99,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
     });
   };
 
-  const userLink = `/profile/${user?.slug || user?.username || user?.id || userId || "unknown"}`;
+  const userLink = `/u/${user?.slug || user?.username || user?.id || userId || "unknown"}`;
 
   return (
     <div 

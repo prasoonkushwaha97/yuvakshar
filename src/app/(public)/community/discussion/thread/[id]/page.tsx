@@ -175,7 +175,7 @@ export default function DiscussionThreadPage() {
         return (
           <Link 
             key={idx} 
-            href={`/profile/${username || "unknown"}`}
+            href={`/u/${username || "unknown"}`}
             className="text-primary hover:underline font-bold"
           >
             {part}

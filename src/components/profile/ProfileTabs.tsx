@@ -1,7 +1,7 @@
 import React from "react";
-import { BookOpen, Bookmark, Edit2, Heart, MessageSquare, Image as ImageIcon } from "lucide-react";
+import { BookOpen, Bookmark, Edit2, Heart, MessageSquare, Image as ImageIcon, Settings } from "lucide-react";
 
-export type ProfileTabId = "articles" | "community" | "bookmarks" | "drafts" | "likes" | "comments" | "media";
+export type ProfileTabId = "articles" | "community" | "bookmarks" | "drafts" | "settings" | "likes" | "comments" | "media";
 
 interface ProfileTabsProps {
   activeTab: ProfileTabId;
@@ -13,8 +13,11 @@ export default function ProfileTabs({ activeTab, setActiveTab, isOwner }: Profil
   const tabs = [
     { id: "articles" as ProfileTabId, label: "लेख", icon: BookOpen },
     { id: "community" as ProfileTabId, label: "चौपाल", icon: MessageSquare },
-    { id: "bookmarks" as ProfileTabId, label: "बुकमार्क्स", icon: Bookmark },
-    ...(isOwner ? [{ id: "drafts" as ProfileTabId, label: "ड्राफ्ट्स", icon: Edit2 }] : []),
+    ...(isOwner ? [
+      { id: "bookmarks" as ProfileTabId, label: "बुकमार्क्स", icon: Bookmark },
+      { id: "drafts" as ProfileTabId, label: "ड्राफ्ट्स", icon: Edit2 },
+      { id: "settings" as ProfileTabId, label: "सेटिंग्स", icon: Settings },
+    ] : []),
     { id: "likes" as ProfileTabId, label: "लाइक्स", icon: Heart },
     { id: "comments" as ProfileTabId, label: "टिप्पणियाँ", icon: MessageSquare },
     { id: "media" as ProfileTabId, label: "मीडिया", icon: ImageIcon },

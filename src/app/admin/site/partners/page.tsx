@@ -59,3 +59,5 @@ export default function PartnerManagement() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

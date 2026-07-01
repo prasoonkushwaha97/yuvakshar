@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Users, Lock, Globe } from "lucide-react";
 import { CH_CLASS, CH_ANIMATIONS } from "../shared/design";
-import ChaupalAvatar from "../shared/ChaupalAvatar";
+import UserIdentity from "@/components/shared/UserIdentity";
 
 interface GroupDirectoryCardProps {
   group: {
@@ -20,7 +20,7 @@ export default function GroupDirectoryCard({ group }: GroupDirectoryCardProps) {
   return (
     <Link href={`/community/groups/${group.id}`} className={`block ${CH_CLASS.card} p-5 ${CH_ANIMATIONS.hoverLift}`}>
       <div className="flex items-start gap-4">
-        <ChaupalAvatar name={group.name} src={group.avatarUrl} size="lg" />
+        <UserIdentity user={{ name: group.name, avatar_url: group.avatarUrl }} variant="inline" avatarSize={48} showUsername={false} clickable={false} />
         
         <div className="flex-1">
           <div className="flex items-center justify-between gap-2">

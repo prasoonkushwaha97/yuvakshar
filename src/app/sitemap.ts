@@ -46,7 +46,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "sanjay-kumar",
     "ravi-kumar",
   ]?.map((auth) => ({
-    url: `${baseUrl}/profile/${auth}`,
+    url: `${baseUrl}/u/${auth}`,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,
     priority: 0.6,

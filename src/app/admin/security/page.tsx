@@ -245,3 +245,5 @@ export default function SecurityCenter() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

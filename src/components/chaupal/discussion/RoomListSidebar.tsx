@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, Pin, MessageSquare, Megaphone } from "lucide-react";
 import { CH_CLASS, CH_ANIMATIONS, CH_COLORS } from "../shared/design";
-import ChaupalAvatar from "../shared/ChaupalAvatar";
+import UserIdentity from "@/components/shared/UserIdentity";
 import { getRooms } from "@/lib/actions/chaupalRoomActions";
 
 interface Room {
@@ -85,7 +85,7 @@ export default function RoomListSidebar() {
                 }`}
               >
                 <div className="relative shrink-0">
-                  <ChaupalAvatar name={room.title} size="lg" />
+                  <UserIdentity user={{ name: room.title }} variant="inline" avatarSize={48} showUsername={false} clickable={false} />
                   <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center border-2 border-white dark:border-[#0F172A]">
                     {getRoomIcon(room.type)}
                   </div>

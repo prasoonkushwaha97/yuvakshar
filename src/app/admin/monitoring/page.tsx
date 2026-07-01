@@ -16,3 +16,5 @@ export default function MonitoringPage() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

@@ -10,6 +10,25 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "avatars.githubusercontent.com" }, // GitHub avatars
       { protocol: "https", hostname: "img.youtube.com" } // YouTube thumbnails
     ],
+  },
+  async redirects() {
+    return [
+      {
+        source: '/profile/:username',
+        destination: '/u/:username',
+        permanent: true,
+      },
+      {
+        source: '/@:username',
+        destination: '/u/:username',
+        permanent: true,
+      },
+      {
+        source: '/profile',
+        destination: '/login', // Will be handled by the middleware if logged in, otherwise prompts login
+        permanent: false,
+      }
+    ]
   }
 };
 

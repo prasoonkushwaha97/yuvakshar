@@ -1,9 +1,9 @@
+import UserIdentity from "@/components/shared/UserIdentity";
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { MoreHorizontal, Heart, MessageCircle, Repeat2, Bookmark, Share } from "lucide-react";
 import { CH_CLASS, CH_COLORS, CH_ANIMATIONS, CH_RADIUS } from "../shared/design";
-import UserChip from "../shared/UserChip";
 
 interface FeedCardProps {
   post: {
@@ -54,14 +54,7 @@ export default function FeedCard({ post }: FeedCardProps) {
     <article className={`${CH_CLASS.card} p-4 sm:p-5 flex flex-col gap-4 mb-4`}>
       {/* Header */}
       <div className="flex items-start justify-between">
-        <UserChip 
-          id={post.author.id}
-          name={post.author.name}
-          username={post.author.username}
-          avatarUrl={post.author.avatarUrl}
-          isVerified={post.author.isVerified}
-          timestamp={post.timestamp}
-        />
+        <UserIdentity variant="chip" />
         <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
           <MoreHorizontal className="w-5 h-5" />
         </button>

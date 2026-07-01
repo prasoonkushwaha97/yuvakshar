@@ -344,3 +344,5 @@ export default function UsersManagementPage() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

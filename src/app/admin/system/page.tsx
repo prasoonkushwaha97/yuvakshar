@@ -151,3 +151,5 @@ export default function SystemOperationsPage() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

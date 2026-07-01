@@ -83,3 +83,5 @@ export default function NavigationBuilder() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

@@ -188,3 +188,5 @@ function MetricCard({ title, value, trend, isWarning }: { title: string, value: 
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

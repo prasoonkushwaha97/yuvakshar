@@ -7,7 +7,7 @@ import { checkGroupMembership, joinGroup } from "@/lib/actions/chaupalGroupActio
 import ChatInterface from "@/components/chaupal/discussion/ChatInterface";
 import { Users, Lock, Globe } from "lucide-react";
 import { CH_CLASS } from "@/components/chaupal/shared/design";
-import ChaupalAvatar from "@/components/chaupal/shared/ChaupalAvatar";
+import UserIdentity from "@/components/shared/UserIdentity";
 
 export default function GroupDetailsPage({ params }: { params: Promise<{ groupId: string }> }) {
   const resolvedParams = React.use(params);
@@ -87,7 +87,9 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ groupId
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-[#090D16] p-4 sm:p-6 md:p-12 items-center justify-center">
       <div className={`${CH_CLASS.card} max-w-md w-full p-8 text-center flex flex-col items-center`}>
-        <ChaupalAvatar name={group.title} size="lg" className="mb-6 w-24 h-24 text-3xl" />
+        <div className="mb-6 flex items-center justify-center">
+          <UserIdentity user={{ name: group.title }} variant="hero" avatarSize={96} showUsername={false} clickable={false} />
+        </div>
         <div className="flex items-center justify-center gap-2 mb-2">
           <h1 className="font-serif font-bold text-2xl text-slate-900 dark:text-white">
             {group.title}

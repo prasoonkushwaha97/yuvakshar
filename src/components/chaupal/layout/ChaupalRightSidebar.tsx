@@ -1,8 +1,8 @@
+import UserIdentity from "@/components/shared/UserIdentity";
 import React from "react";
 import Link from "next/link";
 import { Hash, TrendingUp, Users } from "lucide-react";
 import { CH_CLASS, CH_COLORS } from "../shared/design";
-import UserChip from "../shared/UserChip";
 
 export default function ChaupalRightSidebar() {
   const trendingTopics = [
@@ -42,9 +42,9 @@ export default function ChaupalRightSidebar() {
           अनुशंसित लोग
         </h3>
         <div className="flex flex-col gap-4">
-          <UserChip id="u1" name="रवि कुमार" username="ravi_k" role="Editor" isVerified />
-          <UserChip id="u2" name="अदिति शर्मा" username="aditi_s" />
-          <UserChip id="u3" name="विकास त्रिपाठी" username="vikast" role="Author" />
+          <UserIdentity userId="u1" user={{ name: "रवि कुमार" }} variant="chip" />
+          <UserIdentity userId="u2" user={{ name: "अदिति शर्मा" }} variant="chip" />
+          <UserIdentity userId="u3" user={{ name: "विकास त्रिपाठी" }} variant="chip" />
         </div>
       </div>
       

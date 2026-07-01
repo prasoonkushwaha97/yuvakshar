@@ -1,6 +1,6 @@
 import React from "react";
 import { MessageCircle, Smile } from "lucide-react";
-import ChaupalAvatar from "../shared/ChaupalAvatar";
+import UserIdentity from "@/components/shared/UserIdentity";
 import ChaupalBadge from "../shared/ChaupalBadge";
 
 interface MessageBubbleProps {
@@ -24,7 +24,7 @@ interface MessageBubbleProps {
 export default function MessageBubble({ message, onReplyClick }: MessageBubbleProps) {
   return (
     <div className={`flex gap-3 px-4 py-2 group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors ${message.isOwnMessage ? 'flex-row-reverse' : ''}`}>
-      <ChaupalAvatar name={message.sender.name} size="sm" />
+      <UserIdentity user={{ name: message.sender.name }} variant="inline" avatarSize={32} showUsername={false} clickable={false} />
       
       <div className={`flex flex-col max-w-[85%] ${message.isOwnMessage ? 'items-end' : 'items-start'}`}>
         <div className={`flex items-baseline gap-2 mb-1 ${message.isOwnMessage ? 'flex-row-reverse' : ''}`}>

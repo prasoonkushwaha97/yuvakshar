@@ -67,3 +67,5 @@ export default function ExperienceBuilderList() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

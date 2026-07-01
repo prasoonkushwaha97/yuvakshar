@@ -239,3 +239,5 @@ export default function FounderAnnouncementsPage() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

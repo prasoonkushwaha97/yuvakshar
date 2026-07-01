@@ -10,7 +10,7 @@ export default function ChaupalMobileBottomNav({ currentUserId }: { currentUserI
     { name: "होम", href: "/community", icon: Home },
     { name: "चर्चा", href: "/community/discussion", icon: MessageSquare },
     { name: "सूचनाएं", href: "/community/notifications", icon: Bell },
-    { name: "प्रोफ़ाइल", href: currentUserId ? `/profile/${currentUserId}` : "/login", icon: User },
+    { name: "प्रोफ़ाइल", href: currentUserId ? `/u/${currentUserId}` : "/login", icon: User },
   ];
 
   return (
