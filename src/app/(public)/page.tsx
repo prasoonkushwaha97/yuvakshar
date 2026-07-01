@@ -44,7 +44,7 @@ class SectionErrorBoundary extends React.Component<{ children: React.ReactNode }
 
 export default function Home() {
   const { locale } = useLanguage();
-  const { articles, homepageSections, authLoading } = useCms();
+  const { articles, homepageSections, authLoading, cmsDataLoading } = useCms();
   const searchParams = useSearchParams();
 
   // Dynamic Preview states
@@ -74,7 +74,7 @@ export default function Home() {
     }
   };
 
-  if (!isMounted || previewLoading || authLoading) {
+  if (!isMounted || previewLoading || authLoading || cmsDataLoading) {
     return (
       <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] pb-4 font-sans">
         <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-4 lg:pt-6 pb-10 lg:pb-14 space-y-12">

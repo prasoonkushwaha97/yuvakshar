@@ -29,7 +29,7 @@ export default function UserProfile() {
   const decodedParam = rawParam ? decodeURIComponent(rawParam) : "";
   const username = decodedParam.startsWith("@") ? decodedParam.substring(1) : decodedParam;
 
-  const { users, articles, videos, currentUser, followAuthor, openAuthModal, authLoading } = useCms();
+  const { users, articles, videos, currentUser, followAuthor, openAuthModal, authLoading, cmsDataLoading } = useCms();
 
   // Contact modal state
   const [contactOpen, setContactOpen] = useState(false);
@@ -62,7 +62,7 @@ export default function UserProfile() {
     return users.find(u => u.id === username);
   }, [users, username]);
 
-  const isLoading = authLoading || users.length === 0;
+  const isLoading = authLoading || cmsDataLoading || (!dbUser && users.length === 0);
   const user = dbUser || ({} as any);
   const isOwner = currentUser?.id === user.id;
 

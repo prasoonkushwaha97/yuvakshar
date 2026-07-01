@@ -6,10 +6,26 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
 import { BookOpen, ChevronRight } from "lucide-react";
+import { MagazineSkeleton } from "@/components/homepage/shared/Skeleton";
 import type { MagazineIssue } from "@/store/types";
 
 export default function MagazineLibraryPage() {
-  const { magazines } = useCms();
+  const { magazines, authLoading, cmsDataLoading } = useCms();
+
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => { setMounted(true); }, []);
+
+  const isLoading = authLoading || cmsDataLoading || !mounted;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#070B14] pt-32 px-6">
+        <div className="max-w-7xl mx-auto">
+          <MagazineSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   // Filter out drafts or non-published if we were to enforce it, but we assume magazines are pre-filtered or we just filter here
   const publishedMags = magazines.filter(m => m.status === "Published" || !m.status) as MagazineIssue[];

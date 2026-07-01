@@ -251,6 +251,7 @@ interface CmsContextType {
   supabaseConfigured: boolean;
   currentUser: Profile | null;
   authLoading: boolean;
+  cmsDataLoading: boolean;
   resolvedRole: string | null;
   currentUserRoles: string[];
   hasRole: (role: string) => boolean;
@@ -530,6 +531,7 @@ export function CmsProvider({
   const [supabaseConfigured, setSupabaseConfigured] = useState(false);
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [cmsDataLoading, setCmsDataLoading] = useState(true);
   const [resolvedRole, setResolvedRole] = useState<string | null>(null);
   const [currentUserRoles, setCurrentUserRoles] = useState<string[]>([]);
   const [currentUserPermissions, setCurrentUserPermissions] = useState<string[]>([]);
@@ -733,6 +735,7 @@ export function CmsProvider({
         loadDataFromLocalStorage();
       }
       setAuthLoading(false);
+      setCmsDataLoading(false);
     };
 
     runChecks();
@@ -3565,6 +3568,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         getResolvedUserRole,
         supabaseConfigured,
         authLoading,
+        cmsDataLoading,
         settings,
         articles,
         categories,

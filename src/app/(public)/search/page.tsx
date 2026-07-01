@@ -48,7 +48,7 @@ function SearchSkeleton() {
 }
 
 export default function SearchPage() {
-  const { articles, logSearchQuery, authLoading } = useCms();
+  const { articles, logSearchQuery, authLoading, cmsDataLoading } = useCms();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
@@ -133,7 +133,7 @@ export default function SearchPage() {
         )}
 
         <div className="space-y-4">
-          {isSearching || authLoading ? (
+          {isSearching || authLoading || cmsDataLoading ? (
             <SearchSkeleton />
           ) : (
             results?.map((art) => (
@@ -182,7 +182,7 @@ export default function SearchPage() {
             ))
           )}
 
-          {query.trim() && !isSearching && !authLoading && results.length === 0 && (
+          {query.trim() && !isSearching && !authLoading && !cmsDataLoading && results.length === 0 && (
             <div className="text-center py-10 text-slate-400 text-xs">
               No matching articles found in local index.
             </div>
