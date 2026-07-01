@@ -100,30 +100,6 @@ export const calculateAuthorReputation = (
   return { score: 100, tier: "Bronze" };
 };
 
-export const generateAuthorSlug = (name: string): string => {
-  const cleaned = name.trim();
-  const transliterations: Record<string, string> = {
-    "प्रसून कुशवाहा": "prasoon-kushwaha",
-    "अमित शर्मा": "amit-sharma",
-    "डॉ. राजेश सिंह": "dr-rajesh-singh",
-    "संजय कुमार": "sanjay-kumar",
-    "रवि कुमार": "ravi-kumar",
-    "सुमित सिंह": "sumit-singh",
-    "आलोक शर्मा": "alok-sharma",
-    "विजय सिंह": "vijay-singh"
-  };
-
-  if (transliterations[cleaned]) {
-    return transliterations[cleaned];
-  }
-
-  return cleaned
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-};
 
 // ─── AUTHENTICATION LAYER ──────────────────────────────────────────────────
 
@@ -158,8 +134,8 @@ export const signUpUser = async (email: string, role: string, metadata: Record<s
       mobile: metadata.mobile || "",
       password: metadata.password || "password123",
       joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
-      slug: generateAuthorSlug(metadata.name || email.split("@")[0].toUpperCase()),
-      username: generateAuthorSlug(metadata.name || email.split("@")[0].toUpperCase())
+      slug: (metadata.name || email.split("@")[0]).toLowerCase().replace(/[^a-z0-9_]/g, ""),
+      username: (metadata.name || email.split("@")[0]).toLowerCase().replace(/[^a-z0-9_]/g, "")
     };
     const localUsers = JSON.parse(getLocalItem("yuvakshar_users", "[]"));
     localUsers.push(newProfile);
@@ -318,7 +294,8 @@ export const mapDbProfileToProfile = (dbProfile: any): Profile => {
   }
   
   if (!profile.username) {
-    profile.username = profile.name ? profile.name.toLowerCase().replace(/[^a-z0-9_]/g, "") : profile.id;
+    const generated = profile.name ? profile.name.toLowerCase().replace(/[^a-z0-9_]/g, "") : "";
+    profile.username = generated.length > 0 ? generated : (profile.id || "user");
   }
   if (!profile.slug) {
     profile.slug = profile.username;

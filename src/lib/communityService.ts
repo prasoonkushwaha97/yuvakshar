@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "./supabaseServer";
+import { Profile } from "../store/types";
 
 // ─── TYPE INTERFACES ────────────────────────────────────────────────────────
 
@@ -28,6 +29,7 @@ export interface CommunityPost {
   id: string;
   user_id: string;
   user_name: string;
+  authorProfile?: Profile;
   user_avatar?: string;
   user_rank?: string;
   group_id?: string;

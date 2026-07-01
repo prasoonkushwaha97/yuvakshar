@@ -83,20 +83,33 @@ export function generateFallbackUsername(email: string | undefined): string {
 }
 
 export function getCanonicalProfileUrl(profile: any): string {
-  if (!profile) return "/u/unknown";
+  if (!profile) {
+    console.log("getCanonicalProfileUrl called with: null/undefined => returning /u/unknown");
+    return "/u/unknown";
+  }
   
   // Try to resolve username first
   const username = profile.username || profile.profiles?.username;
-  if (username) return `/u/${username}`;
+  if (username) {
+    console.log("getCanonicalProfileUrl called with:", profile, "=> returning", `/u/${username}`);
+    return `/u/${username}`;
+  }
   
   // Fallback to slug for legacy compatibility
   const slug = profile.slug || profile.profiles?.slug;
-  if (slug) return `/u/${slug}`;
+  if (slug) {
+    console.log("getCanonicalProfileUrl called with:", profile, "=> returning", `/u/${slug}`);
+    return `/u/${slug}`;
+  }
   
   // Last resort internal ID
   const id = profile.id || profile.user_id;
-  if (id) return `/u/${id}`;
+  if (id) {
+    console.log("getCanonicalProfileUrl called with:", profile, "=> returning", `/u/${id}`);
+    return `/u/${id}`;
+  }
   
+  console.log("getCanonicalProfileUrl called with:", profile, "=> returning /u/unknown");
   return "/u/unknown";
 }
 
@@ -106,6 +119,7 @@ export function getCanonicalProfileUrl(profile: any): string {
  */
 export function resolveProfileIdentifier(identifier: string, users: any[]): { profile: any | null, needsRedirect: boolean } {
   if (!identifier || !users || users.length === 0) {
+    console.log({ identifier, usersLength: users?.length || 0, matchedUser: null });
     return { profile: null, needsRedirect: false };
   }
 
@@ -114,12 +128,14 @@ export function resolveProfileIdentifier(identifier: string, users: any[]): { pr
   // 1. Priority: Canonical username match
   const matchByUsername = users.find(u => u.username?.toLowerCase() === lowerIdentifier);
   if (matchByUsername) {
+    console.log({ identifier, usersLength: users.length, matchedUser: matchByUsername.username });
     return { profile: matchByUsername, needsRedirect: false };
   }
 
   // 2. Priority: Legacy slug match
   const matchBySlug = users.find(u => u.slug?.toLowerCase() === lowerIdentifier);
   if (matchBySlug) {
+    console.log({ identifier, usersLength: users.length, matchedUser: matchBySlug.username });
     // If we matched by slug but they have a canonical username, we must redirect to the username!
     return { 
       profile: matchBySlug, 
@@ -130,11 +146,13 @@ export function resolveProfileIdentifier(identifier: string, users: any[]): { pr
   // 3. Last Resort: Internal ID match (UUID)
   const matchById = users.find(u => u.id === identifier);
   if (matchById) {
+    console.log({ identifier, usersLength: users.length, matchedUser: matchById.username });
     return { 
       profile: matchById, 
       needsRedirect: !!matchById.username 
     };
   }
 
+  console.log({ identifier, usersLength: users.length, matchedUser: null });
   return { profile: null, needsRedirect: false };
 }

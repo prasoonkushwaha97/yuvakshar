@@ -7,11 +7,13 @@ import BookmarkButton from "./BookmarkButton";
 import ShareButton from "./ShareButton";
 
 import { formatDisplayDate } from "@/utils/date";
+import { Profile } from "@/store/types";
 
 interface MetaInfoProps {
   articleId: string;
   slug?: string;
   author: string;
+  authorProfile?: Profile;
   date: string;
   readTime?: string | number;
   views?: number | string;
@@ -24,6 +26,7 @@ export default function MetaInfo({
   articleId,
   slug,
   author,
+  authorProfile,
   date,
   readTime,
   views,
@@ -32,17 +35,13 @@ export default function MetaInfo({
   className = ""
 }: MetaInfoProps) {
   const cleanDate = formatDisplayDate(date);
-  const initial = author ? author.charAt(0).toUpperCase() : "U";
-  const authorSlug = author
-    ? encodeURIComponent(author.toLowerCase().trim().replace(/\s+/g, "-"))
-    : "desk";
 
   return (
     <div className={`flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-150 dark:border-gray-800/80 pt-3 mt-auto font-sans w-full ${className}`}>
       {/* Left: Author avatar & Date */}
       <div className="flex items-center space-x-2">
         <UserIdentity 
-          user={{ name: author }} 
+          user={authorProfile || { name: author }} 
           variant="inline" 
           showAvatar={true} 
           showUsername={false} 

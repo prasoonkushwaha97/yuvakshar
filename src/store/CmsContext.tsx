@@ -11,7 +11,6 @@ import { callOpenAi, callGemini } from "@/lib/aiService";
 import { generatefallbackAiResponse } from "@/lib/fallbackAiResponse";
 import {
   calculateAuthorReputation,
-  generateAuthorSlug,
   toggleFollowAuthorInDb,
   addTimelineEventInDb,
   deleteTimelineEventInDb,
@@ -829,7 +828,7 @@ export function CmsProvider({
               role: highestRole as any,
               status: "active",
               joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
-              slug: generateAuthorSlug(generateFallbackUsername(session.user.email))
+              slug: generateFallbackUsername(session.user.email)
             };
             
             // Write to database
@@ -887,7 +886,7 @@ export function CmsProvider({
 
   const enrichUsersList = (rawUsers: Profile[], currentArticlesList: Article[]): Profile[] => {
     return rawUsers.map(user => {
-      const slug = user.slug || generateAuthorSlug(user.name);
+      const slug = user.slug || (user.name ? user.name.toLowerCase().replace(/[^a-z0-9_]/g, "") : "user");
       const authorArticles = currentArticlesList.filter(a => a.author === user.name);
 
       if (user.id === "u-2" || user.id === "staff-chief") {
@@ -990,6 +989,7 @@ export function CmsProvider({
   };
 
   const loadDataFromLocalStorage = useCallback(() => {
+    console.log("USING MOCK USERS");
     // General Settings
     const localSettings = null;
     if (localSettings) setSettings(JSON.parse(localSettings));
@@ -1477,6 +1477,8 @@ export function CmsProvider({
         const mappedUsers = dbUsers.map(mapDbProfileToProfile);
         const enriched = enrichUsersList(mappedUsers, loadedArticles);
         setUsers(enriched);
+        console.log("REAL USERS", enriched.length);
+        console.log(enriched.slice(0,5));
       } else {
         const defaultStaff: Profile[] = [
           { id: "staff-owner", name: "Ravi Owner", username: "owner@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "owner@yuvakshar.in", role: "संस्थापक", status: "active", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
@@ -1596,7 +1598,7 @@ export function CmsProvider({
           role: (role || "Subscriber") as Profile["role"],
           status: "active",
           joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
-          slug: generateAuthorSlug(customName || email.split("@")[0]),
+          slug: (customName || email.split("@")[0]).toLowerCase().replace(/[^a-z0-9_]/g, ""),
           // Chaupal Identity Defaults
           followers: [],
           following: [],

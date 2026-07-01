@@ -13,6 +13,7 @@ export interface Article {
   title: string;
   slug: string;
   author: string;
+  authorProfile?: Profile;
   authorRole: string;
   authorAvatar?: string;
   category: string;
@@ -154,6 +155,7 @@ export interface Comment {
   parent_id: string | null;
   name: string;
   user_id?: string | null;
+  authorProfile?: Profile;
   content: string;
   likes: number;
   status: "approved" | "pending" | "spam" | "deleted";

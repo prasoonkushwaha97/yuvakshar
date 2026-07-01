@@ -1,5 +1,6 @@
 import { supabase } from "../../../lib/supabaseClient";
 import { Article } from "../../../store/types"; // using the central types for now to avoid refactoring hundreds of UI files
+import { mapDbProfileToProfile } from "../../../lib/repositoryService";
 
 export interface IArticleRepository {
   getArticles(): Promise<Article[]>;
@@ -65,6 +66,7 @@ export class SupabaseArticleRepository implements IArticleRepository {
       authorName: row.author?.name || "Unknown",
       authorAvatar: row.author?.avatar_url || "",
       author: row.author?.name || "Unknown",
+      authorProfile: row.author ? mapDbProfileToProfile(row.author) : undefined,
       authorRole: row.author?.role || "Author",
       date: row.created_at, // mapped to UI date
       status: row.status as any,

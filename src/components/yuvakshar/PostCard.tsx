@@ -73,7 +73,8 @@ export default function PostCard({
   const badge = getPostTypeBadge(post.post_type);
   const reputation = 0 || 120;
 
-  const hoverUserId = authorProfile?.id || post.user_id;
+  const effectiveAuthorProfile = authorProfile || post.authorProfile;
+  const hoverUserId = effectiveAuthorProfile?.id || post.user_id;
 
   // Optimistic UI States for instant feedback
   const [isLikedOpt, setIsLikedOpt] = useState(false); // In a real app, initialize from user's liked posts list
@@ -146,10 +147,10 @@ export default function PostCard({
         <div className="flex items-center space-x-3">
           
           <HoverUserCard userId={hoverUserId}>
-            <Link href={getCanonicalProfileUrl(authorProfile || { id: post.user_id })} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-200 flex items-center justify-center font-bold text-sm text-slate-500 uppercase shrink-0 overflow-hidden hover:opacity-90 block border border-slate-300 dark:border-slate-700">
-              {authorProfile?.avatar_url ? (
-                <Image src={authorProfile.avatar_url} alt={post.user_name} className="w-full h-full object-cover" fill />
-              ) : (
+              <Link href={getCanonicalProfileUrl(effectiveAuthorProfile || { id: post.user_id })} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-200 flex items-center justify-center font-bold text-sm text-slate-500 uppercase shrink-0 overflow-hidden hover:opacity-90 block border border-slate-300 dark:border-slate-700">
+                {effectiveAuthorProfile?.avatar_url ? (
+                  <Image src={effectiveAuthorProfile.avatar_url} alt={post.user_name} className="w-full h-full object-cover" fill />
+                ) : (
                 post.user_name[0]
               )}
             </Link>
@@ -158,7 +159,7 @@ export default function PostCard({
           <div>
             <div className="flex items-center space-x-2">
               <HoverUserCard userId={hoverUserId}>
-                <Link href={getCanonicalProfileUrl(authorProfile || { id: post.user_id })} className="text-sm font-bold text-slate-850 dark:text-white hover:text-primary font-hindi leading-tight">
+                <Link href={getCanonicalProfileUrl(effectiveAuthorProfile || { id: post.user_id })} className="text-sm font-bold text-slate-850 dark:text-white hover:text-primary font-hindi leading-tight">
                   {post.user_name}
                 </Link>
               </HoverUserCard>

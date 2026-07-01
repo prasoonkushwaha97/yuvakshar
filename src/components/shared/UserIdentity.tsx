@@ -68,11 +68,26 @@ export default function UserIdentity({
   const { users } = useCms();
 
   const resolvedUser = useMemo(() => {
-    if (initialUser) return initialUser;
-    if (userId && users) {
-      return users.find((u) => u.id === userId) || null;
+    // If it's already a full profile with identity, return it
+    if (initialUser && (initialUser.username || initialUser.slug || initialUser.id)) {
+      return initialUser;
     }
-    return null;
+    
+    // Try to resolve from CmsContext users
+    if (users && users.length > 0) {
+      if (userId) {
+        const found = users.find((u) => u.id === userId);
+        if (found) return found;
+      }
+      if (initialUser?.name) {
+        // Find by exact name match
+        const found = users.find((u) => u.name === initialUser.name);
+        if (found) return found;
+      }
+    }
+    
+    // Fallback to the initial object if provided, otherwise null
+    return initialUser || null;
   }, [initialUser, userId, users]);
 
   if (!resolvedUser) {
@@ -136,7 +151,9 @@ export default function UserIdentity({
     ${className}
   `;
 
-  if (clickable) {
+  const isValidProfile = profileHref !== "/u/unknown";
+  
+  if (clickable && isValidProfile) {
     return (
       <Link href={profileHref} className={wrapperClasses}>
         {innerContent}

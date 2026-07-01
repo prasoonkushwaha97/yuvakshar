@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import UserIdentity from "@/components/shared/UserIdentity";
-import { Search as SearchIcon, Bookmark, BookmarkCheck, ArrowRight } from "lucide-react";
+import { Search as SearchIcon, Bookmark, BookmarkCheck, ArrowRight, Clock } from "lucide-react";
 
 import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
@@ -144,9 +144,13 @@ export default function SearchPage() {
                       <span className="text-[9px] uppercase font-bold tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
                         {art.category}
                       </span>
-                      <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
-                        {art.readTime} • लेखक: <UserIdentity user={{ name: art.author }} variant="inline" showAvatar={false} />
-                      </span>
+                      <div className="flex items-center justify-between text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <span>{art.date}</span>
+                        <div className="flex items-center gap-3">
+                          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {art.readTime}</span>
+                          <span className="flex items-center gap-1">द्वारा: <UserIdentity user={art.authorProfile || { name: art.author }} variant="inline" showAvatar={false} /></span>
+                        </div>
+                      </div>
                     </div>
 
                     <Link href={`/articles/${art.slug || art.id}`} className="block">
