@@ -5,6 +5,7 @@ import ChaupalDesktopSidebar from "@/components/chaupal/layout/ChaupalDesktopSid
 import ChaupalMobileBottomNav from "@/components/chaupal/layout/ChaupalMobileBottomNav";
 import ChaupalRightSidebar from "@/components/chaupal/layout/ChaupalRightSidebar";
 import { useCms } from "@/store/CmsContext";
+import SkeletonLoader from "@/components/chaupal/shared/SkeletonLoader";
 
 export default function ChaupalLayout({ children }: { children: React.ReactNode }) {
   const { currentUser } = useCms();
@@ -19,8 +20,8 @@ export default function ChaupalLayout({ children }: { children: React.ReactNode 
         {/* Main Feed / Content Area */}
         <main className="w-full max-w-[680px] flex-1 pb-24 md:pb-8 border-x-0 sm:border-x border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F172A] min-h-screen shadow-sm shadow-slate-200/20 dark:shadow-none">
           <Suspense fallback={
-            <div className="flex justify-center items-center h-40">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F97316]"></div>
+            <div className="flex flex-col gap-4 px-0 sm:px-6 py-6">
+              <SkeletonLoader type="feed-card" count={3} />
             </div>
           }>
             {children}

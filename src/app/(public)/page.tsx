@@ -7,6 +7,8 @@ import { useLanguage } from "@/store/LanguageContext";
 import { getSectionsForLayout } from "@/lib/actions/homepageCmsActions";
 
 // Skeletons
+import { HeroSkeleton, CategorySkeleton, VideoSkeleton } from "@/components/homepage/shared/Skeleton";
+
 // Layout
 import PartnerSection from "@/components/homepage/PartnerSection";
 
@@ -42,7 +44,7 @@ class SectionErrorBoundary extends React.Component<{ children: React.ReactNode }
 
 export default function Home() {
   const { locale } = useLanguage();
-  const { articles, homepageSections } = useCms();
+  const { articles, homepageSections, authLoading } = useCms();
   const searchParams = useSearchParams();
 
   // Dynamic Preview states
@@ -72,41 +74,13 @@ export default function Home() {
     }
   };
 
-  if (!isMounted || previewLoading) {
+  if (!isMounted || previewLoading || authLoading) {
     return (
       <div className="w-full min-h-screen bg-white dark:bg-[#0A0A0A] pb-4 font-sans">
-        <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-4 lg:pt-6 pb-10 lg:pb-14">
-          
-          {/* Main 70/30 Hero Skeleton Deck */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[460px] lg:h-[calc(100vh-160px)] max-h-[620px] w-full">
-            
-            {/* Left Main Hero Slide Container */}
-            <div className="lg:col-span-8 bg-gray-100 dark:bg-[#0E1322] rounded-3xl animate-pulse flex flex-col justify-end p-6 md:p-8 lg:p-10">
-              <div className="w-24 h-4 bg-gray-200 dark:bg-gray-800 rounded-full mb-3" />
-              <div className="w-full lg:w-3/4 h-8 bg-gray-200 dark:bg-gray-800 rounded-full mb-4" />
-              <div className="w-1/2 h-4 bg-gray-200 dark:bg-gray-800 rounded-full mb-6" />
-              <div className="flex gap-4">
-                <div className="w-32 h-10 bg-gray-200 dark:bg-gray-800 rounded-full" />
-                <div className="w-32 h-10 bg-gray-200 dark:bg-gray-800 rounded-full" />
-              </div>
-            </div>
-
-            {/* Right Stacked Editorial Cards Containers */}
-            <div className="lg:col-span-4 flex flex-col justify-between gap-4 h-full">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex-1 bg-gray-100 dark:bg-[#0E1322] rounded-3xl animate-pulse p-4 flex items-center gap-4">
-                  <div className="w-20 h-20 bg-gray-200 dark:bg-gray-800 rounded-2xl shrink-0" />
-                  <div className="flex-grow">
-                    <div className="w-16 h-3 bg-gray-200 dark:bg-gray-800 rounded-full mb-2" />
-                    <div className="w-full h-4 bg-gray-200 dark:bg-gray-800 rounded-full mb-2" />
-                    <div className="w-3/4 h-4 bg-gray-200 dark:bg-gray-800 rounded-full" />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-          </div>
-
+        <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-4 lg:pt-6 pb-10 lg:pb-14 space-y-12">
+          <HeroSkeleton />
+          <CategorySkeleton />
+          <VideoSkeleton />
         </div>
       </div>
     );

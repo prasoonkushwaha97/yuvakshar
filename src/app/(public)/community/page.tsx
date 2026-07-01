@@ -10,7 +10,7 @@ import { useCms } from "@/store/CmsContext";
 import { getFeedPosts } from "@/lib/actions/chaupalFeedActions";
 
 export default function ChaupalFeedPage() {
-  const { currentUser } = useCms();
+  const { currentUser, authLoading } = useCms();
   const [activeTab, setActiveTab] = useState<"for-you" | "latest" | "trending" | "following" | "groups">("latest");
   const [isLoading, setIsLoading] = useState(true);
   const [posts, setPosts] = useState<any[]>([]);
@@ -51,7 +51,14 @@ export default function ChaupalFeedPage() {
 
       <div className="px-0 sm:px-6 py-6">
         {/* Post Composer - Visible only for logged in users */}
-        {currentUser ? (
+        {authLoading ? (
+          <div className="mb-6">
+            <div className="p-4 sm:p-6 flex items-center gap-4 animate-pulse bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+              <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 shrink-0" />
+              <div className="flex-1 h-10 bg-slate-100 dark:bg-slate-800 rounded-full" />
+            </div>
+          </div>
+        ) : currentUser ? (
           <PostComposer 
             currentUser={{
               id: currentUser.id,

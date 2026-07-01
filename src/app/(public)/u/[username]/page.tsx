@@ -18,6 +18,7 @@ import ProfileTabs, { ProfileTabId } from "@/components/profile/ProfileTabs";
 import ProfileArticleCard from "@/components/profile/ProfileArticleCard";
 import ProfileSidebar from "@/components/profile/ProfileSidebar";
 import ProfileSettingsTab from "@/components/profile/ProfileSettingsTab";
+import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
 
 export default function UserProfile() {
   const params = useParams();
@@ -28,7 +29,7 @@ export default function UserProfile() {
   const decodedParam = rawParam ? decodeURIComponent(rawParam) : "";
   const username = decodedParam.startsWith("@") ? decodedParam.substring(1) : decodedParam;
 
-  const { users, articles, videos, currentUser, followAuthor, openAuthModal } = useCms();
+  const { users, articles, videos, currentUser, followAuthor, openAuthModal, authLoading } = useCms();
 
   // Contact modal state
   const [contactOpen, setContactOpen] = useState(false);
@@ -46,18 +47,23 @@ export default function UserProfile() {
 
   // Find user by username
   const dbUser = useMemo(() => {
-    return users.find(u => 
-      u.username?.toLowerCase() === username.toLowerCase() || 
-      u.slug?.toLowerCase() === username.toLowerCase() || 
-      u.id === username
-    );
+    if (users.length === 0) return null;
+    const lowerUsername = username.toLowerCase();
+    
+    // Priority 1: Exact match on canonical username (handles both dedicated column and legacy mapping)
+    const matchByUsername = users.find(u => u.username?.toLowerCase() === lowerUsername);
+    if (matchByUsername) return matchByUsername;
+    
+    // Priority 2: Generated slug fallback (only if an explicit username has never been assigned)
+    const matchBySlug = users.find(u => u.slug?.toLowerCase() === lowerUsername);
+    if (matchBySlug && !matchBySlug.username) return matchBySlug;
+    
+    // Priority 3: Internal ID
+    return users.find(u => u.id === username);
   }, [users, username]);
 
-  if (!dbUser) {
-    notFound();
-  }
-
-  const user = dbUser;
+  const isLoading = authLoading || users.length === 0;
+  const user = dbUser || ({} as any);
   const isOwner = currentUser?.id === user.id;
 
   // Filter content written by this user
@@ -123,6 +129,14 @@ export default function UserProfile() {
   const totalArticleLikes = userArticles.reduce((sum, a) => sum + (a.likes || 0), 0);
 
   const isLeadership = ["संस्थापक", "प्रशासन", "Editor-in-Chief", "Managing Editor"].includes(user.role || "");
+
+  if (isLoading) {
+    return <ProfileSkeleton />;
+  }
+
+  if (!dbUser) {
+    notFound();
+  }
 
   const jsonLd = {
     "@context": "https://schema.org",

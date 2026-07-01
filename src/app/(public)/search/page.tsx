@@ -19,12 +19,41 @@ const slugifyAuthor = (name: string) => {
     .replace(/^-|-$/g, '');
 };
 
+function SearchSkeleton() {
+  return (
+    <div className="space-y-4">
+      {[1, 2, 3].map((i) => (
+        <GlassCard key={i} glow="none" className="p-5 animate-pulse">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="space-y-3 w-full">
+              <div className="flex items-center space-x-2">
+                <div className="w-16 h-4 bg-slate-200 dark:bg-slate-800 rounded" />
+                <div className="w-32 h-4 bg-slate-200 dark:bg-slate-800 rounded" />
+              </div>
+              <div className="w-3/4 h-6 bg-slate-200 dark:bg-slate-800 rounded" />
+              <div className="space-y-2">
+                <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded" />
+                <div className="w-5/6 h-3 bg-slate-100 dark:bg-slate-800 rounded" />
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 shrink-0 mt-3 sm:mt-0">
+              <div className="w-8 h-8 rounded bg-slate-200 dark:bg-slate-800" />
+              <div className="w-8 h-8 rounded bg-slate-200 dark:bg-slate-800" />
+            </div>
+          </div>
+        </GlassCard>
+      ))}
+    </div>
+  );
+}
+
 export default function SearchPage() {
-  const { articles, logSearchQuery } = useCms();
+  const { articles, logSearchQuery, authLoading } = useCms();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -37,19 +66,28 @@ export default function SearchPage() {
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
+      setIsSearching(false);
       return;
     }
-    const filtered = articles.filter(art => 
-      art.title.toLowerCase().includes(query.toLowerCase()) ||
-      art.summary.toLowerCase().includes(query.toLowerCase()) ||
-      art.tags?.some((t: string) => t.toLowerCase().includes(query.toLowerCase())) ||
-      art.category.toLowerCase().includes(query.toLowerCase()) ||
-      art.author.toLowerCase().includes(query.toLowerCase())
-    );
-    setResults(filtered);
     
-    // Log telemetry search
-    logSearchQuery(query, filtered.length === 0);
+    setIsSearching(true);
+    
+    const timeoutId = setTimeout(() => {
+      const filtered = articles.filter(art => 
+        art.title.toLowerCase().includes(query.toLowerCase()) ||
+        art.summary.toLowerCase().includes(query.toLowerCase()) ||
+        art.tags?.some((t: string) => t.toLowerCase().includes(query.toLowerCase())) ||
+        art.category.toLowerCase().includes(query.toLowerCase()) ||
+        art.author.toLowerCase().includes(query.toLowerCase())
+      );
+      setResults(filtered);
+      setIsSearching(false);
+      
+      // Log telemetry search
+      logSearchQuery(query, filtered.length === 0);
+    }, 300); // 300ms debounce to simulate search/prevent flashing
+
+    return () => clearTimeout(timeoutId);
   }, [query, articles]);
 
   const toggleBookmark = (id: string) => {
@@ -95,52 +133,56 @@ export default function SearchPage() {
         )}
 
         <div className="space-y-4">
-          {results?.map((art) => (
-            <GlassCard key={art.id} glow="none" className="p-5">
-              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-[9px] uppercase font-bold tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
-                      {art.category}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
-                      {art.readTime} • लेखक: <UserIdentity user={{ name: art.author }} variant="inline" showAvatar={false} />
-                    </span>
+          {isSearching || authLoading ? (
+            <SearchSkeleton />
+          ) : (
+            results?.map((art) => (
+              <GlassCard key={art.id} glow="none" className="p-5">
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-[9px] uppercase font-bold tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
+                        {art.category}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
+                        {art.readTime} • लेखक: <UserIdentity user={{ name: art.author }} variant="inline" showAvatar={false} />
+                      </span>
+                    </div>
+
+                    <Link href={`/articles/${art.slug || art.id}`} className="block">
+                      <h3 className="font-serif text-base font-bold hover:text-primary transition-colors">
+                        {stripMarkdown(art.title)}
+                      </h3>
+                    </Link>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-light line-clamp-2 leading-relaxed">
+                      {stripMarkdown(art.summary)}
+                    </p>
                   </div>
 
-                  <Link href={`/articles/${art.slug || art.id}`} className="block">
-                    <h3 className="font-serif text-base font-bold hover:text-primary transition-colors">
-                      {stripMarkdown(art.title)}
-                    </h3>
-                  </Link>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-light line-clamp-2 leading-relaxed">
-                    {stripMarkdown(art.summary)}
-                  </p>
+                  <div className="flex items-center space-x-3 shrink-0 mt-3 sm:mt-0">
+                    <button 
+                      onClick={() => toggleBookmark(art.id)}
+                      className="p-2 rounded bg-white dark:bg-slate-855 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-primary transition-all cursor-pointer"
+                    >
+                      {mounted && bookmarks.includes(art.id) ? (
+                        <BookmarkCheck className="w-4 h-4 text-primary" />
+                      ) : (
+                        <Bookmark className="w-4 h-4" />
+                      )}
+                    </button>
+                    <Link 
+                      href={`/articles/${art.slug || art.id}`}
+                      className="p-2 rounded bg-primary text-white hover:bg-primary/90 transition-all flex items-center justify-center cursor-pointer"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
                 </div>
+              </GlassCard>
+            ))
+          )}
 
-                <div className="flex items-center space-x-3 shrink-0 mt-3 sm:mt-0">
-                  <button 
-                    onClick={() => toggleBookmark(art.id)}
-                    className="p-2 rounded bg-white dark:bg-slate-855 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-primary transition-all cursor-pointer"
-                  >
-                    {mounted && bookmarks.includes(art.id) ? (
-                      <BookmarkCheck className="w-4 h-4 text-primary" />
-                    ) : (
-                      <Bookmark className="w-4 h-4" />
-                    )}
-                  </button>
-                  <Link 
-                    href={`/articles/${art.slug || art.id}`}
-                    className="p-2 rounded bg-primary text-white hover:bg-primary/90 transition-all flex items-center justify-center cursor-pointer"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </div>
-            </GlassCard>
-          ))}
-
-          {query.trim() && results.length === 0 && (
+          {query.trim() && !isSearching && !authLoading && results.length === 0 && (
             <div className="text-center py-10 text-slate-400 text-xs">
               No matching articles found in local index.
             </div>
