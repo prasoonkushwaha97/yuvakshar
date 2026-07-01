@@ -292,14 +292,9 @@ export const mapDbProfileToProfile = (dbProfile: any): Profile => {
   } else if (dbProfile.public_visibility !== undefined && profile.publicVisibility === undefined) {
     profile.publicVisibility = dbProfile.public_visibility;
   }
-  
-  if (!profile.username) {
-    const generated = profile.name ? profile.name.toLowerCase().replace(/[^a-z0-9_]/g, "") : "";
-    profile.username = generated.length > 0 ? generated : (profile.id || "user");
-  }
-  if (!profile.slug) {
-    profile.slug = profile.username;
-  }
+    if (!profile.slug && profile.username) {
+      profile.slug = profile.username;
+    }
 
   return profile;
 };

@@ -95,21 +95,7 @@ export function getCanonicalProfileUrl(profile: any): string {
     return `/u/${username}`;
   }
   
-  // Fallback to slug for legacy compatibility
-  const slug = profile.slug || profile.profiles?.slug;
-  if (slug) {
-    console.log("getCanonicalProfileUrl called with:", profile, "=> returning", `/u/${slug}`);
-    return `/u/${slug}`;
-  }
-  
-  // Last resort internal ID
-  const id = profile.id || profile.user_id;
-  if (id) {
-    console.log("getCanonicalProfileUrl called with:", profile, "=> returning", `/u/${id}`);
-    return `/u/${id}`;
-  }
-  
-  console.log("getCanonicalProfileUrl called with:", profile, "=> returning /u/unknown");
+  console.log("getCanonicalProfileUrl called with:", profile, "=> returning /u/unknown (no canonical username found)");
   return "/u/unknown";
 }
 

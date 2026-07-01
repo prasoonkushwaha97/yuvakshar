@@ -148,7 +148,7 @@ export const fetchPosts = async (groupId?: string): Promise<CommunityPost[]> => 
   const supabase = await createClient();
   let query = supabase.from("community_posts").select(`
     *,
-    profiles:user_id(name, avatar_url, role),
+    profiles:user_id(username, name, avatar_url, role),
     groups:group_id(name),
     likes:community_post_likes(count),
     comments:community_comments(count)
@@ -198,7 +198,7 @@ export const fetchUserPosts = async (userId: string): Promise<CommunityPost[]> =
   const supabase = await createClient();
   const query = supabase.from("community_posts").select(`
     *,
-    profiles:user_id(name, avatar_url, role),
+    profiles:user_id(username, name, avatar_url, role),
     groups:group_id(name),
     likes:community_post_likes(count),
     comments:community_comments(count)
@@ -315,7 +315,7 @@ export const fetchComments = async (postId: string): Promise<CommunityComment[]>
   const supabase = await createClient();
   const { data, error } = await supabase.from("community_comments").select(`
     *,
-    profiles:user_id(name, avatar_url),
+    profiles:user_id(username, name, avatar_url),
     likes:community_comment_likes(count)
   `).eq("post_id", postId).order("created_at", { ascending: true });
 
