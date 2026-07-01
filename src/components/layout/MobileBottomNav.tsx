@@ -98,7 +98,7 @@ export default function MobileBottomNav() {
               </span>
 
               {/* Account notifier dot when logged in */}
-              {link.href === "/u" && currentUser && (
+              {link.href === "#profile" && currentUser && (
                 <span className="absolute top-2.5 right-[calc(50%-12px)] w-1.5 h-1.5 bg-emerald-500 rounded-full" />
               )}
             </Link>

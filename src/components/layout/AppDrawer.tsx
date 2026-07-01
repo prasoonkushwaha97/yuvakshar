@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { useLanguage } from "@/store/LanguageContext";
 import { useCms } from "@/store/CmsContext";
 import { primaryLinks, profileActions } from "@/config/navigation.config";
+import { getCanonicalProfileUrl } from "@/utils/username";
 import { designTokens } from "@/config/designTokens";
 
 interface AppDrawerProps {
@@ -140,10 +141,19 @@ export default function AppDrawer({ isOpen, onClose, mode, onLogout }: AppDrawer
                     </button>
                   );
                 }
+                let finalHref = action.href;
+                if (action.href === "/u") {
+                  if (currentUser) {
+                    finalHref = getCanonicalProfileUrl(currentUser);
+                  } else {
+                    finalHref = "#"; // Fallback, shouldn't reach here due to auth checks
+                  }
+                }
+                
                 return (
                   <Link 
                     key={action.href}
-                    href={action.href}
+                    href={finalHref}
                     onClick={onClose}
                     className="flex items-center space-x-3.5 px-4 py-3 rounded-lg hover:bg-[#f97316]/10 text-gray-700 hover:text-[#f97316] dark:text-gray-300 dark:hover:text-[#f97316] text-sm font-bold font-sans transition-all duration-200 min-h-[44px]"
                   >
