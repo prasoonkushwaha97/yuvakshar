@@ -40,12 +40,7 @@ export function getProfileUrl(user: Partial<Profile> | Profile | null | undefine
     console.warn("getProfileUrl: User is undefined/null");
     return null;
   }
-  const url = getCanonicalProfileUrl(user);
-  if (!url || url === "/u/unknown" || url.includes("undefined") || url.includes("null")) {
-    console.warn("getProfileUrl: Invalid or missing profile fields. Navigation disabled.", user);
-    return null;
-  }
-  return url;
+  return getCanonicalProfileUrl(user);
 }
 
 export function getMagazineUrl(issue: IssueLike | string | null | undefined): string {

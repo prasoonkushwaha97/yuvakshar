@@ -1,8 +1,9 @@
 export const RESERVED_USERNAMES = [
-  "admin", "administrator", "root", "system", "support", "help", "api", 
-  "about", "settings", "login", "signup", "editor", "founder", "yuvakshar",
-  "contact", "community", "dashboard", "profile", "bookmarks", 
-  "literary-journey", "articles", "magazines"
+  "admin", "administrator", "root", "support", "help", "api", "login", "logout",
+  "signup", "register", "settings", "account", "profile", "profiles", "user",
+  "users", "home", "about", "contact", "privacy", "terms", "search", "news",
+  "article", "articles", "magazine", "chaupal", "community", "dashboard", "cms",
+  "editor", "staff", "team", "official", "yuvakshar"
 ];
 
 export function validateUsername(username: string): { valid: boolean; error?: string } {
@@ -15,27 +16,15 @@ export function validateUsername(username: string): { valid: boolean; error?: st
   }
 
   if (RESERVED_USERNAMES.includes(lower)) {
-    return { valid: false, error: "This username is reserved." };
+    return { valid: false, error: "Reserved username." };
   }
 
   if (/\s/.test(username)) {
     return { valid: false, error: "Username cannot contain spaces." };
   }
 
-  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-    return { valid: false, error: "Username can only contain letters, numbers, and underscores." };
-  }
-
-  if (username.startsWith("_")) {
-    return { valid: false, error: "Username cannot start with an underscore." };
-  }
-
-  if (username.endsWith("_")) {
-    return { valid: false, error: "Username cannot end with an underscore." };
-  }
-
-  if (/__/.test(username)) {
-    return { valid: false, error: "Username cannot contain consecutive underscores." };
+  if (!/^[a-zA-Z0-9_.-]+$/.test(username)) {
+    return { valid: false, error: "Only letters, numbers, _, -, and . are allowed." };
   }
 
   return { valid: true };
@@ -84,25 +73,37 @@ export function generateFallbackUsername(email: string | undefined): string {
 
 export function getCanonicalProfileUrl(profile: any): string {
   if (!profile) {
-    console.log("getCanonicalProfileUrl called with: null/undefined => returning /u/unknown");
-    return "/u/unknown";
+    return "/u/user";
   }
   
-  // Try to resolve username first
-  const username = profile.username || profile.profiles?.username;
-  if (username) {
-    console.log("getCanonicalProfileUrl called with:", profile, "=> returning", `/u/${username}`);
-    return `/u/${username}`;
+  if (typeof profile === "string") {
+    return `/u/${profile.toLowerCase()}`;
   }
   
-  // Fallback to user ID if username is not pre-fetched
+  const username = profile.username || profile.profiles?.username || profile.author?.username || profile.author_username;
+  if (username && username !== "unknown" && username !== "null" && username !== "undefined") {
+    return `/u/${username.toLowerCase()}`;
+  }
+  
+  if (profile.name || profile.display_name) {
+    const base = (profile.display_name || profile.name).toLowerCase().replace(/[^a-z0-9_.-]/g, '-').replace(/[-_.]+/g, '-').replace(/^-+|-+$/g, '');
+    if (base.length >= 3) {
+      return `/u/${base.substring(0, 30)}`;
+    }
+  }
+  
+  if (profile.email) {
+    const base = profile.email.split('@')[0].replace(/[^a-z0-9_.-]/g, '');
+    if (base.length >= 3) {
+      return `/u/${base.substring(0, 30)}`;
+    }
+  }
+  
   if (profile.id) {
-    console.log("getCanonicalProfileUrl called with:", profile, "=> returning", `/u/${profile.id}`);
-    return `/u/${profile.id}`;
+    return `/u/user-${profile.id.toString().substring(0, 8)}`;
   }
   
-  console.log("getCanonicalProfileUrl called with:", profile, "=> returning /u/unknown (no canonical username found)");
-  return "/u/unknown";
+  return "/u/user";
 }
 
 /**
@@ -120,8 +121,9 @@ export function resolveProfileIdentifier(identifier: string, users: any[]): { pr
   // 1. Priority: Canonical username match
   const matchByUsername = users.find(u => u.username?.toLowerCase() === lowerIdentifier);
   if (matchByUsername) {
-    console.log({ identifier, usersLength: users.length, matchedUser: matchByUsername.username });
-    return { profile: matchByUsername, needsRedirect: false };
+    const needsRedirect = matchByUsername.username !== identifier;
+    console.log({ identifier, usersLength: users.length, matchedUser: matchByUsername.username, needsRedirect });
+    return { profile: matchByUsername, needsRedirect };
   }
 
   // 1b. Priority: Previous username match (for historical redirects)
@@ -138,7 +140,6 @@ export function resolveProfileIdentifier(identifier: string, users: any[]): { pr
   const matchBySlug = users.find(u => u.slug?.toLowerCase() === lowerIdentifier);
   if (matchBySlug) {
     console.log({ identifier, usersLength: users.length, matchedUser: matchBySlug.username });
-    // If we matched by slug but they have a canonical username, we must redirect to the username!
     return { 
       profile: matchBySlug, 
       needsRedirect: !!matchBySlug.username 

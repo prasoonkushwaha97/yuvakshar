@@ -5,9 +5,10 @@ import { useCms } from "@/store/CmsContext";
 import { updateUserAccount } from "@/lib/actions/settingsActions";
 import { AlertCircle, CheckCircle2, RotateCw } from "lucide-react";
 import AvatarUploader from "@/components/yuvakshar/AvatarUploader";
+import { validateUsername, RESERVED_USERNAMES } from "@/utils/username";
 
 export default function AccountSettingsPage() {
-  const { currentUser } = useCms();
+  const { currentUser, users } = useCms();
   
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -18,10 +19,46 @@ export default function AccountSettingsPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  const [usernameError, setUsernameError] = useState("");
+  const [usernameSuccess, setUsernameSuccess] = useState("");
+  const [showWarning, setShowWarning] = useState(false);
+
+  const validateAndCheck = (val: string) => {
+    setUsernameSuccess("");
+    
+    if (!val) {
+      setUsernameError("Username is required.");
+      return;
+    }
+    
+    const valRes = validateUsername(val);
+    if (!valRes.valid) {
+      setUsernameError(valRes.error || "Invalid username.");
+      return;
+    }
+    
+    const lower = val.toLowerCase();
+    if (currentUser && currentUser.username && currentUser.username.toLowerCase() === lower) {
+      setUsernameError("");
+      setUsernameSuccess("✓ Username available");
+      return;
+    }
+    
+    const isTaken = users.some(
+      (u: any) => u.id !== currentUser?.id && u.username && u.username.toLowerCase() === lower
+    );
+    
+    if (isTaken) {
+      setUsernameError("Username already taken");
+    } else {
+      setUsernameError("");
+      setUsernameSuccess("✓ Username available");
+    }
+  };
+
   useEffect(() => {
     if (currentUser) {
       setName(currentUser.name || "");
-      setUsername(currentUser.username || "");
       setBio(currentUser.bio || "");
       if (currentUser.social_links) {
         setSocialLinks({
@@ -30,8 +67,37 @@ export default function AccountSettingsPage() {
           website: currentUser.social_links.website || "",
         });
       }
+
+      if (!currentUser.username) {
+        setShowWarning(true);
+        // Automatically generate a username from name/display_name
+        const baseName = currentUser.name || currentUser.display_name || "user";
+        let base = baseName
+          .toLowerCase()
+          .replace(/[^a-z0-9_.-]/g, '-')
+          .replace(/[-_.]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+        if (base.length < 3) base = base.padEnd(3, '0');
+        if (base.length > 25) base = base.substring(0, 25);
+        
+        let test = base;
+        let counter = 2;
+        const existingUsernames = new Set(users.map((u: any) => u.username?.toLowerCase()).filter(Boolean));
+        
+        while (existingUsernames.has(test) || RESERVED_USERNAMES.includes(test)) {
+          test = `${base}-${counter}`;
+          counter++;
+        }
+        
+        setUsername(test);
+        validateAndCheck(test);
+      } else {
+        setShowWarning(false);
+        setUsername(currentUser.username);
+        validateAndCheck(currentUser.username);
+      }
     }
-  }, [currentUser]);
+  }, [currentUser, users]);
 
   if (!currentUser) return null;
 
@@ -49,6 +115,7 @@ export default function AccountSettingsPage() {
         social_links: socialLinks,
       });
       setIsSuccess(true);
+      setShowWarning(false);
       setTimeout(() => setIsSuccess(false), 3000);
     } catch (error: any) {
       console.error(error);
@@ -65,6 +132,16 @@ export default function AccountSettingsPage() {
         <p className="text-sm text-slate-500 mt-1">अपनी प्रोफ़ाइल जानकारी प्रबंधित करें।</p>
       </div>
 
+      {showWarning && (
+        <div className="p-4 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 rounded-xl text-sm flex gap-3 border border-amber-200 dark:border-amber-900/50 mb-6">
+          <AlertCircle className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-500" />
+          <div>
+            <p className="font-bold">अधूरी प्रोफ़ाइल (Profile Incomplete)</p>
+            <p className="mt-1">यूट्यूब और अन्य सार्वजनिक सुविधाओं का उपयोग जारी रखने के लिए कृपया एक यूज़रनेम (Username) सेट करें।</p>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSave} className="space-y-6">
         
         {/* Avatar Upload System */}
@@ -75,7 +152,7 @@ export default function AccountSettingsPage() {
 
         {/* Name Field */}
         <div className="space-y-2 pt-4 border-t border-slate-200 dark:border-slate-800">
-          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">प्रदर्शन नाम (Name)</label>
+          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">प्रदर्शन नाम (Display Name) *</label>
           <input
             type="text"
             value={name}
@@ -88,16 +165,50 @@ export default function AccountSettingsPage() {
 
         {/* Username Field */}
         <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">यूज़रनेम (@username)</label>
+          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">यूज़रनेम (Username) *</label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono">@</span>
             <input
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded-xl p-3 pl-8 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white font-mono"
+              onChange={(e) => {
+                const val = e.target.value;
+                setUsername(val);
+                validateAndCheck(val);
+              }}
+              className={`w-full bg-white dark:bg-slate-900 border ${
+                usernameError
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                  : usernameSuccess
+                  ? "border-green-500 focus:border-green-500 focus:ring-green-500"
+                  : "border-slate-300 dark:border-slate-700 focus:border-primary focus:ring-primary"
+              } rounded-xl p-3 pl-8 focus:outline-none focus:ring-1 text-slate-900 dark:text-white font-mono`}
+              placeholder="username"
+              required
             />
           </div>
+          
+          {/* Live Profile Preview */}
+          <div className="mt-2 text-xs text-slate-500">
+            Your Public Profile:{" "}
+            <span className="font-mono text-primary font-semibold select-all break-all">
+              https://yuvakshar.tech/u/{username.trim() ? username.toLowerCase() : "username"}
+            </span>
+          </div>
+
+          {/* Validation Messages */}
+          {usernameError && (
+            <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+              {usernameError}
+            </p>
+          )}
+          {usernameSuccess && (
+            <p className="text-xs text-green-500 font-medium mt-1 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+              {usernameSuccess}
+            </p>
+          )}
         </div>
 
         {/* Bio Field */}
@@ -156,7 +267,7 @@ export default function AccountSettingsPage() {
           
           <button
             type="submit"
-            disabled={isLoading || !name.trim()}
+            disabled={isLoading || !name.trim() || !username.trim() || !!usernameError}
             className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (

@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { updateProfile } from "@/lib/repositoryService";
 import { Profile } from "@/store/types";
+import { RESERVED_USERNAMES } from "@/utils/username";
 
 export async function getUserSettings() {
   const supabase = await createClient();
@@ -105,9 +106,17 @@ export async function updateUserAccount(data: Partial<Profile>) {
     const rawUsername = data.username.trim().toLowerCase();
     
     // Check validation constraints
-    const usernameRegex = /^[a-z0-9][a-z0-9_]{1,28}[a-z0-9]$/;
-    if (!usernameRegex.test(rawUsername) || rawUsername.includes("__")) {
-      throw new Error("उपयोगकर्ता नाम अमान्य है। यह 3-30 वर्णों का होना चाहिए, केवल अक्षरों, अंकों और अंडरस्कोर (_) का उपयोग कर सकता है, और यह अंडरस्कोर से शुरू या समाप्त नहीं हो सकता।");
+    if (!rawUsername) {
+      throw new Error("उपयोगकर्ता नाम आवश्यक है।");
+    }
+
+    const usernameRegex = /^[a-z0-9_.-]{3,30}$/;
+    if (!usernameRegex.test(rawUsername)) {
+      throw new Error("उपयोगकर्ता नाम अमान्य है। यह 3-30 वर्णों का होना चाहिए और केवल अक्षरों, अंकों, अंडरस्कोर (_), अवधियों (.) और हाइफ़न (-) का उपयोग कर सकता है।");
+    }
+
+    if (RESERVED_USERNAMES.includes(rawUsername)) {
+      throw new Error("यह उपयोगकर्ता नाम आरक्षित है।");
     }
 
     // Enforce uniqueness
