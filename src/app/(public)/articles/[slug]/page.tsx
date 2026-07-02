@@ -101,7 +101,7 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
     <div className="w-full min-h-screen bg-[#FDFCF7] dark:bg-[#0B0F19] text-[#111111] dark:text-[#E2E8F0] font-sans pb-16 transition-colors duration-300">
       
       <SectionContainer>
-        <div className="max-w-4xl mx-auto pt-6">
+        <div className="w-full lg:w-[92vw] lg:max-w-[1200px] mx-auto pt-6">
           
           <article className="w-full bg-white dark:bg-[#0E1322] border border-gray-150 dark:border-gray-850 p-6 md:p-10 rounded-xl shadow-sm">
             
@@ -152,26 +152,29 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
               </div>
             )}
 
-            {/* Main Content Body (Rich Markdown rendering) */}
-            <div className="font-serif leading-relaxed text-lg text-gray-855 dark:text-gray-200">
-              <ContentRenderer content={article?.content || ""} />
-            </div>
-
-            {/* Public interact panel bottom */}
-            <div className="mt-12 pt-6 border-t border-gray-100 dark:border-gray-855 flex items-center justify-between text-xs text-gray-455 font-sans">
-              <div className="flex flex-wrap gap-1">
-                {article?.tags?.slice(0, 3)?.map((tag: string) => (
-                  <span key={tag} className="bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">
-                    #{tag}
-                  </span>
-                ))}
+            {/* Inner Wrapper to limit reading line length of text-based elements */}
+            <div className="max-w-3xl mx-auto w-full">
+              {/* Main Content Body (Rich Markdown rendering) */}
+              <div className="font-serif leading-relaxed text-lg text-gray-855 dark:text-gray-200">
+                <ContentRenderer content={article?.content || ""} />
               </div>
 
-              <ArticleActions articleId={article.id} slug={article.slug} title={title} />
-            </div>
+              {/* Public interact panel bottom */}
+              <div className="mt-12 pt-6 border-t border-gray-100 dark:border-gray-855 flex items-center justify-between text-xs text-gray-455 font-sans">
+                <div className="flex flex-wrap gap-1">
+                  {article?.tags?.slice(0, 3)?.map((tag: string) => (
+                    <span key={tag} className="bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
 
-            {/* Comment Section Sprint 2 */}
-            <CommentSection articleId={article.id} />
+                <ArticleActions articleId={article.id} slug={article.slug} title={title} />
+              </div>
+
+              {/* Comment Section Sprint 2 */}
+              <CommentSection articleId={article.id} />
+            </div>
 
           </article>
 
