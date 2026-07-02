@@ -51,8 +51,15 @@ export default function Hero() {
     <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 h-full font-sans">
       
       {/* LEFT COLUMN: HERO SLIDER (70% width -> 8 cols) */}
-      <div className="lg:col-span-8 relative h-[420px] sm:h-[450px] lg:h-[480px] rounded-3xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.35)] group bg-stone-100 dark:bg-stone-900 border border-gray-150 dark:border-gray-850">
+      <div className="lg:col-span-8 relative h-[380px] sm:h-[450px] lg:h-[480px] rounded-3xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.35)] group bg-stone-100 dark:bg-stone-900 border border-gray-150 dark:border-gray-850">
         
+        {/* Mobile Category Badge (Top Left Corner) */}
+        <div className="absolute top-4 left-4 z-20 md:hidden">
+          <span className="bg-[#f97316]/95 text-white text-[10px] font-sans font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
+            {currentArticle.category || "मुख्य समाचार"}
+          </span>
+        </div>
+
         {/* Images */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -64,7 +71,7 @@ export default function Hero() {
             className="absolute inset-0 w-full h-full"
           >
             <Image src={currentArticle.coverImage || currentArticle.cover_image || currentArticle.image || "/images/placeholder-news.jpg"} alt={currentArticle.title} className="w-full h-full object-cover object-center brightness-[0.85] contrast-100 hover:scale-105 transition-transform duration-[10000ms] ease-out" loading="eager" fill />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 via-25% to-transparent" />
           </motion.div>
         </AnimatePresence>
 
@@ -77,15 +84,15 @@ export default function Hero() {
 
         {/* Bottom Left Content Area - padded to prevent dot indicator overlap on mobile */}
         <div className="absolute bottom-0 left-0 z-20 p-6 md:p-8 lg:p-10 pr-20 md:pr-8 lg:pr-10 text-white w-full max-w-3xl pointer-events-none">
-          {/* Category Badge */}
-          <div className="mb-2">
-            <span className="bg-stone-100/90 text-stone-855 dark:bg-stone-800/90 dark:text-stone-250 text-[11px] md:text-xs font-sans font-bold uppercase tracking-widest px-2 py-0.5 md:px-3 md:py-1 rounded-sm">
+          {/* Category Badge - visible on Desktop/Tablet inside content area */}
+          <div className="hidden md:block mb-2">
+            <span className="bg-stone-100/90 text-stone-855 dark:bg-stone-800/90 dark:text-stone-250 text-xs font-sans font-bold uppercase tracking-widest px-3 py-1 rounded-sm">
               {currentArticle.category || "मुख्य समाचार"}
             </span>
           </div>
 
-          {/* Headline - reduced font size and clamped to 3 lines on mobile */}
-          <h2 className="text-lg md:text-3xl lg:text-4xl font-serif font-black leading-tight drop-shadow mb-3 mt-6 md:mt-8 line-clamp-3 md:line-clamp-none">
+          {/* Headline - reduced font size and clamped to 2 lines on mobile */}
+          <h2 className="text-[17px] md:text-3xl lg:text-4xl font-serif font-black leading-tight drop-shadow mb-3 mt-2 md:mt-8 line-clamp-2 md:line-clamp-none">
             {stripMarkdown(currentArticle.title || currentArticle.title_hi || "")}
           </h2>
 
@@ -112,10 +119,10 @@ export default function Hero() {
         {/* SLIDER NAVIGATION BUTTONS (Visible on hover) */}
         {slides.length > 1 && (
           <>
-            <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur border border-white/20 dark:border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 hover:bg-white hover:text-black dark:hover:bg-slate-900 transition-all duration-300 z-30 cursor-pointer" aria-label="Previous slide">
+            <button onClick={prevSlide} className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur border border-white/20 dark:border-white/10 items-center justify-center text-white opacity-0 group-hover:opacity-100 hover:bg-white hover:text-black dark:hover:bg-slate-900 transition-all duration-300 z-30 cursor-pointer" aria-label="Previous slide">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur border border-white/20 dark:border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 hover:bg-white hover:text-black dark:hover:bg-slate-900 transition-all duration-300 z-30 cursor-pointer" aria-label="Next slide">
+            <button onClick={nextSlide} className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 dark:bg-black/10 backdrop-blur border border-white/20 dark:border-white/10 items-center justify-center text-white opacity-0 group-hover:opacity-100 hover:bg-white hover:text-black dark:hover:bg-slate-900 transition-all duration-300 z-30 cursor-pointer" aria-label="Next slide">
               <ChevronRight className="w-5 h-5" />
             </button>
           </>
