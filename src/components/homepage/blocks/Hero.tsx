@@ -51,7 +51,7 @@ export default function Hero() {
     <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 h-full font-sans">
       
       {/* LEFT COLUMN: HERO SLIDER (70% width -> 8 cols) */}
-      <div className="lg:col-span-8 relative aspect-[16/10] sm:aspect-[16/9] lg:aspect-auto lg:h-[480px] rounded-3xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.35)] group bg-stone-100 dark:bg-stone-900 border border-gray-150 dark:border-gray-850">
+      <div className="lg:col-span-8 relative h-[420px] sm:h-[450px] lg:h-[480px] rounded-3xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.35)] group bg-stone-100 dark:bg-stone-900 border border-gray-150 dark:border-gray-850">
         
         {/* Images */}
         <AnimatePresence mode="wait">
@@ -64,7 +64,7 @@ export default function Hero() {
             className="absolute inset-0 w-full h-full"
           >
             <Image src={currentArticle.coverImage || currentArticle.cover_image || currentArticle.image || "/images/placeholder-news.jpg"} alt={currentArticle.title} className="w-full h-full object-cover object-center brightness-[0.85] contrast-100 hover:scale-105 transition-transform duration-[10000ms] ease-out" loading="eager" fill />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
           </motion.div>
         </AnimatePresence>
 
@@ -75,17 +75,17 @@ export default function Hero() {
           aria-label={stripMarkdown(currentArticle.title || currentArticle.title_hi || "")}
         />
 
-        {/* Bottom Left Content Area */}
-        <div className="absolute bottom-0 left-0 z-20 p-6 md:p-8 lg:p-10 text-white w-full max-w-3xl pointer-events-none">
+        {/* Bottom Left Content Area - padded to prevent dot indicator overlap on mobile */}
+        <div className="absolute bottom-0 left-0 z-20 p-6 md:p-8 lg:p-10 pr-20 md:pr-8 lg:pr-10 text-white w-full max-w-3xl pointer-events-none">
           {/* Category Badge */}
           <div className="mb-2">
-            <span className="bg-stone-100/90 text-stone-850 dark:bg-stone-800/90 dark:text-stone-250 text-[10px] font-sans font-bold uppercase tracking-widest px-3 py-1 rounded-sm">
+            <span className="bg-stone-100/90 text-stone-855 dark:bg-stone-800/90 dark:text-stone-250 text-[11px] md:text-xs font-sans font-bold uppercase tracking-widest px-2 py-0.5 md:px-3 md:py-1 rounded-sm">
               {currentArticle.category || "मुख्य समाचार"}
             </span>
           </div>
 
-          {/* Headline with 24-32px extra vertical space above it */}
-          <h2 className="text-xl md:text-3xl lg:text-4xl font-serif font-black leading-tight drop-shadow mb-3 mt-6 md:mt-8">
+          {/* Headline - reduced font size and clamped to 3 lines on mobile */}
+          <h2 className="text-lg md:text-3xl lg:text-4xl font-serif font-black leading-tight drop-shadow mb-3 mt-6 md:mt-8 line-clamp-3 md:line-clamp-none">
             {stripMarkdown(currentArticle.title || currentArticle.title_hi || "")}
           </h2>
 
@@ -103,8 +103,8 @@ export default function Hero() {
             </span>
           </div>
 
-          {/* Subtitle / summary snippet */}
-          <p className="text-stone-300 dark:text-stone-400 text-xs md:text-sm lg:text-base leading-relaxed line-clamp-2 max-w-2xl font-serif font-normal">
+          {/* Subtitle / summary snippet - hidden on mobile */}
+          <p className="hidden md:block text-stone-300 dark:text-stone-400 text-xs md:text-sm lg:text-base leading-relaxed line-clamp-2 max-w-2xl font-serif font-normal">
             {stripMarkdown(currentArticle.summary || currentArticle.summary_hi || currentArticle.content || "")}
           </p>
         </div>
@@ -121,11 +121,11 @@ export default function Hero() {
           </>
         )}
 
-        {/* BOTTOM DOT INDICATORS */}
+        {/* BOTTOM DOT INDICATORS - reduced size on mobile */}
         {slides.length > 1 && (
-          <div className="absolute bottom-5 right-5 z-25 flex space-x-2">
+          <div className="absolute bottom-4 right-4 md:bottom-5 md:right-5 z-25 flex space-x-2">
             {slides.map((_, idx) => (
-              <button key={idx} onClick={() => setCurrentIndex(idx)} className={`w-2.5 h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? "bg-[#f97316] w-6" : "bg-white/40"}`} aria-label={`Go to slide ${idx + 1}`} />
+              <button key={idx} onClick={() => setCurrentIndex(idx)} className={`w-1.5 h-1 md:w-2.5 md:h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? "bg-[#f97316] w-4 md:w-6" : "bg-white/40"}`} aria-label={`Go to slide ${idx + 1}`} />
             ))}
           </div>
         )}
