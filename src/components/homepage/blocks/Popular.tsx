@@ -7,6 +7,7 @@ import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
 import SectionTitle from "../shared/SectionTitle";
+import { getArticleUrl } from "@/utils/routes";
 
 type TabType = "views" | "shares" | "comments" | "trending";
 
@@ -15,9 +16,11 @@ export default function Popular() {
   const { articles } = useCms();
   const [activeTab, setActiveTab] = useState<TabType>("views");
 
-  const published = articles.filter(
-    (art: any) => art.status === "Published" || art.status === "Approved" || !art.status
-  );
+  const published = articles
+    ? [...articles].filter(
+        (art: any) => art.status === "Published" || art.status === "Approved" || !art.status
+      )
+    : [];
 
   if (published.length === 0) return null;
 
@@ -94,7 +97,7 @@ export default function Popular() {
               <th className="py-2.5 px-4 text-center w-28">{locale === "hi" ? "स्कोर" : "Stats"}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-150 dark:divide-gray-850 text-xs">
+          <tbody className="divide-y divide-gray-150 dark:divide-gray-855 text-xs">
             {activeArticles.map((art: any, index: number) => {
               const cleanTitle = stripMarkdown(art.title);
               const cleanDate = art.date ? art.date.split(",")[0] : "";
@@ -108,7 +111,7 @@ export default function Popular() {
               })();
 
               return (
-                <tr key={art.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-900/30 transition-colors">
+                <tr key={art.id} className="hover:bg-gray-55/50 dark:hover:bg-gray-900/30 transition-colors">
                   {/* Rank */}
                   <td className="py-3 px-4 text-center font-bold text-gray-400 font-sans">
                     {index === 0 ? (
@@ -120,8 +123,8 @@ export default function Popular() {
                   {/* Title */}
                   <td className="py-3 px-4">
                     <Link
-                      href={`/articles/${art.slug || art.id}`}
-                      className="font-serif font-bold text-gray-850 dark:text-gray-200 hover:text-[#f97316] transition-colors leading-relaxed block line-clamp-1"
+                      href={getArticleUrl(art)}
+                      className="font-serif font-bold text-gray-855 dark:text-gray-200 hover:text-[#f97316] transition-colors leading-relaxed block line-clamp-1"
                     >
                       {cleanTitle}
                     </Link>

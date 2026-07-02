@@ -18,7 +18,7 @@ export async function getArticles(
   
   let query = supabase
     .from("articles")
-    .select("*, categories(name, slug), profiles(name, avatar_url)", { count: 'exact' });
+    .select("*, categories(name, slug), profiles(id, name, username, slug, avatar_url)", { count: 'exact' });
 
   if (filters?.status) {
     query = query.eq("status", filters.status);
@@ -73,7 +73,7 @@ export async function getArticleById(id: string) {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("articles")
-      .select("*, categories(id, name, slug), profiles(name, avatar_url)")
+      .select("*, categories(id, name, slug), profiles(id, name, username, slug, avatar_url)")
       .eq("id", id)
       .maybeSingle();
 
@@ -115,7 +115,7 @@ export async function getArticleBySlug(slug: string) {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("articles")
-      .select("*, categories(id, name, slug), profiles(name, avatar_url)")
+      .select("*, categories(id, name, slug), profiles(id, name, username, slug, avatar_url)")
       .eq("slug", slug)
       .maybeSingle();
 

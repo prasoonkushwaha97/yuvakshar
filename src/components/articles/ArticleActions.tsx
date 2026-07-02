@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Bookmark, Share2 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { toast } from "sonner";
+import { getArticleUrl } from "@/utils/routes";
 
 interface ArticleActionsProps {
   articleId: string;
@@ -18,8 +19,9 @@ export default function ArticleActions({ articleId, slug, title }: ArticleAction
 
   // Sync state with Context/DB
   useEffect(() => {
-    if (currentUser?.bookmarks) {
-      setIsBookmarked(currentUser.bookmarks.includes(articleId));
+    if (currentUser && currentUser.bookmarks) {
+      const isSaved = currentUser.bookmarks.some((b: any) => b.article_id === articleId);
+      setIsBookmarked(isSaved);
     } else {
       setIsBookmarked(false);
     }
@@ -45,7 +47,7 @@ export default function ArticleActions({ articleId, slug, title }: ArticleAction
 
     try {
       await toggleBookmark(articleId);
-      toast.success(!previousState ? "बुकमार्क जोड़ा गया" : "बुकमार्क हटाया गया");
+      toast.success(previousState ? "बुकमार्क हटाया गया।" : "बुकमार्क सहेज लिया गया है।");
     } catch (error) {
       // Revert optimistic update on failure
       setIsBookmarked(previousState);
@@ -59,7 +61,7 @@ export default function ArticleActions({ articleId, slug, title }: ArticleAction
   const handleShare = async () => {
     // Generate canonical share URL
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://yuvakshar.tech";
-    const shareUrl = `${baseUrl}/articles/${slug}`;
+    const shareUrl = `${baseUrl}${getArticleUrl({ slug })}`;
     const shareData = {
       title: `${title} | युवाक्षर`,
       url: shareUrl,

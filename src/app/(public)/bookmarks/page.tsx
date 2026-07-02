@@ -5,6 +5,7 @@ import { useCms } from "@/store/CmsContext";
 import { Bookmark, Lock, Search, Filter, BookOpen } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { getArticleUrl } from "@/utils/routes";
 
 export default function BookmarksPage() {
   const { currentUser, articles, toggleBookmark } = useCms();
@@ -94,7 +95,7 @@ export default function BookmarksPage() {
                     <Bookmark fill="currentColor" className="w-4 h-4" />
                   </button>
 
-                  <Link href={`/articles/${article.slug}`} className="flex flex-col flex-1">
+                  <Link href={getArticleUrl(article)} className="flex flex-col flex-1">
                     {article.coverImage && (
                       <div className="h-40 w-full overflow-hidden relative">
                         <Image src={article.coverImage} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />

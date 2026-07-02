@@ -17,6 +17,7 @@ import {
 import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import { stripMarkdown } from "@/lib/markdown";
+import { getArticleUrl } from "@/utils/routes";
 
 const categorySlugMap: Record<string, string> = {
   "news": "समाचार",
@@ -177,7 +178,7 @@ function CategoryDetailPageContent() {
               <div className="flex flex-col h-full justify-between">
                 <div>
                   {/* Image cover */}
-                  <div className="relative h-[220px] w-full overflow-hidden">
+                  <Link href={getArticleUrl(art)} className="block relative h-[220px] w-full overflow-hidden">
                     <Image 
                       src={art.coverImage} 
                       alt={art.title}
@@ -187,7 +188,7 @@ function CategoryDetailPageContent() {
                     <div className="absolute top-3 left-3 bg-background border border-border px-2.5 py-0.5 rounded text-[9px] text-primary font-bold tracking-wider uppercase">
                       {art.category}
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Body details */}
                   <div className="p-6 space-y-3">
@@ -202,7 +203,7 @@ function CategoryDetailPageContent() {
                       </span>
                     </div>
 
-                    <Link href={`/articles/${art.slug || art.id}`} className="block group">
+                    <Link href={getArticleUrl(art)} className="block group">
                       <h3 className="font-serif text-lg font-bold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2 font-hindi">
                         {stripMarkdown(art.title)}
                       </h3>
@@ -234,7 +235,7 @@ function CategoryDetailPageContent() {
                       )}
                     </button>
                     <Link 
-                      href={`/articles/${art.slug || art.id}`}
+                      href={getArticleUrl(art)}
                       className="p-1.5 rounded bg-primary text-white hover:bg-primary/90 transition-all flex items-center justify-center cursor-pointer"
                     >
                       <ArrowRight className="w-3.5 h-3.5" />

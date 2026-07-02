@@ -1,13 +1,13 @@
 "use client";
-import Image from "next/image";
-
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Vote, ArrowRight, Quote, Flame } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
+import { getArticleUrl } from "@/utils/routes";
 
 export default function HomepageSidebar() {
   const { locale } = useLanguage();
@@ -33,10 +33,10 @@ export default function HomepageSidebar() {
   const noPct = 100 - yesPct;
 
   const popularArticles = articles
-    .filter((a: any) => a.status === "Published" || a.status === "Approved" || !a.status)
-    .slice(0, 5);
+    ? [...articles].filter((a: any) => a.status === "Published" || a.status === "Approved" || !a.status).slice(0, 5)
+    : [];
 
-  const sidebarMag = magazines[0] || {
+  const sidebarMag = magazines && magazines.length > 0 ? magazines[0] : {
     issue: "अंक 15",
     month: "जून 2025",
     coverImage: "/images/placeholder-news.jpg"
@@ -57,7 +57,7 @@ export default function HomepageSidebar() {
           {popularArticles.map((art: any, idx: number) => (
             <Link
               key={art.id}
-              href={`/articles/${art.slug || art.id}`}
+              href={getArticleUrl(art)}
               className="flex gap-3.5 py-3 items-start group first:pt-0 last:pb-0"
             >
               <span className="text-base font-semibold text-stone-300 dark:text-stone-700 font-sans w-5 text-right shrink-0 select-none">
@@ -85,7 +85,7 @@ export default function HomepageSidebar() {
           </h3>
         </div>
         <div className="space-y-3.5">
-          <p className="text-xs md:text-sm font-serif leading-relaxed text-gray-700 dark:text-gray-300">
+          <p className="text-xs md:text-sm font-serif leading-relaxed text-gray-700 dark:text-gray-350">
             {locale === "hi"
               ? "क्या राष्ट्रीय शिक्षा नीति (NEP) भारतीय युवाओं के लिए रोज़गार के अधिक अवसर सृजित करने में सफल रहेगी?"
               : "Will the National Education Policy (NEP) succeed in creating more employment opportunities for Indian youth?"
@@ -149,7 +149,7 @@ export default function HomepageSidebar() {
         <Image src={sidebarMag.coverImage} alt="Mag cover" className="w-16 h-22 object-cover rounded-xl shadow-md border border-gray-200 dark:border-gray-800" width={64} height={88} />
         <div className="flex-1 flex flex-col justify-center">
           <span className="text-[9px] text-[#f97316] font-bold uppercase tracking-widest block mb-0.5">मासिक पत्रिका</span>
-          <h4 className="font-serif font-black text-sm text-gray-855 dark:text-gray-200 mb-2 leading-tight">
+          <h4 className="font-serif font-black text-sm text-gray-855 dark:text-gray-250 mb-2 leading-tight">
             {sidebarMag.issue}
           </h4>
           <Link

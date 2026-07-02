@@ -1,13 +1,12 @@
 "use client";
-import Image from "next/image";
-
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { stripMarkdown } from "@/lib/markdown";
 import ReadingTime from "../shared/ReadingTime";
-
 import { formatDisplayDate } from "@/utils/date";
+import { getArticleUrl } from "@/utils/routes";
 
 interface ArticleCardSmallProps {
   article: any;
@@ -37,7 +36,7 @@ export default function ArticleCardSmall({
       )}
 
       {showThumbnail && (
-        <Link href={`/articles/${article.slug || article.id}`} className="block relative w-16 h-16 shrink-0 overflow-hidden bg-gray-55 dark:bg-gray-900 rounded-xl border border-gray-150/60 dark:border-gray-850/60">
+        <Link href={getArticleUrl(article)} className="block relative w-16 h-16 shrink-0 overflow-hidden bg-gray-55 dark:bg-gray-900 rounded-xl border border-gray-150/60 dark:border-gray-850/60">
           <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" fill />
         </Link>
       )}
@@ -49,7 +48,7 @@ export default function ArticleCardSmall({
           <span>{cleanDate}</span>
         </div>
 
-        <Link href={`/articles/${article.slug || article.id}`} className="block group-hover:text-[#f97316] transition-colors duration-250">
+        <Link href={getArticleUrl(article)} className="block group-hover:text-[#f97316] transition-colors duration-250">
           <h4 className="font-bold font-serif text-[13.5px] leading-snug text-gray-900 dark:text-gray-200 line-clamp-2">
             {title}
           </h4>

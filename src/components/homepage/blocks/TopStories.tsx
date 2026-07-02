@@ -1,22 +1,24 @@
 "use client";
-import Image from "next/image";
-
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
 import { ArrowRight } from "lucide-react";
 import SectionContainer from "../layout/SectionContainer";
+import { getArticleUrl } from "@/utils/routes";
 
 export default function TopStories() {
   const { locale } = useLanguage();
   const { articles } = useCms();
 
-  const published = articles.filter(
-    (art: any) => art.status === "Published" || art.status === "Approved" || !art.status
-  );
+  const published = articles
+    ? [...articles].filter(
+        (art: any) => art.status === "Published" || art.status === "Approved" || !art.status
+      )
+    : [];
 
   if (published.length === 0) return null;
 
@@ -64,11 +66,11 @@ export default function TopStories() {
           return (
             <div 
               key={art.id} 
-              className="group flex flex-col h-full bg-white dark:bg-[#0E1322] rounded-3xl overflow-hidden border border-gray-150/80 dark:border-gray-850/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300"
+              className="group flex flex-col h-full bg-white dark:bg-[#0E1322] rounded-3xl overflow-hidden border border-gray-150/80 dark:border-gray-855/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300"
             >
               {/* Image Section */}
               <Link 
-                href={`/articles/${art.slug || art.id}`} 
+                href={getArticleUrl(art)} 
                 className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-100 dark:bg-gray-900 border-b border-gray-150 dark:border-gray-850 shrink-0"
               >
                 <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700 ease-out" loading="lazy" fill />
@@ -89,24 +91,24 @@ export default function TopStories() {
                 </div>
 
                 {/* Title */}
-                <Link href={`/articles/${art.slug || art.id}`} className="block hover:text-[#f97316] transition-colors duration-250 mb-2">
+                <Link href={getArticleUrl(art)} className="block hover:text-[#f97316] transition-colors duration-250 mb-2">
                   <h3 className="text-base md:text-lg font-bold font-serif leading-snug text-gray-900 dark:text-white line-clamp-2">
                     {title}
                   </h3>
                 </Link>
 
                 {/* Summary */}
-                <p className="text-gray-550 dark:text-gray-400 text-xs md:text-sm leading-relaxed mb-4 font-serif line-clamp-2">
+                <p className="text-gray-555 dark:text-gray-400 text-xs md:text-sm leading-relaxed mb-4 font-serif line-clamp-2">
                   {summary}
                 </p>
 
                 {/* Author Info & Link */}
                 <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-850 flex items-center justify-between">
-                  <span className="text-xs text-gray-650 dark:text-gray-300 font-sans font-semibold">
+                  <span className="text-xs text-gray-655 dark:text-gray-300 font-sans font-semibold">
                     {art.author || "युवाक्षर डेस्क"}
                   </span>
                   <Link 
-                    href={`/articles/${art.slug || art.id}`}
+                    href={getArticleUrl(art)}
                     className="inline-flex items-center space-x-1 text-[10px] font-bold text-[#f97316] hover:text-[#ea580c] transition-colors"
                   >
                     <span>आगे पढ़ें</span>

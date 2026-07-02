@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Search, X, Clock, TrendingUp, User, BookOpen, Tag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
-import { getCanonicalProfileUrl } from "@/utils/username";
+import { getProfileUrl, getArticleUrl } from "@/utils/routes";
 
 const RECENT_SEARCHES_KEY = "yuvakshar_recent_searches";
 
@@ -204,7 +204,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">लेख</h3>
                         <div className="space-y-1">
                           {results.articles.map(a => (
-                            <button key={a.id} onClick={() => handleSelectResult(`/articles/${a.slug}`, query)} className="w-full text-left p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors group flex items-start gap-3">
+                            <button key={a.id} onClick={() => handleSelectResult(getArticleUrl({ slug: a.slug, id: a.id }), query)} className="w-full text-left p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors group flex items-start gap-3">
                               <BookOpen className="w-5 h-5 text-slate-400 mt-0.5 group-hover:text-[#f97316]" />
                               <div>
                                 <h4 className="text-slate-900 dark:text-slate-100 font-serif text-lg"><Highlight text={a.title_hi || a.title_en || ""} /></h4>
@@ -222,19 +222,27 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                         <div>
                           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">लेखक</h3>
                           <div className="space-y-1">
-                            {results.authors.map(u => (
-                              <button key={u.id} onClick={() => handleSelectResult(getCanonicalProfileUrl(u), query)} className="w-full text-left p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors flex items-center gap-3">
-                                {u.avatar_url ? (
-                                  <Image src={u.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" width={48} height={48} />
-                                ) : (
-                                  <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center"><User className="w-4 h-4 text-slate-500" /></div>
-                                )}
-                                <div>
-                                  <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100"><Highlight text={u.name} /></h4>
-                                  {u.role && <p className="text-xs text-slate-500">{u.role}</p>}
-                                </div>
-                              </button>
-                            ))}
+                            {results.authors.map(u => {
+                              const profileUrl = getProfileUrl(u);
+                              return (
+                                <button 
+                                  key={u.id} 
+                                  disabled={!profileUrl}
+                                  onClick={() => profileUrl && handleSelectResult(profileUrl, query)} 
+                                  className={`w-full text-left p-2 rounded-xl transition-colors flex items-center gap-3 ${profileUrl ? 'hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer' : 'cursor-not-allowed opacity-50'}`}
+                                >
+                                  {u.avatar_url ? (
+                                    <Image src={u.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" width={48} height={48} />
+                                  ) : (
+                                    <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center"><User className="w-4 h-4 text-slate-500" /></div>
+                                  )}
+                                  <div>
+                                    <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100"><Highlight text={u.name} /></h4>
+                                    {u.role && <p className="text-xs text-slate-500">{u.role}</p>}
+                                  </div>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       )}

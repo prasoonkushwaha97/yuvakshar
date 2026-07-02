@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Profile } from "@/store/types";
 import { useCms } from "@/store/CmsContext";
+import DeviceImageUploader from "@/components/yuvakshar/DeviceImageUploader";
 
 export default function ProfileSettingsTab({ user }: { user: Profile }) {
   const { updateUserProfile } = useCms();
@@ -61,24 +62,27 @@ export default function ProfileSettingsTab({ user }: { user: Profile }) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">अवतार URL (Avatar URL)</label>
-          <input 
-            type="text" 
+          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">अवतार चित्र (Avatar Image)</label>
+          <DeviceImageUploader
             value={formData.avatar_url}
-            onChange={(e) => setFormData({...formData, avatar_url: e.target.value})}
-            placeholder="https://..."
-            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
+            onChange={(url) => setFormData({...formData, avatar_url: url})}
+            bucket="avatars"
+            folder="avatars"
+            label="अवतार चित्र अपलोड करें"
+            aspectRatio="aspect-square"
+            className="max-w-[200px]"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">कवर बैनर URL (Cover URL)</label>
-          <input 
-            type="text" 
+          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">कवर बैनर (Cover Banner)</label>
+          <DeviceImageUploader
             value={formData.cover_url}
-            onChange={(e) => setFormData({...formData, cover_url: e.target.value})}
-            placeholder="https://..."
-            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
+            onChange={(url) => setFormData({...formData, cover_url: url})}
+            bucket="avatars"
+            folder="covers"
+            label="कवर बैनर अपलोड करें"
+            aspectRatio="aspect-[3/1]"
           />
         </div>
 

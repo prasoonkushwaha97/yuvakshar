@@ -1,20 +1,11 @@
 import React from "react";
 import { 
   BookOpen, 
-  Bookmark, 
-  Edit2, 
-  MessageSquare, 
   Image as ImageIcon, 
-  Settings, 
-  LayoutDashboard, 
-  BookType, 
-  Activity, 
-  Users, 
-  UserPlus, 
-  Info 
+  Settings 
 } from "lucide-react";
 
-export type ProfileTabId = "overview" | "articles" | "community" | "magazine" | "media" | "activity" | "followers" | "following" | "about" | "bookmarks" | "drafts" | "settings";
+export type ProfileTabId = "articles" | "media" | "settings";
 
 interface ProfileTabsProps {
   activeTab: ProfileTabId;
@@ -24,20 +15,11 @@ interface ProfileTabsProps {
 
 export default function ProfileTabs({ activeTab, setActiveTab, isOwner }: ProfileTabsProps) {
   const publicTabs = [
-    { id: "overview" as ProfileTabId, label: "अवलोकन (Overview)", icon: LayoutDashboard },
     { id: "articles" as ProfileTabId, label: "लेख (Articles)", icon: BookOpen },
-    { id: "community" as ProfileTabId, label: "चौपाल (Community)", icon: MessageSquare },
-    { id: "magazine" as ProfileTabId, label: "पत्रिका (Magazine)", icon: BookType },
     { id: "media" as ProfileTabId, label: "मीडिया (Media)", icon: ImageIcon },
-    { id: "activity" as ProfileTabId, label: "गतिविधि (Activity)", icon: Activity },
-    { id: "followers" as ProfileTabId, label: "फ़ॉलोअर्स", icon: Users },
-    { id: "following" as ProfileTabId, label: "फ़ॉलोइंग", icon: UserPlus },
-    { id: "about" as ProfileTabId, label: "परिचय (About)", icon: Info },
   ];
 
   const ownerTabs = isOwner ? [
-    { id: "drafts" as ProfileTabId, label: "ड्राफ्ट्स (Drafts)", icon: Edit2 },
-    { id: "bookmarks" as ProfileTabId, label: "बुकमार्क्स (Bookmarks)", icon: Bookmark },
     { id: "settings" as ProfileTabId, label: "सेटिंग्स (Settings)", icon: Settings },
   ] : [];
 

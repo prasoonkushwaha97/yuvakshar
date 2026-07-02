@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import { useCms } from "@/store/CmsContext";
 import { Activity, Flame, BookOpen, Star, Lock } from "lucide-react";
 import Link from "next/link";
+import { getArticleUrl } from "@/utils/routes";
 
 export default function LiteraryJourneyPage() {
   const { currentUser, quizAttempts, articles } = useCms();
@@ -98,7 +99,7 @@ export default function LiteraryJourneyPage() {
                         <span className="text-[10px] text-slate-400 font-mono block mb-1">
                           {new Date(att.timestamp).toLocaleDateString("hi-IN")}
                         </span>
-                        <Link href={`/articles/${art.slug}`} className="font-bold font-serif text-slate-800 dark:text-white hover:text-primary transition-colors block">
+                        <Link href={getArticleUrl(art)} className="font-bold font-serif text-slate-800 dark:text-white hover:text-primary transition-colors block">
                           {art.title}
                         </Link>
                         {art.category && (

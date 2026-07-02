@@ -5,7 +5,7 @@ import { getArticleBySlug, getArticleById } from "@/lib/actions/articleActions";
 import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { getCanonicalProfileUrl } from "@/utils/username";
+import { getProfileUrl } from "@/utils/routes";
 import { stripMarkdown } from "@/lib/markdown";
 import Sidebar from "@/components/homepage/layout/Sidebar";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
@@ -25,78 +25,67 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       return { title: "युवाक्षर | लेख उपलब्ध नहीं है" };
     }
     const resolvedParams = await params;
-    if (!resolvedParams || !resolvedParams.slug || typeof resolvedParams.slug !== "string") {
-      return { title: "युवाक्षर | लेख उपलब्ध नहीं है" };
-    }
-    const slug = decodeURIComponent(resolvedParams.slug).trim();
-    if (!slug) {
-      return { title: "युवाक्षर | लेख उपलब्ध नहीं है" };
-    }
-
-    let article = null;
-    try {
-      article = await getArticleBySlug(slug);
-      if (!article) {
-        article = await getArticleById(slug);
-      }
-    } catch (queryErr) {
-      console.error("Failed to query article in generateMetadata:", queryErr);
+    const cleanSlug = decodeURIComponent(resolvedParams.slug || "");
+    let article = await getArticleBySlug(cleanSlug);
+    if (!article) {
+      article = await getArticleById(cleanSlug);
     }
 
     if (!article) {
       return {
-        title: "युवाक्षर | लेख उपलब्ध नहीं है"
+        title: "युवाक्षर | लेख उपलब्ध नहीं है",
+        description: "यह लेख मौजूद नहीं है या हटा दिया गया है।",
       };
     }
 
-    const title = stripMarkdown(article?.title_hi || "");
-    const desc = stripMarkdown(article?.summary_hi || article?.content || "").substring(0, 160);
+    const titleStr = stripMarkdown(article.title_hi || article.title_en || "युवाक्षर लेख");
+    const summaryStr = stripMarkdown(article.summary_hi || article.summary_en || "युवाक्षर का एक विचारणीय आलेख।");
+    const ogImg = article.cover_image || "/yuvakshar_logo_official.png";
 
     return {
-      title: `${title} | युवाक्षर`,
-      description: desc,
+      title: `${titleStr} | युवाक्षर`,
+      description: summaryStr.slice(0, 160),
       openGraph: {
-        title,
-        description: desc,
+        title: titleStr,
+        description: summaryStr,
+        images: [{ url: ogImg, width: 1200, height: 630, alt: titleStr }],
         type: "article",
-        publishedTime: article?.published_at || article?.created_at,
-        images: article?.cover_image ? [{ url: article.cover_image }] : []
+        publishedTime: article.published_at || article.created_at,
+        authors: [article.profiles?.name || "युवाक्षर लेखक"],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: titleStr,
+        description: summaryStr.slice(0, 200),
+        images: [ogImg],
       }
     };
-  } catch (metaErr) {
-    console.error("Exception in generateMetadata:", metaErr);
+  } catch (err) {
+    console.error("Metadata generation error:", err);
     return { title: "युवाक्षर" };
   }
 }
 
 export default async function ArticleDetailPage({ params }: ArticlePageProps) {
-  if (!params) {
-    return notFound();
-  }
-  
   const resolvedParams = await params;
-  if (!resolvedParams || !resolvedParams.slug || typeof resolvedParams.slug !== "string") {
-    return notFound();
-  }
-
-  const slug = decodeURIComponent(resolvedParams.slug).trim();
-  if (!slug) {
-    return notFound();
-  }
-
-  let article = null;
-  try {
-    article = await getArticleBySlug(slug);
-    if (!article) {
-      article = await getArticleById(slug);
-    }
-  } catch (err) {
-    console.error(`Failed to fetch article for slug "${slug}" in ArticleDetailPage:`, err);
+  const cleanSlug = decodeURIComponent(resolvedParams.slug || "");
+  
+  // Try fetching by slug, fallback to ID
+  let article = await getArticleBySlug(cleanSlug);
+  if (!article) {
+    article = await getArticleById(cleanSlug);
   }
 
   if (!article) {
-    return notFound();
+    notFound();
   }
+
+  // Increment views in background
+  supabase
+    .rpc("increment_article_views", { article_id: article.id })
+    .then(({ error }) => {
+      if (error) console.warn("Failed to increment views:", error.message);
+    });
 
   const title = stripMarkdown(article?.title_hi || "");
   const dateStr = article?.published_at 
@@ -134,27 +123,46 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
 
             {/* Article Short Summary */}
             {article?.summary_hi && (
-              <p className="text-base text-gray-650 dark:text-gray-400 font-serif leading-relaxed italic border-l-4 border-gray-300 dark:border-gray-700 pl-4 mb-6">
+              <p className="text-base text-gray-655 dark:text-gray-400 font-serif leading-relaxed italic border-l-4 border-gray-300 dark:border-gray-700 pl-4 mb-6">
                 {stripMarkdown(article.summary_hi)}
               </p>
             )}
 
             {/* Author Profile and Metadata */}
             <div className="flex flex-wrap items-center justify-between gap-4 border-t border-b border-gray-100 dark:border-gray-850 py-4 mb-6">
-              <Link href={article?.profiles ? getCanonicalProfileUrl(article.profiles) : "#"} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-                <Image 
-                  src={article?.profiles?.avatar_url || "/images/default-avatar.png"} 
-                  alt={article?.profiles?.name || "युवाक्षर लेखक"}
-                  width={40} height={40}
-                  className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-800"
-                />
-                <div>
-                  <h4 className="text-xs font-bold text-gray-800 dark:text-gray-200 hover:text-primary transition-colors">
-                    {article?.profiles?.name || "युवाक्षर डेस्क"}
-                  </h4>
-                  <span className="text-[10px] text-gray-400 font-sans tracking-wide">संपादकीय स्तंभकार</span>
-                </div>
-              </Link>
+              {(() => {
+                const profileUrl = article?.profiles ? getProfileUrl(article.profiles) : null;
+                const authorContent = (
+                  <>
+                    <Image 
+                      src={article?.profiles?.avatar_url || "/images/default-avatar.png"} 
+                      alt={article?.profiles?.name || "युवाक्षर लेखक"}
+                      width={40} height={40}
+                      className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-800"
+                    />
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-800 dark:text-gray-200 hover:text-primary transition-colors">
+                        {article?.profiles?.name || "युवाक्षर डेस्क"}
+                      </h4>
+                      <span className="text-[10px] text-gray-400 font-sans tracking-wide">संपादकीय स्तंभकार</span>
+                    </div>
+                  </>
+                );
+
+                if (profileUrl) {
+                  return (
+                    <Link href={profileUrl} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                      {authorContent}
+                    </Link>
+                  );
+                }
+
+                return (
+                  <div className="flex items-center space-x-3">
+                    {authorContent}
+                  </div>
+                );
+              })()}
 
               <div className="flex items-center space-x-4 text-xs text-gray-450 dark:text-gray-500 font-sans">
                 <span className="flex items-center space-x-1">
@@ -191,7 +199,7 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
             </div>
 
             {/* Public interact panel bottom */}
-            <div className="mt-12 pt-6 border-t border-gray-100 dark:border-gray-850 flex items-center justify-between text-xs text-gray-450 font-sans">
+            <div className="mt-12 pt-6 border-t border-gray-100 dark:border-gray-855 flex items-center justify-between text-xs text-gray-455 font-sans">
               <div className="flex flex-wrap gap-1">
                 {article?.tags?.slice(0, 3)?.map((tag: string) => (
                   <span key={tag} className="bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">

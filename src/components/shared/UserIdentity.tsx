@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCms } from "@/store/CmsContext";
 import { Profile } from "@/store/types";
-import { getCanonicalProfileUrl } from "@/utils/username";
+import { getProfileUrl } from "@/utils/routes";
 
 export interface UserIdentityProps {
   userId?: string | null;
@@ -100,7 +100,7 @@ export default function UserIdentity({
   const role = resolvedUser.role || "Member";
   const isVerified = (resolvedUser as any).is_verified || (resolvedUser as any).verified || false;
 
-  const profileHref = getCanonicalProfileUrl(resolvedUser);
+  const profileHref = getProfileUrl(resolvedUser);
   const username = resolvedUser.username || resolvedUser.slug || resolvedUser.id || "unknown";
 
   // Sizes based on variant
@@ -151,9 +151,9 @@ export default function UserIdentity({
     ${className}
   `;
 
-  const isValidProfile = profileHref !== "/u/unknown";
+  const isValidProfile = profileHref !== null;
   
-  if (clickable && isValidProfile) {
+  if (clickable && isValidProfile && profileHref) {
     return (
       <Link href={profileHref} className={wrapperClasses}>
         {innerContent}

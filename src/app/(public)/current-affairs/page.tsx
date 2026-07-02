@@ -15,6 +15,7 @@ import {
 import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import { stripMarkdown } from "@/lib/markdown";
+import { getArticleUrl } from "@/utils/routes";
 
 function CurrentAffairsPageContent() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -102,12 +103,12 @@ function CurrentAffairsPageContent() {
               <div className="flex flex-col h-full justify-between">
                 <div>
                   {/* Image cover */}
-                  <div className="relative h-[220px] w-full overflow-hidden">
+                  <Link href={getArticleUrl(art)} className="block relative h-[220px] w-full overflow-hidden">
                     <Image src={art.coverImage} alt={art.title} fill className="object-cover hover:scale-105 transition-transform duration-500 brightness-95" />
                     <div className="absolute top-3 left-3 bg-yuvakshar-bg border border-yuvakshar-gold/25 px-2.5 py-0.5 rounded text-[9px] text-yuvakshar-gold font-bold tracking-wider uppercase">
                       {art.category}
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Body details */}
                   <div className="p-6 space-y-3">
@@ -122,7 +123,7 @@ function CurrentAffairsPageContent() {
                       </span>
                     </div>
 
-                    <Link href={`/articles/${art.slug || art.id}`} className="block group">
+                    <Link href={getArticleUrl(art)} className="block group">
                       <h3 className="font-serif text-lg font-bold text-yuvakshar-text group-hover:text-yuvakshar-gold transition-colors leading-snug line-clamp-2">
                         {stripMarkdown(art.title)}
                       </h3>
@@ -154,7 +155,7 @@ function CurrentAffairsPageContent() {
                       )}
                     </button>
                     <Link 
-                      href={`/articles/${art.slug || art.id}`}
+                      href={getArticleUrl(art)}
                       className="p-1.5 rounded bg-yuvakshar-gold text-yuvakshar-bg hover:bg-white transition-all flex items-center justify-center cursor-pointer"
                     >
                       <ArrowRight className="w-3.5 h-3.5" />

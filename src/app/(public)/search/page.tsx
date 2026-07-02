@@ -8,6 +8,7 @@ import { Search as SearchIcon, Bookmark, BookmarkCheck, ArrowRight, Clock } from
 import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import { stripMarkdown } from "@/lib/markdown";
+import { getArticleUrl } from "@/utils/routes";
 
 // Helper to generate author profile URL slugs safely
 const slugifyAuthor = (name: string) => {
@@ -153,7 +154,7 @@ export default function SearchPage() {
                       </div>
                     </div>
 
-                    <Link href={`/articles/${art.slug || art.id}`} className="block">
+                    <Link href={getArticleUrl(art)} className="block">
                       <h3 className="font-serif text-base font-bold hover:text-primary transition-colors">
                         {stripMarkdown(art.title)}
                       </h3>
@@ -175,7 +176,7 @@ export default function SearchPage() {
                       )}
                     </button>
                     <Link 
-                      href={`/articles/${art.slug || art.id}`}
+                      href={getArticleUrl(art)}
                       className="p-2 rounded bg-primary text-white hover:bg-primary/90 transition-all flex items-center justify-center cursor-pointer"
                     >
                       <ArrowRight className="w-4 h-4" />

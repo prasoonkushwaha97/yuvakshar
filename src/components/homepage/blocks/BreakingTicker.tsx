@@ -6,6 +6,7 @@ import { Zap } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
+import { getArticleUrl } from "@/utils/routes";
 
 export default function BreakingTicker() {
   const { locale } = useLanguage();
@@ -13,9 +14,11 @@ export default function BreakingTicker() {
   const [isPaused, setIsPaused] = useState(false);
 
   const breakingStories = articles
-    .filter((art: any) => art.status === "Published" || art.status === "Approved" || !art.status)
-    .filter((art: any) => art.trending || art.category === "समाचार" || art.breaking)
-    .slice(0, 8);
+    ? [...articles]
+        .filter((art: any) => art.status === "Published" || art.status === "Approved" || !art.status)
+        .filter((art: any) => art.trending || art.category === "समाचार" || art.breaking)
+        .slice(0, 8)
+    : [];
 
   if (breakingStories.length === 0) return null;
 
@@ -45,7 +48,7 @@ export default function BreakingTicker() {
             return (
               <Link 
                 key={story.id} 
-                href={`/articles/${story.slug || story.id}`}
+                href={getArticleUrl(story)}
                 className="hover:underline flex items-center space-x-2 shrink-0 text-white hover:text-white/90"
               >
                 <span>✦</span>
@@ -59,7 +62,7 @@ export default function BreakingTicker() {
             return (
               <Link 
                 key={`${story.id}-dup`} 
-                href={`/articles/${story.slug || story.id}`}
+                href={getArticleUrl(story)}
                 className="hover:underline flex items-center space-x-2 shrink-0 text-white hover:text-white/90"
               >
                 <span>✦</span>

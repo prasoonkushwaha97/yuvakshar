@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Eye, Heart, MessageSquare, Bookmark, MoreHorizontal } from "lucide-react";
+import { getArticleUrl } from "@/utils/routes";
 
 interface ProfileArticleCardProps {
   article: any;
@@ -13,7 +14,7 @@ export default function ProfileArticleCard({ article }: ProfileArticleCardProps)
       
       {/* Content Right/Left flow (Image on left for Desktop) */}
       {article.coverImage && (
-        <Link href={`/article/${article.slug}`} className="block w-full sm:w-[240px] md:w-[280px] h-[160px] shrink-0 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 relative">
+        <Link href={getArticleUrl(article)} className="block w-full sm:w-[240px] md:w-[280px] h-[160px] shrink-0 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 relative">
           <Image 
             src={article.coverImage} 
             alt={article.title} 
@@ -34,7 +35,7 @@ export default function ProfileArticleCard({ article }: ProfileArticleCardProps)
         </div>
 
         {/* Title */}
-        <Link href={`/article/${article.slug}`} className="block">
+        <Link href={getArticleUrl(article)} className="block">
           <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-snug group-hover:text-[#F97316] transition-colors line-clamp-2">
             {article.title}
           </h2>

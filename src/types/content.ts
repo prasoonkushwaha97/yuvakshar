@@ -85,6 +85,8 @@ export interface Article {
   profiles?: {
     id: string;
     name: string;
+    username: string;
+    slug?: string;
     avatar_url: string;
   } | null;
   reviewer?: {

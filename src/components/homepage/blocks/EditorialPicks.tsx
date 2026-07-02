@@ -1,14 +1,14 @@
 "use client";
-import Image from "next/image";
-
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
 import { Award } from "lucide-react";
 import SectionContainer from "../layout/SectionContainer";
+import { getArticleUrl } from "@/utils/routes";
 
 interface EditorialPicksProps {
   excludeIds?: string[];
@@ -18,9 +18,11 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
   const { locale } = useLanguage();
   const { articles } = useCms();
 
-  const published = articles.filter(
-    (art: any) => art.status === "Published" || art.status === "Approved" || !art.status
-  );
+  const published = articles
+    ? [...articles].filter(
+        (art: any) => art.status === "Published" || art.status === "Approved" || !art.status
+      )
+    : [];
 
   if (published.length === 0) return null;
 
@@ -68,7 +70,7 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
             >
               {/* Image Section */}
               <Link 
-                href={`/articles/${art.slug || art.id}`} 
+                href={getArticleUrl(art)} 
                 className="block relative aspect-[16/10] w-full overflow-hidden bg-stone-100 dark:bg-stone-900 mb-3 shrink-0"
               >
                 <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700 ease-out" loading="lazy" fill />
@@ -82,7 +84,7 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
               {/* Text Section */}
               <div className="flex-1 flex flex-col px-1">
                 {/* Title */}
-                <Link href={`/articles/${art.slug || art.id}`} className="block hover:text-stone-600 dark:hover:text-stone-400 transition-colors duration-250 mb-2">
+                <Link href={getArticleUrl(art)} className="block hover:text-stone-600 dark:hover:text-stone-400 transition-colors duration-250 mb-2">
                   <h3 className="text-base md:text-lg font-serif font-semibold leading-tight text-stone-900 dark:text-stone-100 line-clamp-2">
                     {title}
                   </h3>

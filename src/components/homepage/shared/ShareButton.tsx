@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { Share2 } from "lucide-react";
 
+import { getArticleUrl } from "@/utils/routes";
+
 interface ShareButtonProps {
   articleId: string;
   slug?: string;
@@ -17,9 +19,7 @@ export default function ShareButton({ articleId, slug, title, className = "" }: 
     e.preventDefault();
     e.stopPropagation();
 
-    const shareUrl = slug 
-      ? `${window.location.origin}/articles/${slug}`
-      : `${window.location.origin}/articles/${articleId}`;
+    const shareUrl = `${window.location.origin}${getArticleUrl({ slug, id: articleId })}`;
 
     if (navigator.share) {
       try {

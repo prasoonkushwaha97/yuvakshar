@@ -5,7 +5,7 @@ import Image from "next/image";
 import React from "react";
 import Link from "next/link";
 import { stripMarkdown } from "@/lib/markdown";
-import { getCanonicalProfileUrl } from "@/utils/username";
+import { getProfileUrl, getArticleUrl } from "@/utils/routes";
 
 interface EditorialCardProps {
   article: any;
@@ -19,8 +19,8 @@ export default function EditorialCard({ article }: EditorialCardProps) {
   const authorAvatar = article.authorAvatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(article.author || "User")}`;
   const authorRole = article.authorRole || "वरिष्ठ स्तंभकार";
 
-  const profileUrl = getCanonicalProfileUrl(article.authorProfile);
-  const isProfileValid = profileUrl !== "/u/unknown";
+  const profileUrl = getProfileUrl(article.authorProfile);
+  const isProfileValid = profileUrl !== null;
   
   const innerContent = (
     <>
@@ -38,7 +38,7 @@ export default function EditorialCard({ article }: EditorialCardProps) {
 
   return (
     <div className="group flex flex-col items-center text-center bg-white dark:bg-[#0E1322] p-6 rounded-3xl border border-gray-150/80 dark:border-gray-850/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300">
-      {isProfileValid ? (
+      {isProfileValid && profileUrl ? (
         <Link href={profileUrl} className="group/avatar flex flex-col items-center cursor-pointer">
           {innerContent}
         </Link>
@@ -49,7 +49,7 @@ export default function EditorialCard({ article }: EditorialCardProps) {
       )}
 
       {/* Column Title */}
-      <Link href={`/articles/${article.slug || article.id}`} className="block flex-grow group-hover:text-[#f97316] transition-colors">
+      <Link href={getArticleUrl(article)} className="block flex-grow group-hover:text-[#f97316] transition-colors">
         <h4 className="font-serif font-black text-[15px] leading-snug text-gray-900 dark:text-gray-150 line-clamp-3 mb-3">
           "{title}"
         </h4>
@@ -61,7 +61,7 @@ export default function EditorialCard({ article }: EditorialCardProps) {
 
       {/* Link to Read */}
       <Link
-        href={`/articles/${article.slug || article.id}`}
+        href={getArticleUrl(article)}
         className="text-[10px] uppercase font-sans font-bold tracking-widest text-[#f97316] hover:text-[#EA580C] mt-auto hover:underline"
       >
         कॉलम पढ़ें

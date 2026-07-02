@@ -1285,7 +1285,7 @@ export function CmsProvider({
       // Load Articles — join profiles and categories, and map to expected client camelCase properties
       const { data: dbArticles } = await supabase
         .from("articles")
-        .select("*, profiles(name), categories(name)")
+        .select("*, profiles(id, name, username, slug, avatar_url), categories(name)")
         .order("created_at", { ascending: false });
       const loadedArticles = dbArticles && dbArticles.length > 0 ? dbArticles : [];
       
@@ -1302,6 +1302,7 @@ export function CmsProvider({
         author: art.profiles?.name || "युवाक्षर संपादक",
         author_id: art.author_id,
         authorRole: "लेखक",
+        authorProfile: art.profiles ? mapDbProfileToProfile(art.profiles) : undefined,
         coverImage: art.cover_image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
         date: art.published_at || art.created_at,
         readTime: art.read_time || "३ मिनट पठन",

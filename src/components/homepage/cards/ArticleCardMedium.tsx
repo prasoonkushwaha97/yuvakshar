@@ -1,13 +1,12 @@
 "use client";
-import Image from "next/image";
-
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { stripMarkdown } from "@/lib/markdown";
 import ReadingTime from "../shared/ReadingTime";
-
 import { formatDisplayDate } from "@/utils/date";
+import { getArticleUrl } from "@/utils/routes";
 
 interface ArticleCardMediumProps {
   article: any;
@@ -25,7 +24,7 @@ export default function ArticleCardMedium({ article, showImage = true }: Article
     <div className="group flex flex-col h-full bg-transparent rounded-none border-b border-stone-200 dark:border-stone-800 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden pb-4">
       
       {showImage && (
-        <Link href={`/articles/${article.slug || article.id}`} className="block relative w-full aspect-[16/10] mb-4 shrink-0 overflow-hidden bg-stone-100 dark:bg-stone-900">
+        <Link href={getArticleUrl(article)} className="block relative w-full aspect-[16/10] mb-4 shrink-0 overflow-hidden bg-stone-100 dark:bg-stone-900">
           <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" fill />
         </Link>
       )}
@@ -41,7 +40,7 @@ export default function ArticleCardMedium({ article, showImage = true }: Article
           </div>
 
           {/* Title */}
-          <Link href={`/articles/${article.slug || article.id}`} className="block group-hover:text-stone-600 dark:group-hover:text-stone-400 transition-colors duration-200 min-h-0">
+          <Link href={getArticleUrl(article)} className="block group-hover:text-stone-600 dark:group-hover:text-stone-400 transition-colors duration-200 min-h-0">
             <h4 className="font-medium font-serif text-base sm:text-lg leading-snug text-stone-900 dark:text-stone-100 line-clamp-3 mb-3">
               {title}
             </h4>

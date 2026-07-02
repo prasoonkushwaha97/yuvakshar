@@ -1,13 +1,13 @@
 "use client";
-import Image from "next/image";
-
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Vote, ArrowRight, Quote, Flame } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
+import { getArticleUrl } from "@/utils/routes";
 
 export default function Sidebar() {
   const { locale } = useLanguage();
@@ -33,10 +33,10 @@ export default function Sidebar() {
   const noPct = 100 - yesPct;
 
   const popularArticles = articles
-    .filter((a: any) => a.status === "Published" || a.status === "Approved" || !a.status)
-    .slice(0, 5);
+    ? [...articles].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5)
+    : [];
 
-  const sidebarMag = magazines[0] || {
+  const sidebarMag = magazines && magazines.length > 0 ? magazines[0] : {
     issue: "अंक 15",
     month: "जून 2025",
     coverImage: "/images/placeholder-news.jpg"
@@ -45,7 +45,7 @@ export default function Sidebar() {
   return (
     <aside className="w-full space-y-8 font-sans">
       {/* 1. MOST READ ARTICLES */}
-      <div className="space-y-4 border border-gray-150 dark:border-gray-850 p-5 rounded-lg bg-white dark:bg-[#0A0A0A]">
+      <div className="space-y-4 border border-gray-150 dark:border-gray-855 p-5 rounded-lg bg-white dark:bg-[#0A0A0A]">
         <div className="flex items-center space-x-2 border-b border-gray-100 dark:border-gray-800 pb-2.5">
           <Flame className="w-4 h-4 text-[#f97316]" />
           <h3 className="font-serif font-black text-sm md:text-base uppercase tracking-tight text-gray-900 dark:text-gray-200">
@@ -56,7 +56,7 @@ export default function Sidebar() {
           {popularArticles.map((art: any, idx: number) => (
             <Link
               key={art.id}
-              href={`/articles/${art.slug || art.id}`}
+              href={getArticleUrl(art)}
               className="flex gap-3 py-3 items-start group first:pt-0 last:pb-0"
             >
               <span className="text-xl font-bold text-gray-300 dark:text-gray-700 font-sans w-5 text-right shrink-0 select-none">
@@ -114,7 +114,7 @@ export default function Sidebar() {
                   <span>{locale === "hi" ? "हाँ" : "Yes"}</span>
                   <span className="text-[#f97316]">{yesPct}%</span>
                 </div>
-                <div className="w-full bg-gray-100 dark:bg-gray-850 h-2 rounded overflow-hidden">
+                <div className="w-full bg-gray-100 dark:bg-gray-855 h-2 rounded overflow-hidden">
                   <div
                     className="bg-[#f97316] h-full rounded transition-all duration-700"
                     style={{ width: `${yesPct}%` }}
@@ -128,7 +128,7 @@ export default function Sidebar() {
                   <span>{locale === "hi" ? "नहीं" : "No"}</span>
                   <span className="text-gray-400">{noPct}%</span>
                 </div>
-                <div className="w-full bg-gray-100 dark:bg-gray-850 h-2 rounded overflow-hidden">
+                <div className="w-full bg-gray-100 dark:bg-gray-855 h-2 rounded overflow-hidden">
                   <div
                     className="bg-gray-300 dark:bg-gray-650 h-full rounded transition-all duration-700"
                     style={{ width: `${noPct}%` }}
@@ -178,7 +178,7 @@ export default function Sidebar() {
         const activeAd = (ads ?? []).find((ad: any) => ad.active);
         if (activeAd) {
           return (
-            <div className="border border-gray-150 dark:border-gray-850 rounded-lg p-4 bg-white dark:bg-[#0A0A0A] overflow-hidden">
+            <div className="border border-gray-150 dark:border-gray-855 rounded-lg p-4 bg-white dark:bg-[#0A0A0A] overflow-hidden">
               <span className="text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold block mb-2 text-center">विज्ञापन</span>
               {activeAd.type === "custom_html" && activeAd.code ? (
                 <div dangerouslySetInnerHTML={{ __html: activeAd.code }} />
@@ -187,7 +187,7 @@ export default function Sidebar() {
                   <Image src={activeAd.image_url} alt={activeAd.name} className="w-full h-auto rounded border border-gray-200 dark:border-gray-800" width={400} height={300} />
                 </a>
               ) : (
-                <div className="p-4 bg-gray-50 dark:bg-[#121212] rounded text-center text-xs text-gray-500">
+                <div className="p-4 bg-gray-55 dark:bg-[#121212] rounded text-center text-xs text-gray-500">
                   {activeAd.name}
                 </div>
               )}
@@ -197,7 +197,7 @@ export default function Sidebar() {
 
         // Beautiful, production-ready fallback contribution banner (No dummy text!)
         return (
-          <div className="border border-gray-150 dark:border-gray-850 rounded-lg p-5 bg-[#FAF9F6] dark:bg-[#121212] space-y-4">
+          <div className="border border-gray-155 dark:border-gray-850 rounded-lg p-5 bg-[#FAF9F6] dark:bg-[#121212] space-y-4">
             <span className="text-[9px] text-[#f97316] uppercase tracking-widest font-bold block">विचार अभिव्यक्ति</span>
             <div className="space-y-1.5">
               <h4 className="font-serif font-black text-sm text-gray-900 dark:text-gray-200">
