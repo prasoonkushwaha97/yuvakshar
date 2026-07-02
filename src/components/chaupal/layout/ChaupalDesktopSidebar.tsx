@@ -43,7 +43,7 @@ export default function ChaupalDesktopSidebar() {
 
       <div className="mt-auto pt-8 border-t border-slate-200 dark:border-slate-800">
         <p className="text-xs text-slate-400 font-sans leading-relaxed px-4">
-          युवाक्षर चौपाल © {new Date().getFullYear()}<br />
+          चौपाल © {new Date().getFullYear()}<br />
           स्वतंत्र, सुरक्षित और सार्थक संवाद।
         </p>
       </div>

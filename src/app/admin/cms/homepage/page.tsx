@@ -31,7 +31,7 @@ const PRESETS = {
     { section_type: "popular", title: "चर्चित रैंकिंग सूचियां", is_visible: true, category: "" },
     { section_type: "videos", title: "वीडियो डेस्क", is_visible: true, category: "" },
     { section_type: "magazine", title: "पत्रिका डेस्क", is_visible: true, category: "" },
-    { section_type: "community", title: "युवाक्षर चौपाल", is_visible: true, category: "" }
+    { section_type: "community", title: "चौपाल", is_visible: true, category: "" }
   ],
   breaking: [
     { section_type: "breakingticker", title: "ताज़ा आपातकालीन अलर्ट", is_visible: true, category: "" },

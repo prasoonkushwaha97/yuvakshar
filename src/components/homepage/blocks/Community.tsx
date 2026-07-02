@@ -19,10 +19,10 @@ export default function Community() {
   return (
     <div className="w-full py-0.5">
       {/* Title */}
-      <SectionTitle title={locale === "hi" ? "युवाक्षर चौपाल" : "Yuvakshar Chaupal"} link="/community" />
+      <SectionTitle title={locale === "hi" ? "चौपाल" : "Chaupal"} link="/community" />
 
       <div className="bg-white dark:bg-[#0A0A0A] border border-gray-150 dark:border-gray-850 rounded-lg shadow-sm p-6">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 border-b border-gray-100 dark:border-gray-850 pb-5">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 border-b border-gray-100 dark:border-gray-855 pb-5">
           <div>
             <h4 className="text-xl font-bold font-serif text-gray-900 dark:text-gray-200">
               {locale === "hi" ? "ट्रेंडिंग चर्चाएं" : "Trending Discussions"}
@@ -35,7 +35,7 @@ export default function Community() {
             href="/community"
             className="bg-black hover:bg-[#f97316] text-white dark:bg-gray-900 dark:hover:bg-[#f97316] px-5 py-2.5 rounded-full font-bold font-sans transition-colors uppercase tracking-widest text-[10px] shadow-sm flex items-center shrink-0 cursor-pointer"
           >
-            <span>{locale === "hi" ? "कम्युनिटी में शामिल हों" : "Join Community"}</span>
+            <span>{locale === "hi" ? "चौपाल में शामिल हों" : "Join Chaupal"}</span>
             <ArrowRight className="w-3.5 h-3.5 ml-2" />
           </Link>
         </div>

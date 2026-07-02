@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { X } from "lucide-react";
 import { useLanguage } from "@/store/LanguageContext";
 import { useCms } from "@/store/CmsContext";
@@ -80,18 +81,29 @@ export default function AppDrawer({ isOpen, onClose, mode, onLogout }: AppDrawer
       {/* Drawer content frame */}
       <div 
         ref={drawerRef}
-        className="relative w-full max-w-[320px] h-full bg-[#FDFCF7] dark:bg-[#0B0F19] border-l border-gray-150 dark:border-gray-850 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 overflow-y-auto"
+        className="relative w-full max-w-[320px] h-full bg-[#FDFCF7] dark:bg-[#0B0F19] border-l border-gray-150 dark:border-gray-850 p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300"
         style={{ transition: designTokens.animations.transitionDefault }}
       >
-        <div>
+        {/* Scrollable Main Area */}
+        <div className="flex-1 overflow-y-auto pr-1 -mr-2 scrollbar-none">
           {/* Header row */}
           <div className="flex items-center justify-between pb-4 border-b border-gray-150 dark:border-gray-850 mb-6">
-            <h3 className="font-serif font-black text-sm uppercase tracking-wider text-gray-500">
-              {mode === "navigation" 
-                ? (locale === "hi" ? "मेन्यू नेविगेशन" : "Menu Navigation")
-                : (locale === "hi" ? "यूज़र अकाउंट" : "User Account")
-              }
-            </h3>
+            {mode === "navigation" ? (
+              <Link href="/" onClick={onClose} className="flex items-center shrink-0 hover:opacity-90 transition-opacity duration-200 cursor-pointer">
+                <Image
+                  src="/yuvakshar_logo_official.png"
+                  alt="युवाक्षर"
+                  width={120}
+                  height={30}
+                  className="h-[32px] w-auto object-contain"
+                  priority
+                />
+              </Link>
+            ) : (
+              <h3 className="font-serif font-black text-sm uppercase tracking-wider text-gray-500">
+                {locale === "hi" ? "यूज़र अकाउंट" : "User Account"}
+              </h3>
+            )}
             <button 
               onClick={onClose}
               className="p-2 -mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-650"
@@ -110,7 +122,7 @@ export default function AppDrawer({ isOpen, onClose, mode, onLogout }: AppDrawer
           )}
 
           {/* Links feed */}
-          <nav className="space-y-1">
+          <nav className="space-y-5">
             {mode === "navigation" ? (
               primaryLinks.map((link) => {
                 const Icon = link.icon;
@@ -166,10 +178,10 @@ export default function AppDrawer({ isOpen, onClose, mode, onLogout }: AppDrawer
           </nav>
         </div>
 
-        {/* Footer info branding block */}
-        <div className="pt-6 border-t border-gray-150 dark:border-gray-850 mt-8 text-center">
-          <p className="text-[10px] text-gray-400 font-sans">
-            © {new Date().getFullYear()} युवाक्षर • संस्करण १.३
+        {/* Footer info branding block - fixed at bottom */}
+        <div className="pt-4 border-t border-gray-150 dark:border-gray-850 mt-4 text-center shrink-0">
+          <p className="text-[10px] text-gray-400 font-sans tracking-widest uppercase">
+            © 2026 युवाक्षर
           </p>
         </div>
       </div>
