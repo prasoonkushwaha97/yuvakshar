@@ -3,9 +3,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getArticleBySlug, getArticleById } from "@/lib/actions/articleActions";
 import Image from "next/image";
-import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { getProfileUrl } from "@/utils/routes";
 import { stripMarkdown } from "@/lib/markdown";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
 import { ContentRenderer } from "@/components/content/ContentRenderer";
@@ -87,15 +85,7 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
     });
 
   const title = stripMarkdown(article?.title_hi || "");
-  const dateStr = article?.published_at 
-    ? new Date(article.published_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
-    : article?.created_at
-      ? new Date(article.created_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
-      : "";
-  
-  const readTimeStr = article?.content
-    ? `${Math.max(1, Math.ceil(article.content.split(/\s+/).length / 150))} मिनट पठन`
-    : "2 मिनट पठन";
+
 
   return (
     <div className="w-full min-h-screen bg-[#FDFCF7] dark:bg-[#0B0F19] text-[#111111] dark:text-[#E2E8F0] font-sans pb-16 transition-colors duration-300">
@@ -134,7 +124,6 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
                 author={article.profiles?.name || "युवाक्षर डेस्क"}
                 authorProfile={article.profiles}
                 date={article.published_at || article.created_at || ""}
-                updatedAt={article.updated_at}
                 showActions={false}
               />
             </div>

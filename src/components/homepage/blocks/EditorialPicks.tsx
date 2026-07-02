@@ -102,7 +102,6 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
                     author={art.author || "युवाक्षर डेस्क"}
                     authorProfile={art.authorProfile}
                     date={art.date}
-                    updatedAt={art.updatedAt || art.updated_at}
                     showActions={false}
                   />
                 </div>

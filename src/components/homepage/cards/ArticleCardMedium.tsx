@@ -53,7 +53,6 @@ export default function ArticleCardMedium({ article, showImage = true }: Article
             author={article.author || "युवाक्षर डेस्क"}
             authorProfile={article.authorProfile}
             date={article.date}
-            updatedAt={article.updatedAt || article.updated_at}
             showActions={false}
           />
         </div>

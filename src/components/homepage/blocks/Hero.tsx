@@ -7,10 +7,10 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
 import { stripMarkdown } from "@/lib/markdown";
-import { getArticleUrl } from "@/utils/routes";
+import { getArticleUrl, getProfileUrl } from "@/utils/routes";
 
 export default function Hero() {
-  const { articles } = useCms();
+  const { articles, users } = useCms();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Filter published / featured articles for the slide
@@ -38,6 +38,25 @@ export default function Hero() {
   if (slides.length === 0) return null;
 
   const currentArticle = slides[currentIndex];
+
+  const resolvedAuthor = React.useMemo(() => {
+    const authorName = currentArticle?.author;
+    if (users && authorName) {
+      return users.find((u: any) => u.name === authorName || u.full_name === authorName);
+    }
+    return null;
+  }, [users, currentArticle?.author]);
+
+  const authorProfileUrl = React.useMemo(() => {
+    if (resolvedAuthor) {
+      return getProfileUrl(resolvedAuthor) || "/u/user";
+    }
+    if (currentArticle?.author) {
+      const fallbackSlug = currentArticle.author.toLowerCase().replace(/[^a-z0-9_.-]/g, '-').replace(/[-_.]+/g, '-').replace(/^-+|-+$/g, '');
+      return `/u/${fallbackSlug || "unknown"}`;
+    }
+    return "/u/user";
+  }, [resolvedAuthor, currentArticle?.author]);
 
   // Right Column: editorial items proxy (3 items)
   const remaining = articles ? [...articles].filter((art: any) => art.id !== currentArticle.id) : [];
@@ -97,8 +116,19 @@ export default function Hero() {
           </h2>
 
           {/* Author • Publication Date */}
-          <div className="flex flex-wrap items-center gap-2 text-[10px] md:text-xs font-sans text-stone-250 uppercase tracking-widest mb-4">
-            <span>{currentArticle.author || "युवाक्षर डेस्क"}</span>
+          <div className="flex flex-wrap items-center gap-2 text-[10px] md:text-xs font-sans text-stone-250 uppercase tracking-widest mb-4 pointer-events-auto">
+            <Link 
+              href={authorProfileUrl} 
+              aria-label={`View ${currentArticle.author || "युवाक्षर डेस्क"}'s profile`}
+              className="hover:text-primary transition-colors font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded flex items-center space-x-1.5"
+            >
+              <span>{currentArticle.author || "युवाक्षर डेस्क"}</span>
+              {resolvedAuthor?.verified && (
+                <svg className="w-3.5 h-3.5 text-blue-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 00-1.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              )}
+            </Link>
             <span>•</span>
             <span>
               {currentArticle.published_at 

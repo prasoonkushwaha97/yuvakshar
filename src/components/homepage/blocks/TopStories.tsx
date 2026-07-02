@@ -98,7 +98,6 @@ export default function TopStories() {
                     author={art.author || "युवाक्षर डेस्क"}
                     authorProfile={art.authorProfile}
                     date={art.date}
-                    updatedAt={art.updatedAt || art.updated_at}
                     showActions={false}
                     className="flex-1 min-w-0"
                   />

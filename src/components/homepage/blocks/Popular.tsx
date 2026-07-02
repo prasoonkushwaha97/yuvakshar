@@ -7,14 +7,14 @@ import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
 import SectionTitle from "../shared/SectionTitle";
-import { getArticleUrl } from "@/utils/routes";
+import { getArticleUrl, getProfileUrl } from "@/utils/routes";
 import { formatDisplayDate } from "@/utils/date";
 
 type TabType = "editorial" | "trending";
 
 export default function Popular() {
   const { locale } = useLanguage();
-  const { articles } = useCms();
+  const { articles, users } = useCms();
   const [activeTab, setActiveTab] = useState<TabType>("editorial");
 
   const published = articles
@@ -41,6 +41,14 @@ export default function Popular() {
   };
 
   const activeArticles = getTabArticles();
+
+  const getAuthorLink = (authorName: string) => {
+    if (!authorName) return "/u/user";
+    const found = users?.find((u: any) => u.name === authorName || u.full_name === authorName);
+    if (found) return getProfileUrl(found) || "/u/user";
+    const fallbackSlug = authorName.toLowerCase().replace(/[^a-z0-9_.-]/g, '-').replace(/[-_.]+/g, '-').replace(/^-+|-+$/g, '');
+    return `/u/${fallbackSlug || "unknown"}`;
+  };
 
   const tabs = [
     { id: "editorial", label: locale === "hi" ? "संपादकीय चयन" : "Editorial Picks", icon: Award },
@@ -116,8 +124,13 @@ export default function Popular() {
                     </span>
                   </td>
                   {/* Author */}
-                  <td className="py-3 px-4 hidden md:table-cell text-gray-500 font-medium font-sans">
-                    {art.author}
+                  <td className="py-3 px-4 hidden md:table-cell text-gray-555 font-medium font-sans">
+                    <Link
+                      href={getAuthorLink(art.author)}
+                      className="hover:text-primary transition-colors font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded px-1 py-0.5 -mx-1"
+                    >
+                      {art.author || "युवाक्षर डेस्क"}
+                    </Link>
                   </td>
                   {/* Date */}
                   <td className="py-3 px-4 text-center font-medium font-sans text-gray-600 dark:text-gray-450">
