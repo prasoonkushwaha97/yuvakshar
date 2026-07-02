@@ -1,7 +1,8 @@
 import { MetadataRoute } from "next";
+import { SITE_URL } from "@/utils/routes";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://yuvakshar.org";
+  const baseUrl = SITE_URL;
 
   // Static routes
   const staticRoutes = [

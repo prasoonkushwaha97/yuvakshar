@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Profile } from "@/store/types";
 import { useCms } from "@/store/CmsContext";
 import DeviceImageUploader from "@/components/yuvakshar/DeviceImageUploader";
+import { SITE_URL } from "@/utils/routes";
 
 export default function ProfileSettingsTab({ user }: { user: Profile }) {
   const { updateUserProfile } = useCms();
@@ -49,7 +50,9 @@ export default function ProfileSettingsTab({ user }: { user: Profile }) {
         <div className="space-y-2">
           <label className="text-sm font-bold text-slate-700 dark:text-slate-300">उपयोगकर्ता नाम (Username)</label>
           <div className="flex items-center">
-            <span className="bg-slate-100 dark:bg-slate-800 border border-r-0 border-slate-300 dark:border-slate-700 text-slate-500 rounded-l-xl px-4 py-3">yuvakshar.org/u/</span>
+            <span className="bg-slate-100 dark:bg-slate-800 border border-r-0 border-slate-300 dark:border-slate-700 text-slate-500 rounded-l-xl px-4 py-3 text-xs sm:text-sm whitespace-nowrap">
+              {SITE_URL}/u/
+            </span>
             <input 
               type="text" 
               value={formData.username}

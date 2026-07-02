@@ -8,6 +8,7 @@ import { X, Play, Eye, Heart, MessageSquare, AlertCircle, Maximize2, ChevronLeft
 import { useCms } from "@/store/CmsContext";
 import { Profile } from "@/store/types";
 import { resolveProfileIdentifier, getCanonicalProfileUrl } from "@/utils/username";
+import { SITE_URL } from "@/utils/routes";
 
 import ProfileCover from "@/components/profile/ProfileCover";
 import ProfileIdentityCard from "@/components/profile/ProfileIdentityCard";
@@ -149,7 +150,7 @@ export default function UserProfile() {
   const handleShareClick = async () => {
     const profileUrl = typeof window !== "undefined"
       ? `${window.location.origin}${getCanonicalProfileUrl(user)}`
-      : `https://yuvakshar.org/u/${user.username || user.id}`;
+      : `${SITE_URL}/u/${user.username || user.id}`;
 
     const shareData = {
       title: `${user.display_name || user.name} | युवाक्षर लेखक`,
@@ -189,7 +190,7 @@ export default function UserProfile() {
 
   const profileUrl = typeof window !== "undefined"
     ? `${window.location.origin}${getCanonicalProfileUrl(user)}`
-    : `https://yuvakshar.org/u/${user.username || user.id}`;
+    : `${SITE_URL}/u/${user.username || user.id}`;
 
   return (
     <div className="min-h-screen bg-[#FDFCF7] dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 transition-colors duration-300 pb-20">

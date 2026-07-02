@@ -5,6 +5,7 @@ import { hasAnyRole } from "@/lib/rbacService";
 import { revalidatePath } from "next/cache";
 import { logGovernanceAction } from "./governanceAuditActions";
 import { Article, ArticleStatus } from "@/types/content";
+import { mapDbProfileToProfile } from "@/lib/repositoryService";
 
 export async function getArticles(
   filters?: { status?: string, category_id?: string, author_id?: string, search?: string },
@@ -18,7 +19,7 @@ export async function getArticles(
   
   let query = supabase
     .from("articles")
-    .select("*, categories(name, slug), profiles(id, name, username, slug, avatar_url)", { count: 'exact' });
+    .select("*, categories(name, slug), profiles(id, name, avatar_url, social_links)", { count: 'exact' });
 
   if (filters?.status) {
     query = query.eq("status", filters.status);
@@ -50,6 +51,7 @@ export async function getArticles(
 
   const mappedData = (data as any[]).map((art: any) => ({
     ...art,
+    profiles: art.profiles ? mapDbProfileToProfile(art.profiles) : null,
     title_hi: art.title,
     title_en: art.english_title || "",
     summary_hi: art.summary || "",
@@ -73,7 +75,7 @@ export async function getArticleById(id: string) {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("articles")
-      .select("*, categories(id, name, slug), profiles(id, name, username, slug, avatar_url)")
+      .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
       .eq("id", id)
       .maybeSingle();
 
@@ -90,6 +92,7 @@ export async function getArticleById(id: string) {
     const art = data as any;
     return {
       ...art,
+      profiles: art.profiles ? mapDbProfileToProfile(art.profiles) : null,
       title_hi: art.title,
       title_en: art.english_title || "",
       summary_hi: art.summary || "",
@@ -115,7 +118,7 @@ export async function getArticleBySlug(slug: string) {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("articles")
-      .select("*, categories(id, name, slug), profiles(id, name, username, slug, avatar_url)")
+      .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
       .eq("slug", slug)
       .maybeSingle();
 
@@ -132,6 +135,7 @@ export async function getArticleBySlug(slug: string) {
     const art = data as any;
     return {
       ...art,
+      profiles: art.profiles ? mapDbProfileToProfile(art.profiles) : null,
       title_hi: art.title,
       title_en: art.english_title || "",
       summary_hi: art.summary || "",

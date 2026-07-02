@@ -2,6 +2,7 @@
 
 import { createClient } from "../supabaseServer";
 import { revalidatePath } from "next/cache";
+import { mapDbProfileToProfile } from "../repositoryService";
 
 export async function submitGuestArticle(formData: FormData) {
   const supabase = await createClient();
@@ -169,14 +170,19 @@ export async function getSubmissionDetails(id: string) {
   // Fetch feedback notes if any
   const { data: notes } = await supabase
     .from("review_notes")
-    .select("id, note, created_at, profiles(username)")
+    .select("id, note, created_at, profiles(id, name, avatar_url, social_links)")
     .eq("article_id", id)
     .order("created_at", { ascending: true });
+
+  const mappedNotes = (notes || []).map((msg: any) => ({
+    ...msg,
+    profiles: msg.profiles ? mapDbProfileToProfile(msg.profiles) : null
+  }));
 
   return {
     data: {
       ...article,
-      notes: notes || []
+      notes: mappedNotes
     }
   };
 }

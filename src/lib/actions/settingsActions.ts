@@ -71,9 +71,36 @@ export async function updateUserAccount(data: { name?: string, username?: string
     throw new Error("Unauthorized");
   }
 
+  // Fetch the existing profile to get current social_links
+  const { data: currentProfile, error: profileError } = await supabase
+    .from("profiles")
+    .select("social_links")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError && profileError.code !== "PGRST116") {
+    throw profileError;
+  }
+
+  const existingSocialLinks = currentProfile?.social_links || {};
+  const updatedSocialLinks = {
+    ...existingSocialLinks,
+    ...(data.social_links || {}),
+  };
+
+  if (data.username !== undefined) {
+    updatedSocialLinks.username = data.username;
+    updatedSocialLinks.slug = data.username;
+  }
+
+  const payload: any = {};
+  if (data.name !== undefined) payload.name = data.name;
+  if (data.bio !== undefined) payload.bio = data.bio;
+  payload.social_links = updatedSocialLinks;
+
   const { error } = await supabase
     .from("profiles")
-    .update(data)
+    .update(payload)
     .eq("id", user.id);
 
   if (error) {

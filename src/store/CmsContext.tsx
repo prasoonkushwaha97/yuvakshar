@@ -837,7 +837,10 @@ export function CmsProvider({
               name: newProfile.name,
               role: highestRole,
               status: newProfile.status,
-              slug: newProfile.slug
+              social_links: {
+                username: newProfile.username,
+                slug: newProfile.slug
+              }
             };
             console.log("PROFILE UPDATE PAYLOAD", payload);
             const { error: insertError } = await supabase
@@ -1285,7 +1288,7 @@ export function CmsProvider({
       // Load Articles — join profiles and categories, and map to expected client camelCase properties
       const { data: dbArticles } = await supabase
         .from("articles")
-        .select("*, profiles(id, name, username, slug, avatar_url), categories(name)")
+        .select("*, profiles(id, name, avatar_url, social_links), categories(name)")
         .order("created_at", { ascending: false });
       const loadedArticles = dbArticles && dbArticles.length > 0 ? dbArticles : [];
       

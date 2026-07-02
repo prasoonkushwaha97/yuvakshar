@@ -40,7 +40,7 @@ export async function getMagazineIssueById(id: string) {
       sections:magazine_sections(*),
       articles:magazine_issue_articles(
         *,
-        article:articles(id, title_hi, slug, status, profiles(id, name, username, slug, avatar_url))
+        article:articles(id, title_hi, slug, status, profiles(id, name, avatar_url, social_links))
       )
     `)
     .eq('id', id)

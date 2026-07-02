@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Bookmark, Share2 } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { toast } from "sonner";
-import { getArticleUrl } from "@/utils/routes";
+import { getArticleUrl, SITE_URL } from "@/utils/routes";
 
 interface ArticleActionsProps {
   articleId: string;
@@ -60,7 +60,7 @@ export default function ArticleActions({ articleId, slug, title }: ArticleAction
 
   const handleShare = async () => {
     // Generate canonical share URL
-    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://yuvakshar.tech";
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : SITE_URL;
     const shareUrl = `${baseUrl}${getArticleUrl({ slug })}`;
     const shareData = {
       title: `${title} | युवाक्षर`,

@@ -7,6 +7,7 @@ import { ChevronDown, Loader2 } from "lucide-react";
 import ArticleCardMedium from "../cards/ArticleCardMedium";
 import SectionContainer from "../layout/SectionContainer";
 import { supabase } from "@/lib/supabaseClient";
+import { mapDbProfileToProfile } from "@/lib/repositoryService";
 
 interface LatestNewsProps {
   excludeIds?: string[];
@@ -69,7 +70,7 @@ export default function LatestNews({ excludeIds = [] }: LatestNewsProps) {
 
       const { data, error } = await supabase
         .from("articles")
-        .select("*, profiles(id, name, username, slug, avatar_url), categories(name)")
+        .select("*, profiles(id, name, avatar_url, social_links), categories(name)")
         .or("status.eq.Published,status.eq.Approved,status.is.null")
         .not("id", "in", excludeString)
         .order("created_at", { ascending: false }) // Fallback since published_at might not be reliably indexed everywhere
@@ -86,13 +87,7 @@ export default function LatestNews({ excludeIds = [] }: LatestNewsProps) {
         const mapped = data.map((art: any) => ({
           ...art,
           author: art.profiles?.name || art.author || "Yuvakshar",
-          authorProfile: art.profiles ? {
-            id: art.profiles.id,
-            name: art.profiles.name,
-            username: art.profiles.username,
-            slug: art.profiles.slug,
-            avatar_url: art.profiles.avatar_url
-          } : undefined,
+          authorProfile: art.profiles ? mapDbProfileToProfile(art.profiles) : undefined,
           category: art.categories?.name || art.category || "General",
           isFeatured: art.featured || false,
           status: art.status || "Draft",

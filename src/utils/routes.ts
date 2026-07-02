@@ -1,4 +1,7 @@
 import { getCanonicalProfileUrl } from "./username";
+import { Article, Profile } from "@/store/types";
+
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://yuvakshar.tech";
 
 export const ROUTES = {
   HOME: "/",
@@ -12,7 +15,17 @@ export const ROUTES = {
   LOGIN: "/login",
 };
 
-export function getArticleUrl(article: any): string {
+interface ArticleLike {
+  slug?: string;
+  id?: string;
+}
+
+interface IssueLike {
+  slug?: string;
+  id?: string;
+}
+
+export function getArticleUrl(article: ArticleLike | Article): string {
   if (!article) return "#";
   const slug = article.slug || article.id;
   if (!slug) {
@@ -22,7 +35,7 @@ export function getArticleUrl(article: any): string {
   return `/articles/${slug}`;
 }
 
-export function getProfileUrl(user: any): string | null {
+export function getProfileUrl(user: Partial<Profile> | Profile | null | undefined): string | null {
   if (!user) {
     console.warn("getProfileUrl: User is undefined/null");
     return null;
@@ -35,9 +48,12 @@ export function getProfileUrl(user: any): string | null {
   return url;
 }
 
-export function getMagazineUrl(issue: any): string {
+export function getMagazineUrl(issue: IssueLike | string | null | undefined): string {
   if (!issue) return "#";
-  const identifier = issue.slug || issue.id || (typeof issue === "string" ? issue : "");
+  if (typeof issue === "string") {
+    return `/magazine/${issue}`;
+  }
+  const identifier = issue.slug || issue.id;
   if (!identifier) {
     console.warn("getMagazineUrl: Issue identifier is missing", issue);
     return "#";
@@ -45,9 +61,12 @@ export function getMagazineUrl(issue: any): string {
   return `/magazine/${identifier}`;
 }
 
-export function getMagazineReadUrl(issue: any): string {
+export function getMagazineReadUrl(issue: IssueLike | string | null | undefined): string {
   if (!issue) return "#";
-  const identifier = issue.slug || issue.id || (typeof issue === "string" ? issue : "");
+  if (typeof issue === "string") {
+    return `/magazine/read/${issue}`;
+  }
+  const identifier = issue.slug || issue.id;
   if (!identifier) {
     console.warn("getMagazineReadUrl: Issue identifier is missing", issue);
     return "#";
