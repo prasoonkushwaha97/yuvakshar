@@ -52,7 +52,7 @@ export async function GET() {
   const manifest = {
     name: "युवाक्षर",
     short_name: "युवाक्षर",
-    description: "युवाक्षर | लेखन, चिंतन और परिवर्तन - Premium Devanagari Editorial & Magazine Platform",
+    description: "युवाक्षर पर पढ़ें लेख, समाचार, विश्लेषण, संस्कृति, समाज और समसामयिक विषयों पर प्रामाणिक एवं विश्वसनीय हिंदी सामग्री।",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",

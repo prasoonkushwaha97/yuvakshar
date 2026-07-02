@@ -1055,7 +1055,7 @@ export function CmsProvider({
       setAds(JSON.parse(localAds));
     } else {
       const initial: Ad[] = [
-        { id: "ad-1", name: "Sidebar Banner Ad", zone: "after_first_p", type: "banner", image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80", link_url: "https://yuvakshar.org/magazine", active: true, click_count: 0, impression_count: 0 },
+        { id: "ad-1", name: "Sidebar Banner Ad", zone: "after_first_p", type: "banner", image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80", link_url: "https://yuvakshar.tech/magazine", active: true, click_count: 0, impression_count: 0 },
         { id: "ad-2", name: "Google AdSense Ad Block", zone: "mid_content", type: "adsense", code: "<div style='background:#f3ece0;padding:20px;text-align:center;font-size:11px;color:#EA580C;font-weight:bold;border:1px dashed #EA580C'>[Google AdSense Mid Content Banner]</div>", active: true, click_count: 0, impression_count: 0 }
       ];
       setAds(initial);
@@ -1413,7 +1413,7 @@ export function CmsProvider({
         setAds(dbAds);
       } else {
         const initialAds: Ad[] = [
-          { id: "ad-1", name: "Sidebar Banner Ad", zone: "after_first_p", type: "banner", image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80", link_url: "https://yuvakshar.org/magazine", active: true, click_count: 0, impression_count: 0 },
+          { id: "ad-1", name: "Sidebar Banner Ad", zone: "after_first_p", type: "banner", image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80", link_url: "https://yuvakshar.tech/magazine", active: true, click_count: 0, impression_count: 0 },
           { id: "ad-2", name: "Google AdSense Ad Block", zone: "mid_content", type: "adsense", code: "<div style='background:#f3ece0;padding:20px;text-align:center;font-size:11px;color:#EA580C;font-weight:bold;border:1px dashed #EA580C'>[Google AdSense Mid Content Banner]</div>", active: true, click_count: 0, impression_count: 0 }
         ];
         setAds(initialAds);
@@ -3052,7 +3052,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
     // Simulated Email Log
     console.log(`[SIMULATED EMAIL SENT]
-To: ${taskData.assigned_to}@yuvakshar.org
+To: ${taskData.assigned_to}@yuvakshar.tech
 Subject: नया कार्य आवंटन - ${taskData.title}
 Body: नमस्कार, आपको "${taskData.assigned_by_name}" द्वारा कार्य "${taskData.title}" आवंटित किया गया है।
 विभाग: ${taskData.department}

@@ -81,12 +81,15 @@ export async function generateMetadata(): Promise<Metadata> {
   const manifestUrl = `/api/branding/manifest?v=${version}`;
 
   return {
-    metadataBase: new URL("https://yuvakshar.org"),
-    title: "युवाक्षर | लेखन, चिंतन और परिवर्तन - Premium Devanagari Editorial & Magazine Platform",
-    description: "युवाक्षर is a modern, premium Hindi digital platform focused on News, Magazine Publishing, Articles, Expression, Career and Scholarships, and AI-powered learning assistance. विचारों को आवाज़ दीजिए।",
-    keywords: "युवाक्षर, युवाक्षर, Hindi पत्रिका, Youth Expression Hub, Hindi Articles, Career Hub, Career guidance, AI learning, Indian current affairs, Nation building",
+    metadataBase: new URL("https://yuvakshar.tech"),
+    title: "युवाक्षर | लेख, समाचार, विश्लेषण, संस्कृति और समाज",
+    description: "युवाक्षर पर पढ़ें लेख, समाचार, विश्लेषण, संस्कृति, समाज और समसामयिक विषयों पर प्रामाणिक एवं विश्वसनीय हिंदी सामग्री।",
+    keywords: "युवाक्षर, Hindi पत्रिका, Youth Expression Hub, Hindi Articles, Career Hub, Career guidance, AI learning, Indian current affairs, Nation building",
     authors: [{ name: "युवाक्षर संपादकीय कक्ष" }],
     manifest: manifestUrl,
+    alternates: {
+      canonical: "https://yuvakshar.tech",
+    },
     icons: {
       icon: [
         { url: `${iconBaseUrl}?size=16&v=${version}`, sizes: "16x16", type: "image/png" },
@@ -101,9 +104,9 @@ export async function generateMetadata(): Promise<Metadata> {
       ],
     },
     openGraph: {
-      title: "युवाक्षर - विचारों को आवाज़ दीजिए",
-      description: "युवाओं, लेखकों और विचारकों का हिन्दी डिजिटल मंच - युवाक्षर",
-      url: "https://yuvakshar.org",
+      title: "युवाक्षर | लेख, समाचार, विश्लेषण, संस्कृति और समाज",
+      description: "युवाक्षर पर पढ़ें लेख, समाचार, विश्लेषण, संस्कृति, समाज और समसामयिक विषयों पर प्रामाणिक एवं विश्वसनीय हिंदी सामग्री।",
+      url: "https://yuvakshar.tech",
       siteName: "युवाक्षर",
       locale: "hi_IN",
       type: "website",
@@ -118,8 +121,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: "युवाक्षर - हिन्दी डिजिटल मंच",
-      description: "Modern Hindi पत्रिका & Youth Expression Hub",
+      title: "युवाक्षर | लेख, समाचार, विश्लेषण, संस्कृति और समाज",
+      description: "युवाक्षर पर पढ़ें लेख, समाचार, विश्लेषण, संस्कृति, समाज और समसामयिक विषयों पर प्रामाणिक एवं विश्वसनीय हिंदी सामग्री।",
       images: [`${iconBaseUrl}?size=512&v=${version}`],
     },
   };
@@ -189,13 +192,21 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              name: "युवाक्षर",
-              url: "https://yuvakshar.org",
-              logo: "https://yuvakshar.org/yuvakshar_logo_official.png"
-            })
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "name": "युवाक्षर",
+                "url": "https://yuvakshar.tech",
+                "logo": "https://yuvakshar.tech/yuvakshar_logo_official.png"
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": "युवाक्षर",
+                "url": "https://yuvakshar.tech"
+              }
+            ])
           }}
         />
       </head>

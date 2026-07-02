@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/admin/", "/dashboard/"],
     },
-    sitemap: "https://yuvakshar.org/sitemap.xml",
+    sitemap: "https://yuvakshar.tech/sitemap.xml",
   };
 }

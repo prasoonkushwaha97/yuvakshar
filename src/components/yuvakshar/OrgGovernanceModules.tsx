@@ -99,7 +99,7 @@ export function CandidateManagement({ currentUser }: { currentUser: Profile }) {
               <label className="text-slate-500 font-medium block">ईमेल</label>
               <input
                 type="email"
-                placeholder="candidate@yuvakshar.org"
+                placeholder="candidate@yuvakshar.tech"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 focus:outline-none focus:border-primary text-slate-700 dark:text-slate-200"
