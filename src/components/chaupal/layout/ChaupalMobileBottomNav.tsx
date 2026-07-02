@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, MessageSquare, Bell, User, Plus } from "lucide-react";
 import { getCanonicalProfileUrl } from "@/utils/username";
+import { Profile } from "@/store/types";
 
 export default function ChaupalMobileBottomNav({ currentUserId }: { currentUserId?: string }) {
   const pathname = usePathname();
@@ -11,7 +12,7 @@ export default function ChaupalMobileBottomNav({ currentUserId }: { currentUserI
     { name: "होम", href: "/community", icon: Home },
     { name: "चर्चा", href: "/community/discussion", icon: MessageSquare },
     { name: "सूचनाएं", href: "/community/notifications", icon: Bell },
-    { name: "प्रोफाइल", href: currentUserId ? getCanonicalProfileUrl({ id: currentUserId }) : "/login", icon: User },
+    { name: "प्रोफाइल", href: currentUserId ? (getCanonicalProfileUrl({ id: currentUserId } as Partial<Profile>) || "/login") : "/login", icon: User },
   ];
 
   return (

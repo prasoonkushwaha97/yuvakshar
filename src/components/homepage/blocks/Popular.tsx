@@ -7,7 +7,7 @@ import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
 import SectionTitle from "../shared/SectionTitle";
-import { getArticleUrl, getProfileUrl } from "@/utils/routes";
+import { getArticleUrl, resolveAuthorFromUsers } from "@/utils/routes";
 import { formatDisplayDate } from "@/utils/date";
 
 type TabType = "editorial" | "trending";
@@ -19,7 +19,7 @@ export default function Popular() {
 
   const published = articles
     ? [...articles].filter(
-        (art: any) => art.status === "Published" || art.status === "Approved" || !art.status
+        (art) => art.status === "Published" || art.status === "Approved" || !art.status
       )
     : [];
 
@@ -41,14 +41,6 @@ export default function Popular() {
   };
 
   const activeArticles = getTabArticles();
-
-  const getAuthorLink = (authorName: string) => {
-    if (!authorName) return "/u/user";
-    const found = users?.find((u: any) => u.name === authorName || u.full_name === authorName);
-    if (found) return getProfileUrl(found) || "/u/user";
-    const fallbackSlug = authorName.toLowerCase().replace(/[^a-z0-9_.-]/g, '-').replace(/[-_.]+/g, '-').replace(/^-+|-+$/g, '');
-    return `/u/${fallbackSlug || "unknown"}`;
-  };
 
   const tabs = [
     { id: "editorial", label: locale === "hi" ? "संपादकीय चयन" : "Editorial Picks", icon: Award },
@@ -94,9 +86,10 @@ export default function Popular() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-150 dark:divide-gray-855 text-xs">
-            {activeArticles.map((art: any, index: number) => {
+            {activeArticles.map((art, index: number) => {
               const cleanTitle = stripMarkdown(art.title);
               const cleanDate = formatDisplayDate(art.date);
+              const { href: authorHref } = resolveAuthorFromUsers(art.author, art.authorProfile, users);
 
               return (
                 <tr key={art.id} className="hover:bg-gray-55/50 dark:hover:bg-gray-900/30 transition-colors">
@@ -125,12 +118,18 @@ export default function Popular() {
                   </td>
                   {/* Author */}
                   <td className="py-3 px-4 hidden md:table-cell text-gray-555 font-medium font-sans">
-                    <Link
-                      href={getAuthorLink(art.author)}
-                      className="hover:text-primary transition-colors font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded px-1 py-0.5 -mx-1"
-                    >
-                      {art.author || "युवाक्षर डेस्क"}
-                    </Link>
+                    {authorHref ? (
+                      <Link
+                        href={authorHref}
+                        className="hover:text-primary transition-colors font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded px-1 py-0.5 -mx-1"
+                      >
+                        {art.author || "युवाक्षर डेस्क"}
+                      </Link>
+                    ) : (
+                      <span className="font-bold px-1 py-0.5 -mx-1">
+                        {art.author || "युवाक्षर डेस्क"}
+                      </span>
+                    )}
                   </td>
                   {/* Date */}
                   <td className="py-3 px-4 text-center font-medium font-sans text-gray-600 dark:text-gray-450">
@@ -145,3 +144,4 @@ export default function Popular() {
     </div>
   );
 }
+

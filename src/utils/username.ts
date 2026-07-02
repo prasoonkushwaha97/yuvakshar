@@ -1,3 +1,5 @@
+import { Profile } from "@/store/types";
+
 export const RESERVED_USERNAMES = [
   "admin", "administrator", "root", "support", "help", "api", "login", "logout",
   "signup", "register", "settings", "account", "profile", "profiles", "user",
@@ -71,48 +73,48 @@ export function generateFallbackUsername(email: string | undefined): string {
   return `${base}${randomNum}`;
 }
 
-export function getCanonicalProfileUrl(profile: any): string {
+/**
+ * Generates a canonical profile URL from a profile object or username string.
+ * Returns null if no valid username can be resolved — never fabricates URLs.
+ */
+export function getCanonicalProfileUrl(profile: Partial<Profile> | string | null | undefined): string | null {
   if (!profile) {
-    return "/u/user";
+    return null;
   }
   
   if (typeof profile === "string") {
-    return `/u/${profile.toLowerCase()}`;
+    const trimmed = profile.trim();
+    if (trimmed.length >= 3 && /^[a-zA-Z0-9_.-]+$/.test(trimmed)) {
+      return `/u/${trimmed.toLowerCase()}`;
+    }
+    return null;
   }
   
-  const username = profile.username || profile.profiles?.username || profile.author?.username || profile.author_username;
-  if (username && username !== "unknown" && username !== "null" && username !== "undefined") {
+  // Extract username from the profile object — check nested profile structures too
+  const username = profile.username
+    || (profile as Record<string, unknown>).author_username as string | undefined;
+
+  if (
+    username &&
+    typeof username === "string" &&
+    username.trim().length >= 3 &&
+    username !== "unknown" &&
+    username !== "null" &&
+    username !== "undefined"
+  ) {
     return `/u/${username.toLowerCase()}`;
   }
   
-  if (profile.name || profile.display_name) {
-    const base = (profile.display_name || profile.name).toLowerCase().replace(/[^a-z0-9_.-]/g, '-').replace(/[-_.]+/g, '-').replace(/^-+|-+$/g, '');
-    if (base.length >= 3) {
-      return `/u/${base.substring(0, 30)}`;
-    }
-  }
-  
-  if (profile.email) {
-    const base = profile.email.split('@')[0].replace(/[^a-z0-9_.-]/g, '');
-    if (base.length >= 3) {
-      return `/u/${base.substring(0, 30)}`;
-    }
-  }
-  
-  if (profile.id) {
-    return `/u/user-${profile.id.toString().substring(0, 8)}`;
-  }
-  
-  return "/u/user";
+  // No valid username found — return null, never fabricate
+  return null;
 }
 
 /**
  * Resolves an incoming identifier (username, slug, or ID) to a canonical profile.
  * Returns the matched profile and a boolean indicating if a redirect is needed.
  */
-export function resolveProfileIdentifier(identifier: string, users: any[]): { profile: any | null, needsRedirect: boolean } {
+export function resolveProfileIdentifier(identifier: string, users: Partial<Profile>[]): { profile: Partial<Profile> | null, needsRedirect: boolean } {
   if (!identifier || !users || users.length === 0) {
-    console.log({ identifier, usersLength: users?.length || 0, matchedUser: null });
     return { profile: null, needsRedirect: false };
   }
 
@@ -122,14 +124,12 @@ export function resolveProfileIdentifier(identifier: string, users: any[]): { pr
   const matchByUsername = users.find(u => u.username?.toLowerCase() === lowerIdentifier);
   if (matchByUsername) {
     const needsRedirect = matchByUsername.username !== identifier;
-    console.log({ identifier, usersLength: users.length, matchedUser: matchByUsername.username, needsRedirect });
     return { profile: matchByUsername, needsRedirect };
   }
 
   // 1b. Priority: Previous username match (for historical redirects)
   const matchByPreviousUsername = users.find(u => u.previous_username?.toLowerCase() === lowerIdentifier);
   if (matchByPreviousUsername) {
-    console.log({ identifier, usersLength: users.length, matchedUser: matchByPreviousUsername.username });
     return { 
       profile: matchByPreviousUsername, 
       needsRedirect: true 
@@ -139,7 +139,6 @@ export function resolveProfileIdentifier(identifier: string, users: any[]): { pr
   // 2. Priority: Legacy slug match
   const matchBySlug = users.find(u => u.slug?.toLowerCase() === lowerIdentifier);
   if (matchBySlug) {
-    console.log({ identifier, usersLength: users.length, matchedUser: matchBySlug.username });
     return { 
       profile: matchBySlug, 
       needsRedirect: !!matchBySlug.username 
@@ -149,13 +148,11 @@ export function resolveProfileIdentifier(identifier: string, users: any[]): { pr
   // 3. Last Resort: Internal ID match (UUID)
   const matchById = users.find(u => u.id === identifier);
   if (matchById) {
-    console.log({ identifier, usersLength: users.length, matchedUser: matchById.username });
     return { 
       profile: matchById, 
       needsRedirect: !!matchById.username 
     };
   }
 
-  console.log({ identifier, usersLength: users.length, matchedUser: null });
   return { profile: null, needsRedirect: false };
 }

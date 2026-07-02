@@ -100,7 +100,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
     });
   };
 
-  const userLink = getCanonicalProfileUrl(user || { id: userId });
+  const userLink = getCanonicalProfileUrl(user || { id: userId }) || "#";
 
   return (
     <div 
