@@ -15,7 +15,7 @@ export default function ChaupalDesktopSidebar() {
   ];
 
   return (
-    <div className="hidden lg:flex flex-col w-[260px] shrink-0 sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto pb-8 pr-4">
+    <div className="hidden md:flex flex-col w-[240px] lg:w-[260px] shrink-0 sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto pb-8 pr-4">
       <nav className="flex flex-col gap-2">
         {links.map((link) => {
           const isActive = pathname === link.href || (link.href !== "/community" && pathname.startsWith(link.href));
