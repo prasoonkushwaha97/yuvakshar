@@ -7,7 +7,6 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { getProfileUrl } from "@/utils/routes";
 import { stripMarkdown } from "@/lib/markdown";
-import Sidebar from "@/components/homepage/layout/Sidebar";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
 import { ContentRenderer } from "@/components/content/ContentRenderer";
 import { Calendar, Clock, Eye } from "lucide-react";
@@ -102,10 +101,9 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
     <div className="w-full min-h-screen bg-[#FDFCF7] dark:bg-[#0B0F19] text-[#111111] dark:text-[#E2E8F0] font-sans pb-16 transition-colors duration-300">
       
       <SectionContainer>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-6">
+        <div className="max-w-4xl mx-auto pt-6">
           
-          {/* LEFT: Main article content panel (8 cols) */}
-          <article className="lg:col-span-8 bg-white dark:bg-[#0E1322] border border-gray-150 dark:border-gray-850 p-6 md:p-10 rounded-xl shadow-sm">
+          <article className="w-full bg-white dark:bg-[#0E1322] border border-gray-150 dark:border-gray-850 p-6 md:p-10 rounded-xl shadow-sm">
             
             {/* Category Breadcrumbs Tag */}
             {article?.categories && (
@@ -194,7 +192,7 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
             )}
 
             {/* Main Content Body (Rich Markdown rendering) */}
-            <div className="font-serif leading-relaxed text-lg text-gray-850 dark:text-gray-200">
+            <div className="font-serif leading-relaxed text-lg text-gray-855 dark:text-gray-200">
               <ContentRenderer content={article?.content || ""} />
             </div>
 
@@ -215,11 +213,6 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
             <CommentSection articleId={article.id} />
 
           </article>
-
-          {/* RIGHT: Sidebar panel (4 cols) */}
-          <div className="lg:col-span-4 border-l-0 lg:border-l border-gray-150 dark:border-gray-850 pl-0 lg:pl-6 space-y-8">
-            <Sidebar />
-          </div>
 
         </div>
       </SectionContainer>

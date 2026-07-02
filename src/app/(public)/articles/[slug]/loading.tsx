@@ -1,15 +1,15 @@
 import React from "react";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
-import { BaseSkeleton, SidebarSkeleton } from "@/components/homepage/shared/Skeleton";
+import { BaseSkeleton } from "@/components/homepage/shared/Skeleton";
 
 export default function Loading() {
   return (
     <div className="w-full min-h-screen bg-[#FDFCF7] dark:bg-[#0B0F19] pt-6 pb-16 font-sans">
       <SectionContainer>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="max-w-4xl mx-auto">
           
-          {/* Main Article Skeleton (8 cols) */}
-          <div className="lg:col-span-8 bg-white dark:bg-[#0E1322] border border-gray-150 dark:border-gray-850 p-6 md:p-10 rounded-xl shadow-sm">
+          {/* Main Article Skeleton */}
+          <div className="w-full bg-white dark:bg-[#0E1322] border border-gray-150 dark:border-gray-850 p-6 md:p-10 rounded-xl shadow-sm">
             
             {/* Category Pill */}
             <BaseSkeleton className="w-24 h-6 rounded-full mb-4" />
@@ -69,11 +69,6 @@ export default function Loading() {
             </div>
             
           </div>
-          
-          {/* Sidebar Skeleton (4 cols) */}
-          <aside className="lg:col-span-4 space-y-6">
-            <SidebarSkeleton />
-          </aside>
           
         </div>
       </SectionContainer>

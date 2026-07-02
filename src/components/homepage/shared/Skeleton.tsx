@@ -136,26 +136,6 @@ export function OpinionSkeleton() {
   );
 }
 
-export function SidebarSkeleton() {
-  return (
-    <div className="space-y-6 w-full py-4">
-      <div className="space-y-3">
-        <BaseSkeleton className="h-6 w-1/2" />
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="py-2 border-b border-gray-100 dark:border-gray-800">
-            <BaseSkeleton className="h-4 w-full" />
-            <BaseSkeleton className="h-3 w-1/4 mt-1" />
-          </div>
-        ))}
-      </div>
-      <div className="space-y-3 bg-[#FAFAFA] dark:bg-[#121212] p-4 rounded-sm">
-        <BaseSkeleton className="h-5 w-3/4" />
-        <BaseSkeleton className="h-3 w-full" />
-        <BaseSkeleton className="h-8 w-full mt-2" />
-      </div>
-    </div>
-  );
-}
 
 export function AuthorsSkeleton() {
   return (
