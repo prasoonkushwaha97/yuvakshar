@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Calendar, User, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
 import { stripMarkdown } from "@/lib/markdown";
@@ -68,13 +68,6 @@ export default function Hero() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Category Badge Overlay */}
-        <div className="absolute top-5 left-5 z-20">
-          <span className="bg-stone-100 text-stone-800 dark:bg-stone-800 dark:text-stone-300 text-xs font-sans font-medium uppercase tracking-widest px-4 py-1.5 rounded-sm">
-            {currentArticle.category || "मुख्य समाचार"}
-          </span>
-        </div>
-
         {/* Full Card Click Overlay */}
         <Link 
           href={getArticleUrl(currentArticle)}
@@ -83,34 +76,35 @@ export default function Hero() {
         />
 
         {/* Bottom Left Content Area */}
-        <div className="relative z-20 p-6 md:p-8 lg:p-10 text-white w-full max-w-3xl pointer-events-none">
-          {/* Slide Metadata */}
-          <div className="flex flex-wrap items-center gap-3 text-xs font-sans text-stone-300 uppercase tracking-widest mb-6">
-            <span className="flex items-center space-x-1">
-              <Calendar className="w-4 h-4" />
-              <span>
-                {currentArticle.published_at 
-                  ? new Date(currentArticle.published_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
-                  : currentArticle.created_at
-                    ? new Date(currentArticle.created_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
-                    : ""
-                }
-              </span>
-            </span>
-            <span>•</span>
-            <span className="flex items-center space-x-1">
-              <User className="w-4 h-4" />
-              <span>{currentArticle.author || "युवाक्षर डेस्क"}</span>
+        <div className="absolute bottom-0 left-0 z-20 p-6 md:p-8 lg:p-10 text-white w-full max-w-3xl pointer-events-none">
+          {/* Category Badge */}
+          <div className="mb-2">
+            <span className="bg-stone-100/90 text-stone-850 dark:bg-stone-800/90 dark:text-stone-250 text-[10px] font-sans font-bold uppercase tracking-widest px-3 py-1 rounded-sm">
+              {currentArticle.category || "मुख्य समाचार"}
             </span>
           </div>
 
-          {/* Headline */}
-          <h2 className="text-xl md:text-3xl lg:text-4xl font-serif font-black leading-tight drop-shadow mb-4">
+          {/* Headline with 24-32px extra vertical space above it */}
+          <h2 className="text-xl md:text-3xl lg:text-4xl font-serif font-black leading-tight drop-shadow mb-3 mt-6 md:mt-8">
             {stripMarkdown(currentArticle.title || currentArticle.title_hi || "")}
           </h2>
 
+          {/* Author • Publication Date */}
+          <div className="flex flex-wrap items-center gap-2 text-[10px] md:text-xs font-sans text-stone-250 uppercase tracking-widest mb-4">
+            <span>{currentArticle.author || "युवाक्षर डेस्क"}</span>
+            <span>•</span>
+            <span>
+              {currentArticle.published_at 
+                ? new Date(currentArticle.published_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
+                : currentArticle.created_at
+                  ? new Date(currentArticle.created_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
+                  : ""
+              }
+            </span>
+          </div>
+
           {/* Subtitle / summary snippet */}
-          <p className="hidden md:block text-stone-250 dark:text-stone-300 text-sm md:text-base leading-relaxed line-clamp-2 max-w-2xl font-serif">
+          <p className="text-stone-300 dark:text-stone-400 text-xs md:text-sm lg:text-base leading-relaxed line-clamp-2 max-w-2xl font-serif font-normal">
             {stripMarkdown(currentArticle.summary || currentArticle.summary_hi || currentArticle.content || "")}
           </p>
         </div>
