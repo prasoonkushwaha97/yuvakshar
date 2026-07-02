@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { stripMarkdown } from "@/lib/markdown";
-import ReadingTime from "../shared/ReadingTime";
+import MetaInfo from "../shared/MetaInfo";
 import { formatDisplayDate } from "@/utils/date";
 import { getArticleUrl } from "@/utils/routes";
 
@@ -42,10 +42,8 @@ export default function ArticleCardSmall({
       )}
 
       <div className="flex-grow min-w-0">
-        <div className="flex items-center space-x-2 text-[9px] uppercase tracking-wider font-extrabold text-[#f97316] mb-1">
+        <div className="flex items-center text-[9px] uppercase tracking-wider font-extrabold text-[#f97316] mb-1">
           <span>{article.category}</span>
-          <span className="text-gray-350 dark:text-gray-600">•</span>
-          <span>{cleanDate}</span>
         </div>
 
         <Link href={getArticleUrl(article)} className="block group-hover:text-[#f97316] transition-colors duration-250">
@@ -54,10 +52,16 @@ export default function ArticleCardSmall({
           </h4>
         </Link>
 
-        <div className="flex items-center space-x-2.5 mt-1 text-[10px] text-gray-400 font-sans">
-          <span>{article.author}</span>
-          <span>•</span>
-          <ReadingTime time={article.readTime} />
+        <div className="mt-1">
+          <MetaInfo
+            articleId={article.id}
+            slug={article.slug}
+            author={article.author || "युवाक्षर डेस्क"}
+            authorProfile={article.authorProfile}
+            date={article.date}
+            updatedAt={article.updatedAt || article.updated_at}
+            showActions={false}
+          />
         </div>
       </div>
     </div>

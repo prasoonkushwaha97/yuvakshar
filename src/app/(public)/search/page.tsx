@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import UserIdentity from "@/components/shared/UserIdentity";
-import { Search as SearchIcon, Bookmark, BookmarkCheck, ArrowRight, Clock } from "lucide-react";
+import { Search as SearchIcon, Bookmark, BookmarkCheck, ArrowRight } from "lucide-react";
+import MetaInfo from "@/components/homepage/shared/MetaInfo";
 
 import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
@@ -145,13 +145,6 @@ export default function SearchPage() {
                       <span className="text-[9px] uppercase font-bold tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
                         {art.category}
                       </span>
-                      <div className="flex items-center justify-between text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                        <span>{art.date}</span>
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {art.readTime}</span>
-                          <span className="flex items-center gap-1">द्वारा: <UserIdentity user={art.authorProfile || { name: art.author }} variant="inline" showAvatar={false} /></span>
-                        </div>
-                      </div>
                     </div>
 
                     <Link href={getArticleUrl(art)} className="block">
@@ -162,6 +155,17 @@ export default function SearchPage() {
                     <p className="text-xs text-slate-500 dark:text-slate-400 font-light line-clamp-2 leading-relaxed">
                       {stripMarkdown(art.summary)}
                     </p>
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                      <MetaInfo
+                        articleId={art.id}
+                        slug={art.slug}
+                        author={art.author || "युवाक्षर डेस्क"}
+                        authorProfile={art.authorProfile}
+                        date={art.date}
+                        updatedAt={art.updatedAt || art.updated_at}
+                        showActions={false}
+                      />
+                    </div>
                   </div>
 
                   <div className="flex items-center space-x-3 shrink-0 mt-3 sm:mt-0">

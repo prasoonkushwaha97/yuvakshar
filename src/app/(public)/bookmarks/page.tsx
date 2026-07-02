@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { useCms } from "@/store/CmsContext";
-import { Bookmark, Lock, Search, Filter, BookOpen } from "lucide-react";
+import { Bookmark, Lock, Search, Filter } from "lucide-react";
+import MetaInfo from "@/components/homepage/shared/MetaInfo";
 import Image from "next/image";
 import Link from "next/link";
 import { getArticleUrl } from "@/utils/routes";
@@ -110,13 +111,16 @@ export default function BookmarksPage() {
                       <h3 className="font-serif font-bold text-base mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                         {article.title}
                       </h3>
-                      <div className="mt-auto pt-4 flex items-center justify-between">
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          {new Date(article.date || "").toLocaleDateString("hi-IN")}
-                        </span>
-                        <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1 group-hover:text-primary transition-colors">
-                          पढ़ें <BookOpen className="w-3 h-3" />
-                        </span>
+                      <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800/80">
+                        <MetaInfo
+                          articleId={article.id}
+                          slug={article.slug}
+                          author={article.author || "युवाक्षर डेस्क"}
+                          authorProfile={article.authorProfile}
+                          date={article.date}
+                          updatedAt={article.updatedAt || article.updated_at}
+                          showActions={false}
+                        />
                       </div>
                     </div>
                   </Link>

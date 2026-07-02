@@ -6,9 +6,10 @@ import Link from "next/link";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import SectionContainer from "../layout/SectionContainer";
 import { getArticleUrl } from "@/utils/routes";
+import MetaInfo from "../shared/MetaInfo";
 
 export default function TopStories() {
   const { locale } = useLanguage();
@@ -53,15 +54,7 @@ export default function TopStories() {
           const summary = stripMarkdown(art.summary || art.summary_hi || art.content || "");
           const imageUrl = art.coverImage || art.cover_image || art.image || "/images/placeholder-news.jpg";
 
-          const dateStr = art.published_at 
-            ? new Date(art.published_at).toLocaleDateString("hi-IN", { year: "numeric", month: "short", day: "numeric" })
-            : art.created_at
-              ? new Date(art.created_at).toLocaleDateString("hi-IN", { year: "numeric", month: "short", day: "numeric" })
-              : "";
 
-          const readTimeVal = art.content
-            ? Math.max(1, Math.ceil(art.content.split(/\s+/).length / 150))
-            : 2;
 
           return (
             <div 
@@ -83,12 +76,7 @@ export default function TopStories() {
 
               {/* Text Section */}
               <div className="flex-1 flex flex-col p-5">
-                {/* Meta details */}
-                <div className="flex items-center space-x-2 text-[9px] font-sans font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
-                  <span>{dateStr}</span>
-                  <span>•</span>
-                  <span>{readTimeVal} मिनट पठन</span>
-                </div>
+
 
                 {/* Title */}
                 <Link href={getArticleUrl(art)} className="block hover:text-[#f97316] transition-colors duration-250 mb-2">
@@ -102,17 +90,24 @@ export default function TopStories() {
                   {summary}
                 </p>
 
-                {/* Author Info & Link */}
-                <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-850 flex items-center justify-between">
-                  <span className="text-xs text-gray-655 dark:text-gray-300 font-sans font-semibold">
-                    {art.author || "युवाक्षर डेस्क"}
-                  </span>
+                {/* Unified Metadata & Link */}
+                <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-850 flex flex-wrap items-center justify-between gap-3">
+                  <MetaInfo
+                    articleId={art.id}
+                    slug={art.slug}
+                    author={art.author || "युवाक्षर डेस्क"}
+                    authorProfile={art.authorProfile}
+                    date={art.date}
+                    updatedAt={art.updatedAt || art.updated_at}
+                    showActions={false}
+                    className="flex-1 min-w-0"
+                  />
                   <Link 
                     href={getArticleUrl(art)}
-                    className="inline-flex items-center space-x-1 text-[10px] font-bold text-[#f97316] hover:text-[#ea580c] transition-colors"
+                    className="text-[#f97316] font-bold text-xs hover:underline flex items-center gap-1 shrink-0 cursor-pointer ml-auto"
                   >
                     <span>आगे पढ़ें</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ChevronRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </div>

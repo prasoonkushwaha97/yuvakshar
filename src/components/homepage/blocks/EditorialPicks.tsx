@@ -9,6 +9,7 @@ import { stripMarkdown } from "@/lib/markdown";
 import { Award } from "lucide-react";
 import SectionContainer from "../layout/SectionContainer";
 import { getArticleUrl } from "@/utils/routes";
+import MetaInfo from "../shared/MetaInfo";
 
 interface EditorialPicksProps {
   excludeIds?: string[];
@@ -59,9 +60,7 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
           const summary = stripMarkdown(art.summary || art.summary_hi || art.content || "");
           const imageUrl = art.coverImage || art.cover_image || art.image || "/images/placeholder-news.jpg";
 
-          const readTimeVal = art.content
-            ? Math.max(1, Math.ceil(art.content.split(/\s+/).length / 150))
-            : 2;
+
 
           return (
             <div 
@@ -96,11 +95,16 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
                 </p>
 
                 {/* Footer details */}
-                <div className="mt-auto pt-3 flex items-center justify-between text-xs text-stone-500 font-sans tracking-wide uppercase">
-                  <span>{art.author || "युवाक्षर डेस्क"}</span>
-                  <span className="flex items-center space-x-0.5 font-medium">
-                    <span>{readTimeVal} मि.</span>
-                  </span>
+                <div className="mt-auto pt-3 border-t border-stone-100 dark:border-stone-800/80">
+                  <MetaInfo
+                    articleId={art.id}
+                    slug={art.slug}
+                    author={art.author || "युवाक्षर डेस्क"}
+                    authorProfile={art.authorProfile}
+                    date={art.date}
+                    updatedAt={art.updatedAt || art.updated_at}
+                    showActions={false}
+                  />
                 </div>
               </div>
             </div>

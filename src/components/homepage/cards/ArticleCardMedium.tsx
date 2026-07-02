@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { stripMarkdown } from "@/lib/markdown";
-import ReadingTime from "../shared/ReadingTime";
+import MetaInfo from "../shared/MetaInfo";
 import { formatDisplayDate } from "@/utils/date";
 import { getArticleUrl } from "@/utils/routes";
 
@@ -32,11 +32,9 @@ export default function ArticleCardMedium({ article, showImage = true }: Article
       {/* Content Wrapper */}
       <div className="flex-1 flex flex-col justify-between min-h-0">
         <div className="flex flex-col min-h-0 px-1">
-          {/* Category & Date Row */}
-          <div className="flex items-center space-x-2 mb-2 text-[10px] uppercase tracking-widest font-semibold text-stone-500 dark:text-stone-400 w-full overflow-hidden">
-            <span className="truncate shrink-0 max-w-[50%]">{article.category || "समाचार"}</span>
-            <span className="text-stone-300 shrink-0">|</span>
-            <span className="text-stone-400 font-sans truncate shrink min-w-0">{cleanDate}</span>
+          {/* Category Row */}
+          <div className="flex items-center mb-2 text-[10px] uppercase tracking-widest font-semibold text-stone-500 dark:text-stone-400 w-full overflow-hidden">
+            <span className="truncate">{article.category || "समाचार"}</span>
           </div>
 
           {/* Title */}
@@ -48,13 +46,16 @@ export default function ArticleCardMedium({ article, showImage = true }: Article
         </div>
 
         {/* Bottom Metadata Row */}
-        <div className="flex items-center justify-between text-xs text-stone-400 font-sans mt-auto pt-3 px-1">
-          <span className="truncate pr-3 font-medium text-stone-500 flex-1 min-w-0 uppercase tracking-widest">
-            {article.author || "युवाक्षर"}
-          </span>
-          <span className="shrink-0 flex items-center text-stone-400 font-medium">
-            <ReadingTime time={article.readTime} />
-          </span>
+        <div className="mt-auto pt-3 px-1 border-t border-stone-100 dark:border-stone-800/80">
+          <MetaInfo
+            articleId={article.id}
+            slug={article.slug}
+            author={article.author || "युवाक्षर डेस्क"}
+            authorProfile={article.authorProfile}
+            date={article.date}
+            updatedAt={article.updatedAt || article.updated_at}
+            showActions={false}
+          />
         </div>
       </div>
     </div>

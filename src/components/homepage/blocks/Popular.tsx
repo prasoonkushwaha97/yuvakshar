@@ -2,19 +2,20 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Award, Eye, Share2, MessageSquare, TrendingUp } from "lucide-react";
+import { Award, TrendingUp } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
 import SectionTitle from "../shared/SectionTitle";
 import { getArticleUrl } from "@/utils/routes";
+import { formatDisplayDate } from "@/utils/date";
 
-type TabType = "views" | "shares" | "comments" | "trending";
+type TabType = "editorial" | "trending";
 
 export default function Popular() {
   const { locale } = useLanguage();
   const { articles } = useCms();
-  const [activeTab, setActiveTab] = useState<TabType>("views");
+  const [activeTab, setActiveTab] = useState<TabType>("editorial");
 
   const published = articles
     ? [...articles].filter(
@@ -24,20 +25,9 @@ export default function Popular() {
 
   if (published.length === 0) return null;
 
-  // Filter list by different criteria
   const getTabArticles = () => {
     switch (activeTab) {
-      case "views":
-        return [...published]
-          .sort((a, b) => (b.views || 0) - (a.views || 0))
-          .slice(0, 5);
-      case "shares":
-        // Simulated shares sorting (odd ids get higher ranking)
-        return [...published]
-          .sort((a, b) => (parseInt(b.id) || 0) % 7 - (parseInt(a.id) || 0) % 7)
-          .slice(0, 5);
-      case "comments":
-        // Sort by length of content as a proxy for comments, or fallback counts
+      case "editorial":
         return [...published]
           .sort((a, b) => (b.content?.length || 0) - (a.content?.length || 0))
           .slice(0, 5);
@@ -53,10 +43,8 @@ export default function Popular() {
   const activeArticles = getTabArticles();
 
   const tabs = [
-    { id: "views", label: locale === "hi" ? "सर्वाधिक लोकप्रिय" : "Most Viewed", icon: Eye },
-    { id: "shares", label: locale === "hi" ? "सर्वाधिक साझा" : "Most Shared", icon: Share2 },
-    { id: "comments", label: locale === "hi" ? "सर्वाधिक चर्चित" : "Most Discussed", icon: MessageSquare },
-    { id: "trending", label: locale === "hi" ? "ट्रेंडिंग आज" : "Trending Today", icon: TrendingUp }
+    { id: "editorial", label: locale === "hi" ? "संपादकीय चयन" : "Editorial Picks", icon: Award },
+    { id: "trending", label: locale === "hi" ? "चर्चित लेख" : "Trending Today", icon: TrendingUp }
   ];
 
   return (
@@ -94,21 +82,13 @@ export default function Popular() {
               <th className="py-2.5 px-4">{locale === "hi" ? "लेख शीर्षक" : "Article Title"}</th>
               <th className="py-2.5 px-4 hidden sm:table-cell w-36">{locale === "hi" ? "श्रेणी" : "Category"}</th>
               <th className="py-2.5 px-4 hidden md:table-cell w-40">{locale === "hi" ? "लेखक" : "Author"}</th>
-              <th className="py-2.5 px-4 text-center w-28">{locale === "hi" ? "स्कोर" : "Stats"}</th>
+              <th className="py-2.5 px-4 text-center w-36">{locale === "hi" ? "प्रकाशन तिथि" : "Publish Date"}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-150 dark:divide-gray-855 text-xs">
             {activeArticles.map((art: any, index: number) => {
               const cleanTitle = stripMarkdown(art.title);
-              const cleanDate = art.date ? art.date.split(",")[0] : "";
-              
-              // Dynamic stats display based on active tab
-              const statVal = (() => {
-                if (activeTab === "views") return `${art.views || 0} views`;
-                if (activeTab === "comments") return `${Math.floor((art.content?.length || 1000) / 180)} comments`;
-                if (activeTab === "shares") return `${Math.floor((parseInt(art.id) || 1) * 8) % 40 + 12} shares`;
-                return `Trending`;
-              })();
+              const cleanDate = formatDisplayDate(art.date);
 
               return (
                 <tr key={art.id} className="hover:bg-gray-55/50 dark:hover:bg-gray-900/30 transition-colors">
@@ -139,9 +119,9 @@ export default function Popular() {
                   <td className="py-3 px-4 hidden md:table-cell text-gray-500 font-medium font-sans">
                     {art.author}
                   </td>
-                  {/* Stats */}
-                  <td className="py-3 px-4 text-center font-bold font-sans text-gray-600 dark:text-gray-450">
-                    {statVal}
+                  {/* Date */}
+                  <td className="py-3 px-4 text-center font-medium font-sans text-gray-600 dark:text-gray-450">
+                    {cleanDate}
                   </td>
                 </tr>
               );

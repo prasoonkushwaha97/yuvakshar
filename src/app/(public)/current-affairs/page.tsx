@@ -5,12 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { 
-  Calendar, 
-  Clock, 
   Bookmark, 
   BookmarkCheck, 
   ArrowRight
 } from "lucide-react";
+import MetaInfo from "@/components/homepage/shared/MetaInfo";
 
 import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
@@ -67,11 +66,6 @@ function CurrentAffairsPageContent() {
     if (sortBy === "latest") {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     }
-    if (sortBy === "time") {
-      const timeA = parseInt(a.readTime);
-      const timeB = parseInt(b.readTime);
-      return timeB - timeA;
-    }
     return 0; // Default unchanged
   });
 
@@ -112,15 +106,16 @@ function CurrentAffairsPageContent() {
 
                   {/* Body details */}
                   <div className="p-6 space-y-3">
-                    <div className="flex items-center justify-between text-[10px] text-yuvakshar-gray font-mono">
-                      <span className="flex items-center space-x-1">
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>{art.date}</span>
-                      </span>
-                      <span className="flex items-center space-x-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>{art.readTime}</span>
-                      </span>
+                    <div className="pt-2 border-t border-yuvakshar-gold/5">
+                      <MetaInfo
+                        articleId={art.id}
+                        slug={art.slug}
+                        author={art.author || "युवाक्षर डेस्क"}
+                        authorProfile={art.authorProfile}
+                        date={art.date}
+                        updatedAt={art.updatedAt || art.updated_at}
+                        showActions={false}
+                      />
                     </div>
 
                     <Link href={getArticleUrl(art)} className="block group">

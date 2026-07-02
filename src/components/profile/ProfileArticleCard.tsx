@@ -1,8 +1,9 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, Heart, MessageSquare, Bookmark, MoreHorizontal } from "lucide-react";
+import { Bookmark, MoreHorizontal } from "lucide-react";
 import { getArticleUrl } from "@/utils/routes";
+import MetaInfo from "@/components/homepage/shared/MetaInfo";
 
 interface ProfileArticleCardProps {
   article: any;
@@ -27,11 +28,9 @@ export default function ProfileArticleCard({ article }: ProfileArticleCardProps)
 
       <div className="flex flex-col justify-center flex-grow space-y-3 font-serif min-w-0">
         
-        {/* Category & Date */}
-        <div className="flex items-center gap-2 text-xs font-sans text-slate-500 dark:text-slate-400">
+        {/* Category */}
+        <div className="flex items-center text-xs font-sans text-slate-500 dark:text-slate-400">
           <span className="text-[#F97316] font-bold tracking-wide uppercase">{article.category}</span>
-          <span>•</span>
-          <span>{article.date}</span>
         </div>
 
         {/* Title */}
@@ -47,15 +46,20 @@ export default function ProfileArticleCard({ article }: ProfileArticleCardProps)
         </p>
 
         {/* Meta / Footer */}
-        <div className="flex items-center justify-between pt-3 text-xs font-sans text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-4">
-            <span>{article.readTime || "5 मिनट"} की पढ़ाई</span>
-            <span className="flex items-center gap-1.5"><Eye className="w-4 h-4" /> {article.views || 0}</span>
-            <span className="flex items-center gap-1.5"><Heart className="w-4 h-4" /> {article.likes || 0}</span>
-            <span className="hidden sm:flex items-center gap-1.5"><MessageSquare className="w-4 h-4" /> {article.comments || 0}</span>
+        <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/80">
+          <div className="flex-1 min-w-0 pr-4">
+            <MetaInfo
+              articleId={article.id}
+              slug={article.slug}
+              author={article.author || "युवाक्षर डेस्क"}
+              authorProfile={article.authorProfile}
+              date={article.date}
+              updatedAt={article.updatedAt || article.updated_at}
+              showActions={false}
+            />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-900 dark:hover:text-white" title="बुकमार्क">
               <Bookmark className="w-4 h-4" />
             </button>

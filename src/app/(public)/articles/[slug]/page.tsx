@@ -9,7 +9,7 @@ import { getProfileUrl } from "@/utils/routes";
 import { stripMarkdown } from "@/lib/markdown";
 import SectionContainer from "@/components/homepage/layout/SectionContainer";
 import { ContentRenderer } from "@/components/content/ContentRenderer";
-import { Calendar, Clock, Eye } from "lucide-react";
+import MetaInfo from "@/components/homepage/shared/MetaInfo";
 import ArticleActions from "@/components/articles/ArticleActions";
 import CommentSection from "@/components/articles/CommentSection";
 
@@ -126,56 +126,17 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
               </p>
             )}
 
-            {/* Author Profile and Metadata */}
-            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-b border-gray-100 dark:border-gray-850 py-4 mb-6">
-              {(() => {
-                const profileUrl = article?.profiles ? getProfileUrl(article.profiles) : null;
-                const authorContent = (
-                  <>
-                    <Image 
-                      src={article?.profiles?.avatar_url || "/images/default-avatar.png"} 
-                      alt={article?.profiles?.name || "युवाक्षर लेखक"}
-                      width={40} height={40}
-                      className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-800"
-                    />
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-800 dark:text-gray-200 hover:text-primary transition-colors">
-                        {article?.profiles?.name || "युवाक्षर डेस्क"}
-                      </h4>
-                      <span className="text-[10px] text-gray-400 font-sans tracking-wide">संपादकीय स्तंभकार</span>
-                    </div>
-                  </>
-                );
-
-                if (profileUrl) {
-                  return (
-                    <Link href={profileUrl} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-                      {authorContent}
-                    </Link>
-                  );
-                }
-
-                return (
-                  <div className="flex items-center space-x-3">
-                    {authorContent}
-                  </div>
-                );
-              })()}
-
-              <div className="flex items-center space-x-4 text-xs text-gray-450 dark:text-gray-500 font-sans">
-                <span className="flex items-center space-x-1">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>{dateStr}</span>
-                </span>
-                <span className="flex items-center space-x-1">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>{readTimeStr}</span>
-                </span>
-                <span className="flex items-center space-x-1">
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>{article?.view_count || 120} व्यूज</span>
-                </span>
-              </div>
+            {/* Unified Editorial Metadata */}
+            <div className="border-t border-b border-gray-100 dark:border-gray-850 py-4 mb-6">
+              <MetaInfo
+                articleId={article.id}
+                slug={article.slug}
+                author={article.profiles?.name || "युवाक्षर डेस्क"}
+                authorProfile={article.profiles}
+                date={article.published_at || article.created_at || ""}
+                updatedAt={article.updated_at}
+                showActions={false}
+              />
             </div>
 
             {/* Cover Image */}

@@ -5,14 +5,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import { 
-  Search, 
-  Calendar, 
-  Clock, 
+  Search,
   Bookmark, 
   BookmarkCheck, 
   ArrowRight,
   ArrowLeft
 } from "lucide-react";
+import MetaInfo from "@/components/homepage/shared/MetaInfo";
 
 import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
@@ -105,10 +104,8 @@ function CategoryDetailPageContent() {
     if (sortBy === "latest") {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     }
-    if (sortBy === "time") {
-      const timeA = parseInt(a.readTime) || 0;
-      const timeB = parseInt(b.readTime) || 0;
-      return timeB - timeA;
+    if (sortBy === "alphabetical") {
+      return a.title.localeCompare(b.title, "hi");
     }
     return 0;
   });
@@ -164,7 +161,7 @@ function CategoryDetailPageContent() {
               className="bg-background border border-border hover:border-primary rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none transition-all cursor-pointer"
             >
               <option value="latest">Latest Updates</option>
-              <option value="time">Reading Time</option>
+              <option value="alphabetical">Alphabetical (A-Z)</option>
             </select>
           </div>
         </div>
@@ -192,15 +189,16 @@ function CategoryDetailPageContent() {
 
                   {/* Body details */}
                   <div className="p-6 space-y-3">
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                      <span className="flex items-center space-x-1">
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>{art.date}</span>
-                      </span>
-                      <span className="flex items-center space-x-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>{art.readTime}</span>
-                      </span>
+                    <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80">
+                      <MetaInfo
+                        articleId={art.id}
+                        slug={art.slug}
+                        author={art.author || "युवाक्षर डेस्क"}
+                        authorProfile={art.authorProfile}
+                        date={art.date}
+                        updatedAt={art.updatedAt || art.updated_at}
+                        showActions={false}
+                      />
                     </div>
 
                     <Link href={getArticleUrl(art)} className="block group">
