@@ -268,6 +268,7 @@ export async function getHomepageAuditLogs(limit = 20) {
     details: log.details?.message || log.action,
     created_at: log.created_at,
     profiles: {
+      name: log.profiles?.name || "संपादक",
       display_name: log.profiles?.name || "संपादक",
       email: log.profiles?.email || ""
     }

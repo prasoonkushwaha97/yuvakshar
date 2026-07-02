@@ -271,6 +271,19 @@ export const incrementArticleLikesInDb = async (id: string): Promise<void> => {
 export const mapDbProfileToProfile = (dbProfile: any): Profile => {
   if (!dbProfile) return dbProfile;
   const profile = { ...dbProfile };
+  
+  // Migration strategy: Use 'name' as canonical. Fallback to 'display_name' if 'name' is generic.
+  const name = dbProfile.name;
+  const displayName = dbProfile.display_name;
+  
+  let canonicalName = name;
+  if (displayName && (!name || name === "NEW USER" || name === "" || name.includes("@"))) {
+    canonicalName = displayName;
+  }
+  
+  profile.name = canonicalName;
+  profile.display_name = canonicalName;
+
   const custom = dbProfile.social_links || {};
   
   const customFields = [
@@ -314,12 +327,12 @@ export const fetchProfilesFromDb = async (fallback: Profile[]): Promise<Profile[
   return JSON.parse(getLocalItem("yuvakshar_users", JSON.stringify(fallback)));
 };
 
-export const updateProfileInDb = async (profile: Profile): Promise<{ success: boolean; data?: Profile; error?: string }> => {
+export const updateProfileInDb = async (profile: Profile, supabaseClient?: any): Promise<{ success: boolean; data?: Profile; error?: string }> => {
   if (FEATURES.USE_SUPABASE_PROFILES && isSupabaseConfigured()) {
     try {
       const allowed = [
-        "id", "name", "role", "status", "bio", "avatar_url", "social_links", "badges",
-        "views_count"
+        "id", "name", "display_name", "role", "status", "bio", "avatar_url", "social_links", "badges",
+        "views_count", "cover_url", "location", "website", "slug"
       ];
       const filtered: any = {};
       allowed.forEach(key => {
@@ -327,6 +340,12 @@ export const updateProfileInDb = async (profile: Profile): Promise<{ success: bo
           filtered[key] = (profile as any)[key];
         }
       });
+
+      // Synchronize name and display_name for DB updates to prevent drift/ensure consistency
+      if (profile.name !== undefined) {
+        filtered.name = profile.name;
+        filtered.display_name = profile.name;
+      }
 
       const customFields = [
         "username", "username_changed_at", "previous_username", "slug", "cover_url",
@@ -353,7 +372,8 @@ export const updateProfileInDb = async (profile: Profile): Promise<{ success: bo
         filtered.social_links = currentSocialLinks;
       }
 
-      const { data, error } = await supabase
+      const client = supabaseClient || supabase;
+      const { data, error } = await client
         .from("profiles")
         .upsert(filtered)
         .select()
@@ -374,6 +394,8 @@ export const updateProfileInDb = async (profile: Profile): Promise<{ success: bo
     return { success: false, error: "User profile not found in local db" };
   }
 };
+
+export const updateProfile = updateProfileInDb;
 
 // ─── COMMENTS ──────────────────────────────────────────────────────────────
 

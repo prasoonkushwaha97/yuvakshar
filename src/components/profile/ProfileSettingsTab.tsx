@@ -7,9 +7,10 @@ import DeviceImageUploader from "@/components/yuvakshar/DeviceImageUploader";
 import { SITE_URL } from "@/utils/routes";
 
 export default function ProfileSettingsTab({ user }: { user: Profile }) {
+  console.log("LOGGING: ProfileSettingsTab user prop:", user);
   const { updateUserProfile } = useCms();
   const [formData, setFormData] = useState({
-    display_name: user.display_name || user.name || "",
+    name: user.name || user.display_name || "",
     username: user.username || "",
     bio: user.bio || "",
     website: user.website || "",
@@ -41,8 +42,8 @@ export default function ProfileSettingsTab({ user }: { user: Profile }) {
           <label className="text-sm font-bold text-slate-700 dark:text-slate-300">प्रदर्शन नाम (Display Name)</label>
           <input 
             type="text" 
-            value={formData.display_name}
-            onChange={(e) => setFormData({...formData, display_name: e.target.value})}
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
             className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316] font-hindi"
           />
         </div>

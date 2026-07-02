@@ -2,6 +2,8 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { updateProfile } from "@/lib/repositoryService";
+import { Profile } from "@/store/types";
 
 export async function getUserSettings() {
   const supabase = await createClient();
@@ -63,7 +65,7 @@ export async function updateUserSettings(category: string, data: any) {
   return { success: true };
 }
 
-export async function updateUserAccount(data: { name?: string, username?: string, bio?: string, social_links?: any }) {
+export async function updateUserAccount(data: Partial<Profile>) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
 
@@ -71,10 +73,10 @@ export async function updateUserAccount(data: { name?: string, username?: string
     throw new Error("Unauthorized");
   }
 
-  // Fetch the existing profile to get current social_links
+  // Fetch the existing profile to get current social_links and other attributes
   const { data: currentProfile, error: profileError } = await supabase
     .from("profiles")
-    .select("social_links")
+    .select("*")
     .eq("id", user.id)
     .single();
 
@@ -82,33 +84,43 @@ export async function updateUserAccount(data: { name?: string, username?: string
     throw profileError;
   }
 
-  const existingSocialLinks = currentProfile?.social_links || {};
-  const updatedSocialLinks = {
-    ...existingSocialLinks,
-    ...(data.social_links || {}),
+  const existingProfile = currentProfile || {};
+  const existingSocialLinks = existingProfile.social_links || {};
+  
+  const profileToUpdate: any = {
+    ...existingProfile,
+    ...data,
+    id: user.id,
   };
 
-  if (data.username !== undefined) {
-    updatedSocialLinks.username = data.username;
-    updatedSocialLinks.slug = data.username;
+  // Ensure canonical name and display_name are synchronized
+  if (data.name !== undefined) {
+    profileToUpdate.name = data.name;
+    profileToUpdate.display_name = data.name;
   }
 
-  const payload: any = {};
-  if (data.name !== undefined) payload.name = data.name;
-  if (data.bio !== undefined) payload.bio = data.bio;
-  payload.social_links = updatedSocialLinks;
+  // Synchronize username and slug
+  if (data.username !== undefined) {
+    profileToUpdate.username = data.username;
+    profileToUpdate.slug = data.username;
+  }
 
-  const { error } = await supabase
-    .from("profiles")
-    .update(payload)
-    .eq("id", user.id);
+  // Properly merge social links if any new ones are supplied
+  if (data.social_links !== undefined) {
+    profileToUpdate.social_links = {
+      ...existingSocialLinks,
+      ...data.social_links
+    };
+  }
+
+  const { data: updatedProfile, error } = await updateProfile(profileToUpdate, supabase);
 
   if (error) {
-    throw error;
+    throw new Error(error);
   }
 
   revalidatePath("/settings/account");
-  return { success: true };
+  return { success: true, user: updatedProfile };
 }
 
 export async function updateAvatarUrl(avatar_url: string) {

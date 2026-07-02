@@ -56,6 +56,7 @@ export default function UserProfile() {
 
   const isLoading = authLoading || cmsDataLoading || (!dbUser && users.length === 0);
   const user = dbUser || ({} as any);
+  console.log("LOGGING: Profile page user state/props:", user);
   const isOwner = currentUser?.id === user.id;
 
   // Published articles filter
@@ -153,7 +154,7 @@ export default function UserProfile() {
       : `${SITE_URL}/u/${user.username || user.id}`;
 
     const shareData = {
-      title: `${user.display_name || user.name} | युवाक्षर लेखक`,
+      title: `${user.name} | युवाक्षर लेखक`,
       text: user.bio || "युवाक्षर लेखक प्रोफाइल",
       url: profileUrl,
     };
@@ -345,7 +346,7 @@ export default function UserProfile() {
       <ShareModal 
         isOpen={shareOpen} 
         onClose={() => setShareOpen(false)} 
-        title={`${user.display_name || user.name} | युवाक्षर लेखक`}
+        title={`${user.name} | युवाक्षर लेखक`}
         url={profileUrl}
         summary={user.bio}
       />

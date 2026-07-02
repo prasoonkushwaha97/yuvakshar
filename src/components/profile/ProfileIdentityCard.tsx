@@ -28,7 +28,7 @@ export default function ProfileIdentityCard({ user }: ProfileIdentityCardProps) 
           {user.avatar_url ? (
             <Image 
               src={user.avatar_url} 
-              alt={user.display_name || user.name || ""} 
+              alt={user.name || ""} 
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
               fill 
               sizes="160px"
@@ -36,7 +36,7 @@ export default function ProfileIdentityCard({ user }: ProfileIdentityCardProps) 
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-slate-400">
-              <span className="text-4xl font-bold uppercase">{(user.display_name || user.name || "U")?.[0]}</span>
+              <span className="text-4xl font-bold uppercase">{(user.name || "U")?.[0]}</span>
             </div>
           )}
         </div>
@@ -46,7 +46,7 @@ export default function ProfileIdentityCard({ user }: ProfileIdentityCardProps) 
           <div>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
               <h1 className="text-2xl sm:text-3xl font-extrabold font-serif text-slate-850 dark:text-white flex items-center gap-2">
-                <span>{user.display_name || user.name}</span>
+                <span>{user.name}</span>
                 {isVerified && (
                   <CheckCircle2 className="w-6 h-6 text-blue-500 fill-blue-500/10 shrink-0" />
                 )}

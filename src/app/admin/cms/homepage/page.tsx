@@ -1158,7 +1158,7 @@ export default function HomepageBuilderPage() {
                     <span className="text-[9px] text-gray-400">{log.created_at ? new Date(log.created_at).toLocaleTimeString() : ""}</span>
                   </div>
                   <p className="text-gray-600 dark:text-gray-300 mt-1">{log.details}</p>
-                  <span className="text-[9px] text-gray-400 block mt-1.5">— {log.profiles?.display_name || "सिस्टम संपादक"}</span>
+                  <span className="text-[9px] text-gray-400 block mt-1.5">— {log.profiles?.name || "सिस्टम संपादक"}</span>
                 </div>
               ))}
 

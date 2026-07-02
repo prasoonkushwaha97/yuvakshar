@@ -54,6 +54,7 @@ export interface DonationRecord {
 import { Profile, OrgTask, VerificationRequest, OrgAuditLog, RoleTransfer, PrivateMessage, Magazine, MagazineIssue } from "./types";
 export type { Profile, OrgTask, VerificationRequest, OrgAuditLog, RoleTransfer, PrivateMessage, Magazine, MagazineIssue };
 import { mapDbProfileToProfile } from "@/lib/repositoryService";
+import { updateUserAccount } from "@/lib/actions/settingsActions";
 
 export interface Video {
   id: string;
@@ -2618,67 +2619,63 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
   const updateUserProfile = async (data: Partial<Profile>) => {
     if (!currentUser) return;
+
+    console.log("LOGGING: CmsContext profile state before update:", currentUser);
+    console.log("LOGGING: Payload sent to update:", data);
+
+    let updatedUser = { ...currentUser, ...data };
     
+    // Ensure canonical name is kept synchronized in memory
+    if (data.name !== undefined) {
+      updatedUser.name = data.name;
+      updatedUser.display_name = data.name;
+    }
+
     if (isSupabaseConfigured()) {
       try {
-        const supabaseData: any = {};
-        const dbFields = [
-          "name", "bio", "avatar_url", "role", "status", "social_links", "badges", "views_count"
-        ];
+        const res = await updateUserAccount(data);
+        console.log("LOGGING: Database response data:", res.user);
+        console.log("LOGGING: Database response success:", res.success);
         
-        dbFields.forEach(field => {
-          if (field in data) {
-            supabaseData[field] = (data as any)[field];
-          }
-        });
-        
-        // Handle custom fields serialization into social_links
-        const customFields = [
-          "username", "username_changed_at", "previous_username", "slug", "cover_url",
-          "designation", "current_role", "verification_badge", "institution", "expertise_tags",
-          "orcid_id", "google_scholar_url", "academic_credentials", "education",
-          "academic_background", "research_interests", "professional_experience",
-          "social_contributions", "publications_list", "reputation_score", "reputation_tier"
-        ];
-        
-        const currentSocialLinks = { ...(currentUser.social_links || {}) } as any;
-        let socialLinksUpdated = false;
-        
-        customFields.forEach(field => {
-          if (field in data) {
-            currentSocialLinks[field] = (data as any)[field];
-            socialLinksUpdated = true;
-          }
-        });
-        
-        if (data.publicVisibility !== undefined) {
-          currentSocialLinks.public_visibility = data.publicVisibility;
-          socialLinksUpdated = true;
-        }
-        
-        if (socialLinksUpdated) {
-          supabaseData.social_links = currentSocialLinks;
-        }
-
-        console.log("PROFILE UPDATE PAYLOAD", supabaseData);
-
-        const { error } = await supabase
-          .from("profiles")
-          .update(supabaseData)
-          .eq("id", currentUser.id);
-          
-        if (error) {
-          console.error("Failed to update profile in Supabase:", error.message);
+        if (res.success && res.user) {
+          updatedUser = res.user;
+          console.log("LOGGING: Returned profile object:", updatedUser);
         }
       } catch (err) {
-        console.error("updateUserProfile Supabase error:", err);
+        console.error("LOGGING: Database response error:", err);
+      }
+    } else {
+      // Fallback for local development
+      if (typeof window !== "undefined") {
+        const localUsers = JSON.parse(window.localStorage.getItem("yuvakshar_users") || "[]");
+        const index = localUsers.findIndex((u: any) => u.id === currentUser.id);
+        if (index !== -1) {
+          localUsers[index] = updatedUser;
+          window.localStorage.setItem("yuvakshar_users", JSON.stringify(localUsers));
+        }
       }
     }
 
-    const updatedUser = { ...currentUser, ...data };
+    console.log("LOGGING: CmsContext profile state after update:", updatedUser);
+
     setCurrentUser(updatedUser);
     const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
     setUsers(updatedUsers);
+
+    // Recursively update author details in current articles state to prevent stale cache!
+    if (articles && articles.length > 0) {
+      const updatedArticles = articles.map(art => {
+        if (art.author_id === currentUser.id) {
+          return {
+            ...art,
+            author: updatedUser.name,
+            authorProfile: updatedUser
+          };
+        }
+        return art;
+      });
+      setArticles(updatedArticles);
+    }
   };
 
   // 13. Audit logs internal helper
