@@ -836,6 +836,10 @@ export function CmsProvider({
             const payload = {
               id: newProfile.id,
               name: newProfile.name,
+              display_name: newProfile.name,
+              email: newProfile.email,
+              username: newProfile.username,
+              slug: newProfile.slug,
               role: highestRole,
               status: newProfile.status,
               social_links: {

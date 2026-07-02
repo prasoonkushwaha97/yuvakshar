@@ -332,7 +332,7 @@ export const updateProfileInDb = async (profile: Profile, supabaseClient?: any):
     try {
       const allowed = [
         "id", "name", "display_name", "role", "status", "bio", "avatar_url", "social_links", "badges",
-        "views_count", "cover_url", "location", "website", "slug"
+        "views_count", "cover_url", "location", "website", "slug", "username", "username_changed_at", "previous_username", "email"
       ];
       const filtered: any = {};
       allowed.forEach(key => {

@@ -26,8 +26,11 @@ export default function ProfileSettingsTab({ user }: { user: Profile }) {
     try {
       await updateUserProfile(formData);
       alert("प्रोफ़ाइल सेटिंग्स सफलतापूर्वक अपडेट की गईं!");
-    } catch (err) {
-      alert("सेटिंग्स अपडेट करने में विफल।");
+      if (formData.username.trim().toLowerCase() !== user.username?.toLowerCase()) {
+        window.location.href = `/u/${formData.username.trim().toLowerCase()}`;
+      }
+    } catch (err: any) {
+      alert(err.message || "सेटिंग्स अपडेट करने में विफल।");
     } finally {
       setSaving(false);
     }

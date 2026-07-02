@@ -124,6 +124,16 @@ export function resolveProfileIdentifier(identifier: string, users: any[]): { pr
     return { profile: matchByUsername, needsRedirect: false };
   }
 
+  // 1b. Priority: Previous username match (for historical redirects)
+  const matchByPreviousUsername = users.find(u => u.previous_username?.toLowerCase() === lowerIdentifier);
+  if (matchByPreviousUsername) {
+    console.log({ identifier, usersLength: users.length, matchedUser: matchByPreviousUsername.username });
+    return { 
+      profile: matchByPreviousUsername, 
+      needsRedirect: true 
+    };
+  }
+
   // 2. Priority: Legacy slug match
   const matchBySlug = users.find(u => u.slug?.toLowerCase() === lowerIdentifier);
   if (matchBySlug) {

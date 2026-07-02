@@ -66,6 +66,7 @@ export async function updateUserSettings(category: string, data: any) {
 }
 
 export async function updateUserAccount(data: Partial<Profile>) {
+  console.log("LOGGING settingsActions: submitted payload:", data);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
 
@@ -95,14 +96,45 @@ export async function updateUserAccount(data: Partial<Profile>) {
 
   // Ensure canonical name and display_name are synchronized
   if (data.name !== undefined) {
-    profileToUpdate.name = data.name;
-    profileToUpdate.display_name = data.name;
+    profileToUpdate.name = data.name.trim();
+    profileToUpdate.display_name = data.name.trim();
   }
 
-  // Synchronize username and slug
+  // Synchronize username and slug with full validation
   if (data.username !== undefined) {
-    profileToUpdate.username = data.username;
-    profileToUpdate.slug = data.username;
+    const rawUsername = data.username.trim().toLowerCase();
+    
+    // Check validation constraints
+    const usernameRegex = /^[a-z0-9][a-z0-9_]{1,28}[a-z0-9]$/;
+    if (!usernameRegex.test(rawUsername) || rawUsername.includes("__")) {
+      throw new Error("उपयोगकर्ता नाम अमान्य है। यह 3-30 वर्णों का होना चाहिए, केवल अक्षरों, अंकों और अंडरस्कोर (_) का उपयोग कर सकता है, और यह अंडरस्कोर से शुरू या समाप्त नहीं हो सकता।");
+    }
+
+    // Enforce uniqueness
+    const { data: existingUser } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", rawUsername)
+      .neq("id", user.id)
+      .maybeSingle();
+
+    if (existingUser) {
+      throw new Error("यह उपयोगकर्ता नाम (Username) पहले से उपयोग में है।");
+    }
+
+    // Insert username_history on change
+    if (existingProfile.username && existingProfile.username.toLowerCase() !== rawUsername) {
+      await supabase.from("username_history").insert({
+        user_id: user.id,
+        old_username: existingProfile.username,
+        new_username: rawUsername,
+      });
+      profileToUpdate.previous_username = existingProfile.username;
+      profileToUpdate.username_changed_at = new Date().toISOString();
+    }
+
+    profileToUpdate.username = rawUsername;
+    profileToUpdate.slug = rawUsername;
   }
 
   // Properly merge social links if any new ones are supplied
@@ -113,11 +145,17 @@ export async function updateUserAccount(data: Partial<Profile>) {
     };
   }
 
+  console.log("LOGGING settingsActions: validated payload:", profileToUpdate);
+
   const { data: updatedProfile, error } = await updateProfile(profileToUpdate, supabase);
 
+  console.log("LOGGING settingsActions: Supabase UPDATE result success:", !error);
   if (error) {
+    console.log("LOGGING settingsActions: Supabase UPDATE error:", error);
     throw new Error(error);
   }
+
+  console.log("LOGGING settingsActions: returned row:", updatedProfile);
 
   revalidatePath("/settings/account");
   return { success: true, user: updatedProfile };
