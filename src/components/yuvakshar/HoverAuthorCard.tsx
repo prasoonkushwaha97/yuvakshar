@@ -78,7 +78,7 @@ export default function HoverAuthorCard({ author, children }: HoverAuthorCardPro
     };
   }, [isOpen]);
 
-  const authorLink = getCanonicalProfileUrl(author) || "#";
+  const authorLink = getCanonicalProfileUrl({ username: author.username, id: author.id }) || "#";
 
   return (
     <div 

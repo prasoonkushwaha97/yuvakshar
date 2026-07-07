@@ -50,7 +50,10 @@ export default function UserProfile() {
 
   useEffect(() => {
     if (needsRedirect && dbUser) {
-      router.replace(getCanonicalProfileUrl(dbUser));
+      const canonicalUrl = getCanonicalProfileUrl(dbUser);
+      if (canonicalUrl) {
+        router.replace(canonicalUrl);
+      }
     }
   }, [needsRedirect, dbUser, router]);
 
@@ -150,7 +153,7 @@ export default function UserProfile() {
 
   const handleShareClick = async () => {
     const profileUrl = typeof window !== "undefined"
-      ? `${window.location.origin}${getCanonicalProfileUrl(user)}`
+      ? `${window.location.origin}${getCanonicalProfileUrl(user) ?? `/u/${user.username || user.id}`}`
       : `${SITE_URL}/u/${user.username || user.id}`;
 
     const shareData = {
@@ -190,7 +193,7 @@ export default function UserProfile() {
   }
 
   const profileUrl = typeof window !== "undefined"
-    ? `${window.location.origin}${getCanonicalProfileUrl(user)}`
+    ? `${window.location.origin}${getCanonicalProfileUrl(user) ?? `/u/${user.username || user.id}`}`
     : `${SITE_URL}/u/${user.username || user.id}`;
 
   return (
