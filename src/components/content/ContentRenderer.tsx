@@ -3,8 +3,19 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypeSanitize from "rehype-sanitize";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import rehypeRaw from "rehype-raw";
 import { cn } from "@/lib/utils";
+
+const customSanitizeSchema = {
+  ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames || []), 'iframe'],
+  attributes: {
+    ...defaultSchema.attributes,
+    '*': [...(defaultSchema.attributes?.['*'] || []), 'className', 'style'],
+    iframe: ['src', 'width', 'height', 'title', 'allow', 'allowFullScreen', 'frameBorder', 'allowfullscreen', 'frameborder'],
+  },
+};
 
 interface ContentRendererProps {
   content?: string | null;
@@ -72,7 +83,7 @@ export function ContentRenderer({
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeSanitize]}
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, customSanitizeSchema]]}
       >
         {content}
       </ReactMarkdown>

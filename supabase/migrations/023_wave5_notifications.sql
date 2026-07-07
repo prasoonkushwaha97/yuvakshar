@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.notification_preferences (
 );
 
 CREATE TABLE IF NOT EXISTS public.notification_templates (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL UNIQUE,
     category TEXT NOT NULL CHECK (category IN ('Editorial', 'Community', 'Security', 'System', 'Marketing', 'AI')),
     subject_template TEXT NOT NULL,
@@ -21,8 +21,9 @@ CREATE TABLE IF NOT EXISTS public.notification_templates (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+DROP TABLE IF EXISTS public.notifications CASCADE;
 CREATE TABLE IF NOT EXISTS public.notifications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     type TEXT NOT NULL,
     priority TEXT NOT NULL CHECK (priority IN ('Low', 'Normal', 'Urgent')),
     category TEXT NOT NULL CHECK (category IN ('Editorial', 'Community', 'Security', 'System', 'Marketing', 'AI')),

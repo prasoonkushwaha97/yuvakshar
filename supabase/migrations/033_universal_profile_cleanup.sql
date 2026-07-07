@@ -33,7 +33,10 @@ WHERE social_links ? 'username';
 -- 3. Ensure username is strictly unique (002 already created idx_profiles_username_lower, but let's add a direct constraint if possible)
 DO $$
 BEGIN
-    IF NOT EXISTS (
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'profiles' AND column_name = 'username'
+    ) AND NOT EXISTS (
         SELECT 1 
         FROM pg_constraint 
         WHERE conname = 'profiles_username_key'

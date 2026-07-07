@@ -16,7 +16,9 @@ import ProfileActions from "@/components/profile/ProfileActions";
 import ProfileStats from "@/components/profile/ProfileStats";
 import ProfileTabs, { ProfileTabId } from "@/components/profile/ProfileTabs";
 import ProfileArticleCard from "@/components/profile/ProfileArticleCard";
-import ProfileSettingsTab from "@/components/profile/ProfileSettingsTab";
+import ProfileDraftsTab from "@/components/profile/ProfileDraftsTab";
+import ProfileBookmarksTab from "@/components/profile/ProfileBookmarksTab";
+import ProfileAboutTab from "@/components/profile/ProfileAboutTab";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
 import ShareModal from "@/components/shared/ShareModal";
 import FollowersModal from "@/components/profile/FollowersModal";
@@ -216,8 +218,6 @@ export default function UserProfile() {
             onFollowToggle={handleFollowToggle}
             onMessageClick={() => setContactOpen(true)}
             onShareClick={handleShareClick}
-            onEditClick={() => setActiveTab("settings")}
-            onSettingsClick={() => setActiveTab("settings")}
           />
         </div>
 
@@ -226,9 +226,7 @@ export default function UserProfile() {
           <ProfileStats 
             articlesCount={userArticles.length}
             followersCount={user.followers?.length || 0}
-            mediaCount={userMedia.length}
-            draftsCount={userDrafts.length}
-            isOwner={isOwner}
+            followingCount={user.following?.length || 0}
             onFollowersClick={() => openFollowersModal("followers")}
             onFollowingClick={() => openFollowersModal("following")}
           />
@@ -337,8 +335,16 @@ export default function UserProfile() {
             </div>
           )}
 
-          {activeTab === "settings" && isOwner && (
-            <ProfileSettingsTab user={user} />
+          {activeTab === "about" && (
+            <ProfileAboutTab user={user} />
+          )}
+
+          {activeTab === "drafts" && isOwner && (
+            <ProfileDraftsTab user={user} />
+          )}
+
+          {activeTab === "bookmarks" && isOwner && (
+            <ProfileBookmarksTab user={user} />
           )}
 
         </div>

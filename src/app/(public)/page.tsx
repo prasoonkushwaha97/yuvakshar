@@ -10,7 +10,6 @@ import { getSectionsForLayout } from "@/lib/actions/homepageCmsActions";
 import { HeroSkeleton, CategorySkeleton, VideoSkeleton } from "@/components/homepage/shared/Skeleton";
 
 // Layout
-import PartnerSection from "@/components/homepage/PartnerSection";
 
 // Blocks
 import Hero from "@/components/homepage/blocks/Hero";
@@ -20,6 +19,7 @@ import Magazine from "@/components/homepage/blocks/Magazine";
 import TopStories from "@/components/homepage/blocks/TopStories";
 import EditorialPicks from "@/components/homepage/blocks/EditorialPicks";
 import LatestNews from "@/components/homepage/blocks/LatestNews";
+import InfiniteArticleFeed from "@/components/homepage/blocks/InfiniteArticleFeed";
 
 // Error Boundary for Individual Layout Sections
 class SectionErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
@@ -271,7 +271,11 @@ export default function Home() {
         </>
       )}
 
-      <PartnerSection />
+      {/* Infinite Article Feed — begins after all homepage sections */}
+      <InfiniteArticleFeed
+        allArticles={publishedArticles}
+        excludeIds={finalExcludesBeforeEditorial}
+      />
     </div>
   );
 }

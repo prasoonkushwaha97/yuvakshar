@@ -12,7 +12,8 @@ import {
   History,
   Settings,
   LogOut,
-  User
+  User,
+  Handshake
 } from "lucide-react";
 
 export interface NavigationLink {
@@ -29,8 +30,8 @@ export const primaryLinks: NavigationLink[] = [
   { labelHi: "वीडियो", labelEn: "Videos", href: "/admin/videos", icon: Video },
   { labelHi: "चौपाल", labelEn: "Chaupal", href: "/community", icon: MessageSquare },
   { labelHi: "हमारे बारे में", labelEn: "About", href: "/about", icon: Info },
-  { labelHi: "संपर्क करें", labelEn: "Contact", href: "/contact", icon: Mail },
-  { labelHi: "लेख सबमिट करें", labelEn: "Submit Article", href: "/contribute", icon: PenTool }
+  { labelHi: "हमारे सहयोगी", labelEn: "Partners", href: "/partners", icon: Handshake },
+  { labelHi: "संपर्क करें", labelEn: "Contact", href: "/contact", icon: Mail }
 ];
 
 export const profileActions = [

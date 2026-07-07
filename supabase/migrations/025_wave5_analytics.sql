@@ -1,7 +1,7 @@
 -- Wave 5: Analytics Domain
 
 CREATE TABLE IF NOT EXISTS public.analytics_events (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_type TEXT NOT NULL,
     category TEXT NOT NULL,
     action TEXT NOT NULL,

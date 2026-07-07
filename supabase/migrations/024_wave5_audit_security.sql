@@ -1,7 +1,7 @@
 -- Wave 5: Audit & Security Domain
 
 CREATE TABLE IF NOT EXISTS public.audit_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_type TEXT NOT NULL,
     entity_type TEXT NOT NULL,
     entity_id TEXT NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
 );
 
 CREATE TABLE IF NOT EXISTS public.security_events (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     event_type TEXT NOT NULL,
     severity TEXT NOT NULL CHECK (severity IN ('Low', 'Medium', 'High', 'Critical')),
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.security_events (
 );
 
 CREATE TABLE IF NOT EXISTS public.api_keys (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     key_hash TEXT NOT NULL UNIQUE,
     scopes JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS public.api_keys (
 );
 
 CREATE TABLE IF NOT EXISTS public.service_accounts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL UNIQUE,
     role TEXT NOT NULL DEFAULT 'System',
     created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,

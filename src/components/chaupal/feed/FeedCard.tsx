@@ -1,5 +1,6 @@
 import UserIdentity from "@/components/shared/UserIdentity";
 import React, { useState } from "react";
+import { useCms } from "@/store/CmsContext";
 import Image from "next/image";
 import Link from "next/link";
 import { MoreHorizontal, Heart, MessageCircle, Repeat2, Bookmark, Share } from "lucide-react";
@@ -31,6 +32,9 @@ import { toggleLikePost } from "@/lib/actions/chaupalFeedActions";
 export default function FeedCard({ post }: FeedCardProps) {
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likesCount);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { currentUser } = useCms();
+  const isOwner = currentUser?.id === post.author.id;
 
   const handleLike = async () => {
     // Optimistic update
@@ -54,10 +58,34 @@ export default function FeedCard({ post }: FeedCardProps) {
     <article className={`${CH_CLASS.card} p-4 sm:p-5 flex flex-col gap-4 mb-4`}>
       {/* Header */}
       <div className="flex items-start justify-between">
-        <UserIdentity variant="chip" />
-        <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-          <MoreHorizontal className="w-5 h-5" />
-        </button>
+        <UserIdentity user={post.author as any} variant="chip" />
+        <div className="relative">
+          <button 
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            <MoreHorizontal className="w-5 h-5" />
+          </button>
+          
+          {menuOpen && (
+            <div className="absolute right-0 top-8 w-48 bg-white dark:bg-[#0D1527] border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-10 overflow-hidden">
+              {isOwner ? (
+                <>
+                  <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300">
+                    संपादित करें (Edit)
+                  </button>
+                  <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400">
+                    हटाएं (Delete)
+                  </button>
+                </>
+              ) : (
+                <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300">
+                  रिपोर्ट करें (Report)
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content */}

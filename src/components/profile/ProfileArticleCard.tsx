@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Bookmark, MoreHorizontal } from "lucide-react";
 import { getArticleUrl } from "@/utils/routes";
-import MetaInfo from "@/components/homepage/shared/MetaInfo";
 
 interface ProfileArticleCardProps {
   article: any;
@@ -48,14 +47,13 @@ export default function ProfileArticleCard({ article }: ProfileArticleCardProps)
         {/* Meta / Footer */}
         <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/80">
           <div className="flex-1 min-w-0 pr-4">
-            <MetaInfo
-              articleId={article.id}
-              slug={article.slug}
-              author={article.author || "युवाक्षर डेस्क"}
-              authorProfile={article.authorProfile}
-              date={article.date}
-              showActions={false}
-            />
+            <span className="text-xs font-sans font-medium text-slate-400 dark:text-slate-500">
+              {new Date(article.date).toLocaleDateString("hi-IN", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">

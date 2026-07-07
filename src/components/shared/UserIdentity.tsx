@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useCms } from "@/store/CmsContext";
 import { Profile } from "@/store/types";
 import { getProfileUrl } from "@/utils/routes";
+import HoverUserCard from "@/components/yuvakshar/HoverUserCard";
 
 export interface UserIdentityProps {
   userId?: string | null;
@@ -152,12 +153,21 @@ export default function UserIdentity({
   `;
 
   const isValidProfile = profileHref !== null;
+  const targetUserId = resolvedUser.id || username;
   
   if (clickable && isValidProfile && profileHref) {
-    return (
+    const linkElement = (
       <Link href={profileHref} className={wrapperClasses}>
         {innerContent}
       </Link>
+    );
+    
+    // Disable hover card for very small variants to avoid UX clutter, 
+    // or include it everywhere as requested.
+    return (
+      <HoverUserCard userId={targetUserId}>
+        {linkElement}
+      </HoverUserCard>
     );
   }
 

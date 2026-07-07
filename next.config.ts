@@ -22,6 +22,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: '/contribute',
+        destination: '/workspace',
+        permanent: true,
+      },
+      {
         source: '/@:username',
         destination: '/u/:username',
         permanent: true,

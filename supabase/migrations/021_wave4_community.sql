@@ -40,10 +40,10 @@ CREATE POLICY "Allow auth to create moderation_reports" ON public.moderation_rep
 
 -- Allow Editorial/Admin full access to moderation tables
 CREATE POLICY "Allow editorial access to moderation_reports" ON public.moderation_reports FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor', 'Moderator'))
+    EXISTS (SELECT 1 FROM public.profiles u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor', 'Moderator'))
 );
 CREATE POLICY "Allow editorial access to moderation_actions" ON public.moderation_actions FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor', 'Moderator'))
+    EXISTS (SELECT 1 FROM public.profiles u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor', 'Moderator'))
 );
 
 -- Note: Policies for community_posts and community_comments already exist in 007. We just added moderation tables here.

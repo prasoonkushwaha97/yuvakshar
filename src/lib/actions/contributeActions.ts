@@ -3,6 +3,7 @@
 import { createClient } from "../supabaseServer";
 import { revalidatePath } from "next/cache";
 import { mapDbProfileToProfile } from "../repositoryService";
+import { hasAnyRole } from "../rbacService";
 
 export async function submitGuestArticle(formData: FormData) {
   const supabase = await createClient();
@@ -56,10 +57,18 @@ export async function submitContributorArticle(formData: FormData, isDraft: bool
   const content = formData.get("content") as string;
   const category = formData.get("category") as string;
   const articleId = formData.get("id") as string || null;
+  const metaTitle = formData.get("meta_title") as string;
+  const metaDescription = formData.get("meta_description") as string;
+  const customSlug = formData.get("slug") as string;
 
   if (!title || !content || !category) {
     return { error: "Missing required fields" };
   }
+
+  const isAdmin = await hasAnyRole(["admin", "editor", "superadmin", "founder"]);
+  const mode = formData.get("mode") as string;
+  const isEditingAsAdmin = isAdmin && mode === "admin";
+  const publishAs = formData.get("publishAs") as string;
 
   // Find category ID
   const { data: categories } = await supabase
@@ -72,44 +81,70 @@ export async function submitContributorArticle(formData: FormData, isDraft: bool
 
   const status = isDraft ? "Draft" : "Submitted";
   
-  // Generate a random slug since we don't have slug logic implemented in this module
-  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.floor(Math.random() * 1000000);
-  
   const payload: any = {
     title: title,
     english_title: title,
-    slug: slug,
     content,
-    author_id: user.id,
     status,
-    category_id: categoryId
+    category_id: categoryId,
+    meta_title: metaTitle || null,
+    meta_description: metaDescription || null,
   };
+  
+  if (customSlug) {
+    payload.slug = customSlug;
+  } else if (!articleId) {
+    payload.slug = `contrib-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  }
+
+  // Only set author_id if it's a new article OR if we are explicitly overriding it
+  // Otherwise, leave author_id untouched so the original author is preserved
+  if (!articleId) {
+    payload.author_id = user.id;
+  }
+
+  // Handle Admin "Publish As" override
+  if (isEditingAsAdmin && publishAs) {
+    if (publishAs === "युवाक्षर संपादकीय" || publishAs === "संपादकीय मंडल" || publishAs === "Guest Author") {
+       // Ideally find the profile id, but for now we fallback to string logic in display
+       payload.author = publishAs; 
+       // In a real system, we'd lookup the ID of the special account.
+    }
+  }
+
+  if (isEditingAsAdmin) {
+    payload.editor_id = user.id;
+    // Add internal metadata for tracking
+    payload.editorial_metadata = {
+      edited_by: user.id,
+      edited_at: new Date().toISOString()
+    };
+  }
 
   if (categoryId) {
     payload.category_id = categoryId;
   }
 
   if (articleId) {
-    // Update existing
-    const { data, error } = await supabase
+    let updateQuery = supabase
       .from("articles")
       .update(payload)
-      .eq("id", articleId)
-      .eq("author_id", user.id) // security check
-      .select()
-      .single();
+      .eq("id", articleId);
+
+    if (!isEditingAsAdmin) {
+      updateQuery = updateQuery.eq("author_id", user.id); // security check for authors
+    }
+
+    const { data, error } = await updateQuery.select().single();
 
     if (error) {
       console.error("Update contributor article error:", error);
       return { error: error.message };
     }
 
-    revalidatePath("/contribute/dashboard");
+    revalidatePath("/workspace/articles");
     return { success: true, data };
   } else {
-    // Generate a unique slug for new articles
-    payload.slug = `contrib-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
     const { data, error } = await supabase
       .from("articles")
       .insert([payload])
@@ -121,7 +156,7 @@ export async function submitContributorArticle(formData: FormData, isDraft: bool
       return { error: error.message };
     }
 
-    revalidatePath("/contribute/dashboard");
+    revalidatePath("/workspace/articles");
     return { success: true, data };
   }
 }

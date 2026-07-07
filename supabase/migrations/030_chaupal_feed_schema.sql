@@ -49,22 +49,41 @@ ALTER TABLE public.chaupal_post_comments ENABLE ROW LEVEL SECURITY;
 -- 7. RLS Policies
 
 -- chaupal_posts
+DROP POLICY IF EXISTS "Public can read posts" ON public.chaupal_posts;
 CREATE POLICY "Public can read posts" ON public.chaupal_posts FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Auth users can insert posts" ON public.chaupal_posts;
 CREATE POLICY "Auth users can insert posts" ON public.chaupal_posts FOR INSERT WITH CHECK (auth.uid() = author_id);
+DROP POLICY IF EXISTS "Users can manage own posts" ON public.chaupal_posts;
 CREATE POLICY "Users can manage own posts" ON public.chaupal_posts FOR UPDATE USING (auth.uid() = author_id);
+DROP POLICY IF EXISTS "Users can delete own posts" ON public.chaupal_posts;
 CREATE POLICY "Users can delete own posts" ON public.chaupal_posts FOR DELETE USING (auth.uid() = author_id);
 
 -- chaupal_post_likes
+DROP POLICY IF EXISTS "Public can read post likes" ON public.chaupal_post_likes;
 CREATE POLICY "Public can read post likes" ON public.chaupal_post_likes FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Auth users can manage post likes" ON public.chaupal_post_likes;
 CREATE POLICY "Auth users can manage post likes" ON public.chaupal_post_likes FOR ALL USING (auth.uid() = user_id);
 
 -- chaupal_post_comments
+DROP POLICY IF EXISTS "Public can read post comments" ON public.chaupal_post_comments;
 CREATE POLICY "Public can read post comments" ON public.chaupal_post_comments FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Auth users can insert post comments" ON public.chaupal_post_comments;
 CREATE POLICY "Auth users can insert post comments" ON public.chaupal_post_comments FOR INSERT WITH CHECK (auth.uid() = author_id);
+DROP POLICY IF EXISTS "Users can manage own post comments" ON public.chaupal_post_comments;
 CREATE POLICY "Users can manage own post comments" ON public.chaupal_post_comments FOR UPDATE USING (auth.uid() = author_id);
+DROP POLICY IF EXISTS "Users can delete own post comments" ON public.chaupal_post_comments;
 CREATE POLICY "Users can delete own post comments" ON public.chaupal_post_comments FOR DELETE USING (auth.uid() = author_id);
 
 -- 8. Real-Time Setup
-ALTER PUBLICATION supabase_realtime ADD TABLE public.chaupal_posts;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.chaupal_post_comments;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.chaupal_post_likes;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname='supabase_realtime' AND tablename='chaupal_posts') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.chaupal_posts;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname='supabase_realtime' AND tablename='chaupal_post_comments') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.chaupal_post_comments;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname='supabase_realtime' AND tablename='chaupal_post_likes') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.chaupal_post_likes;
+  END IF;
+END $$;

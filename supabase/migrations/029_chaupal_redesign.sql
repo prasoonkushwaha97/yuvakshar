@@ -80,37 +80,61 @@ ALTER TABLE public.chaupal_group_members ENABLE ROW LEVEL SECURITY;
 
 -- chaupal_rooms
 -- Public can read all rooms that are NOT of type 'group'. Group rooms will be handled separately.
+DROP POLICY IF EXISTS "Public can read non-group rooms" ON public.chaupal_rooms;
 CREATE POLICY "Public can read non-group rooms" ON public.chaupal_rooms FOR SELECT USING (type != 'group');
 -- Only Editorial/Admin can manage rooms (We'll assume 'manage' means insert/update/delete)
 -- CREATE POLICY "Editorial manage rooms" ... omitted for brevity, keeping it simple for MVP
 
 -- chaupal_messages
 -- Public can read messages from public rooms. For MVP, anyone can read.
+DROP POLICY IF EXISTS "Public can read messages" ON public.chaupal_messages;
 CREATE POLICY "Public can read messages" ON public.chaupal_messages FOR SELECT USING (
   EXISTS (
     SELECT 1 FROM public.chaupal_rooms r WHERE r.id = room_id AND r.type != 'group'
   )
 );
 -- Authenticated users can insert messages
+DROP POLICY IF EXISTS "Auth users can insert messages" ON public.chaupal_messages;
 CREATE POLICY "Auth users can insert messages" ON public.chaupal_messages FOR INSERT WITH CHECK (auth.uid() = author_id);
 -- Users can manage their own messages
+DROP POLICY IF EXISTS "Users can manage own messages" ON public.chaupal_messages;
 CREATE POLICY "Users can manage own messages" ON public.chaupal_messages FOR UPDATE USING (auth.uid() = author_id);
+DROP POLICY IF EXISTS "Users can delete own messages" ON public.chaupal_messages;
 CREATE POLICY "Users can delete own messages" ON public.chaupal_messages FOR DELETE USING (auth.uid() = author_id);
 
 -- chaupal_message_reactions
+DROP POLICY IF EXISTS "Public can read reactions" ON public.chaupal_message_reactions;
 CREATE POLICY "Public can read reactions" ON public.chaupal_message_reactions FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Auth users can manage reactions" ON public.chaupal_message_reactions;
 CREATE POLICY "Auth users can manage reactions" ON public.chaupal_message_reactions FOR ALL USING (auth.uid() = user_id);
 
 -- chaupal_groups
+DROP POLICY IF EXISTS "Public can read groups" ON public.chaupal_groups;
 CREATE POLICY "Public can read groups" ON public.chaupal_groups FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Auth users can create groups" ON public.chaupal_groups;
 CREATE POLICY "Auth users can create groups" ON public.chaupal_groups FOR INSERT WITH CHECK (auth.uid() = owner_id);
 
 -- chaupal_group_members
+DROP POLICY IF EXISTS "Public can read group members" ON public.chaupal_group_members;
 CREATE POLICY "Public can read group members" ON public.chaupal_group_members FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Auth users can join public groups" ON public.chaupal_group_members;
 CREATE POLICY "Auth users can join public groups" ON public.chaupal_group_members FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 
 -- 5. Real-Time Setup
 -- Enable real-time for chaupal_messages and chaupal_message_reactions
-ALTER PUBLICATION supabase_realtime ADD TABLE public.chaupal_messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.chaupal_message_reactions;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND tablename = 'chaupal_messages'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.chaupal_messages;
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND tablename = 'chaupal_message_reactions'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.chaupal_message_reactions;
+  END IF;
+END $$;

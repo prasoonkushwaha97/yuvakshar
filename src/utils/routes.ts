@@ -101,7 +101,21 @@ export function resolveAuthorFromUsers(
     }
   }
 
-  // 3. Return whatever profile we have but no href — never fabricate URLs
+  // 3. Special aliases
+  if (authorName) {
+    let specialUsername: string | null = null;
+    if (authorName === "युवाक्षर संपादकीय") specialUsername = "yuvakshar";
+    if (authorName === "संपादकीय मंडल") specialUsername = "editorial";
+    if (authorName === "Guest Author") specialUsername = "guest";
+    
+    if (specialUsername) {
+      return { 
+        profile: { name: authorName, username: specialUsername, verified: true }, 
+        href: `/u/${specialUsername}` 
+      };
+    }
+  }
+
+  // 4. Return whatever profile we have but no href — never fabricate URLs
   return { profile: authorProfile || null, href: null };
 }
-

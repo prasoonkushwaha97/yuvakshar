@@ -1,7 +1,7 @@
 -- Wave 5: Media Domain
 
 CREATE TABLE IF NOT EXISTS public.media_folders (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     parent_id UUID REFERENCES public.media_folders(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     path TEXT NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.media_folders (
 );
 
 CREATE TABLE IF NOT EXISTS public.media_assets (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     folder_id UUID REFERENCES public.media_folders(id) ON DELETE SET NULL,
     filename TEXT NOT NULL,
     url TEXT NOT NULL,

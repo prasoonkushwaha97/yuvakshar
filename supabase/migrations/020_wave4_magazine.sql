@@ -42,7 +42,7 @@ CREATE POLICY "Allow public read on published magazine_issues" ON public.magazin
 
 CREATE POLICY "Allow editorial read on all magazine_issues" ON public.magazine_issues 
     FOR SELECT USING (
-        EXISTS (SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
+        EXISTS (SELECT 1 FROM public.profiles u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
     );
 
 CREATE POLICY "Allow public read on magazine_articles" ON public.magazine_articles 
@@ -52,15 +52,15 @@ CREATE POLICY "Allow public read on magazine_articles" ON public.magazine_articl
 
 CREATE POLICY "Allow editorial read on all magazine_articles" ON public.magazine_articles 
     FOR SELECT USING (
-        EXISTS (SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
+        EXISTS (SELECT 1 FROM public.profiles u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
     );
 
 -- Allow Admin/Editor write
 CREATE POLICY "Allow editorial write on magazine_issues" ON public.magazine_issues
     FOR ALL USING (
-        EXISTS (SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
+        EXISTS (SELECT 1 FROM public.profiles u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
     );
 CREATE POLICY "Allow editorial write on magazine_articles" ON public.magazine_articles
     FOR ALL USING (
-        EXISTS (SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
+        EXISTS (SELECT 1 FROM public.profiles u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
     );

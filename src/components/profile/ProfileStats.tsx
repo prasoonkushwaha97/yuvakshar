@@ -3,11 +3,9 @@ import React from "react";
 interface ProfileStatsProps {
   articlesCount: number;
   followersCount: number;
-  mediaCount: number;
-  draftsCount?: number;
-  isOwner: boolean;
+  followingCount: number;
   onFollowersClick: () => void;
-  onFollowingClick?: () => void;
+  onFollowingClick: () => void;
 }
 
 const StatItem = ({ 
@@ -39,19 +37,15 @@ const StatItem = ({
 export default function ProfileStats({
   articlesCount,
   followersCount,
-  mediaCount,
-  draftsCount = 0,
-  isOwner,
+  followingCount,
   onFollowersClick,
+  onFollowingClick,
 }: ProfileStatsProps) {
   return (
     <div className="flex flex-wrap gap-3 w-full">
-      <StatItem label="लेख (Articles)" value={articlesCount} />
-      <StatItem label="फ़ॉलोअर्स (Followers)" value={followersCount} onClick={onFollowersClick} />
-      <StatItem label="मीडिया (Media)" value={mediaCount} />
-      {isOwner && (
-        <StatItem label="ड्राफ्ट्स (Drafts)" value={draftsCount} />
-      )}
+      <StatItem label="प्रकाशित लेख" value={articlesCount} />
+      <StatItem label="फ़ॉलोअर्स" value={followersCount} onClick={onFollowersClick} />
+      <StatItem label="फ़ॉलोइंग" value={followingCount} onClick={onFollowingClick} />
     </div>
   );
 }

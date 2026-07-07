@@ -1,102 +1,132 @@
 "use client";
-import Image from "next/image";
-
 
 import React from "react";
 import Link from "next/link";
-import { BookOpen } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
-import { useLanguage } from "@/store/LanguageContext";
-import SectionTitle from "../shared/SectionTitle";
-import MagazineCard from "../cards/MagazineCard";
-import SectionContainer from "../layout/SectionContainer";
+import MagazineShowcaseCard from "../cards/MagazineCard";
 
+/**
+ * Premium Magazine Showcase Section
+ *
+ * Displays published magazine issues in a premium editorial layout.
+ * Desktop: 3 covers · Tablet: 2 covers · Mobile: horizontal swipe
+ *
+ * Future-ready: supports featured issue, editor's pick, premium badges,
+ * and archived issue collections without restructuring.
+ */
 export default function Magazine() {
-  const { locale } = useLanguage();
   const { magazines } = useCms();
 
-  const publishedMags = (magazines ?? []).filter((m: any) => m.status === "Published" || !m.status);
+  const publishedMags = (magazines ?? []).filter(
+    (m: any) => m.status === "Published" || !m.status
+  );
 
   if (publishedMags.length === 0) return null;
 
-  const currentMag = publishedMags[0];
-  const archives = publishedMags.slice(1, 6);
+  // Show up to 4 covers on the homepage (1 featured, 3 recent)
+  const showcaseMags = publishedMags.slice(0, 4);
 
   return (
-    <SectionContainer bgClassName="bg-[#FAFAF9] dark:bg-[#1C1917]" noTopPadding={true}>
-      <div className="w-full">
-      {/* Title */}
-      <SectionTitle 
-        title={locale === "hi" ? "पत्रिका डेस्क" : "Magazine Desk"} 
-        link="/magazine" 
-      />
-      <div className="bg-transparent border-t border-stone-200 dark:border-stone-800 pt-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-start">
-          
-          {/* Left Column: Spotlight cover (4 cols) */}
-          <div className="lg:col-span-4 flex justify-center items-start perspective-[1000px]">
-            <div className="relative group w-[220px] md:w-[260px]">
-              <div className="absolute inset-0 bg-black/10 dark:bg-black/50 blur-xl transform translate-y-4 translate-x-4 scale-95 group-hover:translate-x-6 group-hover:translate-y-6 transition-transform duration-700" />
-              <div className="relative aspect-[3/4] w-full transform rotate-y-[-4deg] rotate-x-[2deg] group-hover:rotate-y-[0deg] group-hover:rotate-x-[0deg] transition-all duration-700 border border-stone-200 dark:border-stone-800 shadow-xl bg-stone-50 dark:bg-stone-900 rounded-sm overflow-hidden">
-                <Image src={currentMag.coverImage} alt={currentMag.issue} className="w-full h-full object-cover" loading="lazy" fill />
-              </div>
-              <div className="absolute -bottom-3 -right-3 bg-stone-900 dark:bg-stone-100 text-stone-100 dark:text-stone-900 text-[10px] font-sans font-medium px-4 py-2 uppercase tracking-widest shadow-lg transform rotate-2 z-20">
-                {locale === "hi" ? "नया संस्करण" : "New Edition"}
-              </div>
-            </div>
-          </div>
+    <section className="w-full py-14 lg:py-20 bg-[#F5F4EF] dark:bg-[#1A1814] transition-colors duration-300 border-t border-stone-200/60 dark:border-stone-800/40">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-8">
 
-          {/* Right Column: Description + Buttons + Archives List (8 cols) */}
-          <div className="lg:col-span-8 flex flex-col space-y-6 text-center lg:text-left">
-            <div>
-              <span className="text-stone-500 font-medium font-sans uppercase tracking-[0.25em] text-xs mb-3 block">
-                {locale === "hi" ? "ताजा संस्करण / मासिक विशेषांक" : "LATEST EDITION / MONTHLY ISSUE"}
+        {/* ── Section Header ── */}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12 lg:mb-16">
+          <div className="space-y-2">
+            {/* Section Kicker */}
+            <div className="flex items-center space-x-3">
+              <span className="w-8 h-[3px] bg-[#f97316] rounded-full" />
+              <span className="text-[11px] font-sans font-bold uppercase tracking-[0.3em] text-[#f97316]">
+                Magazine
               </span>
-              <h3 className="text-3xl md:text-5xl font-medium font-serif text-stone-900 dark:text-stone-100 leading-[1.15] tracking-normal mb-5">
-                {currentMag.issue} ({currentMag.month})
-              </h3>
-              <p className="text-stone-600 dark:text-stone-400 text-base md:text-lg font-serif max-w-xl mx-auto lg:mx-0 leading-relaxed italic">
-                "{currentMag.description || "राष्ट्रीय विमर्श, गहन साहित्य और विशेष शोध रिपोर्ट पढ़ें। पत्रिका का नवीनतम अंक अब उपलब्ध है।"}"
-              </p>
             </div>
 
-            {/* Read / Archive buttons */}
-            <div className="flex flex-wrap gap-4 justify-center lg:justify-start pt-2">
-              <Link 
-                href="/magazine" 
-                className="bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-stone-200 text-stone-100 dark:text-stone-900 px-8 py-3.5 rounded-sm text-xs font-medium font-sans tracking-widest transition-all duration-300 uppercase flex items-center space-x-2 cursor-pointer"
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>{locale === "hi" ? "पत्रिका पढ़ें" : "Read Magazine"}</span>
-              </Link>
-              <Link 
-                href="/magazine" 
-                className="bg-transparent border border-stone-300 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 px-8 py-3.5 rounded-sm text-xs font-medium font-sans tracking-widest transition-all duration-300 uppercase cursor-pointer"
-              >
-                {locale === "hi" ? "पुराने अंक" : "Archives"}
-              </Link>
-            </div>
+            {/* Title */}
+            <h2 className="text-3xl md:text-4xl font-serif font-black text-stone-900 dark:text-stone-100 leading-tight tracking-tight">
+              पत्रिका
+            </h2>
 
-            {/* Archives slider strip */}
-            {archives.length > 0 && (
-              <div className="border-t border-stone-200 dark:border-stone-800 pt-8 mt-4">
-                <span className="text-[10px] text-stone-400 dark:text-stone-500 font-sans uppercase font-medium tracking-widest block mb-5">
-                  {locale === "hi" ? "पत्रिका संग्रह के अन्य अंक" : "OTHER COVERS FROM ARCHIVES"}
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {archives.map((mag: any) => (
-                    <div key={mag.id} className="max-w-[120px] mx-auto w-full">
-                      <MagazineCard magazine={mag} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Subtitle */}
+            <p className="text-sm md:text-base font-serif text-stone-500 dark:text-stone-400 max-w-md">
+              युवाक्षर के नवीनतम अंक पढ़ें
+            </p>
           </div>
 
+          {/* View All Link */}
+          <Link
+            href="/magazine"
+            className="group flex items-center space-x-1.5 text-xs font-sans font-bold uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:text-[#f97316] transition-colors duration-300 shrink-0 self-start sm:self-auto"
+          >
+            <span>सभी अंक देखें</span>
+            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-300" />
+          </Link>
+        </div>
+
+        {/* 📚 Magazine Covers Showcase 📚 */}
+        {/* Desktop: 1 large left, up to 3 right | Tablet: 2 cols | Mobile: horizontal scroll */}
+
+        {/* Desktop + Tablet Grid (hidden on mobile) */}
+        <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          
+          {/* Featured Magazine (Left Side on Desktop) */}
+          {showcaseMags.length > 0 && (
+            <div className="lg:col-span-5 flex justify-center lg:justify-end">
+              <MagazineShowcaseCard
+                magazine={showcaseMags[0]}
+                featured={true}
+              />
+            </div>
+          )}
+
+          {/* Recent Magazines (Right Side on Desktop) */}
+          {showcaseMags.length > 1 && (
+            <div className="lg:col-span-7 grid grid-cols-2 lg:grid-cols-3 gap-6">
+              {showcaseMags.slice(1).map((mag: any) => (
+                <MagazineShowcaseCard
+                  key={mag.id}
+                  magazine={mag}
+                  featured={false}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Mobile: Horizontal swipe carousel (visible only on mobile) */}
+        <div className="sm:hidden -mx-4 px-4">
+          <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 -mb-4" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
+            {showcaseMags.map((mag: any, idx: number) => (
+              <div
+                key={mag.id}
+                className="snap-center shrink-0 first:pl-0 last:pr-4"
+                style={{ width: "75vw", maxWidth: "280px" }}
+              >
+                <MagazineShowcaseCard
+                  magazine={mag}
+                  featured={idx === 0}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Scroll indicator dots */}
+          {showcaseMags.length > 1 && (
+            <div className="flex justify-center space-x-1.5 pt-5">
+              {showcaseMags.map((_: any, idx: number) => (
+                <span
+                  key={idx}
+                  className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                    idx === 0
+                      ? "bg-[#f97316]"
+                      : "bg-stone-300 dark:bg-stone-700"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
-    </div>
-    </SectionContainer>
+    </section>
   );
 }

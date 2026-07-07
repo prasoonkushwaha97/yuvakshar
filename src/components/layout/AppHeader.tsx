@@ -158,8 +158,17 @@ export default function AppHeader() {
             })}
           </nav>
 
-          {/* Actions toolbar: Search | Theme | Profile */}
+          {/* Actions toolbar: Write | Search | Theme | Profile */}
           <div className="flex items-center space-x-2.5">
+            {currentUser && (
+              <Link
+                href="/workspace"
+                className="hidden lg:flex items-center space-x-1.5 px-4 py-1.5 rounded-full bg-[#f97316] hover:bg-[#ea580c] text-white font-bold text-sm shadow-[0_0_10px_rgba(249,115,22,0.3)] transition-colors duration-300"
+              >
+                <span>✍️ लिखें</span>
+              </Link>
+            )}
+
             <button 
               onClick={() => setSearchOpen(true)}
               className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-500 hover:text-[#f97316] transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"

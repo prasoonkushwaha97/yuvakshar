@@ -7,6 +7,7 @@ import { X, Search, CheckCircle2, UserCheck, Users, AlertCircle } from "lucide-r
 import { useCms } from "@/store/CmsContext";
 import { Profile } from "@/store/types";
 import { getProfileUrl } from "@/utils/routes";
+import UserIdentity from "@/components/shared/UserIdentity";
 
 interface FollowersModalProps {
   isOpen: boolean;
@@ -108,43 +109,18 @@ export default function FollowersModal({
                   className="flex items-center justify-between gap-4 p-3 bg-slate-50/50 dark:bg-slate-900/30 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-2xl border border-slate-100/50 dark:border-slate-800/50 transition-colors"
                 >
                   {/* User Profile Info */}
-                  <Link
-                    href={profileHref || "#"}
-                    onClick={onClose}
-                    className="flex items-center space-x-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
-                  >
-                    <div className="relative w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden shrink-0">
-                      {u.avatar_url ? (
-                        <Image
-                          src={u.avatar_url}
-                          alt={u.name}
-                          fill
-                          className="object-cover"
-                          sizes="40px"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold uppercase text-xs">
-                          {u.name?.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                        <span className="truncate">{u.name || (u as any).full_name}</span>
-                        {isUserVerified && (
-                          <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 fill-blue-500/10 shrink-0" />
-                        )}
-                      </h4>
-                      <span className="text-[10px] text-slate-400 block font-mono">
-                        @{u.username}
-                      </span>
-                      {u.designation || u.role ? (
-                        <span className="text-[9px] text-[#F97316] font-extrabold uppercase mt-0.5 block tracking-wide">
-                          {u.designation || u.role}
-                        </span>
-                      ) : null}
-                    </div>
-                  </Link>
+                  <div onClick={onClose} className="flex-1 min-w-0">
+                    <UserIdentity
+                      user={u}
+                      variant="inline"
+                      showAvatar={true}
+                      showUsername={true}
+                      showRole={true}
+                      showBadge={true}
+                      clickable={true}
+                      className="hover:opacity-80 transition-opacity"
+                    />
+                  </div>
 
                   {/* Follow Actions */}
                   {!isSelf && (

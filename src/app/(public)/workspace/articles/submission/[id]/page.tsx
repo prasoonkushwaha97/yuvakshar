@@ -19,7 +19,7 @@ export default async function SubmissionDetailsPage({ params }: { params: { id: 
         
         {/* Back Link */}
         <div className="mb-8">
-          <Link href="/contribute/dashboard" className="inline-flex items-center text-sm font-hindi text-slate-500 hover:text-[#EA580C] transition-colors">
+          <Link href="/workspace/articles" className="inline-flex items-center text-sm font-hindi text-slate-500 hover:text-[#EA580C] transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
             कार्यक्षेत्र पर वापस जाएँ (Back to Dashboard)
           </Link>

@@ -2,10 +2,12 @@ import React from "react";
 import { 
   BookOpen, 
   Image as ImageIcon, 
-  Settings 
+  User,
+  FileEdit,
+  Bookmark
 } from "lucide-react";
 
-export type ProfileTabId = "articles" | "media" | "settings";
+export type ProfileTabId = "articles" | "media" | "about" | "drafts" | "bookmarks";
 
 interface ProfileTabsProps {
   activeTab: ProfileTabId;
@@ -15,15 +17,19 @@ interface ProfileTabsProps {
 
 export default function ProfileTabs({ activeTab, setActiveTab, isOwner }: ProfileTabsProps) {
   const publicTabs = [
-    { id: "articles" as ProfileTabId, label: "लेख (Articles)", icon: BookOpen },
-    { id: "media" as ProfileTabId, label: "मीडिया (Media)", icon: ImageIcon },
+    { id: "articles" as ProfileTabId, label: "लेख", icon: BookOpen },
+    { id: "media" as ProfileTabId, label: "मीडिया", icon: ImageIcon },
   ];
 
   const ownerTabs = isOwner ? [
-    { id: "settings" as ProfileTabId, label: "सेटिंग्स (Settings)", icon: Settings },
+    { id: "drafts" as ProfileTabId, label: "ड्राफ्ट", icon: FileEdit },
+    { id: "bookmarks" as ProfileTabId, label: "बुकमार्क", icon: Bookmark },
   ] : [];
+  
+  // "About" always comes last
+  const aboutTab = { id: "about" as ProfileTabId, label: "परिचय", icon: User };
 
-  const tabs = [...publicTabs, ...ownerTabs];
+  const tabs = [...publicTabs, ...ownerTabs, aboutTab];
 
   return (
     <div className="sticky top-[72px] z-30 bg-slate-50/80 dark:bg-[#0A0F1D]/80 backdrop-blur-md pt-2 border-b border-slate-200 dark:border-slate-800">

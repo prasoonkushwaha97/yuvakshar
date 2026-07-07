@@ -56,11 +56,11 @@ export default function Hero() {
     <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 h-full font-sans">
       
       {/* LEFT COLUMN: HERO SLIDER (70% width -> 8 cols) */}
-      <div className="lg:col-span-8 relative h-[380px] sm:h-[450px] lg:h-[480px] rounded-3xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.35)] group bg-stone-100 dark:bg-stone-900 border border-gray-150 dark:border-gray-850">
+      <div className="lg:col-span-8 relative h-[420px] md:h-[480px] lg:h-[480px] rounded-3xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.35)] group bg-stone-100 dark:bg-stone-900 border border-gray-150 dark:border-gray-850">
         
-        {/* Mobile Category Badge (Top Left Corner) */}
-        <div className="absolute top-4 left-4 z-20 md:hidden">
-          <span className="bg-[#f97316]/95 text-white text-[10px] font-sans font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
+        {/* Category Badge - Unified for all viewports at top-left */}
+        <div className="absolute top-5 left-5 md:top-6 md:left-6 lg:top-8 lg:left-8 z-30">
+          <span className="bg-[#f97316] text-white text-[11px] md:text-xs font-sans font-bold uppercase tracking-widest px-4 py-1.5 md:py-2 rounded-lg shadow-md">
             {currentArticle.category || "मुख्य समाचार"}
           </span>
         </div>
@@ -76,7 +76,7 @@ export default function Hero() {
             className="absolute inset-0 w-full h-full"
           >
             <Image src={currentArticle.coverImage || currentArticle.cover_image || currentArticle.image || "/images/placeholder-news.jpg"} alt={currentArticle.title} className="w-full h-full object-cover object-center brightness-[0.85] contrast-100 hover:scale-105 transition-transform duration-[10000ms] ease-out" loading="eager" fill />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 via-25% to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 via-40% to-transparent/10" />
           </motion.div>
         </AnimatePresence>
 
@@ -87,42 +87,41 @@ export default function Hero() {
           aria-label={stripMarkdown(currentArticle.title || currentArticle.title_hi || "")}
         />
 
-        {/* Bottom Left Content Area - padded to prevent dot indicator overlap on mobile */}
-        <div className="absolute bottom-0 left-0 z-20 p-6 md:p-8 lg:p-10 pr-20 md:pr-8 lg:pr-10 text-white w-full max-w-3xl pointer-events-none">
-          {/* Category Badge - visible on Desktop/Tablet inside content area */}
-          <div className="hidden md:block mb-2">
-            <span className="bg-stone-100/90 text-stone-855 dark:bg-stone-800/90 dark:text-stone-250 text-xs font-sans font-bold uppercase tracking-widest px-3 py-1 rounded-sm">
-              {currentArticle.category || "मुख्य समाचार"}
-            </span>
-          </div>
+        {/* Bottom Left Content Area */}
+        <div className="absolute bottom-0 left-0 z-20 p-6 pb-10 md:p-8 md:pb-12 lg:p-10 lg:pb-14 pr-12 md:pr-16 text-white w-full pointer-events-none flex flex-col justify-end">
 
-          {/* Headline - reduced font size and clamped to 2 lines on mobile */}
-          <h2 className="text-[17px] md:text-3xl lg:text-4xl font-serif font-black leading-tight drop-shadow mb-3 mt-2 md:mt-8 line-clamp-2 md:line-clamp-none">
+          {/* Headline - Significantly larger on mobile/tablet */}
+          <h2 className="text-[32px] md:text-[40px] lg:text-[44px] font-serif font-bold leading-[1.2] drop-shadow-xl mb-4 md:mb-5 line-clamp-3 md:line-clamp-none w-full max-w-[85%] md:max-w-[80%] pointer-events-auto">
             {stripMarkdown(currentArticle.title || currentArticle.title_hi || "")}
           </h2>
 
-          {/* Author • Publication Date */}
-          <div className="flex flex-wrap items-center gap-2 text-[10px] md:text-xs font-sans text-stone-250 uppercase tracking-widest mb-4 pointer-events-auto">
+          {/* Author Block */}
+          <div className="flex flex-wrap items-center gap-3 text-sm md:text-base font-sans text-stone-200 pointer-events-auto">
             {authorProfileUrl ? (
               <Link 
                 href={authorProfileUrl} 
                 aria-label={`View ${currentArticle.author || "युवाक्षर डेस्क"}'s profile`}
-                className="hover:text-primary transition-colors font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded flex items-center space-x-1.5"
+                className="hover:text-primary transition-colors font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded flex items-center gap-2"
               >
-                <span>{currentArticle.author || "युवाक्षर डेस्क"}</span>
+                {resolvedAuthor?.avatar_url && (
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden bg-stone-800 border border-stone-600 shrink-0">
+                    <Image src={resolvedAuthor.avatar_url} alt="Author" width={32} height={32} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <span className="text-[15px] md:text-base">{currentArticle.author || "युवाक्षर डेस्क"}</span>
                 {resolvedAuthor?.verified && (
-                  <svg className="w-3.5 h-3.5 text-blue-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-4 h-4 text-blue-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 00-1.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                 )}
               </Link>
             ) : (
-              <span className="font-bold flex items-center space-x-1.5">
-                <span>{currentArticle.author || "युवाक्षर डेस्क"}</span>
+              <span className="font-bold flex items-center gap-2">
+                <span className="text-[15px] md:text-base">{currentArticle.author || "युवाक्षर डेस्क"}</span>
               </span>
             )}
-            <span>•</span>
-            <span>
+            <span className="text-stone-400">•</span>
+            <span className="text-stone-300">
               {currentArticle.published_at 
                 ? new Date(currentArticle.published_at).toLocaleDateString("hi-IN", { year: "numeric", month: "long", day: "numeric" })
                 : currentArticle.created_at
@@ -133,7 +132,7 @@ export default function Hero() {
           </div>
 
           {/* Subtitle / summary snippet - hidden on mobile */}
-          <p className="hidden md:block text-stone-300 dark:text-stone-400 text-xs md:text-sm lg:text-base leading-relaxed line-clamp-2 max-w-2xl font-serif font-normal">
+          <p className="hidden md:block text-stone-300 dark:text-stone-400 text-sm lg:text-base leading-relaxed line-clamp-2 max-w-[85%] md:max-w-[75%] font-serif font-normal mt-4">
             {stripMarkdown(currentArticle.summary || currentArticle.summary_hi || currentArticle.content || "")}
           </p>
         </div>
@@ -150,9 +149,9 @@ export default function Hero() {
           </>
         )}
 
-        {/* BOTTOM DOT INDICATORS - reduced size on mobile */}
+        {/* BOTTOM DOT INDICATORS */}
         {slides.length > 1 && (
-          <div className="absolute bottom-4 right-4 md:bottom-5 md:right-5 z-25 flex space-x-2">
+          <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 z-30 flex space-x-2">
             {slides.map((_, idx) => (
               <button key={idx} onClick={() => setCurrentIndex(idx)} className={`w-1.5 h-1 md:w-2.5 md:h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? "bg-[#f97316] w-4 md:w-6" : "bg-white/40"}`} aria-label={`Go to slide ${idx + 1}`} />
             ))}

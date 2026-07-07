@@ -46,13 +46,13 @@ CREATE POLICY "Allow public read on content_attachments" ON public.content_attac
 -- Allow Admin/Editor write
 CREATE POLICY "Allow editorial write on tags" ON public.tags
     FOR ALL USING (
-        EXISTS (SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
+        EXISTS (SELECT 1 FROM public.profiles u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
     );
 CREATE POLICY "Allow editorial write on content_tags" ON public.content_tags
     FOR ALL USING (
-        EXISTS (SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
+        EXISTS (SELECT 1 FROM public.profiles u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
     );
 CREATE POLICY "Allow editorial write on content_attachments" ON public.content_attachments
     FOR ALL USING (
-        EXISTS (SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
+        EXISTS (SELECT 1 FROM public.profiles u WHERE u.id = auth.uid() AND u.role IN ('Admin', 'Editor', 'Founder', 'Managing Editor'))
     );

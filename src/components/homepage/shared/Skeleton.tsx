@@ -100,18 +100,27 @@ export function VideoSkeleton() {
 
 export function MagazineSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 py-8 items-center">
-      <div className="md:col-span-4 flex justify-center">
-        <BaseSkeleton className="w-[200px] h-[280px] shadow-lg" />
-      </div>
-      <div className="md:col-span-8 space-y-4">
-        <BaseSkeleton className="h-4 w-24" />
-        <BaseSkeleton className="h-10 w-2/3" />
-        <BaseSkeleton className="h-4 w-full" />
-        <BaseSkeleton className="h-4 w-5/6" />
-        <div className="flex space-x-3 pt-4">
-          <BaseSkeleton className="h-10 w-32" />
-          <BaseSkeleton className="h-10 w-32" />
+    <div className="py-14 lg:py-20 bg-[#F5F4EF] dark:bg-[#1A1814]">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-8">
+        {/* Header skeleton */}
+        <div className="mb-12 lg:mb-16 space-y-3">
+          <div className="flex items-center space-x-3">
+            <BaseSkeleton className="w-8 h-[3px]" />
+            <BaseSkeleton className="h-3 w-16" />
+          </div>
+          <BaseSkeleton className="h-9 w-32" />
+          <BaseSkeleton className="h-4 w-56" />
+        </div>
+        {/* 3-cover grid skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 justify-items-center">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex flex-col items-center w-full max-w-[240px]">
+              <BaseSkeleton className="aspect-[3/4] w-full rounded-lg mb-5" />
+              <BaseSkeleton className="h-4 w-3/4 mb-2" />
+              <BaseSkeleton className="h-3 w-1/2 mb-2" />
+              <BaseSkeleton className="h-3 w-full" />
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -189,3 +198,31 @@ export function CommunitySkeleton() {
     </div>
   );
 }
+
+/** Skeleton that matches the ArticleCardMedium card shape used in the infinite feed */
+export function FeedCardSkeleton() {
+  return (
+    <div className="flex flex-col bg-transparent border-b border-stone-200 dark:border-stone-800 pb-4 animate-pulse">
+      {/* Image placeholder */}
+      <div className="w-full aspect-[16/10] mb-4 bg-gray-200 dark:bg-gray-800 rounded-sm" />
+      {/* Category */}
+      <div className="px-1 mb-2">
+        <BaseSkeleton className="h-2.5 w-16" />
+      </div>
+      {/* Title lines */}
+      <div className="px-1 space-y-2 mb-3">
+        <BaseSkeleton className="h-4 w-full" />
+        <BaseSkeleton className="h-4 w-3/4" />
+      </div>
+      {/* Author + date row */}
+      <div className="mt-auto pt-3 px-1 border-t border-stone-100 dark:border-stone-800/80">
+        <div className="flex items-center space-x-2">
+          <BaseSkeleton className="w-5 h-5 rounded-full" />
+          <BaseSkeleton className="h-3 w-20" />
+          <BaseSkeleton className="h-3 w-16" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
