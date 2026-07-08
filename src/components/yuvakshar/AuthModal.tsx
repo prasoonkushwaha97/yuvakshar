@@ -15,6 +15,7 @@ export default function AuthModal() {
     authModalOpen, 
     closeAuthModal, 
     loginUser, 
+    loginWithGoogle,
     registerUser,
     authModalMessage, 
     users,
@@ -72,19 +73,12 @@ export default function AuthModal() {
   };
 
   const handleGoogleLogin = async () => {
+    if (isLoading) return;
     setIsLoading(true);
-    const success = await loginUser("google.reader@gmail.com");
-    setIsLoading(false);
-    if (success) {
-      confetti({ particleCount: 100, spread: 60, origin: { y: 0.7 } });
-      setSuccessMessage("Google से सफलतापूर्वक लॉगिन हुआ!");
-      setTimeout(() => {
-        setSuccessMessage("");
-        closeAuthModal();
-      }, 1500);
-    } else {
-      triggerShake();
-    }
+    setSuccessMessage("Google से लॉगिन किया जा रहा है...");
+    await loginWithGoogle();
+    // Intentionally do NOT reset isLoading or close modal here.
+    // The browser will redirect to Google OAuth and return.
   };
 
   const handleEmailLogin = (e: React.FormEvent) => {

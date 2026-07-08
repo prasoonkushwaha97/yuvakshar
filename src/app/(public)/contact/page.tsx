@@ -28,6 +28,7 @@ import GlassCard from "@/components/yuvakshar/GlassCard";
 import { useCms } from "@/store/CmsContext";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { ROUTES } from "@/utils/routes";
 
 const CONTACT_CATEGORIES = [
   { id: "Collaboration", label: "सहयोग", desc: "साझेदारी और सहयोग प्रस्ताव", icon: Zap },
@@ -771,7 +772,7 @@ export default function ContactPage() {
             
             <div className="shrink-0 font-sans">
               <Link 
-                href="/contribute" 
+                href={ROUTES.ARTICLE_EDITOR} 
                 className="inline-flex items-center space-x-2 px-6 py-3.5 bg-slate-950 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-all hover:scale-[1.03] active:scale-[0.98] shadow-lg"
               >
                 <span>लेखक पोर्टल पर जाएँ</span>

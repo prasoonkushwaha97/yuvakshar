@@ -16,7 +16,7 @@ export default function ProfileRedirectPage() {
     if (currentUser) {
       // Redirect to their canonical profile
       const profileUrl = getCanonicalProfileUrl(currentUser);
-      router.replace(profileUrl ?? "/login");
+      router.replace(profileUrl ?? `/u/${currentUser.id}`);
     } else {
       // Not logged in, redirect to login
       router.replace("/login");

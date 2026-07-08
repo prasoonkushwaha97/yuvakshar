@@ -10,13 +10,19 @@ import { hasPermission } from "@/domains/users/permissions";
 import { 
   LayoutDashboard, 
   FileText, 
-  Users, 
-  Settings, 
+  FolderTree,
   BookOpen, 
+  Video,
   MessageSquare,
   Image as ImageIcon,
-  Video,
-  LayoutTemplate
+  Users,
+  Bell,
+  LineChart,
+  Globe,
+  Megaphone,
+  Settings,
+  ShieldAlert,
+  LifeBuoy
 } from "lucide-react";
 
 export default function AdminSidebar() {
@@ -27,24 +33,21 @@ export default function AdminSidebar() {
   const role = currentUser?.role || "Reader";
 
   const navItems = [
-    { name: "कार्यक्षेत्र", href: "/admin", icon: LayoutDashboard, requiredPermission: null },
-    
-    // Content Domain
-    { name: "Editorial Queue", href: "/admin/reviews", icon: BookOpen, requiredPermission: "review_article" as const },
+    { name: "Dashboard", href: "/admin", icon: LayoutDashboard, requiredPermission: null },
     { name: "Articles", href: "/admin/articles", icon: FileText, requiredPermission: "create_article" as const },
-    { name: "Media Library", href: "/admin/media", icon: ImageIcon, requiredPermission: "create_article" as const },
+    { name: "Categories", href: "/admin/categories", icon: FolderTree, requiredPermission: "manage_settings" as const },
     { name: "Magazine", href: "/admin/magazine", icon: BookOpen, requiredPermission: "publish_article" as const },
     { name: "Videos", href: "/admin/videos", icon: Video, requiredPermission: "publish_article" as const },
-    
-    // Homepage / Builder
-    { name: "Homepage Builder", href: "/admin/cms/homepage", icon: LayoutTemplate, requiredPermission: "manage_homepage" as const },
-    
-    // Community
-    { name: "Community", href: "/admin/community", icon: MessageSquare, requiredPermission: "manage_users" as const },
-    
-    // Users & System
-    { name: "Users & Roles", href: "/admin/users", icon: Users, requiredPermission: "manage_users" as const },
+    { name: "Chaupal", href: "/admin/community", icon: MessageSquare, requiredPermission: "manage_users" as const },
+    { name: "Media Library", href: "/admin/media", icon: ImageIcon, requiredPermission: "create_article" as const },
+    { name: "Users", href: "/admin/users", icon: Users, requiredPermission: "manage_users" as const },
+    { name: "Notifications", href: "/admin/notifications", icon: Bell, requiredPermission: "manage_settings" as const },
+    { name: "Analytics", href: "/admin/analytics", icon: LineChart, requiredPermission: "manage_settings" as const },
+    { name: "SEO", href: "/admin/cms/seo", icon: Globe, requiredPermission: "manage_settings" as const },
+    { name: "Advertisements", href: "/admin/cms/ads", icon: Megaphone, requiredPermission: "manage_settings" as const },
     { name: "Settings", href: "/admin/cms/settings", icon: Settings, requiredPermission: "manage_settings" as const },
+    { name: "Audit Logs", href: "/admin/audit", icon: ShieldAlert, requiredPermission: "manage_users" as const },
+    { name: "Support", href: "/admin/system", icon: LifeBuoy, requiredPermission: null },
   ];
 
   const visibleItems = navItems.filter(item => 

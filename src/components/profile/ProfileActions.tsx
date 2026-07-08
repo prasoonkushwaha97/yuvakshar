@@ -38,7 +38,7 @@ export default function ProfileActions({
           </Link>
           
           <Link 
-            href="/settings/account"
+            href="/settings"
             className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white hover:bg-slate-50 dark:bg-[#0F172A] dark:hover:bg-[#1E293B] border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 px-6 py-2.5 rounded-full text-sm font-bold font-serif shadow-sm transition-all active:scale-95"
           >
             <Edit3 className="w-4 h-4" />

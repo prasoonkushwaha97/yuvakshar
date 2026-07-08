@@ -287,6 +287,7 @@ interface CmsContextType {
   
   // Auth Operations
   loginUser: (email: string, passwordInput?: string) => Promise<boolean>;
+  loginWithGoogle: () => Promise<void>;
   registerUser: (email: string, username: string, role: string, customName: string, customMobile: string, passwordInput: string) => Promise<boolean>;
   checkUsernameAvailability: (username: string) => { available: boolean; message: string };
   logoutUser: () => void;
@@ -1515,6 +1516,23 @@ export function CmsProvider({
   }, []);
 
   // 2. Auth Operations
+  const loginWithGoogle = async (): Promise<void> => {
+    const configError = getSupabaseConfigError();
+    if (configError) {
+      alert(configError);
+      return;
+    }
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.href }
+    });
+    if (error) {
+      alert("❌ Google provider disabled: " + error.message);
+    }
+    // Let the browser redirect, do not resolve with boolean
+    await new Promise(() => {}); 
+  };
+
   const loginUser = async (email: string, passwordInput?: string): Promise<boolean> => {
     const configError = getSupabaseConfigError();
     if (configError) {
@@ -1524,15 +1542,9 @@ export function CmsProvider({
     
     try {
       if (email === "google.reader@gmail.com") {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: { redirectTo: window.location.origin }
-        });
-        if (error) {
-          alert("❌ Google provider disabled: " + error.message);
-          return false;
-        }
-        return true;
+        // Fallback for any lingering calls
+        loginWithGoogle();
+        return false; 
       }
 
       if (passwordInput) {
@@ -3594,6 +3606,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         layouts,
         users,
         loginUser,
+        loginWithGoogle,
         registerUser,
         checkUsernameAvailability,
         logoutUser,

@@ -2,21 +2,21 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useCms } from "@/store/CmsContext";
 import { ArrowLeft } from "lucide-react";
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const { currentUser, openAuthModal } = useCms();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    // If not logged in, wait a tick to ensure client hydration and then pop modal
+    // If not logged in, redirect to login page with return URL
     if (currentUser === null) {
-      openAuthModal();
-      router.push("/");
+      router.push(`/login?redirect_to=${encodeURIComponent(pathname)}`);
     }
-  }, [currentUser, openAuthModal, router]);
+  }, [currentUser, router, pathname]);
 
   if (!currentUser) return null; // Prevent flicker
 

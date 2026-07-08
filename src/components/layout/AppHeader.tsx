@@ -10,6 +10,7 @@ import { useLanguage } from "@/store/LanguageContext";
 import { primaryLinks } from "@/config/navigation.config";
 import AppDrawer from "./AppDrawer";
 import SearchModal from "./SearchModal";
+import { ROUTES } from "@/utils/routes";
 
 export default function AppHeader() {
   const pathname = usePathname();
@@ -162,7 +163,7 @@ export default function AppHeader() {
           <div className="flex items-center space-x-2.5">
             {currentUser && (
               <Link
-                href="/workspace"
+                href={ROUTES.ARTICLE_EDITOR}
                 className="hidden lg:flex items-center space-x-1.5 px-4 py-1.5 rounded-full bg-[#f97316] hover:bg-[#ea580c] text-white font-bold text-sm shadow-[0_0_10px_rgba(249,115,22,0.3)] transition-colors duration-300"
               >
                 <span>✍️ लिखें</span>

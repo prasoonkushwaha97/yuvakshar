@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
@@ -15,18 +15,22 @@ import {
   Minimize,
   Grid,
   X,
-  Share2
+  Share2,
+  Menu
 } from "lucide-react";
 import type { MagazineIssue } from "@/store/types";
 
 export default function MagazineReaderPage() {
   const { issue } = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { magazines } = useCms();
   
   const mag = magazines.find((m) => m.id === issue) as MagazineIssue;
   
-  const [currentPage, setCurrentPage] = useState(0);
+  const initialPage = parseInt(searchParams.get("page") || "1", 10) - 1;
+  const [currentPage, setCurrentPage] = useState(Math.max(0, initialPage));
+  
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showThumbnails, setShowThumbnails] = useState(false);
@@ -37,22 +41,22 @@ export default function MagazineReaderPage() {
   // Restore progress on load
   useEffect(() => {
     if (mag) {
-      const saved = null;
-      if (saved) {
+      const saved = localStorage.getItem(`yuvakshar_mag_${mag.id}`);
+      if (saved && !searchParams.get("page")) {
         try {
           const progress = JSON.parse(saved);
-          if (progress.issueId === mag.id && progress.page < mag.pages.length) {
+          if (progress.page < mag.pages.length) {
             setCurrentPage(progress.page);
           }
         } catch (e) {}
       }
     }
-  }, [mag]);
+  }, [mag, searchParams]);
 
   // Save progress on page change
   useEffect(() => {
     if (mag) {
-      const percentage = Math.round(((currentPage + 1) / mag.pages.length) * 100);
+      localStorage.setItem(`yuvakshar_mag_${mag.id}`, JSON.stringify({ page: currentPage, date: new Date().toISOString() }));
     }
   }, [currentPage, mag]);
 
@@ -85,9 +89,24 @@ export default function MagazineReaderPage() {
     });
   }, [currentPage]);
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") handleNextPage();
+      if (e.key === "ArrowLeft") handlePrevPage();
+      if (e.key === "Escape") {
+        if (showThumbnails) setShowThumbnails(false);
+        else if (zoomLevel > 1) setZoomLevel(1);
+        else router.back();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentPage, mag, showThumbnails, zoomLevel]);
+
   if (!mag || !mag.pages || mag.pages.length === 0) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-[#070B14] text-white">
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#050505] text-white">
         <h2 className="text-2xl font-bold font-serif mb-4">अंक पढ़ने के लिए उपलब्ध नहीं है</h2>
         <button onClick={() => router.back()} className="text-primary hover:underline flex items-center gap-2">
           <ArrowLeft className="w-4 h-4" /> वापस जाएँ
@@ -112,9 +131,7 @@ export default function MagazineReaderPage() {
 
   const zoomIn = () => setZoomLevel((z) => Math.min(z + 0.5, 3));
   const zoomOut = () => setZoomLevel((z) => Math.max(z - 0.5, 1));
-  const resetZoom = () => setZoomLevel(1);
-
-  // Swipe handlers for motion.div
+  
   const handleDragEnd = (e: any, { offset, velocity }: any) => {
     const swipe = Math.abs(offset.x) * velocity.x;
     if (swipe < -100) {
@@ -127,25 +144,29 @@ export default function MagazineReaderPage() {
   const variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 1000 : -1000,
-      opacity: 0
+      opacity: 0,
+      scale: 0.95
     }),
     center: {
       zIndex: 1,
       x: 0,
-      opacity: 1
+      opacity: 1,
+      scale: 1
     },
     exit: (direction: number) => ({
       zIndex: 0,
       x: direction < 0 ? 1000 : -1000,
-      opacity: 0
+      opacity: 0,
+      scale: 0.95
     })
   };
 
-
   const toggleControls = () => setShowControls(!showControls);
 
+  const progressPercentage = ((currentPage + 1) / mag.pages.length) * 100;
+
   return (
-    <div ref={containerRef} className="h-screen w-full bg-[#070B14] text-slate-200 overflow-hidden relative font-hindi select-none touch-none">
+    <div ref={containerRef} className="fixed inset-0 z-[100] bg-[#050505] text-slate-200 overflow-hidden font-sans select-none touch-none">
       
       {/* READER CONTENT (The Page Image) */}
       <div 
@@ -162,22 +183,35 @@ export default function MagazineReaderPage() {
             exit="exit"
             transition={{
               x: { type: "spring", stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 }
+              opacity: { duration: 0.3 },
+              scale: { duration: 0.3 }
             }}
             drag={zoomLevel === 1 ? "x" : true}
             dragConstraints={zoomLevel === 1 ? { left: 0, right: 0 } : undefined}
-            dragElastic={1}
+            dragElastic={0.8}
             onDragEnd={zoomLevel === 1 ? handleDragEnd : undefined}
-            className="absolute inset-0 flex items-center justify-center p-4 md:p-8"
+            className="absolute inset-0 flex items-center justify-center p-2 md:p-12"
           >
             <motion.img
               src={mag.pages[currentPage]}
               alt={`Page ${currentPage + 1}`}
               animate={{ scale: zoomLevel }}
               transition={{ type: "tween", duration: 0.2 }}
-              className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-sm pointer-events-auto origin-center cursor-grab active:cursor-grabbing"
+              className="max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto origin-center cursor-grab active:cursor-grabbing bg-white rounded-sm"
               draggable={false}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (zoomLevel > 1) {
+                  // If zoomed in, clicking doesn't toggle controls, it just allows panning
+                } else {
+                  toggleControls();
+                }
+              }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                if (zoomLevel === 1) zoomIn();
+                else setZoomLevel(1);
+              }}
             />
           </motion.div>
         </AnimatePresence>
@@ -192,43 +226,36 @@ export default function MagazineReaderPage() {
               initial={{ y: -100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -100, opacity: 0 }}
-              className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between px-4 md:px-6 z-50 backdrop-blur-sm"
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="absolute top-0 inset-x-0 h-20 bg-gradient-to-b from-black/90 via-black/50 to-transparent flex items-center justify-between px-6 z-40 backdrop-blur-sm"
             >
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-6">
                 <button 
                   onClick={() => router.back()}
-                  className="p-2 hover:bg-white/10 rounded-full transition-colors backdrop-blur-md bg-black/20"
+                  className="p-3 hover:bg-white/20 rounded-full transition-colors backdrop-blur-md bg-black/40 text-white"
                 >
-                  <ArrowLeft className="w-5 h-5 text-white" />
+                  <ArrowLeft className="w-5 h-5" />
                 </button>
-                <div className="hidden md:block text-white font-serif">
-                  <h1 className="font-bold text-lg leading-tight truncate max-w-[200px] lg:max-w-[400px]">{mag.issue}</h1>
-                  {mag.edition && <p className="text-xs text-white/60">{mag.edition}</p>}
+                <div className="hidden md:block text-white font-serif border-l border-white/20 pl-6">
+                  <h1 className="font-bold text-xl leading-tight truncate max-w-[300px] lg:max-w-[500px]">{mag.issue}</h1>
+                  {mag.edition && <p className="text-sm text-white/60 font-sans mt-0.5">{mag.edition}</p>}
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button onClick={() => setShowThumbnails(true)} className="p-2 hover:bg-white/10 rounded-full transition-colors backdrop-blur-md bg-black/20 text-white" title="All Pages">
+              <div className="flex items-center gap-3">
+                <button onClick={() => setShowThumbnails(true)} className="p-3 hover:bg-white/20 rounded-full transition-colors backdrop-blur-md bg-black/40 text-white flex items-center gap-2" title="Table of Contents">
                   <Grid className="w-5 h-5" />
+                  <span className="hidden md:inline text-sm font-bold">अनुक्रमणिका</span>
                 </button>
-                <button onClick={zoomOut} disabled={zoomLevel <= 1} className="p-2 hover:bg-white/10 rounded-full transition-colors backdrop-blur-md bg-black/20 disabled:opacity-30 text-white" title="Zoom Out">
+                <div className="w-px h-6 bg-white/20 mx-2 hidden md:block"></div>
+                <button onClick={zoomOut} disabled={zoomLevel <= 1} className="p-3 hover:bg-white/20 rounded-full transition-colors backdrop-blur-md bg-black/40 disabled:opacity-30 text-white hidden md:block" title="Zoom Out">
                   <ZoomOut className="w-5 h-5" />
                 </button>
-                <button onClick={zoomIn} disabled={zoomLevel >= 3} className="p-2 hover:bg-white/10 rounded-full transition-colors backdrop-blur-md bg-black/20 disabled:opacity-30 text-white" title="Zoom In">
+                <button onClick={zoomIn} disabled={zoomLevel >= 3} className="p-3 hover:bg-white/20 rounded-full transition-colors backdrop-blur-md bg-black/40 disabled:opacity-30 text-white hidden md:block" title="Zoom In">
                   <ZoomIn className="w-5 h-5" />
                 </button>
-                <button onClick={toggleFullscreen} className="p-2 hover:bg-white/10 rounded-full transition-colors backdrop-blur-md bg-black/20 hidden md:block text-white" title="Fullscreen">
+                <button onClick={toggleFullscreen} className="p-3 hover:bg-white/20 rounded-full transition-colors backdrop-blur-md bg-black/40 hidden md:block text-white" title="Fullscreen">
                   {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-                </button>
-                <button onClick={() => {
-                   if (navigator.share) {
-                     navigator.share({ title: mag.issue, url: window.location.href });
-                   } else {
-                     navigator.clipboard.writeText(window.location.href);
-                     alert("लिंक कॉपी कर लिया गया है!");
-                   }
-                }} className="p-2 hover:bg-white/10 rounded-full transition-colors backdrop-blur-md bg-black/20 text-white" title="Share">
-                  <Share2 className="w-5 h-5" />
                 </button>
               </div>
             </motion.div>
@@ -238,90 +265,131 @@ export default function MagazineReaderPage() {
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
-              className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end px-4 md:px-8 pb-4 md:pb-6 z-50 backdrop-blur-sm"
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent pt-20 pb-8 px-6 z-40 backdrop-blur-sm"
             >
-              <div className="flex items-center justify-between gap-4 w-full max-w-3xl mx-auto">
-                <button 
-                  onClick={handlePrevPage} 
-                  disabled={currentPage === 0}
-                  className="p-3 hover:bg-white/10 rounded-full transition-colors disabled:opacity-20 backdrop-blur-md bg-black/40 text-white"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
+              <div className="max-w-4xl mx-auto flex flex-col items-center">
                 
-                <div className="flex-1 flex flex-col items-center gap-2">
-                  <div className="text-white/80 font-medium text-sm tracking-widest font-mono">
-                    {currentPage + 1} / {mag.pages.length}
+                {/* Navigation Controls */}
+                <div className="flex items-center justify-between w-full mb-6">
+                  <button 
+                    onClick={handlePrevPage} 
+                    disabled={currentPage === 0}
+                    className="p-4 hover:bg-white/20 rounded-full transition-all disabled:opacity-20 backdrop-blur-md bg-black/50 text-white group"
+                  >
+                    <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
+                  </button>
+                  
+                  <div className="text-center">
+                    <div className="text-sm font-bold tracking-widest text-white/50 uppercase mb-1">
+                      पृष्ठ (Page)
+                    </div>
+                    <div className="text-3xl font-black font-serif text-white">
+                      {currentPage + 1} <span className="text-white/30 text-xl font-medium">/ {mag.pages.length}</span>
+                    </div>
                   </div>
-                  {/* Scrubber / Progress bar */}
-                  <div className="w-full relative h-1.5 bg-white/20 rounded-full cursor-pointer group" onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const percentage = x / rect.width;
-                    const newPage = Math.max(0, Math.min(mag.pages.length - 1, Math.floor(percentage * mag.pages.length)));
-                    setCurrentPage(newPage);
-                    setZoomLevel(1);
-                  }}>
-                    <div 
-                      className="absolute top-0 left-0 bottom-0 bg-primary rounded-full transition-all duration-300" 
-                      style={{ width: `${((currentPage + 1) / mag.pages.length) * 100}%` }}
-                    />
-                    <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity" style={{ left: `calc(${((currentPage + 1) / mag.pages.length) * 100}% - 6px)` }} />
-                  </div>
+                  
+                  <button 
+                    onClick={handleNextPage} 
+                    disabled={currentPage === mag.pages.length - 1}
+                    className="p-4 hover:bg-white/20 rounded-full transition-all disabled:opacity-20 backdrop-blur-md bg-black/50 text-white group"
+                  >
+                    <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                  </button>
                 </div>
 
+                {/* Progress Bar */}
+                <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden relative cursor-pointer group" onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const percentage = x / rect.width;
+                  const newPage = Math.min(Math.max(0, Math.floor(percentage * mag.pages.length)), mag.pages.length - 1);
+                  setCurrentPage(newPage);
+                  setZoomLevel(1);
+                }}>
+                  <div 
+                    className="absolute left-0 top-0 bottom-0 bg-primary transition-all duration-300 ease-out"
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                  {/* Hover indicator */}
+                  <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* SIDE CLICK AREAS FOR EASY DESKTOP NAVIGATION */}
+            <div 
+              className="absolute left-0 top-20 bottom-32 w-[15%] hidden md:block cursor-[url('/cursor-left.png'),_w-resize] z-30 opacity-0"
+              onClick={handlePrevPage}
+            />
+            <div 
+              className="absolute right-0 top-20 bottom-32 w-[15%] hidden md:block cursor-[url('/cursor-right.png'),_e-resize] z-30 opacity-0"
+              onClick={handleNextPage}
+            />
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* THUMBNAILS SIDEBAR (Table of Contents) */}
+      <AnimatePresence>
+        {showThumbnails && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowThumbnails(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="absolute top-0 right-0 bottom-0 w-full max-w-sm bg-[#0A0A0A] border-l border-white/10 z-50 flex flex-col shadow-2xl"
+            >
+              <div className="p-6 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#0A0A0A]/90 backdrop-blur-md z-10">
+                <h3 className="text-xl font-bold font-serif text-white flex items-center gap-3">
+                  <Grid className="w-5 h-5 text-primary" /> सभी पृष्ठ (All Pages)
+                </h3>
                 <button 
-                  onClick={handleNextPage} 
-                  disabled={currentPage === mag.pages.length - 1}
-                  className="p-3 hover:bg-white/10 rounded-full transition-colors disabled:opacity-20 backdrop-blur-md bg-black/40 text-white"
+                  onClick={() => setShowThumbnails(false)}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors text-white"
                 >
-                  <ChevronRight className="w-6 h-6" />
+                  <X className="w-5 h-5" />
                 </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-6 grid grid-cols-2 gap-4 custom-scrollbar">
+                {mag.pages.map((pageImg, idx) => (
+                  <div 
+                    key={idx}
+                    onClick={() => {
+                      setCurrentPage(idx);
+                      setZoomLevel(1);
+                      setShowThumbnails(false);
+                    }}
+                    className={`cursor-pointer group rounded-sm overflow-hidden border-2 transition-all duration-300 relative aspect-[1/1.4] ${
+                      currentPage === idx ? "border-primary shadow-[0_0_20px_rgba(234,88,12,0.4)] scale-105 z-10" : "border-transparent hover:border-white/30"
+                    }`}
+                  >
+                    <Image 
+                      src={pageImg} 
+                      alt={`Thumbnail ${idx + 1}`} 
+                      fill 
+                      className={`object-cover ${currentPage === idx ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`} 
+                      sizes="200px"
+                    />
+                    <div className={`absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 text-center text-xs font-bold transition-opacity ${currentPage === idx ? 'opacity-100 text-primary' : 'opacity-0 group-hover:opacity-100 text-white'}`}>
+                      पृष्ठ {idx + 1}
+                    </div>
+                  </div>
+                ))}
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
-
-      {/* THUMBNAILS DRAWER */}
-      <AnimatePresence>
-        {showThumbnails && (
-          <motion.div 
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute bottom-0 inset-x-0 h-[60vh] bg-[#0F1420]/95 backdrop-blur-xl border-t border-white/10 z-[100] flex flex-col rounded-t-3xl shadow-2xl"
-          >
-            <div className="p-4 border-b border-white/10 flex items-center justify-between">
-              <h3 className="text-white font-bold font-serif text-lg">सभी पृष्ठ</h3>
-              <button onClick={() => setShowThumbnails(false)} className="p-2 hover:bg-white/10 rounded-full text-white/60 hover:text-white transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 custom-scrollbar">
-              {mag.pages?.map((p, idx) => (
-                <div 
-                  key={idx}
-                  onClick={() => {
-                    setCurrentPage(idx);
-                    setZoomLevel(1);
-                    setShowThumbnails(false);
-                  }}
-                  className={`relative aspect-[3/4] rounded-md overflow-hidden cursor-pointer border-2 transition-all hover:scale-105 ${currentPage === idx ? "border-primary shadow-lg shadow-primary/30" : "border-transparent opacity-60 hover:opacity-100"}`}
-                >
-                  <Image src={p} alt={`Page ${idx + 1}`} fill className="object-cover" />
-                  <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] text-center py-1 font-mono">
-                    {idx + 1}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
     </div>
   );
 }

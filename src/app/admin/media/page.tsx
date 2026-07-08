@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Upload, FolderPlus, Search, Filter, Image as ImageIcon, FileText, Video, HardDrive, FileImage } from "lucide-react";
+import { Upload, FolderPlus, Search, Filter, Image as ImageIcon, FileText, Video, HardDrive, FileImage, Trash2, Download, MoreHorizontal, LayoutGrid, List as ListIcon } from "lucide-react";
+import MediaUploadModal from "@/components/media/MediaUploadModal";
 
-// Using Lucide icons for UI representation
 export default function MediaLibrary() {
   const [view, setView] = useState<"grid" | "list">("grid");
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const folders = [
     { id: "f1", name: "Elections 2024", count: 124 },
@@ -23,31 +24,44 @@ export default function MediaLibrary() {
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] -m-6 lg:-m-8">
       
+      {isUploadModalOpen && (
+        <MediaUploadModal 
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+          onSelect={(url) => {
+             console.log("Selected URL: ", url);
+             setIsUploadModalOpen(false);
+          }}
+        />
+      )}
+
       {/* Top Toolbar */}
       <div className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F172A] px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h2 className="text-xl font-serif font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <HardDrive className="w-5 h-5 text-primary" /> Media Library
           </h2>
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="relative">
+          <div className="relative hidden sm:block">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
-              placeholder="एसेट्स, टैग्स या ऑल्ट टेक्स्ट खोजें..." 
-              className="pl-9 pr-4 py-2 w-64 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none"
+              placeholder="Search assets, tags, alt text..." 
+              className="pl-9 pr-4 py-2 w-64 bg-slate-50 dark:bg-[#0A0F1D] border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:border-primary focus:bg-white dark:focus:bg-[#0A0F1D] outline-none transition-colors"
             />
           </div>
-          <button className="flex items-center justify-center p-2 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
-            <Filter className="w-4 h-4" />
-          </button>
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+             <button onClick={() => setView('grid')} className={`p-1.5 rounded-md transition-colors ${view === 'grid' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+                <LayoutGrid className="w-4 h-4" />
+             </button>
+             <button onClick={() => setView('list')} className={`p-1.5 rounded-md transition-colors ${view === 'list' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+                <ListIcon className="w-4 h-4" />
+             </button>
+          </div>
           <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-2"></div>
-          <button className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold py-2 px-4 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-            <FolderPlus className="w-4 h-4" /> New Folder
-          </button>
-          <button className="flex items-center gap-2 bg-primary text-white font-bold py-2 px-4 rounded-xl hover:bg-primary/90 transition-colors">
+          <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 bg-primary text-white font-medium py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors shadow-sm text-sm">
             <Upload className="w-4 h-4" /> Upload
           </button>
         </div>
@@ -56,8 +70,8 @@ export default function MediaLibrary() {
       <div className="flex flex-1 overflow-hidden">
         
         {/* Left Sidebar - Folders */}
-        <div className="w-64 border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 shrink-0 overflow-y-auto">
-          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Library</h3>
+        <div className="w-64 border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0F172A]/50 p-6 shrink-0 overflow-y-auto hidden md:block">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Library</h3>
           
           <ul className="space-y-1 mb-8">
             <li>

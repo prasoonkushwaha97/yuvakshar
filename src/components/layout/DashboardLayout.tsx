@@ -281,13 +281,13 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
                         <p className="text-xs text-slate-500 truncate">{currentUser?.email}</p>
                       </div>
                       <div className="py-1">
-                        <Link href={getCanonicalProfileUrl(currentUser) || "#"} className="flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900">
+                        <Link href={getCanonicalProfileUrl(currentUser) || (currentUser ? `/u/${currentUser.id}` : "/u")} className="flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900">
                           <User className="w-4 h-4 mr-3 text-slate-400" />
                           My Profile
                         </Link>
                         <Link href="/settings" className="flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900">
                           <Settings className="w-4 h-4 mr-3 text-slate-400" />
-                          Account Settings
+                          Settings
                         </Link>
                       </div>
                       <div className="py-1 border-t border-slate-100 dark:border-slate-800">

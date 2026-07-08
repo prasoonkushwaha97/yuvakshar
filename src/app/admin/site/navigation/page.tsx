@@ -9,7 +9,7 @@ export default function NavigationBuilder() {
     { id: "n2", title: "Current Affairs", url: "/current-affairs", visibility: "public" },
     { id: "n3", title: "Magazine", url: "/magazine", visibility: "public", badge: "New" },
     { id: "n4", title: "Community", url: "/community", visibility: "registered" },
-    { id: "n5", title: "Contributor Portal", url: "/contribute", visibility: "public" },
+    { id: "n5", title: "Contributor Portal", url: "/workspace/articles/new", visibility: "public" },
   ]);
 
   return (

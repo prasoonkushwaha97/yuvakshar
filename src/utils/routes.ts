@@ -9,7 +9,8 @@ export const ROUTES = {
   ABOUT: "/about",
   CONTACT: "/contact",
   MAGAZINE: "/magazine",
-  CONTRIBUTE: "/contribute",
+  CONTRIBUTE: "/contribute", // Deprecated
+  ARTICLE_EDITOR: "/workspace/articles/new",
   SETTINGS: "/settings",
   BOOKMARKS: "/bookmarks",
   LOGIN: "/login",

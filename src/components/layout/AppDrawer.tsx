@@ -156,9 +156,9 @@ export default function AppDrawer({ isOpen, onClose, mode, onLogout }: AppDrawer
                 let finalHref = action.href;
                 if (action.href === "/u") {
                   if (currentUser) {
-                    finalHref = getCanonicalProfileUrl(currentUser) ?? "#";
+                    finalHref = getCanonicalProfileUrl(currentUser) ?? `/u/${currentUser.id}`;
                   } else {
-                    finalHref = "#"; // Fallback, shouldn't reach here due to auth checks
+                    finalHref = "/u";
                   }
                 }
                 

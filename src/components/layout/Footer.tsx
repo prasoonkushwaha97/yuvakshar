@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Send } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
+import { ROUTES } from "@/utils/routes";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -76,7 +77,7 @@ export default function Footer() {
             </h4>
             <div className="flex flex-col space-y-1.5 text-slate-600 dark:text-slate-400 font-medium">
               <Link href="/contact" className="hover:text-primary transition-colors">संपर्क करें</Link>
-              <Link href="/contribute" className="hover:text-primary transition-colors">रचना भेजें</Link>
+              <Link href={ROUTES.ARTICLE_EDITOR} className="hover:text-primary transition-colors">रचना भेजें</Link>
               <Link href="/magazine" className="hover:text-primary transition-colors">पत्रिका संग्रह</Link>
               
               {/* Social Media Links */}

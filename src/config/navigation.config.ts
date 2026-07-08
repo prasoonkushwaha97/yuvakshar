@@ -38,7 +38,6 @@ export const profileActions = [
   { labelHi: "मेरी प्रोफ़ाइल", labelEn: "Profile", href: "/u", icon: User },
   { labelHi: "बुकमार्क सूची", labelEn: "Bookmarks", href: "/bookmarks", icon: Bookmark },
   { labelHi: "सूचनाएं", labelEn: "Notifications", href: "/community/notifications", icon: Bell },
-  { labelHi: "पठन इतिहास", labelEn: "Reading History", href: "/community/discussion", icon: History },
   { labelHi: "सेटिंग्स", labelEn: "Settings", href: "/settings", icon: Settings },
   { labelHi: "लॉगआउट करें", labelEn: "Logout", href: "#logout", icon: LogOut, isDanger: true }
 ];
