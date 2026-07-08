@@ -43,7 +43,6 @@ export const profileActions = [
 export const bottomNavLinks = [
   { labelHi: "मुख्य", labelEn: "Home", href: "/", icon: Home },
   { labelHi: "समाचार", labelEn: "News", href: "/current-affairs", icon: Newspaper },
-  { labelHi: "पत्रिका", labelEn: "पत्रिका", href: "/magazine", icon: BookOpen },
   { labelHi: "चौपाल", labelEn: "Chaupal", href: "/community", icon: MessageSquare },
   { labelHi: "प्रोफ़ाइल", labelEn: "Profile", href: "#profile", icon: User }
 ];

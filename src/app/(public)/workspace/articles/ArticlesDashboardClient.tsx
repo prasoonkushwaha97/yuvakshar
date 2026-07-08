@@ -53,7 +53,7 @@ export default function ArticlesDashboardClient({ initialSubmissions, error }: {
         </h2>
         <Link 
           href="/workspace/articles/new"
-          className="inline-flex items-center gap-2 bg-[#EA580C] text-white font-bold py-2.5 px-6 rounded-xl hover:bg-[#C2410C] transition-colors font-hindi shadow-sm text-sm"
+          className="hidden lg:inline-flex items-center gap-2 bg-[#EA580C] text-white font-bold py-2.5 px-6 rounded-xl hover:bg-[#C2410C] transition-colors font-hindi shadow-sm text-sm"
         >
           <Plus className="w-4 h-4" /> नया लेख
         </Link>

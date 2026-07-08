@@ -2,7 +2,7 @@
 
 import React, { Suspense } from "react";
 import ChaupalDesktopSidebar from "@/components/chaupal/layout/ChaupalDesktopSidebar";
-import ChaupalMobileBottomNav from "@/components/chaupal/layout/ChaupalMobileBottomNav";
+
 import { useCms } from "@/store/CmsContext";
 import SkeletonLoader from "@/components/chaupal/shared/SkeletonLoader";
 
@@ -29,8 +29,6 @@ export default function ChaupalLayout({ children }: { children: React.ReactNode 
 
       </div>
 
-      {/* Mobile Navigation */}
-      <ChaupalMobileBottomNav currentUserId={currentUser?.id} />
     </div>
   );
 }

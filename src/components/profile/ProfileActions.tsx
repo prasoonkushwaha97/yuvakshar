@@ -23,7 +23,7 @@ export default function ProfileActions({
         <>
           <Link 
             href="/workspace/articles/new"
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#F97316] hover:bg-[#F97316]/95 text-white px-6 py-2.5 rounded-full text-sm font-bold font-serif shadow-sm hover:shadow-md transition-all active:scale-95"
+            className="hidden lg:flex items-center justify-center gap-2 bg-[#F97316] hover:bg-[#F97316]/95 text-white px-6 py-2.5 rounded-full text-sm font-bold font-serif shadow-sm hover:shadow-md transition-all active:scale-95"
           >
             <PenTool className="w-4 h-4" />
             <span>नया लेख</span>
