@@ -7,14 +7,13 @@ import { useLanguage } from "@/store/LanguageContext";
 import { getSectionsForLayout } from "@/lib/actions/homepageCmsActions";
 
 // Skeletons
-import { HeroSkeleton, CategorySkeleton, VideoSkeleton } from "@/components/homepage/shared/Skeleton";
+import { HeroSkeleton, CategorySkeleton } from "@/components/homepage/shared/Skeleton";
 
 // Layout
 
 // Blocks
 import Hero from "@/components/homepage/blocks/Hero";
 import CategoryBlock from "@/components/homepage/blocks/CategoryBlock";
-import Videos from "@/components/homepage/blocks/Videos";
 import Magazine from "@/components/homepage/blocks/Magazine";
 import TopStories from "@/components/homepage/blocks/TopStories";
 import EditorialPicks from "@/components/homepage/blocks/EditorialPicks";
@@ -80,7 +79,6 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-4 lg:pt-6 pb-10 lg:pb-14 space-y-12">
           <HeroSkeleton />
           <CategorySkeleton />
-          <VideoSkeleton />
         </div>
       </div>
     );
@@ -216,8 +214,6 @@ export default function Home() {
         return null;
       case "opinion":
         return null;
-      case "videos":
-        return <Videos />;
       case "magazine":
         return <Magazine />;
       case "community":
@@ -267,7 +263,6 @@ export default function Home() {
           <SectionErrorBoundary><EditorialPicks excludeIds={finalExcludesBeforeEditorial} /></SectionErrorBoundary>
           <SectionErrorBoundary><LatestNews excludeIds={excludeIdsForLatest} /></SectionErrorBoundary>
           <SectionErrorBoundary><Magazine /></SectionErrorBoundary>
-          <SectionErrorBoundary><Videos /></SectionErrorBoundary>
         </>
       )}
 

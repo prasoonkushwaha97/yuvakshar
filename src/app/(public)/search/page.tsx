@@ -3,10 +3,11 @@
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search as SearchIcon, ArrowRight, User, BookOpen, Newspaper, MessageSquare, Clock, Filter, AlertCircle, Video, Folder, Tag, Users } from "lucide-react";
+import { Search as SearchIcon, ArrowRight, User, BookOpen, Newspaper, MessageSquare, Clock, Filter, AlertCircle, Folder, Tag, Users, Mic } from "lucide-react";
 import { globalSearch, SearchResult } from "@/lib/actions/searchActions";
 import GlassCard from "@/components/yuvakshar/GlassCard";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useVoiceSearch } from "@/hooks/useVoiceSearch";
 
 function SearchSkeleton() {
   return (
@@ -36,7 +37,11 @@ function SearchPageContent() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   
-  const [activeTab, setActiveTab] = useState<"all" | "article" | "magazine" | "chaupal" | "video" | "author" | "taxonomies">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "article" | "magazine" | "chaupal" | "author" | "taxonomies">("all");
+
+  const { isListening, speechError, startVoiceSearch, stopVoiceSearch, isSupported } = useVoiceSearch((text) => {
+    setQuery(text);
+  });
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -83,7 +88,6 @@ function SearchPageContent() {
       case 'chaupal_post': return <MessageSquare className="w-5 h-5 text-pink-500" />;
       case 'chaupal_discussion': return <MessageSquare className="w-5 h-5 text-pink-500" />;
       case 'chaupal_group': return <Users className="w-5 h-5 text-indigo-500" />;
-      case 'video': return <Video className="w-5 h-5 text-red-500" />;
       case 'author': return <User className="w-5 h-5 text-amber-500" />;
       case 'category': return <Folder className="w-5 h-5 text-blue-500" />;
       case 'tag': return <Tag className="w-5 h-5 text-teal-500" />;
@@ -98,7 +102,6 @@ function SearchPageContent() {
       case 'chaupal_post': return 'चौपाल पोस्ट';
       case 'chaupal_discussion': return 'चौपाल चर्चा';
       case 'chaupal_group': return 'चौपाल समूह';
-      case 'video': return 'वीडियो';
       case 'author': return 'लेखक';
       case 'category': return 'श्रेणी';
       case 'tag': return 'टैग';
@@ -112,7 +115,6 @@ function SearchPageContent() {
       case 'article': return 'लेख';
       case 'magazine': return 'पत्रिका';
       case 'chaupal': return 'चौपाल';
-      case 'video': return 'वीडियो';
       case 'author': return 'लेखक';
       case 'taxonomies': return 'श्रेणियां / टैग';
       default: return '';
@@ -124,7 +126,6 @@ function SearchPageContent() {
     article: results.filter(r => r.type === 'article').length,
     magazine: results.filter(r => r.type === 'magazine').length,
     chaupal: results.filter(r => r.type.startsWith('chaupal_')).length,
-    video: results.filter(r => r.type === 'video').length,
     author: results.filter(r => r.type === 'author').length,
     taxonomies: results.filter(r => r.type === 'category' || r.type === 'tag').length,
   };
@@ -147,18 +148,46 @@ function SearchPageContent() {
           placeholder="खोजने के लिए शब्द लिखें..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full bg-white dark:bg-[#0E1322] border-2 border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-5 text-lg font-hindi text-slate-800 dark:text-slate-200 pl-14 focus:outline-none focus:border-[#ea580c] shadow-sm transition-all"
+          className="w-full bg-white dark:bg-[#0E1322] border-2 border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-5 text-lg font-hindi text-slate-800 dark:text-slate-200 pl-14 pr-24 focus:outline-none focus:border-[#ea580c] shadow-sm transition-all"
         />
         <SearchIcon className="w-6 h-6 text-slate-400 absolute left-5 top-5" />
         
-        {isSearching && (
-          <div className="absolute right-5 top-5">
-            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} className="inline-block">
-              <SearchIcon className="w-6 h-6 text-[#ea580c]" />
+        <div className="absolute right-4 top-3.5 flex items-center gap-2">
+          {isSearching && (
+            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} className="inline-block mr-2">
+              <SearchIcon className="w-5 h-5 text-[#ea580c]" />
             </motion.div>
-          </div>
-        )}
+          )}
+
+          {isSupported && (
+            <button
+              onClick={isListening ? stopVoiceSearch : startVoiceSearch}
+              className={`p-2.5 rounded-xl transition-all duration-300 flex items-center justify-center relative group ${
+                isListening 
+                  ? 'bg-red-50 text-red-500 dark:bg-red-500/10' 
+                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
+              }`}
+              title={isListening ? "सुनना बंद करें" : "बोलकर खोजें"}
+            >
+              {isListening && (
+                <span className="absolute inset-0 rounded-xl bg-red-400 opacity-30 animate-ping" />
+              )}
+              <Mic className={`w-5 h-5 relative z-10 ${isListening ? 'animate-pulse' : ''}`} />
+            </button>
+          )}
+        </div>
       </div>
+
+      {speechError && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 text-sm text-red-500 font-hindi px-2"
+        >
+          <AlertCircle className="w-4 h-4" />
+          <span>{speechError}</span>
+        </motion.div>
+      )}
 
       {/* Filters & Results Area */}
       {query.trim().length >= 2 && (
@@ -166,7 +195,7 @@ function SearchPageContent() {
           
           {/* Tabs */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {(['all', 'article', 'video', 'magazine', 'chaupal', 'author', 'taxonomies'] as const).map(tab => {
+            {(['all', 'article', 'magazine', 'chaupal', 'author', 'taxonomies'] as const).map(tab => {
               if (tab !== 'all' && tabCounts[tab] === 0) return null;
               
               return (

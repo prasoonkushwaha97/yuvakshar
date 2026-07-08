@@ -4,7 +4,7 @@ import { createClient } from "../supabaseServer";
 
 export interface SearchResult {
   id: string;
-  type: "article" | "magazine" | "video" | "chaupal_post" | "chaupal_discussion" | "chaupal_group" | "author" | "category" | "tag";
+  type: "article" | "magazine" | "chaupal_post" | "chaupal_discussion" | "chaupal_group" | "author" | "category" | "tag";
   title: string;
   subtitle?: string;
   thumbnail?: string;
@@ -157,27 +157,7 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
       }
     } catch (e) {}
 
-    // 6. Videos
-    try {
-      const { data, error } = await supabase
-        .from('videos')
-        .select('id, title, description, youtubeUrl, thumbnailUrl')
-        .or(`title.ilike.${likeQuery},description.ilike.${likeQuery}`)
-        .limit(3);
-      if (!error && data) {
-        data.forEach((v: any) => {
-          results.push({
-            id: `video-${v.id}`,
-            type: "video",
-            title: v.title,
-            subtitle: v.description,
-            thumbnail: v.thumbnailUrl,
-            url: `/videos/${v.id}`,
-            score: 6
-          });
-        });
-      }
-    } catch (e) {}
+
 
     // 7. Categories
     try {

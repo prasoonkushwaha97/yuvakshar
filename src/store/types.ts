@@ -132,22 +132,6 @@ export interface Profile {
 
 }
 
-// ─── Video ─────────────────────────────────────────────────────────────────
-export interface Video {
-  id: string;
-  title: string;
-  description: string;
-  youtubeUrl: string;
-  category: "समाचार" | "विशेष रिपोर्ट" | "साक्षात्कार" | "विचार" | "साहित्य" | "शिक्षा" | "पर्यावरण" | "इतिहास" | "पत्रिका विशेष" | "युवाक्षर संवाद";
-  thumbnailUrl?: string;
-  isFeatured: boolean;
-  isShorts: boolean;
-  status: "Draft" | "Published";
-  publishDate: string;
-  viewCount?: number;
-  duration?: string;
-}
-
 // ─── Comment ───────────────────────────────────────────────────────────────
 export interface Comment {
   id: string;

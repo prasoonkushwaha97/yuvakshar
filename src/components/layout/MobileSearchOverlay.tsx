@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X, Clock, TrendingUp, User, ArrowLeft, BookOpen, MessageSquare, Newspaper, Tag, Video, Folder, Users, Mic, AlertCircle } from "lucide-react";
+import { Search, X, Clock, TrendingUp, User, ArrowLeft, BookOpen, MessageSquare, Newspaper, Tag, Folder, Users, Mic, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { globalSearch, SearchResult } from "@/lib/actions/searchActions";
 import { useCms } from "@/store/CmsContext";
@@ -142,7 +142,7 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
   const articles = results.filter(r => r.type === "article");
   const authors = results.filter(r => r.type === "author");
   const magazines = results.filter(r => r.type === "magazine");
-  const videos = results.filter(r => r.type === "video");
+
   const taxonomies = results.filter(r => r.type === "category" || r.type === "tag");
   const chaupals = results.filter(r => r.type === "chaupal_post" || r.type === "chaupal_discussion" || r.type === "chaupal_group");
 
@@ -257,33 +257,6 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
                     </div>
                   )}
 
-                  {videos.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 font-hindi">
-                        <Video className="w-4 h-4" /> वीडियो
-                      </h3>
-                      <div className="space-y-2">
-                        {videos.slice(0, 2).map(video => (
-                          <button
-                            key={video.id}
-                            data-search-item="true"
-                            onKeyDown={handleKeyboardNav}
-                            onClick={() => handleSelectResult(video.url, query)}
-                            className="w-full text-left group flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:bg-slate-100 dark:focus:bg-slate-800 focus:outline-none"
-                          >
-                            {video.thumbnail && (
-                              <img src={video.thumbnail} className="w-16 h-10 rounded-lg object-cover shrink-0" />
-                            )}
-                            <div className="flex-grow min-w-0">
-                              <h4 className="text-slate-900 dark:text-slate-100 font-medium font-hindi text-sm line-clamp-2">
-                                <Highlight text={video.title} />
-                              </h4>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {chaupals.length > 0 && (
                     <div className="space-y-3">

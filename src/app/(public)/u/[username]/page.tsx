@@ -32,7 +32,7 @@ export default function UserProfile() {
   const decodedParam = rawParam ? decodeURIComponent(rawParam) : "";
   const username = decodedParam.startsWith("@") ? decodedParam.substring(1) : decodedParam;
 
-  const { users, articles, videos, currentUser, followAuthor, openAuthModal, authLoading, cmsDataLoading } = useCms();
+  const { users, articles, currentUser, followAuthor, openAuthModal, authLoading, cmsDataLoading } = useCms();
 
   // Dialog & Tabs States
   const [activeTab, setActiveTab] = useState<ProfileTabId>("articles");
@@ -85,13 +85,7 @@ export default function UserProfile() {
     });
   }, [articles, user.id, user.name, isOwner]);
 
-  // User videos
-  const userVideos = useMemo(() => {
-    return (videos || []).filter(v => 
-      v.status === "Published" && 
-      (v.title?.includes(user.name) || v.description?.includes(user.name))
-    );
-  }, [videos, user.name]);
+
 
   // Collect unique media: Cover images from articles + User videos
   const userMedia = useMemo(() => {
@@ -111,21 +105,8 @@ export default function UserProfile() {
       }
     });
 
-    // 2. Videos
-    userVideos.forEach((vid) => {
-      const url = vid.thumbnailUrl || "/images/placeholder-news.jpg";
-      if (url && !seenUrls.has(url)) {
-        seenUrls.add(url);
-        mediaList.push({
-          type: "video",
-          url: url,
-          title: vid.title,
-        });
-      }
-    });
-
     return mediaList;
-  }, [userArticles, userVideos]);
+  }, [userArticles]);
 
   // Overview Layout configurations
   const featuredArticle = useMemo(() => {

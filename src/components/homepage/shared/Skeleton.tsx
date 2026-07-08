@@ -81,22 +81,6 @@ export function CategorySkeleton() {
   );
 }
 
-export function VideoSkeleton() {
-  return (
-    <div className="space-y-4 w-full py-6">
-      <BaseSkeleton className="h-8 w-1/4 mb-4" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="space-y-3">
-            <BaseSkeleton className="aspect-video w-full" />
-            <BaseSkeleton className="h-5 w-3/4" />
-            <BaseSkeleton className="h-3.5 w-1/4" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export function MagazineSkeleton() {
   return (

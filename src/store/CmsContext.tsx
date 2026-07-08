@@ -283,8 +283,6 @@ interface CmsContextType {
   quizAttempts: QuizAttempt[];
   quizSettings: Record<string, QuizSettings>;
   leaderboard: QuizLeaderboardEntry[];
-  videos: Video[];
-  
   // Auth Operations
   loginUser: (email: string, passwordInput?: string) => Promise<boolean>;
   loginWithGoogle: () => Promise<void>;
@@ -310,11 +308,6 @@ interface CmsContextType {
   deleteArticle: (id: string) => Promise<void>;
   incrementArticleView: (id: string) => Promise<void>;
   incrementArticleLike: (id: string) => Promise<void>;
-
-  // Videos CRUD
-  saveVideo: (video: Partial<Video> & { id?: string }) => Promise<Video>;
-  deleteVideo: (id: string) => Promise<void>;
-  setFeaturedVideo: (id: string) => Promise<void>;
 
   // Magazines CRUD
   saveMagazine: (magazine: Partial<Magazine>) => Promise<Magazine>;
@@ -435,79 +428,6 @@ interface CmsContextType {
 
 const CmsContext = createContext<CmsContextType | undefined>(undefined);
 
-const initialfallbackVideos: Video[] = [
-  {
-    id: "vid-1",
-    title: "विशेष चर्चा: भारत में डिजिटल संप्रभुता और सुपरकंप्यूटिंग क्रांति का भविष्य",
-    description: "इस विशेष रिपोर्ट में देखिए कि कैसे राष्ट्रीय सुपरकंप्यूटिंग मिशन (NSM) भारत को तकनीक के क्षेत्र में आत्मनिर्भर बनाने की दिशा में नए मार्ग प्रशस्त कर रहा है। इसमें परम सुपरकंप्यूटर श्रृंखला और घरेलू माइक्रोप्रोसेसर विकास के बारे में चर्चा की गई है।",
-    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    category: "विशेष रिपोर्ट",
-    thumbnailUrl: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
-    isFeatured: true,
-    isShorts: false,
-    status: "Published",
-    publishDate: "११ जून २०२६",
-    viewCount: 1540,
-    duration: "12:45"
-  },
-  {
-    id: "vid-2",
-    title: "युवाक्षर संवाद: नई राष्ट्रीय शिक्षा नीति (NEP) और भारतीय भाषाएं",
-    description: "शिक्षाविदों के साथ एक विशेष साक्षात्कार जहां हमने भारतीय भाषाओं में उच्च शिक्षा और तकनीकी विषयों के शिक्षण पर विस्तार से चर्चा की। क्या मातृभाषा में शिक्षण बौद्धिक विकास को गति देगा?",
-    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    category: "साक्षात्कार",
-    thumbnailUrl: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=400&q=80",
-    isFeatured: false,
-    isShorts: false,
-    status: "Published",
-    publishDate: "१० जून २०२६",
-    viewCount: 850,
-    duration: "18:20"
-  },
-  {
-    id: "vid-3",
-    title: "गंगा और पर्यावरण: जमीनी स्तर पर संरक्षण की चुनौतियाँ",
-    description: "ऋषिकेश से लेकर वाराणसी तक गंगा नदी के संरक्षण और प्रदूषण नियंत्रण प्रयासों पर एक गहन रिपोर्ट। जैविक खेती और कचरा प्रबंधन पर चर्चा।",
-    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    category: "पर्यावरण",
-    thumbnailUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80",
-    isFeatured: false,
-    isShorts: false,
-    status: "Published",
-    publishDate: "०९ जून २०२६",
-    viewCount: 1200,
-    duration: "8:15"
-  },
-  {
-    id: "vid-4",
-    title: "डिजिटल इंडिया क्या है? (शॉर्ट वीडियो)",
-    description: "डिजिटल भारत अभियान के मुख्य स्तंभ और आम नागरिक के जीवन पर इसका प्रभाव। १ मिनट में पूरी जानकारी।",
-    youtubeUrl: "https://www.youtube.com/shorts/dQw4w9WgXcQ",
-    category: "समाचार",
-    thumbnailUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80",
-    isFeatured: false,
-    isShorts: true,
-    status: "Published",
-    publishDate: "०८ जून २०२६",
-    viewCount: 4500,
-    duration: "0:58"
-  },
-  {
-    id: "vid-5",
-    title: "सुपरकंप्यूटर कैसे काम करता है? (लघु ज्ञान)",
-    description: "सुपरकंप्यूटर की समानांतर प्रोसेसिंग क्षमता और सामान्य कंप्यूटर से इसकी तुलना। केवल ६० सेकंड में।",
-    youtubeUrl: "https://www.youtube.com/shorts/dQw4w9WgXcQ",
-    category: "शिक्षा",
-    thumbnailUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=400&q=80",
-    isFeatured: false,
-    isShorts: true,
-    status: "Published",
-    publishDate: "०७ जून २०२६",
-    viewCount: 3100,
-    duration: "0:55"
-  }
-];
-
 const isOwner = (role?: string | null) => role === "संस्थापक" || role === "Founder" || role === "संस्थापक";
 const isAdmin = (role?: string | null) => role === "प्रशासन" || role === "प्रशासक" || role === "प्रधान प्रशासक" || isOwner(role);
 const isEIC = (role?: string | null) => role === "Editor-in-Chief" || role === "प्रधान संपादक" || isAdmin(role);
@@ -528,7 +448,6 @@ export function CmsProvider({
   initialHomepageSections?: any[],
   initialAds?: any[]
 }) {
-  const [videos, setVideos] = useState<Video[]>([]);
   const [supabaseConfigured, setSupabaseConfigured] = useState(false);
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -1204,14 +1123,6 @@ export function CmsProvider({
     } else {
     }
 
-
-    // Load Videos
-    const localVideos = null;
-    if (localVideos) {
-      setVideos(JSON.parse(localVideos));
-    } else {
-      setVideos(initialfallbackVideos);
-    }
 
     // Load Tasks
     const localTasks = null;
@@ -2071,71 +1982,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     logActivity(`Deleted Article: ${id}`);
   };
 
-  const saveVideo = async (video: Partial<Video> & { id?: string }) => {
-    let updated: Video[];
-    const now = new Date();
-    const formatter = new Intl.DateTimeFormat('hi-IN', { day: '2-digit', month: 'long', year: 'numeric' });
-    const formattedDate = formatter.format(now);
-
-    const extractYoutubeId = (url: string) => {
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-      const match = url.match(regExp);
-      return (match && match[2].length === 11) ? match[2] : null;
-    };
-
-    const parsedId = extractYoutubeId(video.youtubeUrl || "");
-    const finalThumbnail = video.thumbnailUrl || (parsedId ? `https://img.youtube.com/vi/${parsedId}/maxresdefault.jpg` : undefined);
-
-    if (video.id) {
-      // Edit
-      updated = videos.map(v => {
-        if (v.id === video.id) {
-          const updatedVid = {
-            ...v,
-            ...video,
-            thumbnailUrl: finalThumbnail
-          } as Video;
-          return updatedVid;
-        }
-        return v;
-      });
-    } else {
-      // Add
-      const newVideo: Video = {
-        id: `vid-${Date.now()}`,
-        title: video.title || "Untitled Video",
-        description: video.description || "",
-        youtubeUrl: video.youtubeUrl || "",
-        category: video.category || "समाचार",
-        thumbnailUrl: finalThumbnail,
-        isFeatured: video.isFeatured || false,
-        isShorts: video.isShorts || false,
-        status: video.status || "Published",
-        publishDate: formattedDate,
-        viewCount: 0,
-        duration: video.duration || (video.isShorts ? "0:59" : "5:00")
-      };
-      updated = [newVideo, ...videos];
-    }
-
-    // Enforce single featured video constraint
-    if (video.isFeatured) {
-      updated = updated.map(v => {
-        const isCurrent = v.id === video.id || (video.id === undefined && v.id === updated[0].id);
-        return { ...v, isFeatured: isCurrent };
-      });
-    }
-
-    setVideos(updated);
-    logActivity(`Saved Video: ${video.title} (Featured: ${video.isFeatured})`);
-    return updated.find(v => v.id === video.id || (video.id === undefined && v.id === updated[0].id))!;
-  };
-
-  const deleteVideo = async (id: string) => {
-    const updated = videos.filter(v => v.id !== id);
-    setVideos(updated);
-    logActivity(`Deleted Video: ${id}`);
-  };
 
   const likeComment = async (id: string) => {
     if (supabaseConfigured) {
@@ -2168,14 +2014,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     }
   };
 
-  const setFeaturedVideo = async (id: string) => {
-    const updated = videos.map(v => ({
-      ...v,
-      isFeatured: v.id === id
-    }));
-    setVideos(updated);
-    logActivity(`Set Featured Video: ${id}`);
-  };
 
   const saveMagazine = async (mag: Partial<Magazine>): Promise<Magazine> => {
     let saved: Magazine;
@@ -3623,10 +3461,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         restoreDefaultIcon,
         saveArticle,
         deleteArticle,
-        saveVideo,
-        deleteVideo,
-        setFeaturedVideo,
-        videos,
+
         saveMagazine,
         deleteMagazine,
         incrementArticleView,

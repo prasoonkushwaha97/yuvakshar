@@ -54,7 +54,7 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
       </div>
 
       {/* Grid: 4 cols on desktop, 2 cols on tablet, swipe on mobile */}
-      <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 overflow-x-auto sm:overflow-x-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none">
+      <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 overflow-x-auto sm:overflow-x-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none -mx-4 px-4 md:mx-0 md:px-0">
         {picks.map((art: any) => {
           const title = stripMarkdown(art.title || art.title_hi || "");
           const summary = stripMarkdown(art.summary || art.summary_hi || art.content || "");
