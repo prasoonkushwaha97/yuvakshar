@@ -10,7 +10,9 @@ import { ContentRenderer } from "@/components/content/ContentRenderer";
 import MetaInfo from "@/components/homepage/shared/MetaInfo";
 import ArticleActions from "@/components/articles/ArticleActions";
 import CommentSection from "@/components/articles/CommentSection";
-
+import ArticleContent from "@/components/articles/ArticleContent";
+import RelatedArticles from "@/components/articles/RelatedArticles";
+import { getRelatedArticlesForInfiniteScroll } from "@/lib/actions/articleActions";
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
@@ -87,91 +89,12 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
   const title = stripMarkdown(article?.title_hi || "");
 
 
+  const relatedArticles = await getRelatedArticlesForInfiniteScroll([article.id], article.categories?.id, 8);
+
   return (
-    <div className="w-full min-h-screen bg-[#FDFCF7] dark:bg-[#0B0F19] text-[#111111] dark:text-[#E2E8F0] font-sans pb-16 transition-colors duration-300">
-      
-      <SectionContainer>
-        <div className="w-full max-w-7xl mx-auto pt-6 px-4 md:px-6">
-          
-          {/* Editorial Column — all elements share this width */}
-          <article className="w-full max-w-[960px] mx-auto">
-            
-            {/* Article Card Container */}
-            <div className="w-full bg-white dark:bg-[#0E1322] border border-gray-150 dark:border-gray-850 p-6 md:p-10 lg:p-14 rounded-xl shadow-sm">
-            
-              {/* Category Breadcrumbs Tag */}
-              {article?.categories && (
-                <div className="mb-5 md:mb-6">
-                  <span className="bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/20 px-3 py-1 rounded-full text-xs font-sans font-black uppercase tracking-wider">
-                    {article.categories.name_hi || ""}
-                  </span>
-                </div>
-              )}
-
-              {/* Article Main Headline — scaled for desktop */}
-              <h1 className="font-serif font-black text-2xl md:text-[42px] md:leading-[1.25] text-gray-900 dark:text-white leading-tight mb-4 md:mb-8 tracking-tight">
-                {title}
-              </h1>
-
-              {/* Article Short Summary — larger on desktop */}
-              {article?.summary_hi && (
-                <p className="text-base md:text-lg text-gray-655 dark:text-gray-400 font-serif leading-relaxed md:leading-[1.8] italic border-l-4 border-gray-300 dark:border-gray-700 pl-4 md:pl-6 mb-6 md:mb-8">
-                  {stripMarkdown(article.summary_hi)}
-                </p>
-              )}
-
-              {/* Unified Editorial Metadata */}
-              <div className="border-t border-b border-gray-100 dark:border-gray-850 py-4 mb-6 md:mb-8">
-                <MetaInfo
-                  articleId={article.id}
-                  slug={article.slug}
-                  author={article.profiles?.name || "युवाक्षर डेस्क"}
-                  authorProfile={article.profiles}
-                  date={article.published_at || article.created_at || ""}
-                  showActions={false}
-                />
-              </div>
-
-              {/* Cover Image — premium presentation */}
-              {article?.cover_image && (
-                <div className="relative rounded-2xl overflow-hidden mb-8 md:mb-12 border border-gray-150 dark:border-gray-850 shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] aspect-[16/9] bg-gray-100 dark:bg-gray-900">
-                  <Image 
-                    src={article.cover_image} 
-                    alt={title}
-                    fill
-                    priority
-                    className="object-cover"
-                  />
-                </div>
-              )}
-
-              {/* Main Content Body (Rich Markdown rendering) */}
-              <div className="font-serif leading-relaxed text-lg md:text-xl text-gray-855 dark:text-gray-200">
-                <ContentRenderer content={article?.content || ""} />
-              </div>
-
-              {/* Public interact panel bottom */}
-              <div className="mt-12 md:mt-16 pt-6 border-t border-gray-100 dark:border-gray-855 flex items-center justify-between text-xs text-gray-455 font-sans">
-                <div className="flex flex-wrap gap-1">
-                  {article?.tags?.slice(0, 3)?.map((tag: string) => (
-                    <span key={tag} className="bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-
-                <ArticleActions articleId={article.id} slug={article.slug} title={title} />
-              </div>
-
-              {/* Comment Section Sprint 2 */}
-              <CommentSection articleId={article.id} />
-            </div>
-
-          </article>
-
-        </div>
-      </SectionContainer>
-
+    <div className="w-full min-h-screen bg-[#FDFCF7] dark:bg-[#0B0F19] text-[#111111] dark:text-[#E2E8F0] font-sans transition-colors duration-300">
+      <ArticleContent article={article as any} />
+      <RelatedArticles articles={relatedArticles} />
     </div>
   );
 }

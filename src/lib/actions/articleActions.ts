@@ -317,3 +317,99 @@ function mapArticleToDb(data: Partial<Article>): any {
   if (data.language !== undefined) dbData.language_code = data.language;
   return dbData;
 }
+
+export async function getRelatedArticlesForInfiniteScroll(
+  excludeIds: string[],
+  categoryId?: string,
+  limit: number = 2
+): Promise<Article[]> {
+  try {
+    const supabase = await createClient();
+    
+    // We do a single query to get the latest published articles not in excludeIds.
+    // If categoryId is provided, we can prioritize them, but for simplicity let's 
+    // fetch limit * 3 articles, sort them in JS if we need to prioritize category,
+    // or just rely on supabase to give us some matches.
+    let query = supabase
+      .from("articles")
+      .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
+      .eq("status", "Published")
+      .not("id", "in", `(${excludeIds.join(',')})`)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (categoryId) {
+       // Ideally we do an OR query or rank by category, but Supabase doesn't easily let us order by condition.
+       // Let's just fetch the exact category first.
+       const { data: catData, error: catError } = await supabase
+         .from("articles")
+         .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
+         .eq("status", "Published")
+         .eq("category_id", categoryId)
+         .not("id", "in", `(${excludeIds.join(',')})`)
+         .order("created_at", { ascending: false })
+         .limit(limit);
+         
+       if (!catError && catData && catData.length > 0) {
+         let results = catData;
+         if (results.length < limit) {
+           const newExcludes = [...excludeIds, ...results.map(r => r.id)];
+           const { data: fallbackData } = await supabase
+             .from("articles")
+             .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
+             .eq("status", "Published")
+             .not("id", "in", `(${newExcludes.join(',')})`)
+             .order("created_at", { ascending: false })
+             .limit(limit - results.length);
+           if (fallbackData) {
+             results = [...results, ...fallbackData];
+           }
+         }
+         return results.map((art: any) => ({
+            ...art,
+            profiles: art.profiles ? mapDbProfileToProfile(art.profiles) : null,
+            title_hi: art.title,
+            title_en: art.english_title || "",
+            summary_hi: art.summary || "",
+            summary_en: art.summary || "",
+            is_featured: art.featured || false,
+            view_count: art.views || 0,
+            like_count: art.likes || 0,
+            categories: art.categories ? {
+              id: art.categories.id,
+              name_hi: art.categories.name,
+              slug: art.categories.slug,
+              color: "#EA580C"
+            } : null
+         })) as Article[];
+       }
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.error("Error fetching related infinite scroll articles:", error);
+      return [];
+    }
+
+    return (data || []).map((art: any) => ({
+      ...art,
+      profiles: art.profiles ? mapDbProfileToProfile(art.profiles) : null,
+      title_hi: art.title,
+      title_en: art.english_title || "",
+      summary_hi: art.summary || "",
+      summary_en: art.summary || "",
+      is_featured: art.featured || false,
+      view_count: art.views || 0,
+      like_count: art.likes || 0,
+      categories: art.categories ? {
+        id: art.categories.id,
+        name_hi: art.categories.name,
+        slug: art.categories.slug,
+        color: "#EA580C"
+      } : null
+    })) as Article[];
+  } catch (err) {
+    console.error("Exception fetching infinite scroll:", err);
+    return [];
+  }
+}
