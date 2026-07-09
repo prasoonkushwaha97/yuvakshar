@@ -6,6 +6,7 @@ import { useCms } from "@/store/CmsContext";
 import { Camera, Loader2, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import MediaUploadModal from "../media/MediaUploadModal";
+import { STORAGE_CONFIG } from "@/config/storage.config";
 
 interface AvatarUploaderProps {
   currentAvatarUrl: string;
@@ -71,6 +72,7 @@ export default function AvatarUploader({ currentAvatarUrl }: AvatarUploaderProps
         onClose={() => setIsModalOpen(false)}
         onSelect={handleMediaSelect}
         requireAltText={false}
+        folder={STORAGE_CONFIG.FOLDERS.AVATARS}
       />
     </>
   );

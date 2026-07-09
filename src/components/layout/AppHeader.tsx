@@ -112,13 +112,6 @@ export default function AppHeader() {
           
           {/* Mobile Menu Trigger & Logo Group */}
           <div className="flex items-center space-x-3.5">
-            <button 
-              onClick={() => { setDrawerMode("navigation"); setDrawerOpen(true); }}
-              className="lg:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500"
-              aria-label="Open menu drawer"
-            >
-              <Menu className="w-5 h-5" strokeWidth={2.2} />
-            </button>
 
             <Link href="/" className="flex items-center shrink-0 hover:opacity-90 transition-opacity duration-200 cursor-pointer">
               <Image
@@ -196,7 +189,17 @@ export default function AppHeader() {
                 className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-500 hover:text-[#f97316] transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Open profile actions"
               >
-                <User className="w-[18px] h-[18px]" strokeWidth={2.2} />
+                {currentUser && currentUser.avatar_url ? (
+                  <div className="w-[28px] h-[28px] lg:w-[32px] lg:h-[32px] rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <img 
+                      src={currentUser.avatar_url} 
+                      alt="Profile" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <User className="w-[22px] h-[22px]" strokeWidth={2.2} />
+                )}
               </button>
             </div>
           </div>

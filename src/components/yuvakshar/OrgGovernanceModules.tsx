@@ -31,7 +31,7 @@ export function CandidateManagement({ currentUser }: { currentUser: Profile }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<Profile["role"]>("स्वयंसेवक");
+  const [role, setRole] = useState<Profile["role"]>("Normal User");
   const [dept, setDept] = useState("स्वयंसेवी");
   const [quals, setQuals] = useState("");
   const [exp, setExp] = useState("");
@@ -410,7 +410,7 @@ export function TaskBoard({ currentUser }: { currentUser: Profile }) {
   // Filter state
   const [statusFilter, setStatusFilter] = useState<string>("All");
 
-  const teamMembers = users.filter(u => u.role !== null && u.role !== "\u0938\u0926\u0938\u094d\u092f" && u.role !== "Subscriber" as any && u.status === "active");
+  const teamMembers = users.filter(u => u.role !== null && u.role !== "Normal User" && u.status === "active");
 
   const handleAssign = async (e: React.FormEvent) => {
     e.preventDefault();

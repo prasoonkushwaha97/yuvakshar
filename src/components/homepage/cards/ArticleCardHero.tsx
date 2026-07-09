@@ -20,7 +20,7 @@ export default function ArticleCardHero({ article }: ArticleCardHeroProps) {
   const imageUrl = article.coverImage || article.cover_image || article.image || "/images/placeholder-news.jpg";
 
   return (
-    <div className="group flex flex-col w-full h-full bg-white dark:bg-[#0A0A0A] rounded-lg overflow-hidden border border-gray-150 dark:border-gray-850 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_25px_-5px_rgba(0,0,0,0.08)] transition-all duration-500">
+    <div className="group flex flex-col w-full h-full bg-white dark:bg-[#0A0A0A] rounded-none sm:rounded-lg overflow-hidden border-b sm:border border-gray-150 dark:border-gray-850 shadow-none sm:shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_25px_-5px_rgba(0,0,0,0.08)] transition-all duration-500">
       {/* 1. Cover Image */}
       <Link href={getArticleUrl(article)} className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-100 dark:bg-gray-900 border-b border-gray-150 dark:border-gray-850 shrink-0">
         <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out" loading="eager" fill />
@@ -45,8 +45,8 @@ export default function ArticleCardHero({ article }: ArticleCardHeroProps) {
         <MetaInfo
           articleId={article.id}
           slug={article.slug}
-          author={article.author || "युवाक्षर डेस्क"}
-          authorProfile={article.authorProfile}
+          author={article.profiles?.name || article.author || "युवाक्षर डेस्क"}
+          authorProfile={article.profiles || article.authorProfile}
           date={article.date || ""}
           title={title}
           showActions={true}

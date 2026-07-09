@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { ArrowLeft, FileText, Send, CheckCircle2, Tags, AlertCircle } from "lucide-react";
+import { FileText, Send, CheckCircle2, Tags, AlertCircle } from "lucide-react";
 import { submitContributorArticle } from "@/lib/actions/contributeActions";
 import { getArticleById } from "@/lib/actions/articleActions";
 import { useRouter, useSearchParams } from "next/navigation";

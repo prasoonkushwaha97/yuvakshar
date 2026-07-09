@@ -95,8 +95,8 @@ export default function TopStories() {
                   <MetaInfo
                     articleId={art.id}
                     slug={art.slug}
-                    author={art.author || "युवाक्षर डेस्क"}
-                    authorProfile={art.authorProfile}
+                    author={art.profiles?.name || art.author || "युवाक्षर डेस्क"}
+                    authorProfile={art.profiles || art.authorProfile}
                     date={art.date}
                     showActions={false}
                     className="flex-1 min-w-0"

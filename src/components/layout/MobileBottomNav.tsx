@@ -8,15 +8,18 @@ import { useLanguage } from "@/store/LanguageContext";
 import { bottomNavLinks } from "@/config/navigation.config";
 import { designTokens } from "@/config/designTokens";
 import { Plus } from "lucide-react";
+
 import CreateBottomSheet from "./CreateBottomSheet";
+import { useRouter } from "next/navigation";
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const { locale } = useLanguage();
   const { currentUser } = useCms();
   
   const [visible, setVisible] = useState(true);
-  const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const lastScrollYRef = useRef(0);
 
   // Scroll visibility listeners (collapses on scroll down)
@@ -24,8 +27,6 @@ export default function MobileBottomNav() {
     lastScrollYRef.current = window.scrollY;
 
     const handleScroll = () => {
-      // Do not hide if the bottom sheet is open
-      if (isCreateSheetOpen) return;
 
       const currentScrollY = window.scrollY;
       if (currentScrollY < 10) {
@@ -40,14 +41,20 @@ export default function MobileBottomNav() {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isCreateSheetOpen]);
+  }, []);
 
   useEffect(() => {
     setVisible(true);
   }, [pathname]);
 
-  // Exclude bottom navigation inside dashboard settings & portal pathways
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/author")) {
+  // Exclude bottom navigation inside dashboard settings & specific pathways
+  if (
+    pathname?.startsWith("/admin") || 
+    pathname?.startsWith("/author") ||
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname?.startsWith("/workspace/articles/new")
+  ) {
     return null;
   }
 
@@ -119,9 +126,9 @@ export default function MobileBottomNav() {
           {/* Center FAB */}
           <div className="relative flex-1 flex justify-center h-full">
             <button
-              onClick={() => setIsCreateSheetOpen(true)}
+              onClick={() => setSheetOpen(true)}
               className="absolute -top-5 flex items-center justify-center w-[56px] h-[56px] bg-[#f97316] text-white rounded-full shadow-[0_4px_14px_rgba(249,115,22,0.4)] active:scale-95 hover:bg-[#ea580c] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-[#f97316]/30"
-              aria-label="Create Content"
+              aria-label="Create Action"
             >
               <Plus className="w-7 h-7" strokeWidth={2.5} />
             </button>
@@ -131,12 +138,9 @@ export default function MobileBottomNav() {
           {bottomNavLinks.slice(2, 4).map(renderNavLink)}
         </div>
       </nav>
+      
+      <CreateBottomSheet isOpen={sheetOpen} onClose={() => setSheetOpen(false)} />
 
-      {/* Global Create Bottom Sheet */}
-      <CreateBottomSheet 
-        isOpen={isCreateSheetOpen} 
-        onClose={() => setIsCreateSheetOpen(false)} 
-      />
     </>
   );
 }

@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, UploadCloud, Image as ImageIcon, Search, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { uploadImage } from "@/utils/storageHelper";
+import { STORAGE_CONFIG, StorageFolder } from "@/config/storage.config";
 import { supabase } from "@/lib/supabaseClient";
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
@@ -22,9 +23,10 @@ interface MediaUploadModalProps {
   onClose: () => void;
   onSelect: (url: string, altText: string) => void;
   requireAltText?: boolean;
+  folder?: StorageFolder;
 }
 
-export default function MediaUploadModal({ isOpen, onClose, onSelect, requireAltText = true }: MediaUploadModalProps) {
+export default function MediaUploadModal({ isOpen, onClose, onSelect, requireAltText = true, folder = STORAGE_CONFIG.FOLDERS.MISC }: MediaUploadModalProps) {
   const [activeTab, setActiveTab] = useState<"upload" | "library">("upload");
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -99,7 +101,7 @@ export default function MediaUploadModal({ isOpen, onClose, onSelect, requireAlt
       
       // 2. Upload to Supabase Storage
       setUploadProgress(60);
-      const publicUrl = await uploadImage(compressedFile, "yuvakshar-media", "uploads");
+      const publicUrl = await uploadImage(compressedFile, folder);
       
       // 3. Save to media_assets table
       setUploadProgress(90);
@@ -170,12 +172,13 @@ export default function MediaUploadModal({ isOpen, onClose, onSelect, requireAlt
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center p-0 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-white dark:bg-[#0E1322] w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]"
+          initial={{ opacity: 0, y: 50, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 50, scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+          className="bg-white dark:bg-[#0E1322] w-full max-w-3xl rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[85vh]"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">

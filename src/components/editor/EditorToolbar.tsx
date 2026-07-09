@@ -42,6 +42,7 @@ const ToolbarButton = ({
 );
 
 import MediaUploadModal from "../media/MediaUploadModal";
+import { STORAGE_CONFIG } from "@/config/storage.config";
 
 export function EditorToolbar({ editor }: EditorToolbarProps) {
   const [isMediaModalOpen, setIsMediaModalOpen] = React.useState(false);
@@ -86,6 +87,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         isOpen={isMediaModalOpen}
         onClose={() => setIsMediaModalOpen(false)}
         onSelect={handleMediaSelect}
+        folder={STORAGE_CONFIG.FOLDERS.ARTICLES}
       />
       {/* Undo / Redo */}
       <ToolbarButton

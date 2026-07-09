@@ -10,6 +10,7 @@ export default function GlobalSettingsPage() {
   const [settings, setSettings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'general' | 'navigation' | 'footer' | 'features' | 'editorial'>('general');
 
   useEffect(() => {
     fetchSettings();
@@ -43,6 +44,14 @@ export default function GlobalSettingsPage() {
     }
   };
 
+  const tabs = [
+    { id: 'general', label: 'General' },
+    { id: 'navigation', label: 'Navigation' },
+    { id: 'footer', label: 'Footer' },
+    { id: 'features', label: 'Features' },
+    { id: 'editorial', label: 'Editorial' },
+  ];
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -52,7 +61,7 @@ export default function GlobalSettingsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl pb-20">
       <div>
         <h1 className="text-2xl font-bold font-serif text-slate-900 dark:text-white flex items-center">
           <Settings className="w-6 h-6 mr-3 text-primary" />
@@ -61,6 +70,22 @@ export default function GlobalSettingsPage() {
         <p className="text-sm text-slate-500 mt-1">
           Manage core configuration variables for the entire platform.
         </p>
+      </div>
+
+      <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto scrollbar-hide">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+              activeTab === tab.id
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">

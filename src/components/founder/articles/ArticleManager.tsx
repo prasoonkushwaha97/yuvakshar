@@ -94,10 +94,11 @@ export default function ArticleManager({
 
   const tabs = [
     { id: "all", label: "All Articles", count: stats?.total || 0 },
-    { id: "published", label: "Published", count: stats?.published || 0 },
-    { id: "in_review", label: "Pending", count: stats?.inReview || 0 },
     { id: "draft", label: "Drafts", count: stats?.drafts || 0 },
-    { id: "scheduled", label: "Scheduled", count: stats?.scheduled || 0 },
+    { id: "submitted", label: "Pending Review", count: stats?.submitted || 0 },
+    { id: "revision_requested", label: "Needs Revision", count: stats?.revisions || 0 },
+    { id: "published", label: "Published", count: stats?.published || 0 },
+    { id: "rejected", label: "Rejected", count: stats?.rejected || 0 },
     { id: "archived", label: "Archived", count: stats?.archived || 0 },
   ];
 
@@ -105,13 +106,22 @@ export default function ArticleManager({
     switch (status) {
       case "published": return <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-md text-xs font-medium">Published</span>;
       case "draft": return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400 rounded-md text-xs font-medium">Draft</span>;
-      case "scheduled": return <span className="px-2.5 py-1 bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 rounded-md text-xs font-medium">Scheduled</span>;
-      case "in_review":
-      case "editor_review":
-      case "fact_check": 
-        return <span className="px-2.5 py-1 bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 rounded-md text-xs font-medium">Pending</span>;
+      case "submitted": return <span className="px-2.5 py-1 bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 rounded-md text-xs font-medium">Submitted</span>;
+      case "revision_requested": return <span className="px-2.5 py-1 bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400 rounded-md text-xs font-medium">Needs Revision</span>;
+      case "rejected": return <span className="px-2.5 py-1 bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400 rounded-md text-xs font-medium">Rejected</span>;
       default: return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 rounded-md text-xs font-medium capitalize">{status}</span>;
     }
+  };
+
+  const getWorkflowBadge = (stage?: string) => {
+    if (!stage) return null;
+    const map: Record<string, string> = {
+      editor_review: "Editor",
+      me_review: "Managing Editor",
+      eic_review: "EIC",
+      completed: "Done"
+    };
+    return <span className="px-2 py-0.5 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 rounded text-[10px] font-bold uppercase tracking-wider">{map[stage] || stage}</span>;
   };
 
   return (
@@ -196,7 +206,7 @@ export default function ArticleManager({
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 uppercase text-[11px] font-semibold tracking-wider border-b border-slate-200 dark:border-slate-800">
@@ -210,11 +220,11 @@ export default function ArticleManager({
                   />
                 </th>
                 <th className="px-4 py-4">Article</th>
-                <th className="px-4 py-4">Status</th>
+                <th className="px-4 py-4">Status & Stage</th>
                 <th className="px-4 py-4">Author</th>
+                <th className="px-4 py-4">Assignment</th>
                 <th className="px-4 py-4 text-center">Featured</th>
-                <th className="px-4 py-4 text-right">Metrics</th>
-                <th className="px-4 py-4">Date</th>
+                <th className="px-4 py-4">Deadline / Date</th>
                 <th className="px-4 py-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -230,21 +240,25 @@ export default function ArticleManager({
                         onChange={() => handleSelect(article.id)}
                       />
                     </td>
-                    <td className="px-4 py-4 max-w-xs truncate">
+                    <td className="px-4 py-4 max-w-[240px]">
                       <Link href={`/admin/articles/${article.id}`} className="font-bold text-slate-900 dark:text-white hover:text-primary transition-colors block truncate">
                         {article.title_hi}
                       </Link>
                       <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
                         {article.categories ? (
                           <span className="flex items-center gap-1">
-                             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: article.categories.color }}></span>
+                             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: article.categories.color || '#94a3b8' }}></span>
                              {article.categories.name_hi}
                           </span>
                         ) : 'Uncategorized'}
+                        {article.priority === 'urgent' && <span className="text-red-500 font-bold uppercase text-[10px] bg-red-50 dark:bg-red-500/10 px-1.5 py-0.5 rounded">Urgent</span>}
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      {getStatusBadge(article.status)}
+                      <div className="flex flex-col gap-1 items-start">
+                        {getStatusBadge(article.status)}
+                        {getWorkflowBadge(article.workflow_stage)}
+                      </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
@@ -258,20 +272,23 @@ export default function ArticleManager({
                          <span className="font-medium text-slate-700 dark:text-slate-300">{article.profiles?.name || 'Unknown'}</span>
                       </div>
                     </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {article.assigned_to ? 'Assigned' : <span className="text-slate-400 italic">Unassigned</span>}
+                      </div>
+                    </td>
                     <td className="px-4 py-4 text-center">
                       <button className={`p-1.5 rounded-md transition-colors ${article.is_featured ? 'text-amber-500 bg-amber-500/10' : 'text-slate-300 dark:text-slate-600 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
                         <Star className={`w-5 h-5 ${article.is_featured ? 'fill-current' : ''}`} />
                       </button>
                     </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center justify-end gap-3 text-slate-500 text-xs">
-                        <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> {article.view_count || 0}</span>
-                        <span className="flex items-center gap-1"><MessageSquare className="w-3.5 h-3.5" /> {article.comment_count || 0}</span>
-                      </div>
-                    </td>
                     <td className="px-4 py-4 text-slate-500 dark:text-slate-400">
                       <div className="flex flex-col gap-1">
-                         <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {format(new Date(article.created_at), 'MMM d, yyyy')}</span>
+                         {article.deadline ? (
+                            <span className="flex items-center gap-1 font-medium text-amber-600 dark:text-amber-400"><Clock className="w-3.5 h-3.5" /> {format(new Date(article.deadline), 'MMM d, yy')}</span>
+                         ) : (
+                            <span className="flex items-center gap-1 text-slate-400"><Calendar className="w-3.5 h-3.5" /> {format(new Date(article.created_at), 'MMM d, yy')}</span>
+                         )}
                       </div>
                     </td>
                     <td className="px-4 py-4 text-right">
@@ -298,6 +315,34 @@ export default function ArticleManager({
             </tbody>
           </table>
         </div>
+      </div>
+      
+      {/* Mobile Responsive Cards */}
+      <div className="md:hidden space-y-4">
+         {articles?.length > 0 ? (
+           articles.map(article => (
+              <div key={article.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+                 <div className="flex justify-between items-start mb-2">
+                    <Link href={`/admin/articles/${article.id}`} className="font-bold text-slate-900 dark:text-white">
+                      {article.title_hi}
+                    </Link>
+                    {getStatusBadge(article.status)}
+                 </div>
+                 <div className="flex items-center gap-2 mb-3">
+                    {getWorkflowBadge(article.workflow_stage)}
+                    {article.priority === 'urgent' && <span className="text-red-500 font-bold uppercase text-[10px] bg-red-50 dark:bg-red-500/10 px-1.5 py-0.5 rounded">Urgent</span>}
+                 </div>
+                 <div className="flex items-center justify-between text-xs text-slate-500">
+                    <div className="flex items-center gap-1">
+                       <Clock className="w-3 h-3" />
+                       {format(new Date(article.deadline || article.created_at), 'MMM d, yy')}
+                    </div>
+                    <Link href={`/admin/articles/${article.id}`} className="text-primary font-medium">Edit</Link>
+                 </div>
+              </div>
+           ))
+         ) : null}
+      </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
@@ -327,6 +372,5 @@ export default function ArticleManager({
           </div>
         )}
       </div>
-    </div>
   );
 }

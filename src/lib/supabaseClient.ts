@@ -56,14 +56,21 @@ export const checkConnectionHealth = async (): Promise<boolean> => {
   }
 };
 
+import { STORAGE_CONFIG } from "@/config/storage.config";
+
 /**
- * Checks connection health to the storage client
+ * Checks connection health to the storage client and verifies bucket exists
  */
 export const checkStorageHealth = async (): Promise<boolean> => {
   try {
-    const { error } = await supabase.storage.listBuckets();
+    const { data: buckets, error } = await supabase.storage.listBuckets();
     if (error) {
       console.warn("Supabase storage health check returned error:", error.message);
+      return false;
+    }
+    const bucketExists = buckets?.some(b => b.name === STORAGE_CONFIG.BUCKET_NAME);
+    if (!bucketExists) {
+      console.warn(`[Storage Warning] Bucket "${STORAGE_CONFIG.BUCKET_NAME}" does not exist.`);
       return false;
     }
     return true;

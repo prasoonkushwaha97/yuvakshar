@@ -14,12 +14,16 @@ const getAdminClient = () => {
   if (!supabaseUrl) {
     throw new Error("CRITICAL: NEXT_PUBLIC_SUPABASE_URL is required for administrative database operations but was not provided in the environment variables.");
   }
-  if (!supabaseServiceKey) {
-    throw new Error("CRITICAL: SUPABASE_SERVICE_ROLE_KEY is required for administrative database operations but was not provided in the environment variables.");
+  const keyToUse = supabaseServiceKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!keyToUse) {
+    throw new Error("CRITICAL: Neither SUPABASE_SERVICE_ROLE_KEY nor NEXT_PUBLIC_SUPABASE_ANON_KEY was provided in the environment variables.");
   }
-  
+  if (!supabaseServiceKey) {
+    console.warn("WARNING: SUPABASE_SERVICE_ROLE_KEY is missing. Falling back to anon key. Administrative operations may fail due to RLS.");
+  }
+
   if (!cachedClient) {
-    cachedClient = createClient(supabaseUrl, supabaseServiceKey, {
+    cachedClient = createClient(supabaseUrl, keyToUse, {
       auth: {
         autoRefreshToken: false,
         persistSession: false

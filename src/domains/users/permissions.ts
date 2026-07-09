@@ -1,111 +1,85 @@
 export type CmsRole = 
-  | "Reader" 
-  | "योगदानकर्ता" 
-  | "Author" 
-  | "Sub Editor" 
-  | "Editor" 
+  | "Founder" 
+  | "Editor-in-Chief" 
   | "Managing Editor" 
-  | "Administrator" 
-  | "Founder";
+  | "Editor" 
+  | "Normal User";
 
 export interface RolePermissions {
   create_article: boolean;
   review_article: boolean;
   publish_article: boolean;
   delete_article: boolean;
-  manage_homepage: boolean;
+  manage_workflow: boolean;
+  assign_articles: boolean;
   manage_users: boolean;
   manage_settings: boolean;
 }
 
-// provisional in-memory fallback until DB migration is complete for dynamic permissions
+// Default strict RBAC implementation
 export const DEFAULT_ROLE_PERMISSIONS: Record<CmsRole, RolePermissions> = {
-  "Reader": {
-    create_article: false,
-    review_article: false,
-    publish_article: false,
-    delete_article: false,
-    manage_homepage: false,
-    manage_users: false,
-    manage_settings: false,
-  },
-  "योगदानकर्ता": {
-    create_article: true,
-    review_article: false,
-    publish_article: false,
-    delete_article: false,
-    manage_homepage: false,
-    manage_users: false,
-    manage_settings: false,
-  },
-  "Author": {
-    create_article: true,
-    review_article: false,
-    publish_article: false,
-    delete_article: false,
-    manage_homepage: false,
-    manage_users: false,
-    manage_settings: false,
-  },
-  "Sub Editor": {
-    create_article: true,
-    review_article: true,
-    publish_article: false,
-    delete_article: false,
-    manage_homepage: false,
-    manage_users: false,
-    manage_settings: false,
-  },
-  "Editor": {
+  "Founder": {
     create_article: true,
     review_article: true,
     publish_article: true,
-    delete_article: false,
-    manage_homepage: false,
+    delete_article: true,
+    manage_workflow: true,
+    assign_articles: true,
+    manage_users: true,
+    manage_settings: true,
+  },
+  "Editor-in-Chief": {
+    create_article: true,
+    review_article: true,
+    publish_article: true,
+    delete_article: true,
+    manage_workflow: true,
+    assign_articles: true,
     manage_users: false,
     manage_settings: false,
   },
   "Managing Editor": {
     create_article: true,
     review_article: true,
-    publish_article: true,
-    delete_article: true,
-    manage_homepage: true,
+    publish_article: false, // EIC or Founder publishes
+    delete_article: false,
+    manage_workflow: true,
+    assign_articles: true,
     manage_users: false,
     manage_settings: false,
   },
-  "Administrator": {
+  "Editor": {
     create_article: true,
     review_article: true,
-    publish_article: true,
-    delete_article: true,
-    manage_homepage: true,
-    manage_users: true,
-    manage_settings: true,
+    publish_article: false,
+    delete_article: false,
+    manage_workflow: false,
+    assign_articles: false,
+    manage_users: false,
+    manage_settings: false,
   },
-  "Founder": {
+  "Normal User": {
     create_article: true,
-    review_article: true,
-    publish_article: true,
-    delete_article: true,
-    manage_homepage: true,
-    manage_users: true,
-    manage_settings: true,
+    review_article: false,
+    publish_article: false,
+    delete_article: false,
+    manage_workflow: false,
+    assign_articles: false,
+    manage_users: false,
+    manage_settings: false,
   },
 };
 
 export const hasPermission = (role: string | null | undefined, permission: keyof RolePermissions): boolean => {
   if (!role) return false;
   
-  // Normalize Hindi roles and specific casing/special roles
   let normalizedRole = role;
-  if (role === "संस्थापक") normalizedRole = "Founder";
-  else if (role === "प्रशासन") normalizedRole = "Administrator";
-  else if (role === "Editor-in-Chief") normalizedRole = "Founder";
-  else if (role === "Reviewer" || role === "Fact Checker" || role === "Fact Check Reviewer") normalizedRole = "Sub Editor";
-
-  if (normalizedRole in DEFAULT_ROLE_PERMISSIONS) {
-    return DEFAULT_ROLE_PERMISSIONS[normalizedRole as CmsRole][permission];
+  // Normalize previous admin roles to Founder
+  if (role === "Administrator" || role === "????????" || role === "???????") normalizedRole = "Founder";
+  // Fallback for any unknown user
+  if (!(normalizedRole in DEFAULT_ROLE_PERMISSIONS)) {
+    normalizedRole = "Normal User";
   }
-  return false;
+
+  return DEFAULT_ROLE_PERMISSIONS[normalizedRole as CmsRole][permission];
 };

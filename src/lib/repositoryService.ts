@@ -41,9 +41,9 @@ export const getLiteraryIdentities = (
   const identities: string[] = [];
 
   // 1. Role-based identities
-  if (profile.role === "संस्थापक" || profile.role === "Editor-in-Chief") {
+  if (profile.role === "Founder" || profile.role === "Editor-in-Chief") {
     identities.push("संपादकीय सहयोगी");
-  } else if (profile.role === "Reviewer" || profile.role === "Fact Checker" || profile.role === "Fact Check Reviewer") {
+  } else if (profile.role === "Managing Editor" || profile.role === "Editor") {
     identities.push("समीक्षक");
   }
 
@@ -72,7 +72,7 @@ export const getLiteraryIdentities = (
     identities.push("वरिष्ठ लेखक");
   } else if (articlesCount >= 3) {
     identities.push("सक्रिय लेखक");
-  } else if (profile.role === "Author" || profile.role === "योगदानकर्ता" || articlesCount > 0) {
+  } else if (profile.role === "Normal User" || articlesCount > 0) {
     identities.push("लेखक");
   }
 

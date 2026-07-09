@@ -12,17 +12,11 @@ import {
   FileText, 
   FolderTree,
   BookOpen, 
-  Video,
   MessageSquare,
   Image as ImageIcon,
   Users,
   Bell,
-  LineChart,
-  Globe,
-  Megaphone,
-  Settings,
-  ShieldAlert,
-  LifeBuoy
+  Settings
 } from "lucide-react";
 
 export default function AdminSidebar() {
@@ -37,17 +31,11 @@ export default function AdminSidebar() {
     { name: "Articles", href: "/admin/articles", icon: FileText, requiredPermission: "create_article" as const },
     { name: "Categories", href: "/admin/categories", icon: FolderTree, requiredPermission: "manage_settings" as const },
     { name: "Magazine", href: "/admin/magazine", icon: BookOpen, requiredPermission: "publish_article" as const },
-    { name: "Videos", href: "/admin/videos", icon: Video, requiredPermission: "publish_article" as const },
-    { name: "Chaupal", href: "/admin/community", icon: MessageSquare, requiredPermission: "manage_users" as const },
-    { name: "Media Library", href: "/admin/media", icon: ImageIcon, requiredPermission: "create_article" as const },
+    { name: "Chaupaal", href: "/admin/community", icon: MessageSquare, requiredPermission: "manage_users" as const },
     { name: "Users", href: "/admin/users", icon: Users, requiredPermission: "manage_users" as const },
+    { name: "Media Library", href: "/admin/media", icon: ImageIcon, requiredPermission: "create_article" as const },
     { name: "Notifications", href: "/admin/notifications", icon: Bell, requiredPermission: "manage_settings" as const },
-    { name: "Analytics", href: "/admin/analytics", icon: LineChart, requiredPermission: "manage_settings" as const },
-    { name: "SEO", href: "/admin/cms/seo", icon: Globe, requiredPermission: "manage_settings" as const },
-    { name: "Advertisements", href: "/admin/cms/ads", icon: Megaphone, requiredPermission: "manage_settings" as const },
-    { name: "Settings", href: "/admin/cms/settings", icon: Settings, requiredPermission: "manage_settings" as const },
-    { name: "Audit Logs", href: "/admin/audit", icon: ShieldAlert, requiredPermission: "manage_users" as const },
-    { name: "Support", href: "/admin/system", icon: LifeBuoy, requiredPermission: null },
+    { name: "Settings", href: "/admin/cms/settings", icon: Settings, requiredPermission: "manage_settings" as const }
   ];
 
   const visibleItems = navItems.filter(item => 
@@ -55,7 +43,7 @@ export default function AdminSidebar() {
   );
 
   return (
-    <aside className="w-64 bg-white dark:bg-[#0F172A] border-r border-slate-200 dark:border-slate-800 flex flex-col h-screen sticky top-0">
+    <aside className="w-64 bg-white dark:bg-[#0F172A] border-r border-slate-200 dark:border-slate-800 hidden md:flex flex-col h-screen sticky top-0">
       <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center">
         <h1 className="text-2xl font-serif font-black text-primary tracking-tight whitespace-nowrap">Yuvakshar<span className="text-slate-800 dark:text-white">Admin</span></h1>
       </div>

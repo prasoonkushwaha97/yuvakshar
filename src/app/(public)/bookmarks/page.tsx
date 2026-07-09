@@ -115,8 +115,8 @@ export default function BookmarksPage() {
                         <MetaInfo
                           articleId={article.id}
                           slug={article.slug}
-                          author={article.author || "युवाक्षर डेस्क"}
-                          authorProfile={article.authorProfile}
+                          author={article.profiles?.name || article.author || "युवाक्षर डेस्क"}
+                          authorProfile={article.profiles || article.authorProfile}
                           date={article.date}
                           showActions={false}
                         />

@@ -12,6 +12,16 @@ export async function createNotification(
   const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
+  return await createInternalNotification(userId, eventType, title, message);
+}
+
+export async function createInternalNotification(
+  userId: string,
+  eventType: string,
+  title: string,
+  message: string,
+  linkUrl?: string
+) {
   const { error } = await supabase
     .from('notifications')
     .insert([{
@@ -19,6 +29,7 @@ export async function createNotification(
       event_type: eventType,
       title,
       message,
+      link_url: linkUrl,
       is_read: false
     }]);
 

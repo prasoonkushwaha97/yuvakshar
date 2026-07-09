@@ -218,8 +218,6 @@ export default function Home() {
         return <Magazine />;
       case "community":
         return null;
-      case "newsletter":
-        return null;
       case "popular":
         return null;
       case "categoryblock":

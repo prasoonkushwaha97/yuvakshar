@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { ImagePlus, X, RefreshCw } from "lucide-react";
 import MediaUploadModal from "./MediaUploadModal";
+import { StorageFolder, STORAGE_CONFIG } from "@/config/storage.config";
 
 interface MediaUploaderProps {
   value: string;
@@ -12,6 +13,7 @@ interface MediaUploaderProps {
   aspectRatio?: string;
   className?: string;
   requireAltText?: boolean;
+  folder?: StorageFolder;
 }
 
 export default function MediaUploader({
@@ -21,6 +23,7 @@ export default function MediaUploader({
   aspectRatio = "aspect-video",
   className = "",
   requireAltText = true,
+  folder = STORAGE_CONFIG.FOLDERS.MISC,
 }: MediaUploaderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -86,6 +89,7 @@ export default function MediaUploader({
         onClose={() => setIsModalOpen(false)}
         onSelect={handleSelect}
         requireAltText={requireAltText}
+        folder={folder}
       />
     </div>
   );

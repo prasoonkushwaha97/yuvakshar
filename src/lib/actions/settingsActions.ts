@@ -33,7 +33,7 @@ export async function getUserSettings() {
 
       return {
         appearance: { theme: 'system', fontSize: 'medium', readingWidth: 'standard', reducedMotion: false, highContrast: false },
-        notifications: { email: true, inApp: true, digest: 'weekly', community: true, comments: true, mentions: true, editorial: true, newsletter: true },
+        notifications: { email: true, inApp: true, digest: 'weekly', community: true, comments: true, mentions: true, editorial: true },
         privacy: { profileVisibility: 'public', activityVisibility: 'public', searchable: true },
         language: { interfaceLanguage: 'hi', contentLanguage: 'hi', bilingualMode: false },
         future_2fa_enabled: false

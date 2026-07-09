@@ -89,7 +89,9 @@ export default function Popular() {
             {activeArticles.map((art, index: number) => {
               const cleanTitle = stripMarkdown(art.title);
               const cleanDate = formatDisplayDate(art.date);
-              const { href: authorHref } = resolveAuthorFromUsers(art.author, art.authorProfile, users);
+              const resolvedAuthorName = art.profiles?.name || art.author || "युवाक्षर डेस्क";
+              const resolvedAuthorProfile = art.profiles || art.authorProfile;
+              const { href: authorHref } = resolveAuthorFromUsers(resolvedAuthorName, resolvedAuthorProfile, users);
 
               return (
                 <tr key={art.id} className="hover:bg-gray-55/50 dark:hover:bg-gray-900/30 transition-colors">
@@ -123,11 +125,11 @@ export default function Popular() {
                         href={authorHref}
                         className="hover:text-primary transition-colors font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded px-1 py-0.5 -mx-1"
                       >
-                        {art.author || "युवाक्षर डेस्क"}
+                        {resolvedAuthorName}
                       </Link>
                     ) : (
                       <span className="font-bold px-1 py-0.5 -mx-1">
-                        {art.author || "युवाक्षर डेस्क"}
+                        {resolvedAuthorName}
                       </span>
                     )}
                   </td>

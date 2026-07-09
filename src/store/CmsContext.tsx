@@ -228,7 +228,6 @@ export interface GeneralSettings {
   primary_email: string;
   editorial_email: string;
   support_email: string;
-  newsletter_email: string;
   notification_email: string;
 }
 
@@ -270,8 +269,6 @@ interface CmsContextType {
   submissions: Submission[];
   assignments: EditorialAssignment[];
   ads: Ad[];
-  subscribers: string[];
-  campaigns: any[];
   searchLogs: SearchAnalytics[];
   activityLogs: ActivityLog[];
   layouts: HomepageLayout[];
@@ -332,12 +329,6 @@ interface CmsContextType {
   saveAd: (ad: Partial<Ad>) => Promise<void>;
   trackAdClick: (id: string) => Promise<void>;
 
-  // Subscribers Actions
-  subscribeNewsletter: (email: string) => Promise<string>;
-  unsubscribeNewsletter: (email: string) => Promise<void>;
-  updateSubscriberStatus: (email: string, status: "Active" | "Blocked" | "Unsubscribed") => Promise<void>;
-  sendNewsletterCampaign: (subject: string, content: string) => Promise<void>;
-
   // Layout Controls (Homepage Builder)
   saveHomepageLayout: (layout: HomepageLayout["layout_json"]) => Promise<void>;
   restoreHomepageLayoutVersion: (versionId: string) => Promise<void>;
@@ -396,7 +387,6 @@ interface CmsContextType {
     storageConnected: boolean;
     authActive: boolean;
     rlsPoliciesActive: boolean;
-    newsletterActive: boolean;
     seoActive: boolean;
     pwaActive: boolean;
     sitemapGenerated: boolean;
@@ -467,7 +457,6 @@ export function CmsProvider({
       primary_email: "yuvakshar.editor@gmail.com",
       editorial_email: "yuvakshar.editor@gmail.com",
       support_email: "yuvakshar.editor@gmail.com",
-      newsletter_email: "yuvakshar.editor@gmail.com",
       notification_email: "yuvakshar.editor@gmail.com",
     },
     appearance: {
@@ -510,8 +499,6 @@ export function CmsProvider({
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [assignments, setAssignments] = useState<EditorialAssignment[]>([]);
   const [ads, setAds] = useState<Ad[]>(initialAds || []);
-  const [subscribers, setSubscribers] = useState<string[]>([]);
-  const [campaigns, setCampaigns] = useState<any[]>([]);
   const [searchLogs, setSearchLogs] = useState<SearchAnalytics[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [layouts, setLayouts] = useState<HomepageLayout[]>([]);
@@ -581,7 +568,6 @@ export function CmsProvider({
     storageConnected: false,
     authActive: false,
     rlsPoliciesActive: false,
-    newsletterActive: false,
     seoActive: false,
     pwaActive: false,
     sitemapGenerated: false,
@@ -641,7 +627,6 @@ export function CmsProvider({
         storageConnected: storage,
         authActive: auth,
         rlsPoliciesActive: rls,
-        newsletterActive: process.env.NEXT_PUBLIC_RESEND_API_KEY ? true : false,
         seoActive: true,
         pwaActive: pwa,
         sitemapGenerated: sitemap,
@@ -956,18 +941,6 @@ export function CmsProvider({
     } else {
       setComments([] as Comment[]);
     }
-
-    // Subscribers
-    const localSubscribers = null;
-    if (localSubscribers && JSON.parse(localSubscribers).length >= 15) {
-      setSubscribers(JSON.parse(localSubscribers));
-    } else {
-      setSubscribers([]);
-    }
-
-    // Newsletter Campaigns
-    const localCampaigns = "[]";
-    setCampaigns(JSON.parse(localCampaigns));
 
     // Ads Settings
     const localAds = null;
@@ -1303,21 +1276,6 @@ export function CmsProvider({
         setSubmissions([]);
       }
 
-      // Load newsletter subscribers
-      const { data: dbSubscribers } = await supabase.from("subscribers").select("email");
-      if (dbSubscribers && dbSubscribers.length > 0) {
-        setSubscribers(dbSubscribers.map(s => s.email));
-      } else {
-        setSubscribers([]);
-      }
-
-      // Load campaigns
-      const { data: dbCampaigns } = await supabase.from("newsletter_campaigns").select("*").order("created_at", { ascending: false });
-      if (dbCampaigns && dbCampaigns.length > 0) {
-        setCampaigns(dbCampaigns);
-      } else {
-        setCampaigns([]);
-      }
 
       // Load Ads
       const { data: dbAds } = await supabase.from("ads").select("*");
@@ -1402,16 +1360,16 @@ export function CmsProvider({
         console.log(enriched.slice(0,5));
       } else {
         const defaultStaff: Profile[] = [
-          { id: "staff-owner", name: "Ravi Owner", username: "owner@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "owner@yuvakshar.in", role: "संस्थापक", status: "active", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
-          { id: "staff-admin", name: "Amit Admin", username: "admin@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "admin@yuvakshar.in", role: "प्रशासन", status: "active", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
+          { id: "staff-owner", name: "Ravi Owner", username: "owner@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "owner@yuvakshar.in", role: "Founder", status: "active", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
+          { id: "staff-admin", name: "Amit Admin", username: "admin@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "admin@yuvakshar.in", role: "Normal User", status: "active", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
           { id: "staff-chief", name: "Prasoon Chief", username: "chief@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "chief@yuvakshar.in", role: "Editor-in-Chief", status: "active", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
           { id: "staff-managing", name: "Sumit Managing", username: "managing@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "managing@yuvakshar.in", role: "Managing Editor", status: "active", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
           { id: "staff-editor", name: "Ravi Sharma", username: "editor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "editor@yuvakshar.in", role: "Editor", status: "active", badges: ["Editor"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
-          { id: "staff-subeditor", name: "Alok SubEditor", username: "subeditor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "subeditor@yuvakshar.in", role: "Sub Editor", status: "active", badges: ["Sub Editor"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
-          { id: "staff-factchecker", name: "Nitin Checker", username: "factchecker@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "factchecker@yuvakshar.in", role: "Fact Checker", status: "active", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
-          { id: "staff-reviewer", name: "Varun Reviewer", username: "reviewer@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "reviewer@yuvakshar.in", role: "Reviewer", status: "active", badges: ["Reviewer"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
-          { id: "staff-author", name: "Manoj Author", username: "author@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "author@yuvakshar.in", role: "Author", status: "active", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
-          { id: "staff-contributor", name: "Vijay Contributor", username: "contributor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "contributor@yuvakshar.in", role: "योगदानकर्ता", status: "active", badges: ["योगदानकर्ता"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
+          { id: "staff-subeditor", name: "Alok SubEditor", username: "subeditor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "subeditor@yuvakshar.in", role: "Editor", status: "active", badges: ["Sub Editor"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
+          { id: "staff-factchecker", name: "Nitin Checker", username: "factchecker@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "factchecker@yuvakshar.in", role: "Normal User", status: "active", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
+          { id: "staff-reviewer", name: "Varun Reviewer", username: "reviewer@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "reviewer@yuvakshar.in", role: "Editor", status: "active", badges: ["Reviewer"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
+          { id: "staff-author", name: "Manoj Author", username: "author@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "author@yuvakshar.in", role: "Normal User", status: "active", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
+          { id: "staff-contributor", name: "Vijay Contributor", username: "contributor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "contributor@yuvakshar.in", role: "Normal User", status: "active", badges: ["योगदानकर्ता"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
         ];
 
          const initialUsers: Profile[] = [
@@ -1803,7 +1761,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
   const transferOwnership = async (targetUserId: string) => {
     const performerRole = resolvedRole;
-    if (performerRole !== "संस्थापक") {
+    if (performerRole !== "Founder") {
       alert("त्रुटि: केवल Owner ही स्वामित्व स्थानांतरित कर सकता है!");
       return;
     }
@@ -1813,17 +1771,17 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
     const updatedUsers = users.map(u => {
       if (u.id === currentUser?.id) {
-        return { ...u, role: "प्रशासन" as const, badges: ["प्रशासन"] };
+        return { ...u, role: "Normal User" as const, badges: ["Admin"] };
       }
       if (u.id === targetUserId) {
-        return { ...u, role: "संस्थापक" as const, badges: ["Primary Owner"] };
+        return { ...u, role: "Founder" as const, badges: ["Primary Owner"] };
       }
       return u;
     });
 
     setUsers(updatedUsers);
     if (currentUser) {
-      const updatedSelf = { ...currentUser, role: "प्रशासन" as const, badges: ["प्रशासन"] };
+      const updatedSelf = { ...currentUser, role: "Normal User" as const, badges: ["Admin"] };
       setCurrentUser(updatedSelf);
     }
 
@@ -2235,62 +2193,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     }
   };
 
-  // 9. Subscribers & Campaigns
-  const subscribeNewsletter = async (email: string): Promise<string> => {
-    if (supabaseConfigured) {
-      const token = Math.random().toString(36).substring(2, 15);
-      await supabase.from("subscribers").insert({ email, status: "Pending Verification", verification_token: token });
-      return "Pending Verification: कृपया सत्यापन के लिए अपना ईमेल जांचें।";
-    } else {
-      if (subscribers.includes(email)) return "Already Subscribed.";
-      const updated = [email, ...subscribers];
-      setSubscribers(updated);
-      return "Subscribed Successfully.";
-    }
-  };
 
-  const unsubscribeNewsletter = async (email: string) => {
-    if (supabaseConfigured) {
-      await supabase.from("subscribers").update({ status: "Unsubscribed" }).eq("email", email);
-    } else {
-      const updated = subscribers.filter(s => s !== email);
-      setSubscribers(updated);
-    }
-  };
-
-  const updateSubscriberStatus = async (email: string, status: "Active" | "Blocked" | "Unsubscribed") => {
-    if (supabaseConfigured) {
-      await supabase.from("subscribers").update({ status }).eq("email", email);
-    } else {
-      // fallback update
-      logActivity(`Subscriber ${email} status updated to ${status}`);
-    }
-  };
-
-  const sendNewsletterCampaign = async (subject: string, content: string) => {
-    const newCamp = {
-      id: `camp-${Date.now()}`,
-      subject,
-      content,
-      sent_at: new Date().toISOString(),
-      stats: { open_count: 0, click_count: 0 }
-    };
-
-    if (supabaseConfigured) {
-      await supabase.from("newsletter_campaigns").insert({
-        subject,
-        content,
-        sent_at: new Date().toISOString()
-      });
-    } else {
-      const updated = [newCamp, ...campaigns];
-      setCampaigns(updated);
-    }
-    
-    // Telemetry output report to official address
-    console.log(`Campaign dispatched. Report summary triggered and delivered to dynamic notifications email [${settings.general.newsletter_email}]`);
-    logActivity(`Newsletter Campaign Dispatched: "${subject}"`);
-  };
 
   // 10. Layout Customizer
   const saveHomepageLayout = async (layoutJson: HomepageLayout["layout_json"]) => {
@@ -2405,8 +2308,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       comments,
       submissions,
       assignments,
-      subscribers,
-      campaigns,
+
       ads,
       layouts,
       activityLogs,
@@ -2423,8 +2325,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       if (parsed.magazines) setMagazines(parsed.magazines);
       if (parsed.submissions) setSubmissions(parsed.submissions);
       if (parsed.comments) setComments(parsed.comments);
-      if (parsed.subscribers) setSubscribers(parsed.subscribers);
-      if (parsed.campaigns) setCampaigns(parsed.campaigns);
+
       if (parsed.settings) setSettings(parsed.settings);
       
       if (!supabaseConfigured) {
@@ -2743,7 +2644,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     if (!currentUser) return;
     const updatedUser = { 
       ...currentUser, 
-      role: "Author" as const, 
+      role: "Normal User" as const, 
       bio, 
       avatar_url: avatarUrl || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80", 
       badges: Array.from(new Set([...(currentUser.badges || []), "Author", expertise])).filter(Boolean) as string[],
@@ -3187,7 +3088,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
 
     // In-app notifications to target roles/departments
     users.forEach(u => {
-      const isTarget = ann.target === "All Team Members" && u.role !== "सदस्य" && u.role !== null
+      const isTarget = ann.target === "All Team Members" && u.role !== "Normal User" && u.role !== null
         || ann.target === u.department
         || ann.target === u.role;
       if (isTarget) {
@@ -3437,8 +3338,6 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         ads,
         homepageSections,
         navigation,
-        subscribers,
-        campaigns,
         searchLogs,
         activityLogs,
         layouts,
@@ -3477,10 +3376,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         deleteComment,
         saveAd,
         trackAdClick,
-        subscribeNewsletter,
-        unsubscribeNewsletter,
-        updateSubscriberStatus,
-        sendNewsletterCampaign,
+
         saveHomepageLayout,
         restoreHomepageLayoutVersion,
         exportDatabaseJson,

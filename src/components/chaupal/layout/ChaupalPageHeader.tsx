@@ -32,9 +32,9 @@ export default function ChaupalPageHeader({ title, showBack, backUrl, rightActio
           {rightAction ? (
             rightAction
           ) : (
-            <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <Link href="/community/search" className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
               <Search className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-            </button>
+            </Link>
           )}
         </div>
       </div>

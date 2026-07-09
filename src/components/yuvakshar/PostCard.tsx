@@ -133,7 +133,7 @@ export default function PostCard({
   };
 
   return (
-    <GlassCard className="p-4 sm:p-5 border-slate-200/60 dark:border-slate-800/40 space-y-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+    <GlassCard className="p-4 sm:p-5 border-b border-slate-200/60 dark:border-slate-800/40 rounded-none sm:rounded-2xl border-x-0 sm:border-x border-t-0 sm:border-t space-y-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors w-full">
       
       {/* Thread Indication Header (if it's a part of a thread) */}
       {(post as any).thread_part && (

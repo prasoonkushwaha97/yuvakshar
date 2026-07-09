@@ -1,7 +1,5 @@
 "use client";
 import Image from "next/image";
-
-
 import React, { useEffect, useState, useMemo } from "react";
 import { getAdminUsersList, AdminUserRecord } from "@/lib/actions/userManagementActions";
 import { RoleBadge } from "@/components/ui/RoleBadge";
@@ -18,6 +16,7 @@ export default function UsersManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [userGroup, setUserGroup] = useState<"admin" | "community">("admin");
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,10 +64,13 @@ export default function UsersManagementPage() {
       const matchesStatus = statusFilter !== "All"
         ? user.status === statusFilter
         : true;
+
+      const isAdmin = user.roles.some(r => ["founder", "eic", "managing_editor", "editor"].includes(r.slug.toLowerCase()));
+      const matchesGroup = userGroup === "admin" ? isAdmin : !isAdmin;
         
-      return matchesSearch && matchesRole && matchesStatus;
+      return matchesSearch && matchesRole && matchesStatus && matchesGroup;
     });
-  }, [users, searchTerm, roleFilter, statusFilter]);
+  }, [users, searchTerm, roleFilter, statusFilter, userGroup]);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
@@ -91,15 +93,31 @@ export default function UsersManagementPage() {
   return (
     <div className="space-y-6 pb-20">
       
+      {/* Tabs */}
+      <div className="flex border-b border-slate-200 dark:border-slate-800 mb-6">
+        <button 
+          onClick={() => { setUserGroup('admin'); setCurrentPage(1); }}
+          className={`px-6 py-3 text-sm font-medium transition-colors ${userGroup === 'admin' ? 'border-b-2 border-primary text-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+        >
+          Admin Team
+        </button>
+        <button 
+          onClick={() => { setUserGroup('community'); setCurrentPage(1); }}
+          className={`px-6 py-3 text-sm font-medium transition-colors ${userGroup === 'community' ? 'border-b-2 border-primary text-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+        >
+          Community Users
+        </button>
+      </div>
+
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Users className="w-5 h-5 text-primary" />
-            User Management
+            {userGroup === 'admin' ? 'Admin Team' : 'Community Users'}
           </h2>
           <p className="text-sm text-slate-500 mt-1">
-            Manage your {users.length} registered users
+            Manage your {userGroup === 'admin' ? 'editorial staff' : 'readers and community members'}
           </p>
         </div>
         
@@ -109,7 +127,7 @@ export default function UsersManagementPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="उपयोगकर्ता खोजें..."
+              placeholder="Search users..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full sm:w-64 pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -118,18 +136,19 @@ export default function UsersManagementPage() {
           
           {/* Filters */}
           <div className="flex gap-2">
-            <select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
-            >
-              <option value="All">All Roles</option>
-              <option value="founder">Founder</option>
-              <option value="admin">Admin</option>
-              <option value="editor">Editor</option>
-              <option value="moderator">Moderator</option>
-              <option value="author">Author</option>
-            </select>
+            {userGroup === 'admin' && (
+              <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                className="px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                <option value="All">All Roles</option>
+                <option value="founder">Founder</option>
+                <option value="eic">Editor-in-Chief</option>
+                <option value="managing_editor">Managing Editor</option>
+                <option value="editor">Editor</option>
+              </select>
+            )}
             
             <select
               value={statusFilter}

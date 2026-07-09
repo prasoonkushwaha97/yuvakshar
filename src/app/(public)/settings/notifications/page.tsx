@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { getUserSettings, updateUserSettings } from "@/lib/actions/settingsActions";
-import { Mail, Smartphone, Newspaper, MessageSquare, UsersRound, AtSign, BookOpen, AlertCircle, CheckCircle2, RotateCw } from "lucide-react";
+import { Mail, Smartphone, MessageSquare, UsersRound, AtSign, BookOpen, AlertCircle, CheckCircle2, RotateCw } from "lucide-react";
 
 const ToggleItem = ({ id, label, description, icon: Icon, value, onChange }: any) => (
   <div className="flex items-start justify-between py-4 border-b border-slate-100 dark:border-slate-800 last:border-0">
@@ -35,8 +35,7 @@ export default function NotificationsSettingsPage() {
     community: true,
     comments: true,
     mentions: true,
-    editorial: true,
-    newsletter: true
+    editorial: true
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -147,14 +146,7 @@ export default function NotificationsSettingsPage() {
             value={notifications.editorial}
             onChange={(val: boolean) => setNotifications({...notifications, editorial: val})}
           />
-          <ToggleItem 
-            id="newsletter" 
-            label="न्यूज़लेटर (Newsletter)" 
-            description="युवाक्षर की साप्ताहिक हाइलाइट्स और समाचार।"
-            icon={Newspaper}
-            value={notifications.newsletter}
-            onChange={(val: boolean) => setNotifications({...notifications, newsletter: val})}
-          />
+
         </div>
 
         {/* Digest Frequency */}

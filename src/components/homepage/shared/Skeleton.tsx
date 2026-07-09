@@ -149,19 +149,6 @@ export function AuthorsSkeleton() {
   );
 }
 
-export function NewsletterSkeleton() {
-  return (
-    <div className="bg-[#111] dark:bg-[#1A1A1A] p-8 rounded-lg space-y-4">
-      <BaseSkeleton className="h-4 w-24 bg-gray-700" />
-      <BaseSkeleton className="h-8 w-1/3 bg-gray-700" />
-      <BaseSkeleton className="h-4 w-2/3 bg-gray-700" />
-      <div className="flex flex-col sm:flex-row gap-3 max-w-md pt-2">
-        <BaseSkeleton className="h-10 flex-grow bg-gray-700" />
-        <BaseSkeleton className="h-10 w-28 bg-gray-700" />
-      </div>
-    </div>
-  );
-}
 
 export function CommunitySkeleton() {
   return (

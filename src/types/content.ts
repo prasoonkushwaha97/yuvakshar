@@ -1,11 +1,16 @@
 export type ArticleStatus =
   | "draft"
-  | "in_review"
-  | "fact_check"
-  | "editor_review"
-  | "scheduled"
+  | "submitted"
+  | "revision_requested"
   | "published"
+  | "rejected"
   | "archived";
+
+export type EditorialWorkflowStage =
+  | "editor_review"
+  | "me_review"
+  | "eic_review"
+  | "completed";
 
 export interface Category {
   id: string;
@@ -52,6 +57,15 @@ export interface Article {
   author_id?: string | null;
   reviewer_id?: string | null;
   editor_id?: string | null;
+  
+  // Editorial CMS Assignment Fields
+  assigned_to?: string | null;
+  current_reviewer?: string | null;
+  priority?: "low" | "medium" | "high" | "urgent";
+  deadline?: string | null;
+  workflow_stage?: EditorialWorkflowStage;
+  internal_comments?: string;
+
   status: ArticleStatus;
   content_type: string;
   access_level: string;

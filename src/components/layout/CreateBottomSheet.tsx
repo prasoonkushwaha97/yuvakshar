@@ -4,8 +4,9 @@ import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { PenTool, MessageSquare, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { designTokens } from "@/config/designTokens";
+import { useCms } from "@/store/CmsContext";
 
 interface CreateBottomSheetProps {
   isOpen: boolean;
@@ -14,6 +15,14 @@ interface CreateBottomSheetProps {
 
 export default function CreateBottomSheet({ isOpen, onClose }: CreateBottomSheetProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const { currentUser } = useCms();
+  
+  const isCommunity = pathname?.startsWith("/community");
+  const isAdmin = currentUser?.role === "Founder" || 
+                  currentUser?.role === "Editor-in-Chief" || 
+                  currentUser?.role === "Managing Editor" || 
+                  currentUser?.role === "Editor";
 
   // Close on Escape key
   useEffect(() => {
@@ -37,11 +46,6 @@ export default function CreateBottomSheet({ isOpen, onClose }: CreateBottomSheet
       document.body.style.overflow = "";
     };
   }, [isOpen]);
-
-  const handleChaupalClick = () => {
-    onClose();
-    router.push("/community?compose=true");
-  };
 
   return (
     <AnimatePresence>
@@ -90,40 +94,61 @@ export default function CreateBottomSheet({ isOpen, onClose }: CreateBottomSheet
               </div>
 
               <div className="flex flex-col gap-3">
-                <Link
-                  href="/workspace/articles/new"
-                  onClick={onClose}
-                  className="flex items-center p-4 rounded-2xl border border-slate-100 hover:border-[#f97316]/30 dark:border-slate-800/80 dark:hover:border-[#f97316]/30 bg-slate-50 hover:bg-[#f97316]/5 dark:bg-[#1E293B]/50 dark:hover:bg-[#f97316]/10 transition-all duration-300 group"
-                >
-                  <div className="w-12 h-12 flex items-center justify-center rounded-full bg-white dark:bg-[#0F172A] shadow-sm text-[#f97316] group-hover:scale-110 transition-transform duration-300 shrink-0">
-                    <PenTool className="w-5 h-5" />
-                  </div>
-                  <div className="ml-4 flex-1">
-                    <h3 className="text-lg font-bold font-sans text-slate-900 dark:text-white group-hover:text-[#f97316] transition-colors">
-                      नया लेख
-                    </h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                      विस्तृत लेख, रिपोर्ट या कहानी लिखें
-                    </p>
-                  </div>
-                </Link>
+                {isCommunity ? (
+                  <>
+                    <button
+                      onClick={() => { onClose(); router.push("/community?compose=true&type=discussion"); }}
+                      className="flex items-center w-full text-left p-4 rounded-2xl border border-slate-100 hover:border-[#f97316]/30 dark:border-slate-800/80 dark:hover:border-[#f97316]/30 bg-slate-50 hover:bg-[#f97316]/5 dark:bg-[#1E293B]/50 dark:hover:bg-[#f97316]/10 transition-all duration-300 group"
+                    >
+                      <div className="w-12 h-12 flex items-center justify-center rounded-full bg-white dark:bg-[#0F172A] shadow-sm text-[#f97316] group-hover:scale-110 transition-transform duration-300 shrink-0">
+                        <MessageSquare className="w-5 h-5" />
+                      </div>
+                      <div className="ml-4 flex-1">
+                        <h3 className="text-lg font-bold font-sans text-slate-900 dark:text-white group-hover:text-[#f97316] transition-colors">
+                          नई चर्चा
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                          अपने विचार या छोटी अपडेट साझा करें
+                        </p>
+                      </div>
+                    </button>
 
-                <button
-                  onClick={handleChaupalClick}
-                  className="flex items-center w-full text-left p-4 rounded-2xl border border-slate-100 hover:border-blue-500/30 dark:border-slate-800/80 dark:hover:border-blue-500/30 bg-slate-50 hover:bg-blue-500/5 dark:bg-[#1E293B]/50 dark:hover:bg-blue-500/10 transition-all duration-300 group"
-                >
-                  <div className="w-12 h-12 flex items-center justify-center rounded-full bg-white dark:bg-[#0F172A] shadow-sm text-blue-500 group-hover:scale-110 transition-transform duration-300 shrink-0">
-                    <MessageSquare className="w-5 h-5" />
-                  </div>
-                  <div className="ml-4 flex-1">
-                    <h3 className="text-lg font-bold font-sans text-slate-900 dark:text-white group-hover:text-blue-500 transition-colors">
-                      नई चौपाल पोस्ट
-                    </h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                      अपने विचार, चित्र या छोटी अपडेट साझा करें
-                    </p>
-                  </div>
-                </button>
+                    <button
+                      onClick={() => { onClose(); router.push("/community?compose=true&type=question"); }}
+                      className="flex items-center w-full text-left p-4 rounded-2xl border border-slate-100 hover:border-blue-500/30 dark:border-slate-800/80 dark:hover:border-blue-500/30 bg-slate-50 hover:bg-blue-500/5 dark:bg-[#1E293B]/50 dark:hover:bg-blue-500/10 transition-all duration-300 group"
+                    >
+                      <div className="w-12 h-12 flex items-center justify-center rounded-full bg-white dark:bg-[#0F172A] shadow-sm text-blue-500 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                        <PenTool className="w-5 h-5" />
+                      </div>
+                      <div className="ml-4 flex-1">
+                        <h3 className="text-lg font-bold font-sans text-slate-900 dark:text-white group-hover:text-blue-500 transition-colors">
+                          प्रश्न पूछें
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                          चौपाल समुदाय से कोई सवाल पूछें
+                        </p>
+                      </div>
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/workspace/articles/new"
+                    onClick={onClose}
+                    className="flex items-center p-4 rounded-2xl border border-slate-100 hover:border-[#f97316]/30 dark:border-slate-800/80 dark:hover:border-[#f97316]/30 bg-slate-50 hover:bg-[#f97316]/5 dark:bg-[#1E293B]/50 dark:hover:bg-[#f97316]/10 transition-all duration-300 group"
+                  >
+                    <div className="w-12 h-12 flex items-center justify-center rounded-full bg-white dark:bg-[#0F172A] shadow-sm text-[#f97316] group-hover:scale-110 transition-transform duration-300 shrink-0">
+                      <PenTool className="w-5 h-5" />
+                    </div>
+                    <div className="ml-4 flex-1">
+                      <h3 className="text-lg font-bold font-sans text-slate-900 dark:text-white group-hover:text-[#f97316] transition-colors">
+                        {isAdmin ? "नया लेख" : "नया लेख भेजें"}
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                        {isAdmin ? "विस्तृत लेख, रिपोर्ट या कहानी लिखें" : "(एडमिन रिव्यू के लिए भेजें)"}
+                      </p>
+                    </div>
+                  </Link>
+                )}
               </div>
             </div>
           </motion.div>

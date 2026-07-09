@@ -8,6 +8,7 @@ import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
 import { Noto_Sans_Devanagari, Noto_Serif_Devanagari, Hind, Mukta, Inter } from "next/font/google";
 import fs from "fs";
 import path from "path";
+import Script from "next/script";
 
 const notoSansDeva = Noto_Sans_Devanagari({
   subsets: ["devanagari", "latin"],
@@ -73,6 +74,8 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: "#ffffff",
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -225,6 +228,28 @@ export default async function RootLayout({
             <ToastProvider />
           </LanguageProvider>
         </CmsProvider>
+        
+        {/* Service Worker Registration */}
+        <Script
+          id="service-worker-registration"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    function(registration) {
+                      console.log('ServiceWorker registration successful');
+                    },
+                    function(err) {
+                      console.log('ServiceWorker registration failed: ', err);
+                    }
+                  );
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
