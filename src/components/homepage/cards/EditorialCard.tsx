@@ -5,7 +5,9 @@ import Image from "next/image";
 import React from "react";
 import Link from "next/link";
 import { stripMarkdown } from "@/lib/markdown";
-import { getProfileUrl, getArticleUrl } from "@/utils/routes";
+import { getArticleUrl } from "@/utils/routes";
+import AuthorLink from "@/components/shared/AuthorLink";
+import Avatar from "@/components/shared/Avatar";
 
 interface EditorialCardProps {
   article: any;
@@ -18,35 +20,25 @@ export default function EditorialCard({ article }: EditorialCardProps) {
   const summary = stripMarkdown(article.summary || article.summary_hi || article.content || "");
   const authorAvatar = article.authorAvatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(article.author || "User")}`;
   const authorRole = article.authorRole || "वरिष्ठ स्तंभकार";
-
-  const profileUrl = getProfileUrl(article.authorProfile);
-  const isProfileValid = profileUrl !== null;
-  
   const innerContent = (
-    <>
-      <div className="relative w-16 h-16 rounded-full overflow-hidden mb-3 border-2 border-gray-105 dark:border-gray-800 group-hover/avatar:border-[#f97316] transition-colors shrink-0 bg-gray-55">
-        <Image src={authorAvatar} alt={article.author} className="w-full h-full object-cover" fill sizes="64px" />
+    <div className="flex items-center gap-2.5 mb-4 text-left">
+      <Avatar url={authorAvatar} alt={article.author} className="h-10 w-10 md:h-10 md:w-10 sm:h-9 sm:w-9 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0" />
+      <div className="flex flex-col">
+        <span className="font-extrabold text-sm text-gray-850 dark:text-gray-200 block mb-0.5 group-hover/avatar:text-[#f97316] transition-colors">
+          {article.author}
+        </span>
+        <span className="text-[10px] text-gray-400 font-sans uppercase font-bold tracking-widest block">
+          {authorRole}
+        </span>
       </div>
-      <span className="font-extrabold text-sm text-gray-850 dark:text-gray-200 block mb-0.5 group-hover/avatar:text-[#f97316] transition-colors">
-        {article.author}
-      </span>
-      <span className="text-[10px] text-gray-400 font-sans uppercase font-bold tracking-widest block mb-4">
-        {authorRole}
-      </span>
-    </>
+    </div>
   );
 
   return (
     <div className="group flex flex-col items-center text-center bg-white dark:bg-[#0E1322] p-6 rounded-3xl border border-gray-150/80 dark:border-gray-850/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:border-[#f97316]/30 transition-all duration-300">
-      {isProfileValid && profileUrl ? (
-        <Link href={profileUrl} className="group/avatar flex flex-col items-center cursor-pointer">
-          {innerContent}
-        </Link>
-      ) : (
-        <div className="group/avatar flex flex-col items-center">
-          {innerContent}
-        </div>
-      )}
+      <AuthorLink author={article.authorProfile || { name: article.author }} className="group/avatar flex justify-center cursor-pointer">
+        {innerContent}
+      </AuthorLink>
 
       {/* Column Title */}
       <Link href={getArticleUrl(article)} className="block flex-grow group-hover:text-[#f97316] transition-colors">

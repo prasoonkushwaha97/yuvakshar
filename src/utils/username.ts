@@ -75,11 +75,11 @@ export function generateFallbackUsername(email: string | undefined): string {
 
 /**
  * Generates a canonical profile URL from a profile object or username string.
- * Returns null if no valid username can be resolved — never fabricates URLs.
+ * Returns '#' if no valid username can be resolved — never fabricates URLs.
  */
-export function getCanonicalProfileUrl(profile: Partial<Profile> | string | null | undefined): string | null {
+export function getCanonicalProfileUrl(profile: Partial<Profile> | string | null | undefined): string {
   if (!profile) {
-    return null;
+    return "#";
   }
   
   if (typeof profile === "string") {
@@ -87,11 +87,13 @@ export function getCanonicalProfileUrl(profile: Partial<Profile> | string | null
     if (trimmed.length >= 3 && /^[a-zA-Z0-9_.-]+$/.test(trimmed)) {
       return `/u/${trimmed.toLowerCase()}`;
     }
-    return null;
+    return "#";
   }
   
   // Extract username from the profile object — check nested profile structures too
   const username = profile.username
+    || profile.slug
+    || profile.id
     || (profile as Record<string, unknown>).author_username as string | undefined;
 
   if (
@@ -105,8 +107,8 @@ export function getCanonicalProfileUrl(profile: Partial<Profile> | string | null
     return `/u/${username.toLowerCase()}`;
   }
   
-  // No valid username found — return null, never fabricate
-  return null;
+  // No valid username found — return fallback '#', never fabricate
+  return "#";
 }
 
 /**

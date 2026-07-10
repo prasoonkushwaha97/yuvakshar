@@ -8,10 +8,14 @@ import { createArticle, updateArticle, updateArticleStatus } from "@/lib/actions
 import { submitContributorArticle } from "@/lib/actions/contributeActions";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { ArticleStatus } from "@/types/content";
 import { RichTextEditor } from "@/components/editor/RichTextEditor";
 import ArticleContent from "@/components/articles/ArticleContent";
 import { Monitor, Smartphone, LayoutTemplate } from "lucide-react";
-import MediaUploader from "@/components/media/MediaUploader";
+import ArticleFeaturedImageUploader from "@/components/editor/ArticleFeaturedImageUploader";
+import { getCategories } from "@/lib/actions/categoryActions";
+import { getAuthorsForSelect } from "@/lib/actions/articleActions";
+import { Category } from "@/types/content";
 
 export default function EditorClient({ article, isNew, reviewNotes, isEditorialRole = false }: { article: any, isNew: boolean, reviewNotes: any[], isEditorialRole?: boolean }) {
   const router = useRouter();
@@ -25,7 +29,7 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
     }
   }, [title]);
   const [content, setContent] = useState(article?.content || "");
-  const [status, setStatus] = useState(article?.status || "draft");
+  const [status, setStatus] = useState(article?.status || ArticleStatus.Draft);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(new Date());
   
@@ -38,6 +42,44 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
   const [seoTitle, setSeoTitle] = useState(article?.meta_title || "");
   const [seoDesc, setSeoDesc] = useState(article?.meta_description || "");
   const [visibility, setVisibility] = useState(article?.access_level || "public");
+
+  const [categoriesList, setCategoriesList] = useState<Category[]>([]);
+  const [authorsList, setAuthorsList] = useState<{id: string, name: string, display_name?: string, username: string}[]>([]);
+
+  useEffect(() => {
+    getCategories().then(cats => setCategoriesList(cats || []));
+    if (isEditorialRole) {
+      getAuthorsForSelect().then(authors => setAuthorsList(authors || []));
+    }
+  }, [isEditorialRole]);
+
+  const renderCategoryOptions = () => {
+    const parents = categoriesList.filter(c => !c.parent_id).sort((a, b) => (a.name_hi || a.name_en || "").localeCompare(b.name_hi || b.name_en || "", 'hi'));
+    
+    return parents.map(parent => {
+      const children = categoriesList.filter(c => c.parent_id === parent.id).sort((a, b) => (a.name_hi || a.name_en || "").localeCompare(b.name_hi || b.name_en || "", 'hi'));
+      const parentLabel = parent.name_hi || parent.name_en || "Unnamed";
+      
+      if (children.length > 0) {
+        return (
+          <optgroup key={parent.id} label={parentLabel}>
+            <option value={parent.id}>{parentLabel} (सामान्य)</option>
+            {children.map(child => (
+              <option key={child.id} value={child.id}>
+                {child.name_hi || child.name_en || "Unnamed"}
+              </option>
+            ))}
+          </optgroup>
+        );
+      } else {
+        return (
+          <option key={parent.id} value={parent.id}>
+            {parentLabel}
+          </option>
+        );
+      }
+    });
+  };
 
   // Mobile State
   const [isPublishSheetOpen, setIsPublishSheetOpen] = useState(false);
@@ -68,7 +110,7 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
     try {
       if (isEditorialRole) {
         if (isNew) {
-          await createArticle({ title_hi: title, content: content, status: saveStatus as any });
+          await createArticle({ title_hi: title, content: content, status: saveStatus as any, cover_image: coverImage, author_id: author });
           toast.success("Draft created successfully. Redirecting...");
           router.push("/admin/articles");
         } else {
@@ -81,6 +123,7 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
               meta_description: seoDesc,
               access_level: visibility,
               tags: tags,
+              author_id: author,
               status: saveStatus as any
           });
           toast.success("Changes saved successfully");
@@ -96,7 +139,7 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
         if (category) formData.append("category", category);
         if (!isNew && article?.id) formData.append("id", article.id);
         
-        const isDraft = saveStatus === "draft";
+        const isDraft = saveStatus === ArticleStatus.Draft;
         const result = await submitContributorArticle(formData, isDraft);
         
         if (result.error) {
@@ -212,18 +255,18 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
              {!isEditorialRole ? (
                <div className="hidden lg:flex items-center gap-2">
                   <button 
-                    onClick={() => handleSave(undefined, "draft")}
+                    onClick={() => handleSave(undefined, ArticleStatus.Draft)}
                     disabled={isSaving}
                     className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-3 py-1.5 lg:px-4 lg:py-1.5 rounded-full lg:rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                   >
                     Save Draft
                   </button>
                   <button 
-                    onClick={() => handleSave(undefined, "submitted")}
+                    onClick={() => handleSave(undefined, ArticleStatus.Submitted)}
                     disabled={isSaving || !content.trim()}
                     className="flex items-center gap-2 bg-[#EA580C] hover:bg-[#C2410C] text-white px-3 py-1.5 lg:px-4 lg:py-1.5 rounded-full lg:rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                   >
-                    {isSaving && status === "submitted" ? <Check className="w-4 h-4 animate-pulse" /> : <Save className="w-4 h-4 hidden lg:block" />}
+                    {isSaving && status === ArticleStatus.Submitted ? <Check className="w-4 h-4 animate-pulse" /> : <Save className="w-4 h-4 hidden lg:block" />}
                     Submit for Review
                   </button>
                </div>
@@ -285,12 +328,12 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
                               onChange={(e) => setStatus(e.target.value)}
                               className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-primary"
                           >
-                              <option value="draft">Draft</option>
-                              <option value="submitted">Pending Review</option>
-                              <option value="revision_requested">Needs Revision</option>
-                              <option value="published">Published</option>
-                              <option value="rejected">Rejected</option>
-                              <option value="archived">Archived</option>
+                              <option value={ArticleStatus.Draft}>Draft</option>
+                              <option value={ArticleStatus.Submitted}>Pending Review</option>
+                              <option value={ArticleStatus.RevisionRequested}>Needs Revision</option>
+                              <option value={ArticleStatus.Published}>Published</option>
+                              <option value={ArticleStatus.Rejected}>Rejected</option>
+                              <option value={ArticleStatus.Archived}>Archived</option>
                           </select>
                       </div>
                       
@@ -321,11 +364,10 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
                     Featured Image
                 </h3>
                 
-                <MediaUploader 
-                  label=""
+                <ArticleFeaturedImageUploader 
                   value={coverImage}
                   onChange={(url) => setCoverImage(url)}
-                  aspectRatio="aspect-video"
+                  articleId={article?.id}
                 />
             </div>
 
@@ -337,21 +379,27 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
                     {isEditorialRole && (
                       <div>
                           <label className="text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-1"><User className="w-3.5 h-3.5" /> Author</label>
-                          <select className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-primary">
-                              <option>Current User</option>
+                          <select 
+                              value={author} 
+                              onChange={(e) => setAuthor(e.target.value)} 
+                              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-primary"
+                          >
+                              {author ? null : <option value="">Unknown Author</option>}
+                              {(!authorsList.some(a => a.id === author) && author) && (
+                                <option value={author}>{article?.profiles?.display_name || article?.profiles?.name || "Unknown Author"}</option>
+                              )}
+                              {authorsList.map(a => (
+                                <option key={a.id} value={a.id}>{a.display_name || a.name || a.username}</option>
+                              ))}
                           </select>
                       </div>
                     )}
 
                     <div>
-                        <label className="text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-1"><Hash className="w-3.5 h-3.5" /> Category</label>
+                        <label className="text-xs font-medium text-slate-500 mb-1.5 block">श्रेणी</label>
                         <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-primary">
                             <option value="">Select Category...</option>
-                            <option value="politics">Politics</option>
-                            <option value="society">Society</option>
-                            <option value="science">Science</option>
-                            <option value="culture">Culture</option>
-                            <option value="opinion">Opinion</option>
+                            {renderCategoryOptions()}
                         </select>
                     </div>
 
@@ -428,12 +476,12 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
                                   onChange={(e) => setStatus(e.target.value)}
                                   className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none"
                               >
-                                  <option value="draft">Draft</option>
-                                  <option value="submitted">Pending Review</option>
-                                  <option value="revision_requested">Needs Revision</option>
-                                  <option value="published">Published</option>
-                                  <option value="rejected">Rejected</option>
-                                  <option value="archived">Archived</option>
+                                  <option value={ArticleStatus.Draft}>Draft</option>
+                                  <option value={ArticleStatus.Submitted}>Pending Review</option>
+                                  <option value={ArticleStatus.RevisionRequested}>Needs Revision</option>
+                                  <option value={ArticleStatus.Published}>Published</option>
+                                  <option value={ArticleStatus.Rejected}>Rejected</option>
+                                  <option value={ArticleStatus.Archived}>Archived</option>
                               </select>
                           </div>
                           <div>
@@ -455,11 +503,10 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
                 {/* Featured Image */}
                 <div className="space-y-4">
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Featured Image</h3>
-                    <MediaUploader 
-                      label=""
+                    <ArticleFeaturedImageUploader 
                       value={coverImage}
                       onChange={(url) => setCoverImage(url)}
-                      aspectRatio="aspect-video"
+                      articleId={article?.id}
                     />
                 </div>
 
@@ -467,15 +514,29 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
                 <div className="space-y-4">
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Classification</h3>
                     <div className="space-y-3">
+                        {isEditorialRole && (
+                          <div>
+                              <label className="text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-1"><User className="w-3.5 h-3.5" /> Author</label>
+                              <select 
+                                  value={author} 
+                                  onChange={(e) => setAuthor(e.target.value)} 
+                                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none"
+                              >
+                                  {author ? null : <option value="">Unknown Author</option>}
+                                  {(!authorsList.some(a => a.id === author) && author) && (
+                                    <option value={author}>{article?.profiles?.display_name || article?.profiles?.name || "Unknown Author"}</option>
+                                  )}
+                                  {authorsList.map(a => (
+                                    <option key={a.id} value={a.id}>{a.display_name || a.name || a.username}</option>
+                                  ))}
+                              </select>
+                          </div>
+                        )}
                         <div>
-                            <label className="text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-1"><Hash className="w-3.5 h-3.5" /> Category</label>
+                            <label className="text-xs font-medium text-slate-500 mb-1.5 block">श्रेणी</label>
                             <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none">
                                 <option value="">Select Category...</option>
-                                <option value="politics">Politics</option>
-                                <option value="society">Society</option>
-                                <option value="science">Science</option>
-                                <option value="culture">Culture</option>
-                                <option value="opinion">Opinion</option>
+                                {renderCategoryOptions()}
                             </select>
                         </div>
                         {isEditorialRole && (
@@ -527,13 +588,13 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
                ) : (
                  <>
                    <button 
-                      onClick={(e) => { setIsPublishSheetOpen(false); handleSave(undefined, "draft"); }}
+                      onClick={(e) => { setIsPublishSheetOpen(false); handleSave(undefined, ArticleStatus.Draft); }}
                       className="flex-1 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl font-medium flex justify-center items-center gap-2"
                    >
                       Draft
                    </button>
                    <button 
-                      onClick={(e) => { setIsPublishSheetOpen(false); handleSave(undefined, "submitted"); }}
+                      onClick={(e) => { setIsPublishSheetOpen(false); handleSave(undefined, ArticleStatus.Submitted); }}
                       className="flex-1 py-2.5 bg-[#EA580C] text-white rounded-xl font-medium flex justify-center items-center gap-2"
                    >
                       Submit

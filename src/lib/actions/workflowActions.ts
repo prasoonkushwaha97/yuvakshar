@@ -11,10 +11,11 @@ export async function moveArticleStatus(article_id: string, new_status: string) 
   if (authError || !authData?.user) throw new Error("Unauthorized");
 
   const userId = authData.user.id;
+  const { ArticleStatus } = await import("@/types/content");
 
   // 2. Determine required permission based on status
   let requiredPermission = "manage_articles";
-  if (new_status === "published" || new_status === "scheduled") {
+  if (new_status === ArticleStatus.Published || new_status === ArticleStatus.Scheduled) {
     requiredPermission = "manage_system"; // Example: Need higher privilege to publish directly, except if overridden.
     // In a real system, we'd check if user is editor or admin.
     const canPublish = await hasPermission("manage_system") || await hasPermission("manage_articles");

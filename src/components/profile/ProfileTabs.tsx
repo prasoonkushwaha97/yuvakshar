@@ -1,13 +1,12 @@
 import React from "react";
 import { 
   BookOpen, 
-  Image as ImageIcon, 
   User,
   FileEdit,
   Bookmark
 } from "lucide-react";
 
-export type ProfileTabId = "articles" | "media" | "about" | "drafts" | "bookmarks";
+export type ProfileTabId = "articles" | "about" | "drafts" | "bookmarks";
 
 interface ProfileTabsProps {
   activeTab: ProfileTabId;
@@ -18,7 +17,6 @@ interface ProfileTabsProps {
 export default function ProfileTabs({ activeTab, setActiveTab, isOwner }: ProfileTabsProps) {
   const publicTabs = [
     { id: "articles" as ProfileTabId, label: "लेख", icon: BookOpen },
-    { id: "media" as ProfileTabId, label: "मीडिया", icon: ImageIcon },
   ];
 
   const ownerTabs = isOwner ? [

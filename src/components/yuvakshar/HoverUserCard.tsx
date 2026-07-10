@@ -4,12 +4,14 @@ import Image from "next/image";
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { UserPlus, MessageCircle, BookOpen, UserCheck } from "lucide-react";
+import { MessageCircle, BookOpen } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
-import { isUserFollowing, toggleFollowUser } from "@/lib/communityService";
 import type { Profile } from "@/store/types";
 import { RoleBadgeList } from "@/components/ui/RoleBadge";
 import { getCanonicalProfileUrl } from "@/utils/username";
+import { supabase } from "@/lib/supabaseClient";
+import { STORAGE_CONFIG } from "@/config/storage.config";
+import Avatar from "@/components/shared/Avatar";
 
 interface HoverUserCardProps {
   userId: string;
@@ -20,7 +22,6 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
   const { users, currentUser } = useCms();
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<Profile | null>(null);
-  const [isFollowing, setIsFollowing] = useState(false);
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -31,9 +32,6 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
       const match = users.find((u: Profile) => u.username === userId || u.slug === userId || u.id === userId);
       if (match) {
         setUser(match);
-        if (currentUser) {
-          isUserFollowing(currentUser.id, match.id).then(setIsFollowing);
-        }
       }
     }
   }, [isOpen, userId, users, currentUser, user]);
@@ -85,22 +83,13 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
     };
   }, [isOpen]);
 
-  const handleFollowToggle = async () => {
-    if (!currentUser || !user) return;
-    const nowFollowing = await toggleFollowUser(currentUser.id, user.id);
-    setIsFollowing(nowFollowing);
-    // Optimistically update local fallback profile state
-    setUser(prev => {
-      if (!prev) return prev;
-      const followers = prev.followers || [];
-      return {
-        ...prev,
-        followers: nowFollowing ? [...followers, currentUser.id] : followers.filter(id => id !== currentUser.id)
-      };
-    });
-  };
 
   const userLink = getCanonicalProfileUrl(user || { id: userId }) || "#";
+  
+  let finalCoverUrl = user?.cover_url;
+  if (finalCoverUrl && !finalCoverUrl.startsWith('http') && !finalCoverUrl.startsWith('/') && !finalCoverUrl.startsWith('data:')) {
+    finalCoverUrl = supabase.storage.from(STORAGE_CONFIG.BUCKET_NAME).getPublicUrl(finalCoverUrl).data.publicUrl;
+  }
 
   return (
     <div 
@@ -121,34 +110,16 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
           
           {/* Cover Banner */}
           <div className="h-20 bg-gradient-to-r from-primary/80 to-blue-600/80 w-full relative">
-            {user.cover_url && (
-              <Image src={user.cover_url} alt="Cover" className="w-full h-full object-cover" fill />
+            {finalCoverUrl && (
+              <Image src={finalCoverUrl} alt="Cover" className="w-full h-full object-cover" fill unoptimized />
             )}
           </div>
 
           <div className="px-4 pb-4 relative -mt-10">
             <div className="flex justify-between items-end mb-3">
-              <Link href={userLink} className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 border-4 border-white dark:border-[#070B14] shrink-0 overflow-hidden flex items-center justify-center font-bold text-primary text-2xl relative z-10 hover:opacity-90 transition-opacity">
-                {user.avatar_url ? (
-                  <Image src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" fill />
-                ) : (
-                  user.name[0]
-                )}
+              <Link href={userLink} className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 border-4 border-white dark:border-[#070B14] shrink-0 overflow-hidden flex items-center justify-center relative z-10 hover:opacity-90 transition-opacity">
+                <Avatar url={user.avatar_url} alt={user.name} className="w-full h-full" />
               </Link>
-              
-              {currentUser?.id !== user.id && (
-                <button 
-                  onClick={handleFollowToggle}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold font-hindi flex items-center gap-1.5 transition-colors ${
-                    isFollowing 
-                      ? "bg-transparent border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300" 
-                      : "bg-primary text-white hover:bg-primary/90"
-                  }`}
-                >
-                  {isFollowing ? <UserCheck className="w-3.5 h-3.5" /> : <UserPlus className="w-3.5 h-3.5" />}
-                  {isFollowing ? "फ़ॉलोइंग" : "फ़ॉलो करें"}
-                </button>
-              )}
             </div>
 
             <div className="mb-2">
@@ -163,16 +134,6 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
               {user.bio || "युवाक्षर समुदाय के एक सदस्य।"}
             </div>
 
-            <div className="flex items-center gap-5 text-xs font-hindi text-slate-600 dark:text-slate-400 mb-4">
-              <Link href={`${userLink}/following`} className="flex gap-1.5 items-center hover:underline">
-                <span className="font-bold text-slate-900 dark:text-white">{user.following?.length || 0}</span>
-                <span>फ़ॉलोइंग</span>
-              </Link>
-              <Link href={`${userLink}/followers`} className="flex gap-1.5 items-center hover:underline">
-                <span className="font-bold text-slate-900 dark:text-white">{user.followers?.length || 0}</span>
-                <span>फ़ॉलोअर्स</span>
-              </Link>
-            </div>
 
             <div className="flex gap-2">
               <Link href={userLink} className="flex-1 flex justify-center items-center gap-1.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-xs font-bold font-hindi hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-100 dark:border-slate-800">

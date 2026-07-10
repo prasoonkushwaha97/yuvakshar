@@ -98,7 +98,7 @@ export function RichTextEditor({
 
   return (
     <div className="flex flex-col w-full group">
-      <div className="sticky top-14 z-10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md pb-2 transition-opacity opacity-0 focus-within:opacity-100 group-hover:opacity-100">
+      <div className="sticky top-14 z-10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md pb-2">
         <EditorToolbar editor={editor} />
       </div>
       

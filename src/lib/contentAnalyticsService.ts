@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { analyticsService } from "./analyticsService";
+import { ArticleStatus } from "@/types/content";
 
 export interface ArticleAnalytics {
   total: number;
@@ -27,7 +28,7 @@ export const contentAnalyticsService = {
       const { count } = await supabase
         .from('articles')
         .select('*', { count: 'exact', head: true })
-        .ilike('status', status);
+        .eq('status', status);
       return count || 0;
     };
     
@@ -44,12 +45,12 @@ export const contentAnalyticsService = {
     ] = await Promise.all([
       analyticsService.getTableCounts("articles"),
       analyticsService.getSum("articles", "views"),
-      countStatus('draft'),
-      countStatus('submitted'),
-      countStatus('revision_requested'),
-      countStatus('published'),
-      countStatus('rejected'),
-      countStatus('archived'),
+      countStatus(ArticleStatus.Draft),
+      countStatus(ArticleStatus.Submitted),
+      countStatus(ArticleStatus.RevisionRequested),
+      countStatus(ArticleStatus.Published),
+      countStatus(ArticleStatus.Rejected),
+      countStatus(ArticleStatus.Archived),
     ]);
     
     // Average reading time

@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { logGovernanceAction } from "./governanceAuditActions";
 import { Article, ArticleStatus } from "@/types/content";
 import { mapDbProfileToProfile } from "@/lib/repositoryService";
+import { STORAGE_CONFIG } from "@/config/storage.config";
 
 export async function getArticles(
   filters?: { status?: string, category_id?: string, author_id?: string, search?: string },
@@ -57,7 +58,7 @@ export async function getArticles(
     summary_hi: art.summary || "",
     summary_en: art.summary || "",
     is_featured: art.featured || false,
-    status: art.status ? art.status.toLowerCase() : "draft",
+    status: art.status as ArticleStatus || ArticleStatus.Draft,
     view_count: art.views || 0,
     like_count: art.likes || 0,
     categories: art.categories ? {
@@ -99,7 +100,7 @@ export async function getArticleById(id: string) {
       summary_hi: art.summary || "",
       summary_en: art.summary || "",
       is_featured: art.featured || false,
-      status: art.status ? art.status.toLowerCase() : "draft",
+      status: art.status as ArticleStatus || ArticleStatus.Draft,
       view_count: art.views || 0,
       like_count: art.likes || 0,
       categories: art.categories ? {
@@ -143,7 +144,7 @@ export async function getArticleBySlug(slug: string) {
       summary_hi: art.summary || "",
       summary_en: art.summary || "",
       is_featured: art.featured || false,
-      status: art.status ? art.status.toLowerCase() : "draft",
+      status: art.status as ArticleStatus || ArticleStatus.Draft,
       view_count: art.views || 0,
       like_count: art.likes || 0,
       categories: art.categories ? {
@@ -167,7 +168,15 @@ export async function createArticle(data: Partial<Article>) {
   
   // Enforce server-side logic
   const insertData = mapArticleToDb(data);
-  if (!insertData.status) insertData.status = "Draft";
+  if (!insertData.status) insertData.status = ArticleStatus.Draft;
+
+  if (!insertData.author_id || insertData.author_id === "") {
+    const { data: authData } = await supabase.auth.getUser();
+    insertData.author_id = authData.user?.id;
+  }
+
+  console.log("createArticle data prop", data);
+  console.log("createArticle insertData dbData", insertData);
 
   const { data: result, error } = await supabase
     .from("articles")
@@ -190,6 +199,13 @@ export async function updateArticle(id: string, data: Partial<Article>) {
   const supabase = await createClient();
   
   const updateData = mapArticleToDb(data);
+  
+  if (updateData.author_id === "") {
+    delete updateData.author_id;
+  }
+
+  console.log("updateArticle data prop", data);
+  console.log("updateArticle updateData dbData", updateData);
 
   const { error } = await supabase
     .from("articles")
@@ -231,12 +247,32 @@ export async function deleteArticle(id: string) {
 
   const supabase = await createClient();
   
+  const { data: art } = await supabase.from("articles").select("cover_image").eq("id", id).single();
+
   const { error } = await supabase
     .from("articles")
     .delete()
     .eq("id", id);
 
   if (error) throw new Error(error.message);
+
+  if (art?.cover_image) {
+     if (art.cover_image.includes('/articles/')) {
+       const urlParts = art.cover_image.split('/articles/');
+       if (urlParts.length >= 2) {
+         const filePath = urlParts.slice(1).join('/articles/');
+         await supabase.storage.from('articles').remove([filePath]);
+       }
+     } else if (art.cover_image.includes(`${STORAGE_CONFIG.BUCKET_NAME}/`)) {
+       const urlParts = art.cover_image.split(`${STORAGE_CONFIG.BUCKET_NAME}/`);
+       if (urlParts.length === 2) {
+         const filePath = urlParts[1];
+         if (filePath.startsWith('articles/')) {
+           await supabase.storage.from(STORAGE_CONFIG.BUCKET_NAME).remove([filePath]);
+         }
+       }
+     }
+  }
 
   await logGovernanceAction("delete", "article", id);
   revalidatePath("/admin/articles");
@@ -250,12 +286,43 @@ export async function bulkDeleteArticles(ids: string[]) {
 
   const supabase = await createClient();
   
+  const { data: arts } = await supabase.from("articles").select("cover_image").in("id", ids);
+
   const { error } = await supabase
     .from("articles")
     .delete()
     .in("id", ids);
 
   if (error) throw new Error(error.message);
+
+  if (arts && arts.length > 0) {
+      const pathsToDeleteArticles: string[] = [];
+      const pathsToDeleteMedia: string[] = [];
+      arts.forEach(art => {
+         if (art.cover_image) {
+             if (art.cover_image.includes('/articles/')) {
+               const urlParts = art.cover_image.split('/articles/');
+               if (urlParts.length >= 2) {
+                 pathsToDeleteArticles.push(urlParts.slice(1).join('/articles/'));
+               }
+             } else if (art.cover_image.includes(`${STORAGE_CONFIG.BUCKET_NAME}/`)) {
+               const urlParts = art.cover_image.split(`${STORAGE_CONFIG.BUCKET_NAME}/`);
+               if (urlParts.length === 2) {
+                 const filePath = urlParts[1];
+                 if (filePath.startsWith('articles/')) {
+                   pathsToDeleteMedia.push(filePath);
+                 }
+               }
+             }
+         }
+      });
+      if (pathsToDeleteArticles.length > 0) {
+          await supabase.storage.from('articles').remove(pathsToDeleteArticles);
+      }
+      if (pathsToDeleteMedia.length > 0) {
+          await supabase.storage.from(STORAGE_CONFIG.BUCKET_NAME).remove(pathsToDeleteMedia);
+      }
+  }
 
   await logGovernanceAction("bulk_delete", "article", null, { deleted_count: ids.length });
   revalidatePath("/admin/articles");
@@ -299,7 +366,7 @@ export async function duplicateArticle(id: string) {
   const { id: _oldId, created_at: _ca, updated_at: _ua, ...copyData } = original;
   copyData.title = `${copyData.title} (Copy)`;
   copyData.slug = `${copyData.slug}-copy-${Math.random().toString(36).substring(2, 7)}`;
-  copyData.status = 'Draft';
+  copyData.status = ArticleStatus.Draft;
 
   const { data: newArticle, error: insertError } = await supabase
     .from("articles")
@@ -328,20 +395,21 @@ export async function updateArticleStatus(id: string, status: ArticleStatus | st
   
   if (!isFounder) {
     const allowedTransitions: Record<string, string[]> = {
-      "draft": ["in_review"],
-      "in_review": ["fact_check", "draft"],
-      "review": ["fact_check", "draft"],
-      "fact_check": ["editor_review", "in_review", "review"],
-      "editor_review": ["scheduled", "draft"],
-      "scheduled": ["published", "editor_review"],
-      "published": ["archived"],
-      "archived": ["published"]
+      [ArticleStatus.Draft]: [ArticleStatus.Submitted, ArticleStatus.UnderReview],
+      [ArticleStatus.Submitted]: [ArticleStatus.UnderReview, ArticleStatus.Draft, ArticleStatus.Rejected],
+      [ArticleStatus.UnderReview]: [ArticleStatus.RevisionRequested, ArticleStatus.Approved, ArticleStatus.Draft, ArticleStatus.Rejected],
+      [ArticleStatus.RevisionRequested]: [ArticleStatus.Submitted, ArticleStatus.Draft],
+      [ArticleStatus.Approved]: [ArticleStatus.Scheduled, ArticleStatus.Published, ArticleStatus.Draft],
+      [ArticleStatus.Scheduled]: [ArticleStatus.Published, ArticleStatus.Draft],
+      [ArticleStatus.Published]: [ArticleStatus.Archived],
+      [ArticleStatus.Archived]: [ArticleStatus.Published],
+      [ArticleStatus.Rejected]: [ArticleStatus.Draft]
     };
     
-    const normalizedCurrent = current_status?.toLowerCase() || 'draft';
-    const normalizedAttempt = status.toLowerCase();
+    const normalizedCurrent = current_status || ArticleStatus.Draft;
+    const normalizedAttempt = status as ArticleStatus;
     
-    const allowed = allowedTransitions[normalizedCurrent] || [];
+    const allowed = allowedTransitions[normalizedCurrent as string] || [];
     if (!allowed.includes(normalizedAttempt)) {
       const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
       await logGovernanceAction(
@@ -412,7 +480,7 @@ export async function getRelatedArticlesForInfiniteScroll(
     let query = supabase
       .from("articles")
       .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)")
-      .eq("status", "Published")
+      .eq("status", ArticleStatus.Published)
       .not("id", "in", `(${excludeIds.join(',')})`)
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -423,7 +491,7 @@ export async function getRelatedArticlesForInfiniteScroll(
          const { data: catData, error: catError } = await supabase
            .from("articles")
            .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)")
-           .ilike("status", "Published")
+           .eq("status", ArticleStatus.Published)
            .eq("category_id", categoryId)
            .not("id", "in", `(${excludeIds.join(',')})`)
            .order("created_at", { ascending: false })
@@ -436,7 +504,7 @@ export async function getRelatedArticlesForInfiniteScroll(
              const { data: fallbackData } = await supabase
                .from("articles")
                .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)")
-               .ilike("status", "Published")
+               .eq("status", ArticleStatus.Published)
                .not("id", "in", `(${newExcludes.join(',')})`)
                .order("created_at", { ascending: false })
                .limit(limit - results.length);
@@ -489,6 +557,29 @@ export async function getRelatedArticlesForInfiniteScroll(
     })) as Article[];
   } catch (err) {
     console.error("Exception fetching infinite scroll:", err);
+    return [];
+  }
+}
+
+export async function getAuthorsForSelect() {
+  try {
+    const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'managing_editor', 'editor_in_chief']);
+    if (!isAuthorized) return [];
+
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, name, display_name, username")
+      .order("display_name", { ascending: true })
+      .limit(200);
+
+    if (error) {
+      console.error("Error fetching authors for select:", error);
+      return [];
+    }
+    return data || [];
+  } catch (error) {
+    console.error("Exception in getAuthorsForSelect:", error);
     return [];
   }
 }

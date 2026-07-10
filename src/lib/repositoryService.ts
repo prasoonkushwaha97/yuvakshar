@@ -676,26 +676,7 @@ export const updateEditorialAssignmentStatus = async (id: string, status: Editor
   }
 };
 
-/**
- * Toggles follow status in repository
- */
-export const toggleFollowAuthorInDb = (
-  users: Profile[],
-  authorId: string,
-  followerId: string
-): Profile[] => {
-  return users.map(user => {
-    if (user.id === authorId) {
-      const followersList = user.followers || [];
-      const isFollowing = followersList.includes(followerId);
-      const updatedFollowers = isFollowing
-        ? followersList.filter(fId => fId !== followerId)
-        : [...followersList, followerId];
-      return { ...user, followers: updatedFollowers };
-    }
-    return user;
-  });
-};
+
 
 /**
  * Adds a timeline event node in repository

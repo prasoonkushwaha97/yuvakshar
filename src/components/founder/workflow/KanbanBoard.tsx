@@ -18,16 +18,17 @@ import {
 } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Article } from "@/types/content";
+import { Article, ArticleStatus } from "@/types/content";
 import { moveArticleStatus } from "@/lib/actions/workflowActions";
 
 const COLUMNS = [
-  { id: "draft", title: "Draft" },
-  { id: "review", title: "Review" },
-  { id: "fact_check", title: "Fact Check" },
-  { id: "editor_review", title: "Editor Review" },
-  { id: "scheduled", title: "Scheduled" },
-  { id: "published", title: "Published" },
+  { id: ArticleStatus.Draft, title: "Draft" },
+  { id: ArticleStatus.Submitted, title: "Submitted" },
+  { id: ArticleStatus.UnderReview, title: "Under Review" },
+  { id: ArticleStatus.RevisionRequested, title: "Revision Requested" },
+  { id: ArticleStatus.Approved, title: "Approved" },
+  { id: ArticleStatus.Scheduled, title: "Scheduled" },
+  { id: ArticleStatus.Published, title: "Published" },
 ];
 
 function SortableItem(props: { id: string; article: Article }) {
@@ -93,10 +94,7 @@ export default function KanbanBoard({ initialArticles }: { initialArticles: Arti
       targetStatus = overArticle.status;
     }
 
-    // Only "review" is slightly mismatched in our standard enum if we use "in_review"
-    if (targetStatus === "review") targetStatus = "in_review";
-
-    if (activeArticle.status !== targetStatus && COLUMNS?.map(c => c.id).includes(targetStatus.replace('in_review', 'review'))) {
+    if (activeArticle.status !== targetStatus && COLUMNS?.map(c => c.id as string).includes(targetStatus)) {
       const oldStatus = activeArticle.status;
       
       // Optimistic update
@@ -123,7 +121,7 @@ export default function KanbanBoard({ initialArticles }: { initialArticles: Arti
       <div className="flex flex-row space-x-4 overflow-x-auto pb-4 h-[calc(100vh-200px)]">
         {COLUMNS?.map((col) => {
           // 'in_review' is the actual enum for 'review'
-          const colStatus = col.id === 'review' ? 'in_review' : col.id;
+          const colStatus = col.id;
           const colArticles = articles.filter((a) => a.status === colStatus);
 
           return (

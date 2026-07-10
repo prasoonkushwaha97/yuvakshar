@@ -2,6 +2,8 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Camera, Quote } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
+import { STORAGE_CONFIG } from "@/config/storage.config";
 
 interface ProfileCoverProps {
   coverUrl: string | undefined;
@@ -10,16 +12,22 @@ interface ProfileCoverProps {
 }
 
 export default function ProfileCover({ coverUrl, isOwner, onCoverUpload }: ProfileCoverProps) {
+  let finalCoverUrl = coverUrl;
+  if (finalCoverUrl && !finalCoverUrl.startsWith('http') && !finalCoverUrl.startsWith('/') && !finalCoverUrl.startsWith('data:')) {
+    finalCoverUrl = supabase.storage.from(STORAGE_CONFIG.BUCKET_NAME).getPublicUrl(finalCoverUrl).data.publicUrl;
+  }
+
   return (
     <div className="relative h-[220px] sm:h-[280px] lg:h-[380px] w-full overflow-hidden bg-slate-100 dark:bg-slate-900 group">
-      {coverUrl ? (
+      {finalCoverUrl ? (
         <Image 
-          src={coverUrl} 
+          src={finalCoverUrl} 
           alt="Profile Cover" 
           className="w-full h-full object-cover" 
           fill 
           priority
           sizes="100vw"
+          unoptimized
         />
       ) : (
         <div className="w-full h-full bg-gradient-to-tr from-[#F97316]/10 via-slate-100 to-[#F97316]/5 dark:from-[#F97316]/10 dark:via-[#0F172A] dark:to-[#1E293B]" />

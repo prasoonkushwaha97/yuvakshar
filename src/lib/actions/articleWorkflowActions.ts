@@ -4,10 +4,11 @@ import { supabase } from "@/lib/supabaseClient";
 import { hasAnyRole } from "@/lib/rbacService";
 import { logGovernanceAction } from "./governanceAuditActions";
 import { createNotification } from "./notificationActions";
+import { ArticleStatus } from "@/types/content";
 
 // Lifecyle: Draft -> Under Review -> Revision Requested -> Approved -> Scheduled -> Published -> Archived
 
-export async function transitionArticleState(articleId: string, newState: string, notes: string = "") {
+export async function transitionArticleState(articleId: string, newState: ArticleStatus, notes: string = "") {
   // Authentication & Authorization check based on target state
   const isReviewer = await hasAnyRole(['reviewer', 'editor', 'editor_in_chief', 'admin', 'super_admin', 'founder']);
   const isEditor = await hasAnyRole(['editor', 'editor_in_chief', 'admin', 'super_admin', 'founder']);
@@ -24,29 +25,29 @@ export async function transitionArticleState(articleId: string, newState: string
 
   if (fetchError || !article) throw new Error("Article not found.");
 
-  const oldState = article.status;
+  const oldState = article.status as ArticleStatus;
   
   // State Machine Validation
   let canTransition = false;
 
   switch (newState) {
-    case 'Under Review':
+    case ArticleStatus.UnderReview:
       // Anyone can submit Draft -> Under Review, but we assume author action or reviewer pull
-      canTransition = oldState === 'Draft' || oldState === 'Revision Requested';
+      canTransition = oldState === ArticleStatus.Draft || oldState === ArticleStatus.RevisionRequested;
       break;
-    case 'Revision Requested':
-      canTransition = (oldState === 'Under Review' || oldState === 'Approved') && isReviewer;
+    case ArticleStatus.RevisionRequested:
+      canTransition = (oldState === ArticleStatus.UnderReview || oldState === ArticleStatus.Approved) && isReviewer;
       break;
-    case 'Approved':
-      canTransition = oldState === 'Under Review' && isEditor;
+    case ArticleStatus.Approved:
+      canTransition = oldState === ArticleStatus.UnderReview && isEditor;
       break;
-    case 'Scheduled':
-      canTransition = oldState === 'Approved' && isEditor;
+    case ArticleStatus.Scheduled:
+      canTransition = oldState === ArticleStatus.Approved && isEditor;
       break;
-    case 'Published':
-      canTransition = (oldState === 'Approved' || oldState === 'Scheduled') && isEIC;
+    case ArticleStatus.Published:
+      canTransition = (oldState === ArticleStatus.Approved || oldState === ArticleStatus.Scheduled) && isEIC;
       break;
-    case 'Archived':
+    case ArticleStatus.Archived:
       canTransition = isEIC; // EIC can archive from almost any state
       break;
     default:
@@ -76,11 +77,11 @@ export async function transitionArticleState(articleId: string, newState: string
   // Notifications
   const title = article.title_en || article.title_hi || "Your Article";
   
-  if (newState === 'Revision Requested') {
+  if (newState === ArticleStatus.RevisionRequested) {
     await createNotification(article.author_id, 'revision_requested', 'Revision Requested', `Revisions have been requested for "${title}". Note: ${notes}`);
-  } else if (newState === 'Approved') {
+  } else if (newState === ArticleStatus.Approved) {
     await createNotification(article.author_id, 'article_approved', 'Article Approved!', `Your article "${title}" has been approved for publication.`);
-  } else if (newState === 'Published') {
+  } else if (newState === ArticleStatus.Published) {
     await createNotification(article.author_id, 'article_published', 'Article Published!', `Congratulations! Your article "${title}" is now live.`);
   }
 

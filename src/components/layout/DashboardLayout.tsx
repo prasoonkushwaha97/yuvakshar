@@ -18,7 +18,8 @@ import {
 import { useCms } from "@/store/CmsContext";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
-import { getCanonicalProfileUrl } from "@/utils/username";
+import AuthorLink from "@/components/shared/AuthorLink";
+import Avatar from "@/components/shared/Avatar";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -250,12 +251,8 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
                 className="flex items-center gap-2 p-1 pl-2 pr-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FF5A1F] to-amber-400 p-[1.5px] overflow-hidden shrink-0 flex items-center justify-center">
-                  <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center text-xs font-bold uppercase text-primary">
-                    {currentUser?.avatar_url ? (
-                      <Image src={currentUser.avatar_url} alt={currentUser?.name} className="w-full h-full object-cover" fill sizes="40px" />
-                    ) : (
-                      currentUser?.name ? currentUser.name[0] : "U"
-                    )}
+                  <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center overflow-hidden">
+                    <Avatar url={currentUser?.avatar_url} alt={currentUser?.name} className="w-full h-full rounded-full" />
                   </div>
                 </div>
                 <div className="hidden sm:flex flex-col items-start text-left">
@@ -280,10 +277,10 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
                         <p className="text-xs text-slate-500 truncate">{currentUser?.email}</p>
                       </div>
                       <div className="py-1">
-                        <Link href={getCanonicalProfileUrl(currentUser) || (currentUser ? `/u/${currentUser.id}` : "/u")} className="flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900">
+                        <AuthorLink author={currentUser} className="flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900">
                           <User className="w-4 h-4 mr-3 text-slate-400" />
                           My Profile
-                        </Link>
+                        </AuthorLink>
                         <Link href="/settings" className="flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900">
                           <Settings className="w-4 h-4 mr-3 text-slate-400" />
                           Settings

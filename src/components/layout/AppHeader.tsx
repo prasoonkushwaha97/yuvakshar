@@ -12,6 +12,7 @@ import AppDrawer from "./AppDrawer";
 import SearchModal from "./SearchModal";
 import { ROUTES } from "@/utils/routes";
 import { AnimatePresence, motion } from "framer-motion";
+import Avatar from "@/components/shared/Avatar";
 
 function DesktopNavItem({ link, pathname, locale }: { link: NavigationLink, pathname: string, locale: string }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -258,17 +259,7 @@ export default function AppHeader({ categories = [] }: { categories?: any[] }) {
                 className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-500 hover:text-[#f97316] transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Open profile actions"
               >
-                {currentUser && currentUser.avatar_url ? (
-                  <div className="w-[28px] h-[28px] lg:w-[32px] lg:h-[32px] rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
-                    <img 
-                      src={currentUser.avatar_url} 
-                      alt="Profile" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <User className="w-[22px] h-[22px]" strokeWidth={2.2} />
-                )}
+                <Avatar url={currentUser?.avatar_url} alt="Profile" className="h-10 w-10 md:h-10 md:w-10 sm:h-9 sm:w-9 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0" />
               </button>
             </div>
           </div>

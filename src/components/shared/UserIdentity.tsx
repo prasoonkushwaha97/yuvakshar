@@ -2,11 +2,12 @@
 
 import React, { useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import Avatar from "@/components/shared/Avatar";
 import { useCms } from "@/store/CmsContext";
 import { Profile } from "@/store/types";
 import { getProfileUrl } from "@/utils/routes";
 import HoverUserCard from "@/components/yuvakshar/HoverUserCard";
+import AuthorLink from "@/components/shared/AuthorLink";
 
 export interface UserIdentityProps {
   userId?: string | null;
@@ -22,24 +23,30 @@ export interface UserIdentityProps {
 }
 
 const AvatarComponent = ({ sizeClass, avatarUrl, name }: { sizeClass: number, avatarUrl: string | null, name: string }) => (
-  <div 
-    className="relative shrink-0 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700"
-    style={{ width: sizeClass, height: sizeClass }}
-  >
-    {avatarUrl ? (
-      <Image
-        src={avatarUrl}
-        alt={name}
-        fill
-        className="object-cover"
-        sizes={`${sizeClass}px`}
+  <Avatar 
+    url={avatarUrl} 
+    alt={name} 
+    className="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-800"
+    // size class logic requires inline style or predefined classes. Let's wrap it in a div that applies the width/height
+  />
+);
+
+const WrappedAvatar = ({ sizeClass, avatarUrl, name, customClasses }: { sizeClass: number, avatarUrl: string | null, name: string, customClasses?: string }) => (
+  customClasses ? (
+    <Avatar 
+      url={avatarUrl} 
+      alt={name} 
+      className={customClasses}
+    />
+  ) : (
+    <div style={{ width: sizeClass, height: sizeClass }}>
+      <Avatar 
+        url={avatarUrl} 
+        alt={name} 
+        className="w-full h-full rounded-full border border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-800"
       />
-    ) : (
-      <span className="font-serif font-bold text-slate-500 dark:text-slate-400" style={{ fontSize: sizeClass * 0.4 }}>
-        {name.charAt(0).toUpperCase()}
-      </span>
-    )}
-  </div>
+    </div>
+  )
 );
 
 const VerifiedBadge = () => (
@@ -124,7 +131,7 @@ export default function UserIdentity({
 
   const innerContent = (
     <>
-      {showAvatar && <AvatarComponent sizeClass={sizeClass} avatarUrl={avatarUrl} name={name} />}
+      {showAvatar && <WrappedAvatar sizeClass={sizeClass} avatarUrl={avatarUrl} name={name} customClasses={variant === "inline" ? "h-10 w-10 md:h-10 md:w-10 sm:h-9 sm:w-9 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0" : undefined} />}
       
       <div className={`flex flex-col justify-center ${variant === "inline" ? "flex-row items-center gap-1.5" : ""}`}>
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -152,14 +159,13 @@ export default function UserIdentity({
     ${className}
   `;
 
-  const isValidProfile = profileHref !== null;
   const targetUserId = resolvedUser.id || username;
   
-  if (clickable && isValidProfile && profileHref) {
+  if (clickable) {
     const linkElement = (
-      <Link href={profileHref} className={wrapperClasses}>
+      <AuthorLink author={resolvedUser} className={wrapperClasses}>
         {innerContent}
-      </Link>
+      </AuthorLink>
     );
     
     // Disable hover card for very small variants to avoid UX clutter, 

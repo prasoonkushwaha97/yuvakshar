@@ -8,6 +8,7 @@ import { RoleBadge } from "@/components/ui/RoleBadge";
 import { Calendar, Mail, Shield, User } from "lucide-react";
 import { AdminUserRecord } from "@/lib/actions/userManagementActions";
 import { getAuditLogsForUser } from "@/lib/actions/auditActions";
+import Avatar from "@/components/shared/Avatar";
 
 interface Props {
   open: boolean;
@@ -45,13 +46,7 @@ export function UserDetailDrawer({ open, onOpenChange, user }: Props) {
         {/* Header Profile */}
         <div className="flex items-center space-x-4">
           <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden shrink-0">
-            {user.avatar_url ? (
-              <Image src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" fill />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-400">
-                <User className="w-8 h-8" />
-              </div>
-            )}
+            <Avatar url={user.avatar_url} alt={user.name} className="w-full h-full rounded-full" />
           </div>
           <div>
             <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">{user.name}</h3>

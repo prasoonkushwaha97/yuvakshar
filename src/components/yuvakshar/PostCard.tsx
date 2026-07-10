@@ -18,9 +18,10 @@ import {
 } from "lucide-react";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import HoverUserCard from "@/components/yuvakshar/HoverUserCard";
-import { getCanonicalProfileUrl } from "@/utils/username";
+import AuthorLink from "@/components/shared/AuthorLink";
 import { CommunityPost, deletePost, updatePost } from "@/lib/communityService";
 import { Profile, useCms } from "@/store/CmsContext";
+import Avatar from "@/components/shared/Avatar";
 
 interface PostCardProps {
   post: CommunityPost;
@@ -147,21 +148,17 @@ export default function PostCard({
         <div className="flex items-center space-x-3">
           
           <HoverUserCard userId={hoverUserId}>
-              <Link href={getCanonicalProfileUrl(effectiveAuthorProfile || { id: post.user_id }) || "#"} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-200 flex items-center justify-center font-bold text-sm text-slate-500 uppercase shrink-0 overflow-hidden hover:opacity-90 block border border-slate-300 dark:border-slate-700">
-                {effectiveAuthorProfile?.avatar_url ? (
-                  <Image src={effectiveAuthorProfile.avatar_url} alt={post.user_name} className="w-full h-full object-cover" fill />
-                ) : (
-                post.user_name[0]
-              )}
-            </Link>
+              <AuthorLink author={effectiveAuthorProfile || { id: post.user_id }} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-200 flex items-center justify-center text-sm text-slate-500 shrink-0 overflow-hidden hover:opacity-90 block border border-slate-300 dark:border-slate-700">
+                <Avatar url={effectiveAuthorProfile?.avatar_url} alt={post.user_name} className="w-full h-full" />
+            </AuthorLink>
           </HoverUserCard>
           
           <div>
             <div className="flex items-center space-x-2">
               <HoverUserCard userId={hoverUserId}>
-                <Link href={getCanonicalProfileUrl(effectiveAuthorProfile || { id: post.user_id }) || "#"} className="text-sm font-bold text-slate-850 dark:text-white hover:text-primary font-hindi leading-tight">
+                <AuthorLink author={effectiveAuthorProfile || { id: post.user_id }} className="text-sm font-bold text-slate-850 dark:text-white hover:text-primary font-hindi leading-tight">
                   {post.user_name}
-                </Link>
+                </AuthorLink>
               </HoverUserCard>
               
               {post.user_rank && (

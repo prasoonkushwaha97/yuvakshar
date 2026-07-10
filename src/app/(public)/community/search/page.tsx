@@ -8,8 +8,9 @@ import SkeletonLoader from "@/components/chaupal/shared/SkeletonLoader";
 import { Search as SearchIcon, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import FollowButton from "@/components/chaupal/shared/FollowButton";
+
 import JoinGroupButton from "@/components/chaupal/shared/JoinGroupButton";
+import Avatar from "@/components/shared/Avatar";
 
 export default function ChaupalSearchPage() {
   const searchParams = useSearchParams();
@@ -110,9 +111,7 @@ export default function ChaupalSearchPage() {
               <div key={user.id} className="bg-white dark:bg-[#0F172A] p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-200 relative shrink-0">
-                    {user.avatar_url ? (
-                      <Image src={user.avatar_url} alt={user.name} fill className="object-cover" />
-                    ) : null}
+                    <Avatar url={user.avatar_url} alt={user.name} className="w-full h-full" />
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1">
@@ -122,7 +121,7 @@ export default function ChaupalSearchPage() {
                     <p className="text-xs text-slate-400">{user.public_identity || user.role}</p>
                   </div>
                 </div>
-                <FollowButton targetUserId={user.id} />
+
               </div>
             ))}
 
@@ -130,9 +129,7 @@ export default function ChaupalSearchPage() {
               <div key={group.id} className="bg-white dark:bg-[#0F172A] p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 relative shrink-0">
-                    {group.avatar_url ? (
-                      <Image src={group.avatar_url} alt={group.name} fill className="object-cover" />
-                    ) : null}
+                    <Avatar url={group.avatar_url} alt={group.name} className="w-full h-full rounded-xl" />
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1">

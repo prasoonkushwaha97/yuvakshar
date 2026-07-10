@@ -8,6 +8,7 @@ import { useLanguage } from "@/store/LanguageContext";
 import { stripMarkdown } from "@/lib/markdown";
 import SectionTitle from "../shared/SectionTitle";
 import { getArticleUrl, resolveAuthorFromUsers } from "@/utils/routes";
+import AuthorLink from "@/components/shared/AuthorLink";
 import { formatDisplayDate } from "@/utils/date";
 
 type TabType = "editorial" | "trending";
@@ -120,18 +121,12 @@ export default function Popular() {
                   </td>
                   {/* Author */}
                   <td className="py-3 px-4 hidden md:table-cell text-gray-555 font-medium font-sans">
-                    {authorHref ? (
-                      <Link
-                        href={authorHref}
-                        className="hover:text-primary transition-colors font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded px-1 py-0.5 -mx-1"
-                      >
-                        {resolvedAuthorName}
-                      </Link>
-                    ) : (
-                      <span className="font-bold px-1 py-0.5 -mx-1">
-                        {resolvedAuthorName}
-                      </span>
-                    )}
+                    <AuthorLink
+                      author={resolvedAuthorProfile || { name: resolvedAuthorName }}
+                      className="hover:text-primary transition-colors font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded px-1 py-0.5 -mx-1"
+                    >
+                      {resolvedAuthorName}
+                    </AuthorLink>
                   </td>
                   {/* Date */}
                   <td className="py-3 px-4 text-center font-medium font-sans text-gray-600 dark:text-gray-450">

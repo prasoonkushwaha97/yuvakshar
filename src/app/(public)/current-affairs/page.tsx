@@ -98,7 +98,7 @@ function CurrentAffairsPageContent() {
                 <div>
                   {/* Image cover */}
                   <Link href={getArticleUrl(art)} className="block relative h-[220px] w-full overflow-hidden">
-                    <Image src={art.coverImage} alt={art.title} fill className="object-cover hover:scale-105 transition-transform duration-500 brightness-95" />
+                    <Image src={art.cover_image} alt={art.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500 brightness-95" />
                     <div className="absolute top-3 left-3 bg-yuvakshar-bg border border-yuvakshar-gold/25 px-2.5 py-0.5 rounded text-[9px] text-yuvakshar-gold font-bold tracking-wider uppercase">
                       {art.category}
                     </div>

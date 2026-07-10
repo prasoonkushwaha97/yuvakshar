@@ -30,13 +30,13 @@ export async function getSystemMetrics() {
 
   let publishedCount = 0;
   try {
-    const { count } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).ilike('status', 'published');
+    const { count } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).eq('status', 'Published');
     publishedCount = count || 0;
   } catch (e) {}
 
   let pendingReviewsCount = 0;
   try {
-    const { count } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).or('status.ilike.submitted,status.ilike.revision_requested,status.ilike.in_review');
+    const { count } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).in('status', ['Submitted', 'Revision Requested', 'Under Review']);
     pendingReviewsCount = count || 0;
   } catch (e) {}
 
@@ -76,7 +76,7 @@ export async function getFounderDashboardStats() {
     const { count: articles } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true });
     totalArticles = articles || 0;
     
-    const { count: pending } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).or('status.ilike.submitted,status.ilike.revision_requested,status.ilike.in_review');
+    const { count: pending } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).in('status', ['Submitted', 'Revision Requested', 'Under Review']);
     pendingReviews = pending || 0;
   } catch (e) {
     console.error("Failed to fetch articles count:", e);

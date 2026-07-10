@@ -1,4 +1,5 @@
 import UserIdentity from "@/components/shared/UserIdentity";
+import AuthorLink from "@/components/shared/AuthorLink";
 import React, { useState } from "react";
 import { useCms } from "@/store/CmsContext";
 import Image from "next/image";
@@ -70,7 +71,7 @@ const RichText = ({ content }: { content: string }) => {
           return <Link key={i} href={`/community/search?q=${encodeURIComponent(token)}`} className="text-[#f97316] hover:underline">{token}</Link>;
         } else if (token.match(mentionRegex)) {
           const username = token.substring(1);
-          return <Link key={i} href={`/author/${username}`} className="text-[#f97316] hover:underline font-medium">{token}</Link>;
+          return <AuthorLink key={i} author={{ username }} className="text-[#f97316] hover:underline font-medium">{token}</AuthorLink>;
         }
         return <span key={i}>{token}</span>;
       })}
@@ -170,7 +171,7 @@ export default function FeedCard({ post, onDelete }: FeedCardProps) {
         {/* Identity Block */}
         <div className="flex items-center gap-3 w-full">
           {/* Avatar */}
-          <Link href={`/author/${post.author.username}`} className="relative w-[48px] h-[48px] rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700 hover:opacity-90 transition-opacity">
+          <AuthorLink author={post.author as any} className="relative w-[48px] h-[48px] rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700 hover:opacity-90 transition-opacity">
             {post.author.avatarUrl ? (
               <Image src={post.author.avatarUrl} alt={post.author.name} fill className="object-cover" />
             ) : (
@@ -178,15 +179,15 @@ export default function FeedCard({ post, onDelete }: FeedCardProps) {
                 {post.author.name.charAt(0).toUpperCase()}
               </span>
             )}
-          </Link>
+          </AuthorLink>
           
           {/* Info */}
           <div className="flex flex-col flex-1 min-w-0">
             {/* Name & Username */}
             <div className="flex items-center flex-wrap gap-x-1.5">
-              <Link href={`/author/${post.author.username}`} className="font-sans font-bold text-[15.5px] sm:text-base text-slate-900 dark:text-white hover:text-[#f97316] transition-colors leading-tight truncate">
+              <AuthorLink author={post.author as any} className="font-sans font-bold text-[15.5px] sm:text-base text-slate-900 dark:text-white hover:text-[#f97316] transition-colors leading-tight truncate">
                 {post.author.name}
-              </Link>
+              </AuthorLink>
               {post.author.isVerified && <VerifiedBadge />}
               <span className="text-slate-500 dark:text-slate-400 text-[13px] leading-tight truncate">
                 @{post.author.username}

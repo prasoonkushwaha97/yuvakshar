@@ -36,9 +36,12 @@ export function getArticleUrl(article: ArticleLike | Article): string {
   return `/articles/${slug}`;
 }
 
-export function getProfileUrl(user: Partial<Profile> | Profile | null | undefined): string | null {
+/**
+ * Deprecated alias for getCanonicalProfileUrl. Use getCanonicalProfileUrl directly when possible.
+ */
+export function getProfileUrl(user: Partial<Profile> | Profile | null | undefined): string {
   if (!user) {
-    return null;
+    return "#";
   }
   return getCanonicalProfileUrl(user);
 }
@@ -77,13 +80,13 @@ export function getMagazineReadUrl(issue: IssueLike | string | null | undefined)
  * needs to display a clickable author identity.
  *
  * @returns profile - The resolved profile (or null)
- * @returns href    - The canonical /u/username URL (or null if no valid username)
+ * @returns href    - The canonical /u/username URL (or "#" if no valid username)
  */
 export function resolveAuthorFromUsers(
   authorName: string | null | undefined,
   authorProfile: Partial<Profile> | null | undefined,
   users: Profile[]
-): { profile: Partial<Profile> | null; href: string | null } {
+): { profile: Partial<Profile> | null; href: string } {
   // 1. If authorProfile already has a resolvable username, use it directly
   if (authorProfile) {
     const href = getProfileUrl(authorProfile);
@@ -117,6 +120,6 @@ export function resolveAuthorFromUsers(
     }
   }
 
-  // 4. Return whatever profile we have but no href — never fabricate URLs
-  return { profile: authorProfile || null, href: null };
+  // 4. Return whatever profile we have and fallback to "#"
+  return { profile: authorProfile || null, href: "#" };
 }

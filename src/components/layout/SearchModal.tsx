@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCms } from "@/store/CmsContext";
 import { getArticleUrl } from "@/utils/routes";
+import { getCanonicalProfileUrl } from "@/utils/username";
 import { useVoiceSearch } from "@/hooks/useVoiceSearch";
 
 const RECENT_SEARCHES_KEY = "yuvakshar_recent_searches";
@@ -528,7 +529,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                                 key={author.id}
                                 data-search-item="true"
                                 onKeyDown={handleKeyboardNav}
-                                onClick={() => handleSelectResult(`/u/${author.username}`)}
+                                onClick={() => handleSelectResult(getCanonicalProfileUrl(author))}
                                 className="w-full text-left group flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 focus:bg-slate-50 focus:outline-none dark:hover:bg-slate-800/50 transition-colors"
                               >
                                 {author.avatar_url ? (

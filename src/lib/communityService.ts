@@ -480,10 +480,6 @@ export const fetchChallengeSubmissions = async (_challengeId: string): Promise<a
 
 export const searchCommunity = async (_query: string, ..._args: any[]): Promise<any[]> => [];
 
-export const toggleFollowUser = async (_currentUserId: string, _targetUserId: string): Promise<boolean> => false;
-
-export const isUserFollowing = async (_currentUserId: string, _targetUserId: string): Promise<boolean> => false;
-
 export const getUserSocialTimeline = async (_userId: string): Promise<any[]> => [];
 
 export const fetchReadingProgress = async (_groupId: string): Promise<any[]> => [];

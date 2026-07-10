@@ -1,10 +1,14 @@
-export type ArticleStatus =
-  | "draft"
-  | "submitted"
-  | "revision_requested"
-  | "published"
-  | "rejected"
-  | "archived";
+export enum ArticleStatus {
+  Draft = "Draft",
+  Submitted = "Submitted",
+  UnderReview = "Under Review",
+  RevisionRequested = "Revision Requested",
+  Approved = "Approved",
+  Scheduled = "Scheduled",
+  Published = "Published",
+  Rejected = "Rejected",
+  Archived = "Archived"
+}
 
 export type EditorialWorkflowStage =
   | "editor_review"

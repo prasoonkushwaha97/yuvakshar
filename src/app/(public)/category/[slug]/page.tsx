@@ -177,7 +177,7 @@ function CategoryDetailPageContent() {
                   {/* Image cover */}
                   <Link href={getArticleUrl(art)} className="block relative h-[220px] w-full overflow-hidden">
                     <Image 
-                      src={art.coverImage} 
+                      src={art.cover_image} 
                       alt={art.title}
                       fill
                       className="object-cover hover:scale-105 transition-transform duration-500 brightness-95"

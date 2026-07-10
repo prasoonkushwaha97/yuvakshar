@@ -6,7 +6,8 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { MessageCircle, BookOpen } from "lucide-react";
 import { RoleBadgeList } from "@/components/ui/RoleBadge";
-import { getCanonicalProfileUrl } from "@/utils/username";
+import AuthorLink from "@/components/shared/AuthorLink";
+import Avatar from "@/components/shared/Avatar";
 
 interface AuthorData {
   id: string;
@@ -16,8 +17,6 @@ interface AuthorData {
   avatar_url?: string | null;
   role?: string;
   bio?: string;
-  followersCount?: number;
-  followingCount?: number;
 }
 
 interface HoverAuthorCardProps {
@@ -78,8 +77,6 @@ export default function HoverAuthorCard({ author, children }: HoverAuthorCardPro
     };
   }, [isOpen]);
 
-  const authorLink = getCanonicalProfileUrl({ username: author.username, id: author.id }) || "#";
-
   return (
     <div 
       className="relative inline-block"
@@ -99,24 +96,17 @@ export default function HoverAuthorCard({ author, children }: HoverAuthorCardPro
       {isOpen && (
         <div className="absolute z-[100] left-1/2 -translate-x-1/2 mt-2 md:mt-0 md:top-full md:left-0 md:translate-x-0 w-[280px] sm:w-[320px] bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-slate-700/80 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-200">
           
-          <div className="flex justify-between items-start mb-3">
-            <Link href={authorLink} className="w-14 h-14 rounded-full bg-slate-200 border-2 border-white dark:border-slate-800 shrink-0 overflow-hidden flex items-center justify-center font-bold text-primary text-xl shadow-sm">
-              {author.avatar_url ? (
-                <Image src={author.avatar_url} alt={author.name} className="w-full h-full object-cover" fill sizes="48px" />
-              ) : (
-                author.name[0]
-              )}
-            </Link>
-            <button className="px-4 py-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-xs font-bold font-hindi hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors">
-              Follow
-            </button>
+          <div className="flex justify-between items-center mb-3">
+            <AuthorLink author={author as any} className="shrink-0 flex items-center justify-center">
+              <Avatar url={author.avatar_url} alt={author.name} className="h-10 w-10 md:h-10 md:w-10 sm:h-9 sm:w-9 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0" />
+            </AuthorLink>
           </div>
 
           <div className="mb-2">
-            <Link href={authorLink} className="block text-base font-bold text-slate-800 dark:text-white font-hindi hover:underline decoration-primary">
+            <AuthorLink author={author as any} className="block text-base font-bold text-slate-800 dark:text-white font-hindi hover:underline decoration-primary">
               {author.name}
-            </Link>
-            <div className="text-[11px] text-slate-500 font-mono">@{author.slug || author.id}</div>
+            </AuthorLink>
+            <div className="text-[11px] text-slate-500 font-mono">@{author.slug || author.username || author.id}</div>
             {(author as any).roles && <div className="mt-2"><RoleBadgeList roles={(author as any).roles} /></div>}
           </div>
 
@@ -124,22 +114,12 @@ export default function HoverAuthorCard({ author, children }: HoverAuthorCardPro
             {author.bio || "युवाक्षर समुदाय के एक महत्वपूर्ण सदस्य और साहित्यिक प्रेमी।"}
           </div>
 
-            <div className="flex items-center gap-4 text-xs font-hindi text-slate-600 dark:text-slate-400 mb-4">
-              <div className="flex gap-1.5 items-center">
-                <span className="font-bold text-slate-800 dark:text-white">{author.followingCount || 0}</span>
-                <span>Following</span>
-              </div>
-              <div className="flex gap-1.5 items-center">
-                <span className="font-bold text-slate-800 dark:text-white">{author.followersCount || 0}</span>
-                <span>Followers</span>
-              </div>
-            </div>
 
           <div className="flex gap-2">
-            <Link href={authorLink} className="flex-1 flex justify-center items-center gap-1.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-xs font-bold font-hindi hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+            <AuthorLink author={author as any} className="flex-1 flex justify-center items-center gap-1.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-xs font-bold font-hindi hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
               <BookOpen className="w-3.5 h-3.5" />
               प्रोफ़ाइल
-            </Link>
+            </AuthorLink>
             <Link href={`/community/messages?to=${author.id}`} className="flex-1 flex justify-center items-center gap-1.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-xs font-bold font-hindi hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
               <MessageCircle className="w-3.5 h-3.5" />
               संदेश

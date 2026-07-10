@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { hi } from "date-fns/locale";
 import { useCms } from "@/store/CmsContext";
 import { Heart, Flag, Edit2, Trash2, Reply, MoreVertical, User, ChevronDown, ChevronUp, X, Smile, Image as ImageIcon, AtSign, Hash, Link as LinkIcon } from "lucide-react";
+import Avatar from "@/components/shared/Avatar";
 
 interface CommentSectionProps {
   articleId: string;
@@ -172,13 +173,7 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
         
         {/* User Avatar */}
         <div className="shrink-0 hidden sm:block">
-           <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700">
-             {currentUser?.avatar_url ? (
-               <img src={currentUser.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-             ) : (
-               <User className="w-5 h-5 text-slate-400" />
-             )}
-           </div>
+           <Avatar url={currentUser?.avatar_url} alt="Avatar" className="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800" />
         </div>
 
         {/* Composer Body */}

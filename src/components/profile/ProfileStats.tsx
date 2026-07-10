@@ -2,10 +2,6 @@ import React from "react";
 
 interface ProfileStatsProps {
   articlesCount: number;
-  followersCount: number;
-  followingCount: number;
-  onFollowersClick: () => void;
-  onFollowingClick: () => void;
 }
 
 const StatItem = ({ 
@@ -36,16 +32,10 @@ const StatItem = ({
 
 export default function ProfileStats({
   articlesCount,
-  followersCount,
-  followingCount,
-  onFollowersClick,
-  onFollowingClick,
 }: ProfileStatsProps) {
   return (
     <div className="flex flex-wrap gap-3 w-full">
       <StatItem label="प्रकाशित लेख" value={articlesCount} />
-      <StatItem label="फ़ॉलोअर्स" value={followersCount} onClick={onFollowersClick} />
-      <StatItem label="फ़ॉलोइंग" value={followingCount} onClick={onFollowingClick} />
     </div>
   );
 }

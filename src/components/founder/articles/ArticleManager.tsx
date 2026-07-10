@@ -9,6 +9,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Article, ArticleStatus } from "@/types/content";
 import Image from "next/image";
+import Avatar from "@/components/shared/Avatar";
 
 export default function ArticleManager({ 
   initialArticles, 
@@ -178,21 +179,21 @@ export default function ArticleManager({
 
   const tabs = [
     { id: "all", label: "All Articles", count: stats?.total || 0 },
-    { id: "draft", label: "Drafts", count: stats?.drafts || 0 },
-    { id: "submitted", label: "Pending Review", count: stats?.submitted || 0 },
-    { id: "revision_requested", label: "Needs Revision", count: stats?.revisions || 0 },
-    { id: "published", label: "Published", count: stats?.published || 0 },
-    { id: "rejected", label: "Rejected", count: stats?.rejected || 0 },
-    { id: "archived", label: "Archived", count: stats?.archived || 0 },
+    { id: ArticleStatus.Draft, label: "Drafts", count: stats?.drafts || 0 },
+    { id: ArticleStatus.Submitted, label: "Pending Review", count: stats?.submitted || 0 },
+    { id: ArticleStatus.RevisionRequested, label: "Needs Revision", count: stats?.revisions || 0 },
+    { id: ArticleStatus.Published, label: "Published", count: stats?.published || 0 },
+    { id: ArticleStatus.Rejected, label: "Rejected", count: stats?.rejected || 0 },
+    { id: ArticleStatus.Archived, label: "Archived", count: stats?.archived || 0 },
   ];
 
   const getStatusBadge = (status: ArticleStatus) => {
     switch (status) {
-      case "published": return <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-md text-xs font-medium">Published</span>;
-      case "draft": return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400 rounded-md text-xs font-medium">Draft</span>;
-      case "submitted": return <span className="px-2.5 py-1 bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 rounded-md text-xs font-medium">Submitted</span>;
-      case "revision_requested": return <span className="px-2.5 py-1 bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400 rounded-md text-xs font-medium">Needs Revision</span>;
-      case "rejected": return <span className="px-2.5 py-1 bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400 rounded-md text-xs font-medium">Rejected</span>;
+      case ArticleStatus.Published: return <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-md text-xs font-medium">Published</span>;
+      case ArticleStatus.Draft: return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400 rounded-md text-xs font-medium">Draft</span>;
+      case ArticleStatus.Submitted: return <span className="px-2.5 py-1 bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 rounded-md text-xs font-medium">Submitted</span>;
+      case ArticleStatus.RevisionRequested: return <span className="px-2.5 py-1 bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400 rounded-md text-xs font-medium">Needs Revision</span>;
+      case ArticleStatus.Rejected: return <span className="px-2.5 py-1 bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400 rounded-md text-xs font-medium">Rejected</span>;
       default: return <span className="px-2.5 py-1 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 rounded-md text-xs font-medium capitalize">{status}</span>;
     }
   };
@@ -280,10 +281,10 @@ export default function ArticleManager({
           <div className="flex items-center gap-3 px-4 py-1 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20">
             <span className="text-sm font-medium text-primary">{selectedIds.size} selected</span>
             <div className="w-px h-4 bg-primary/20"></div>
-            <button onClick={() => handleBulkUpdateStatus('Published')} className="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 transition-colors flex items-center gap-1">
+            <button onClick={() => handleBulkUpdateStatus(ArticleStatus.Published)} className="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 transition-colors flex items-center gap-1">
               <UploadCloud className="w-4 h-4" /> Publish
             </button>
-            <button onClick={() => handleBulkUpdateStatus('Archived')} className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1">
+            <button onClick={() => handleBulkUpdateStatus(ArticleStatus.Archived)} className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1">
               <Archive className="w-4 h-4" /> Archive
             </button>
             <button onClick={handleBulkDelete} className="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors flex items-center gap-1">
@@ -350,13 +351,7 @@ export default function ArticleManager({
                     </td>
                     <td className="px-4 py-4">
                       <button onClick={(e) => { e.stopPropagation(); updateUrlParams({ author_id: article.profiles?.id || null }); }} className="flex items-center gap-2 hover:text-primary transition-colors">
-                         {article.profiles?.avatar_url ? (
-                            <img src={article.profiles.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover bg-slate-100 dark:bg-slate-800" />
-                         ) : (
-                            <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs text-slate-500">
-                               {article.profiles?.name?.charAt(0) || '?'}
-                            </div>
-                         )}
+                         <Avatar url={article.profiles?.avatar_url} alt={article.profiles?.name || ''} className="w-6 h-6 rounded-full object-cover bg-slate-100 dark:bg-slate-800" />
                          <span className="font-medium text-slate-700 dark:text-slate-300">{article.profiles?.name || 'Unknown'}</span>
                       </button>
                     </td>
@@ -416,10 +411,10 @@ export default function ArticleManager({
                                 <UserPlus className="w-4 h-4 mr-2 text-slate-400" /> Assign Editor
                               </button>
                               <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
-                              {article.status !== 'published' ? (
+                              {article.status !== ArticleStatus.Published ? (
                                 <button onClick={() => {
                                   startTransition(async () => {
-                                    await updateArticleStatus(article.id, 'published');
+                                    await updateArticleStatus(article.id, ArticleStatus.Published as any);
                                     setActiveMenu(null);
                                     toast.success("Article published");
                                   });
@@ -429,7 +424,7 @@ export default function ArticleManager({
                               ) : (
                                 <button onClick={() => {
                                   startTransition(async () => {
-                                    await updateArticleStatus(article.id, 'draft');
+                                    await updateArticleStatus(article.id, ArticleStatus.Draft as any);
                                     setActiveMenu(null);
                                     toast.success("Article unpublished");
                                   });
@@ -503,13 +498,7 @@ export default function ArticleManager({
 
                  <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                    <div className="flex items-center gap-1.5">
-                     {article.profiles?.avatar_url ? (
-                        <img src={article.profiles.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover" />
-                     ) : (
-                        <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px]">
-                           {article.profiles?.name?.charAt(0) || '?'}
-                        </div>
-                     )}
+                     <Avatar url={article.profiles?.avatar_url} alt={article.profiles?.name || ''} className="w-5 h-5 rounded-full object-cover" />
                      <span className="font-medium">{article.profiles?.name || 'Unknown'}</span>
                    </div>
                    <span className="text-slate-300 dark:text-slate-600">•</span>
@@ -560,10 +549,10 @@ export default function ArticleManager({
                                 <UserPlus className="w-4 h-4 mr-2 text-slate-400" /> Assign Editor
                               </button>
                               <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
-                              {article.status !== 'published' ? (
+                              {article.status !== ArticleStatus.Published ? (
                                 <button onClick={() => {
                                   startTransition(async () => {
-                                    await updateArticleStatus(article.id, 'published');
+                                    await updateArticleStatus(article.id, ArticleStatus.Published as any);
                                     setActiveMenu(null);
                                     toast.success("Article published");
                                   });
@@ -573,7 +562,7 @@ export default function ArticleManager({
                               ) : (
                                 <button onClick={() => {
                                   startTransition(async () => {
-                                    await updateArticleStatus(article.id, 'draft');
+                                    await updateArticleStatus(article.id, ArticleStatus.Draft as any);
                                     setActiveMenu(null);
                                     toast.success("Article unpublished");
                                   });
@@ -686,13 +675,7 @@ export default function ArticleManager({
                       }}
                       className="w-full flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-primary/30 transition-colors text-left"
                     >
-                      {user.avatar_url ? (
-                        <img src={user.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-500">
-                          {user.name?.charAt(0) || user.email?.charAt(0) || '?'}
-                        </div>
-                      )}
+                      <Avatar url={user.avatar_url} alt={user.name || ''} className="w-8 h-8 rounded-full object-cover" />
                       <div>
                         <div className="text-sm font-medium text-slate-900 dark:text-white">{user.name || 'Unnamed'}</div>
                         <div className="text-xs text-slate-500 capitalize">{user.role?.replace('_', ' ') || 'Editor'}</div>

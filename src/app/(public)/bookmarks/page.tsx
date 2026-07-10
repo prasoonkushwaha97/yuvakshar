@@ -97,9 +97,9 @@ export default function BookmarksPage() {
                   </button>
 
                   <Link href={getArticleUrl(article)} className="flex flex-col flex-1">
-                    {article.coverImage && (
+                    {article.cover_image && (
                       <div className="h-40 w-full overflow-hidden relative">
-                        <Image src={article.coverImage} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <Image src={article.cover_image} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                         {article.category && (
                           <span className="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">
                             {article.category}

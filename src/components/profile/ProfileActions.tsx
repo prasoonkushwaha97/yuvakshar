@@ -1,19 +1,15 @@
 import React from "react";
 import Link from "next/link";
-import { Edit3, Settings, Share2, Users, UserCheck, MessageSquare, PenTool, BookCopy } from "lucide-react";
+import { Edit3, Settings, Share2, MessageSquare, PenTool, BookCopy } from "lucide-react";
 
 interface ProfileActionsProps {
   isOwner: boolean;
-  isFollowing: boolean;
-  onFollowToggle: () => void;
   onMessageClick: () => void;
   onShareClick: () => void;
 }
 
 export default function ProfileActions({ 
   isOwner, 
-  isFollowing, 
-  onFollowToggle, 
   onMessageClick, 
   onShareClick,
 }: ProfileActionsProps) {
@@ -57,17 +53,6 @@ export default function ProfileActions({
         </>
       ) : (
         <>
-          <button 
-            onClick={onFollowToggle}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold font-serif shadow-sm hover:shadow-md transition-all active:scale-95 ${
-              isFollowing
-                ? "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700" 
-                : "bg-[#F97316] hover:bg-[#F97316]/95 text-white border border-[#F97316]"
-            }`}
-          >
-            {isFollowing ? <UserCheck className="w-4 h-4 text-green-500" /> : <Users className="w-4 h-4" />}
-            <span>{isFollowing ? "फ़ॉलोइंग" : "फ़ॉलो करें"}</span>
-          </button>
 
           <button 
             onClick={onMessageClick}

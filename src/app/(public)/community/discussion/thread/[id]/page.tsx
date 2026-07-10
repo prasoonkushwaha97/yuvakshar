@@ -11,9 +11,9 @@ import {
   Award,
   CornerUpLeft
 } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
 import { getCanonicalProfileUrl } from "@/utils/username";
 import { Profile } from "@/store/types";
+import AuthorLink from "@/components/shared/AuthorLink";
 import { useCms } from "@/store/CmsContext";
 import { 
   fetchPosts, 
@@ -175,19 +175,15 @@ export default function DiscussionThreadPage() {
     return parts?.map((part, idx) => {
       if (part.startsWith("@")) {
         const username = part.replace(/[^\w\u0900-\u097F]/g, ""); // Devanagari Unicode supported
-        const profileUrl = getCanonicalProfileUrl({ username } as Partial<Profile>);
-        if (profileUrl) {
-          return (
-            <Link 
-              key={idx} 
-              href={profileUrl}
-              className="text-primary hover:underline font-bold"
-            >
-              {part}
-            </Link>
-          );
-        }
-        return <span key={idx} className="text-primary font-bold">{part}</span>;
+        return (
+          <AuthorLink 
+            key={idx} 
+            author={{ username }}
+            className="text-primary hover:underline font-bold"
+          >
+            {part}
+          </AuthorLink>
+        );
       }
       return part;
     });

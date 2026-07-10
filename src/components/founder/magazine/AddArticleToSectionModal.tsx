@@ -16,7 +16,7 @@ export default function AddArticleToSectionModal({ issueId, sectionId }: { issue
     setLoading(true);
     try {
       // Only search published articles for the magazine
-      const data = await getArticles({ status: "published", search }, { page: 1, limit: 10, sortBy: "created_at", sortOrder: "desc" });
+      const data = await getArticles({ status: "Published", search }, { page: 1, limit: 10, sortBy: "created_at", sortOrder: "desc" });
       setResults(data.data);
     } catch (e: any) {
       console.error(e);

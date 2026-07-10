@@ -11,7 +11,7 @@ import { callOpenAi, callGemini } from "@/lib/aiService";
 import { generatefallbackAiResponse } from "@/lib/fallbackAiResponse";
 import {
   calculateAuthorReputation,
-  toggleFollowAuthorInDb,
+
   addTimelineEventInDb,
   deleteTimelineEventInDb,
   addPortfolioItemInDb,
@@ -358,7 +358,7 @@ interface CmsContextType {
   updateUserProfile: (data: Partial<Profile>) => Promise<void>;
   sendPasswordReset: (email: string) => Promise<boolean>;
   // Author Ecosystem 2.0 Actions
-  followAuthor: (authorId: string, followerId: string) => Promise<void>;
+
   addTimelineEvent: (userId: string, event: { title: string; description: string; date: string; type?: string }) => Promise<void>;
   deleteTimelineEvent: (userId: string, eventId: string) => Promise<void>;
   addPortfolioItem: (userId: string, item: { name: string; url: string; type: "book" | "research_paper" | "report" | "white_paper" | "resume" | "other"; is_public: boolean }) => Promise<void>;
@@ -802,7 +802,7 @@ export function CmsProvider({
       const authorArticles = currentArticlesList.filter(a => a.author === user.name);
 
       if (user.id === "u-2" || user.id === "staff-chief") {
-        const defaultFollowers = ["u-1", "u-3", "staff-admin", "staff-editor"];
+
         const defaultTimeline = [
           { id: "t1", title: "युवाक्षर की स्थापना", description: "हिंदी में स्वतंत्र वैचारिक मंच युवाक्षर की नींव रखी।", date: "२०२१", type: "milestone" },
           { id: "t2", title: "डिजिटल मीडिया पुरस्कार", description: "भाषाई पत्रकारिता में उत्कृष्ट योगदान हेतु सम्मानित।", date: "२०२३", type: "award" },
@@ -836,7 +836,7 @@ export function CmsProvider({
           professional_experience: user.professional_experience || "विभिन्न राष्ट्रीय समाचार पत्रों और डिजिटल पोर्टलों में संपादकीय भूमिकाओं का अनुभव। २०१६ से युवाक्षर के विकास में योगदान।",
           social_contributions: user.social_contributions || "ग्रामीण क्षेत्रों में साक्षरता अभियान और युवाओं के लिए स्वतंत्र अभिव्यक्ति कार्यशालाओं का आयोजन।",
           publications_list: user.publications_list || "१. डिजिटल युग में हिंदी पत्रकारिता (पुस्तक, २०२३)\n२. स्वतंत्र मीडिया और लोकतंत्र (शोध पत्र, २०२४)",
-          followers: user.followers || defaultFollowers,
+
           timeline: user.timeline || defaultTimeline,
           portfolio: user.portfolio || defaultPortfolio,
           achievements: user.achievements || defaultAchievements
@@ -859,8 +859,7 @@ export function CmsProvider({
           current_role: user.current_role || "युवाक्षर मीडिया नेटवर्क",
           verification_badge: user.verification_badge || "Founder",
           institution: user.institution || "युवाक्षर मीडिया नेटवर्क",
-          expertise_tags: user.expertise_tags || ["प्रबंधन", "उद्यमिता", "डिजिटल मीडिया"],
-          followers: user.followers || ["u-2", "staff-admin"]
+          expertise_tags: user.expertise_tags || ["प्रबंधन", "उद्यमिता", "डिजिटल मीडिया"]
         };
         const { score, tier } = calculateAuthorReputation(enrichedFields, authorArticles);
         return {
@@ -879,8 +878,7 @@ export function CmsProvider({
           current_role: user.current_role || "यूटिलिटी और एडमिनिस्ट्रेशन",
           verification_badge: user.verification_badge || "Editorial Team",
           institution: user.institution || "युवाक्षर नेटवर्क",
-          expertise_tags: user.expertise_tags || ["तकनीक", "वेब डेवलपमेंट", "सुरक्षा"],
-          followers: user.followers || ["u-2"]
+          expertise_tags: user.expertise_tags || ["तकनीक", "वेब डेवलपमेंट", "सुरक्षा"]
         };
         const { score, tier } = calculateAuthorReputation(enrichedFields, authorArticles);
         return {
@@ -1195,7 +1193,7 @@ export function CmsProvider({
         author_id: art.author_id,
         authorRole: "लेखक",
         authorProfile: art.profiles ? mapDbProfileToProfile(art.profiles) : undefined,
-        coverImage: art.cover_image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
+        cover_image: art.cover_image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
         date: art.published_at || art.created_at,
         readTime: art.read_time || "३ मिनट पठन",
         tags: art.tags || [],
@@ -1489,8 +1487,7 @@ export function CmsProvider({
           joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
           slug: (customName || email.split("@")[0]).toLowerCase().replace(/[^a-z0-9_]/g, ""),
           // Chaupal Identity Defaults
-          followers: [],
-          following: [],
+
           social_posts_count: 0,
           social_replies_count: 0,
           groups_count: 0,
@@ -2654,19 +2651,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
   };
 
 
-  // Author Ecosystem 2.0 Actions
-  const followAuthor = async (authorId: string, followerId: string) => {
-    const updatedUsers = toggleFollowAuthorInDb(users, authorId, followerId);
-    setUsers(updatedUsers);
-    if (currentUser) {
-      if (currentUser.id === authorId || currentUser.id === followerId) {
-        const updatedSelf = updatedUsers.find(u => u.id === currentUser.id) || null;
-        if (updatedSelf) {
-          setCurrentUser(updatedSelf);
-        }
-      }
-    }
-  };
+
 
   const addTimelineEvent = async (userId: string, event: { title: string; description: string; date: string; type?: string }) => {
     const updatedUsers = addTimelineEventInDb(users, userId, event);
@@ -3308,7 +3293,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         becomeAuthor,
         updateUserProfile,
         sendPasswordReset,
-        followAuthor,
+
         addTimelineEvent,
         deleteTimelineEvent,
         addPortfolioItem,

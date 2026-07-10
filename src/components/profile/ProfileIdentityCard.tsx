@@ -2,6 +2,9 @@ import React from "react";
 import Image from "next/image";
 import { CheckCircle2, Calendar, MapPin, Link as LinkIcon } from "lucide-react";
 import { Profile } from "@/store/types";
+import { supabase } from "@/lib/supabaseClient";
+import { STORAGE_CONFIG } from "@/config/storage.config";
+import Avatar from "@/components/shared/Avatar";
 
 // Social SVG Icons for cleaner presentation
 const TwitterIcon = ({ className }: { className?: string }) => (
@@ -25,20 +28,11 @@ export default function ProfileIdentityCard({ user }: ProfileIdentityCardProps) 
         
         {/* Profile Photo */}
         <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-white dark:border-[#0F172A] overflow-hidden bg-slate-50 dark:bg-slate-900 shadow-md shrink-0 relative group">
-          {user.avatar_url ? (
-            <Image 
-              src={user.avatar_url} 
-              alt={user.name || ""} 
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-              fill 
-              sizes="160px"
-              priority
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-400">
-              <span className="text-4xl font-bold uppercase">{(user.name || "U")?.[0]}</span>
-            </div>
-          )}
+          <Avatar 
+            url={user.avatar_url} 
+            alt={user.name || ""} 
+            className="w-full h-full transition-transform duration-500 group-hover:scale-105" 
+          />
         </div>
 
         {/* Info */}

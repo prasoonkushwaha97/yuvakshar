@@ -120,8 +120,6 @@ export interface Profile {
   timeline?: Array<{ id: string; title: string; description: string; date: string; type?: string }>;
   portfolio?: Array<{ id: string; name: string; url: string; type: "book" | "research_paper" | "report" | "white_paper" | "resume" | "other"; is_public: boolean }>;
   achievements?: Array<{ id: string; title: string; description?: string; year?: string; image_url?: string }>;
-  followers?: string[];
-  following?: string[];
   social_posts_count?: number;
   social_replies_count?: number;
   groups_count?: number;

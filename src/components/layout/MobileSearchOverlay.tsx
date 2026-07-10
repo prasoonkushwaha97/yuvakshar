@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { globalSearch, SearchResult } from "@/lib/actions/searchActions";
 import { useCms } from "@/store/CmsContext";
 import { getArticleUrl } from "@/utils/routes";
+import { getCanonicalProfileUrl } from "@/utils/username";
 import { useVoiceSearch } from "@/hooks/useVoiceSearch";
 
 const RECENT_SEARCHES_KEY = "yuvakshar_recent_searches";
@@ -509,7 +510,7 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
                           key={author.id}
                           data-search-item="true"
                           onKeyDown={handleKeyboardNav}
-                          onClick={() => handleSelectResult(`/u/${author.username}`)}
+                          onClick={() => handleSelectResult(getCanonicalProfileUrl(author))}
                           className="w-full text-left flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:bg-slate-100 dark:focus:bg-slate-800 focus:outline-none"
                         >
                           {author.avatar_url ? (

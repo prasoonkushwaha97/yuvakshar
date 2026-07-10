@@ -25,7 +25,7 @@ export default function ArticleCardMedium({ article, showImage = true }: Article
       
       {showImage && (
         <Link href={getArticleUrl(article)} className="block relative w-full aspect-[16/10] mb-4 shrink-0 overflow-hidden bg-stone-100 dark:bg-stone-900">
-          <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" fill />
+          <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" fill unoptimized={imageUrl.includes('supabase')} />
         </Link>
       )}
 

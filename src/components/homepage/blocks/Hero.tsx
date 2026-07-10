@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCms } from "@/store/CmsContext";
 import { stripMarkdown } from "@/lib/markdown";
 import { getArticleUrl, resolveAuthorFromUsers } from "@/utils/routes";
+import AuthorLink from "@/components/shared/AuthorLink";
+import Avatar from "@/components/shared/Avatar";
 import SectionContainer from "../layout/SectionContainer";
 
 export default function Hero() {
@@ -79,7 +81,7 @@ export default function Hero() {
               transition={{ duration: 0.55, ease: "easeInOut" }}
               className="absolute inset-0 w-full h-full"
             >
-              <Image src={currentArticle.coverImage || currentArticle.cover_image || currentArticle.image || "/images/placeholder-news.jpg"} alt={currentArticle.title} className="w-full h-full object-cover object-center brightness-[0.85] contrast-100 hover:scale-105 transition-transform duration-[10000ms] ease-out" loading="eager" fill />
+              <Image src={currentArticle.cover_image || "/images/placeholder-news.jpg"} alt={currentArticle.title} className="w-full h-full object-cover object-center brightness-[0.85] contrast-100 hover:scale-105 transition-transform duration-[10000ms] ease-out" loading="eager" fill unoptimized />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 via-40% to-transparent/10" />
             </motion.div>
           </AnimatePresence>
@@ -101,29 +103,22 @@ export default function Hero() {
 
             {/* Author Block */}
             <div className="flex flex-wrap items-center gap-3 text-sm md:text-base font-sans text-stone-200 pointer-events-auto">
-              {authorProfileUrl ? (
-                <Link 
-                  href={authorProfileUrl} 
-                  aria-label={`View ${resolvedAuthorName}'s profile`}
-                  className="hover:text-primary transition-colors font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded flex items-center gap-2"
-                >
-                  {resolvedAuthor?.avatar_url && (
-                    <div className="w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden bg-stone-800 border border-stone-600 shrink-0">
-                      <Image src={resolvedAuthor.avatar_url} alt="Author" width={32} height={32} className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  <span className="text-[15px] md:text-base">{resolvedAuthorName}</span>
-                  {resolvedAuthor?.verified && (
-                    <svg className="w-4 h-4 text-blue-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 00-1.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </Link>
-              ) : (
-                <span className="font-bold flex items-center gap-2">
-                  <span className="text-[15px] md:text-base">{resolvedAuthorName}</span>
-                </span>
-              )}
+              <AuthorLink 
+                author={resolvedAuthor || { name: resolvedAuthorName }}
+                className="hover:text-primary transition-colors font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded flex items-center gap-2"
+              >
+                <Avatar 
+                  url={resolvedAuthor?.avatar_url} 
+                  alt={resolvedAuthorName} 
+                  className="h-10 w-10 md:h-10 md:w-10 sm:h-9 sm:w-9 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0" 
+                />
+                <span className="text-[15px] md:text-base">{resolvedAuthorName}</span>
+                {resolvedAuthor?.verified && (
+                  <svg className="w-4 h-4 text-blue-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 00-1.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </AuthorLink>
               <span className="text-stone-400">•</span>
               <span className="text-stone-300">
                 {currentArticle.published_at 
@@ -135,9 +130,11 @@ export default function Hero() {
               </span>
             </div>
 
-            {/* Subtitle / summary snippet - hidden on mobile */}
             <p className="hidden md:block text-stone-300 dark:text-stone-400 text-sm lg:text-base leading-relaxed line-clamp-2 max-w-[85%] md:max-w-[75%] font-serif font-normal mt-4">
-              {stripMarkdown(currentArticle.summary || currentArticle.summary_hi || currentArticle.content || "")}
+              {(() => {
+                const text = stripMarkdown(currentArticle.summary || currentArticle.summary_hi || currentArticle.content || "");
+                return text.length > 160 ? text.substring(0, 160) + "..." : text;
+              })()}
             </p>
           </div>
 
@@ -168,7 +165,7 @@ export default function Hero() {
         <div className="lg:col-span-4 flex flex-col justify-between gap-4 h-full">
           {editorialStack.map(({ title: sectionTitle, article }) => {
             const title = stripMarkdown(article.title || article.title_hi || "");
-            const imageUrl = article.coverImage || article.cover_image || article.image || "/images/placeholder-news.jpg";
+            const imageUrl = article.cover_image || "/images/placeholder-news.jpg";
 
             return (
               <div 
@@ -180,7 +177,7 @@ export default function Hero() {
                   href={getArticleUrl(article)}
                   className="block relative w-20 h-20 shrink-0 overflow-hidden bg-gray-55 dark:bg-gray-900 rounded-2xl border border-gray-150/60 dark:border-gray-850/60"
                 >
-                  <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" loading="lazy" fill />
+                  <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" loading="lazy" fill unoptimized />
                 </Link>
 
                 {/* Details */}

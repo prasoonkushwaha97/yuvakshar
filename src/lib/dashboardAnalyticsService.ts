@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { ArticleStatus } from "@/types/content";
 
 export interface DashboardStats {
   publishedArticles: number;
@@ -20,13 +21,13 @@ export interface DashboardStats {
 export const dashboardAnalyticsService = {
   async getDashboardStats(): Promise<DashboardStats> {
     const countStatus = async (status: string) => {
-      const { count } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).ilike('status', status);
+      const { count } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).eq('status', status);
       return count || 0;
     };
     
     // Arrays for 'in' queries
     const countPendingReview = async () => {
-      const { count } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).or('status.ilike.submitted,status.ilike.revision_requested');
+      const { count } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).in('status', [ArticleStatus.Submitted, ArticleStatus.RevisionRequested, ArticleStatus.UnderReview]);
       return count || 0;
     };
 
@@ -70,12 +71,12 @@ export const dashboardAnalyticsService = {
       totalUsers,
       editorialTeamMembers
     ] = await Promise.all([
-      countStatus('published'),
-      countStatus('draft'),
+      countStatus(ArticleStatus.Published),
+      countStatus(ArticleStatus.Draft),
       countPendingReview(),
-      countStatus('revision_requested'),
-      countStatus('rejected'),
-      countStatus('archived'),
+      countStatus(ArticleStatus.RevisionRequested),
+      countStatus(ArticleStatus.Rejected),
+      countStatus(ArticleStatus.Archived),
       countFeatured(),
       countPriority(),
       countMagazines(),

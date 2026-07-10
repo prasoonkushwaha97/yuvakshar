@@ -60,6 +60,7 @@ export default function ArticleContent({ article, isPreview = false }: ArticleCo
               alt={title}
               fill
               priority
+              unoptimized
               className="object-cover"
             />
           </div>

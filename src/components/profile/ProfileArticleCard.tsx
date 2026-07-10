@@ -9,21 +9,22 @@ interface ProfileArticleCardProps {
 }
 
 export default function ProfileArticleCard({ article }: ProfileArticleCardProps) {
+  const coverImage = article.cover_image || article.coverImage || article.featured_image || article.image || "/images/placeholder-news.jpg";
+
   return (
     <div className="group flex flex-col sm:flex-row gap-6 sm:gap-8 py-8 border-b border-slate-100 dark:border-slate-800/60 last:border-0 hover:bg-slate-50/50 dark:hover:bg-[#0F172A]/30 transition-colors rounded-2xl sm:-mx-6 sm:px-6">
       
       {/* Content Right/Left flow (Image on left for Desktop) */}
-      {article.coverImage && (
-        <Link href={getArticleUrl(article)} className="block w-full sm:w-[240px] md:w-[280px] h-[160px] shrink-0 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 relative">
-          <Image 
-            src={article.coverImage} 
-            alt={article.title} 
-            fill 
-            className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-            sizes="(max-width: 640px) 100vw, 280px"
-          />
-        </Link>
-      )}
+      <Link href={getArticleUrl(article)} className="block w-full sm:w-[240px] md:w-[280px] h-[160px] shrink-0 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 relative">
+        <Image 
+          src={coverImage} 
+          alt={article.title || "Article"} 
+          fill 
+          className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+          sizes="(max-width: 640px) 100vw, 280px"
+          unoptimized={coverImage.includes('supabase')}
+        />
+      </Link>
 
       <div className="flex flex-col justify-center flex-grow space-y-3 font-serif min-w-0">
         

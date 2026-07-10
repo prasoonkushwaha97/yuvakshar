@@ -4,6 +4,7 @@ import { createClient } from "../supabaseServer";
 import { revalidatePath } from "next/cache";
 import { mapDbProfileToProfile } from "../repositoryService";
 import { hasAnyRole } from "../rbacService";
+import { ArticleStatus } from "@/types/content";
 
 export async function submitGuestArticle(formData: FormData) {
   const supabase = await createClient();
@@ -60,6 +61,7 @@ export async function submitContributorArticle(formData: FormData, isDraft: bool
   const metaTitle = formData.get("meta_title") as string;
   const metaDescription = formData.get("meta_description") as string;
   const customSlug = formData.get("slug") as string;
+  const coverImage = formData.get("cover_image") as string;
 
   if (!title || !content || !category) {
     return { error: "Missing required fields" };
@@ -79,7 +81,7 @@ export async function submitContributorArticle(formData: FormData, isDraft: bool
 
   const categoryId = categories && categories.length > 0 ? categories[0].id : null;
 
-  const status = isDraft ? "Draft" : "Submitted";
+  const status = isDraft ? ArticleStatus.Draft : ArticleStatus.Submitted;
   
   const payload: any = {
     title: title,
@@ -90,6 +92,10 @@ export async function submitContributorArticle(formData: FormData, isDraft: bool
     meta_title: metaTitle || null,
     meta_description: metaDescription || null,
   };
+  
+  if (coverImage) {
+    payload.cover_image = coverImage;
+  }
   
   if (customSlug) {
     payload.slug = customSlug;
@@ -135,6 +141,7 @@ export async function submitContributorArticle(formData: FormData, isDraft: bool
       updateQuery = updateQuery.eq("author_id", user.id); // security check for authors
     }
 
+    console.log("updateQuery payload", payload);
     const { data, error } = await updateQuery.select().single();
 
     if (error) {
@@ -145,6 +152,7 @@ export async function submitContributorArticle(formData: FormData, isDraft: bool
     revalidatePath("/workspace/articles");
     return { success: true, data };
   } else {
+    console.log("insertQuery payload", payload);
     const { data, error } = await supabase
       .from("articles")
       .insert([payload])
