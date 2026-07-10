@@ -250,7 +250,7 @@ export default function UsersManagementPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FF5A1F] to-amber-400 p-[1.5px] shrink-0">
-                          <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center text-xs font-bold text-primary overflow-hidden">
+                          <div className="relative w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center text-xs font-bold text-primary overflow-hidden">
                             {user.avatar_url ? (
                               <Image src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" fill />
                             ) : (
@@ -423,7 +423,7 @@ export default function UsersManagementPage() {
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FF5A1F] to-amber-400 p-[1.5px] shrink-0">
-                    <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center text-xs font-bold text-primary overflow-hidden">
+                    <div className="relative w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center text-xs font-bold text-primary overflow-hidden">
                       {user.avatar_url ? (
                         <Image src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" fill />
                       ) : (
