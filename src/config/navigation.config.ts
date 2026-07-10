@@ -20,16 +20,51 @@ export interface NavigationLink {
   labelEn: string;
   href: string;
   icon: any;
+  subLinks?: {
+    labelHi: string;
+    labelEn: string;
+    href: string;
+  }[];
 }
 
 export const primaryLinks: NavigationLink[] = [
   { labelHi: "मुख्य पृष्ठ", labelEn: "Home", href: "/", icon: Home },
-  { labelHi: "समाचार", labelEn: "News", href: "/current-affairs", icon: Newspaper },
-  { labelHi: "पत्रिका", labelEn: "पत्रिका", href: "/magazine", icon: BookOpen },
-  { labelHi: "चौपाल", labelEn: "Chaupal", href: "/community", icon: MessageSquare },
+  { 
+    labelHi: "समाचार", 
+    labelEn: "News", 
+    href: "/current-affairs", 
+    icon: Newspaper,
+    // Note: The categories from DB will be injected into this array in the layout
+    subLinks: [
+      { labelHi: "सभी समाचार", labelEn: "All News", href: "/current-affairs" }
+    ]
+  },
+  { 
+    labelHi: "पत्रिका", 
+    labelEn: "Magazine", 
+    href: "/magazine", 
+    icon: BookOpen,
+    subLinks: [
+      { labelHi: "नवीनतम अंक", labelEn: "Latest Issue", href: "/magazine" },
+      { labelHi: "सभी अंक", labelEn: "All Issues", href: "/magazine" },
+      { labelHi: "विशेषांक", labelEn: "Special Editions", href: "/magazine/special" }
+    ]
+  },
+  { 
+    labelHi: "चौपाल", 
+    labelEn: "Chaupal", 
+    href: "/community", 
+    icon: MessageSquare,
+    subLinks: [
+      { labelHi: "चर्चाएँ", labelEn: "Discussions", href: "/community/discussion" },
+      { labelHi: "समूह", labelEn: "Groups", href: "/community/groups" },
+      { labelHi: "प्रश्नोत्तर", labelEn: "Q&A", href: "/community/qna" },
+      { labelHi: "कार्यक्रम", labelEn: "Events", href: "/community/events" }
+    ]
+  },
   { labelHi: "हमारे बारे में", labelEn: "About", href: "/about", icon: Info },
   { labelHi: "हमारे सहयोगी", labelEn: "Partners", href: "/partners", icon: Handshake },
-  { labelHi: "संपर्क करें", labelEn: "Contact", href: "/contact", icon: Mail }
+  // { labelHi: "संपर्क करें", labelEn: "Contact", href: "/contact", icon: Mail } // Usually moved to footer
 ];
 
 export const profileActions = [

@@ -3,7 +3,7 @@ import { getArticleById } from "@/lib/actions/articleActions";
 import { getReviewNotes } from "@/lib/actions/reviewActions";
 import { hasPermission } from "@/lib/rbacService";
 import { redirect } from "next/navigation";
-import EditorClient from "@/components/founder/editor/EditorClient";
+import EditorClient from "@/components/editor/SharedEditorClient";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +32,7 @@ export default async function ArticleEditor({ params }: { params: Promise<{ id: 
       article={article} 
       isNew={isNew} 
       reviewNotes={reviewNotes} 
+      isEditorialRole={true}
     />
   );
 }

@@ -99,32 +99,35 @@ export default function MediaUploadModal({ isOpen, onClose, onSelect, requireAlt
       setUploadProgress(30);
       const compressedFile = await imageCompression(file, options);
       
-      // 2. Upload to Supabase Storage
+      // 2. Authenticate and refresh session BEFORE uploading
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("कृपया फ़ाइल अपलोड करने के लिए लॉगिन करें। (Please login to upload files)");
+      }
+
+      // 3. Upload to Supabase Storage
       setUploadProgress(60);
       const publicUrl = await uploadImage(compressedFile, folder);
       
-      // 3. Save to media_assets table
+      // 4. Save to media_assets table
       setUploadProgress(90);
-      const { data: { user } } = await supabase.auth.getUser();
       
-      if (user) {
-        const { error: dbError } = await supabase.from("media_assets").insert({
-          filename: file.name,
-          url: publicUrl,
-          type: "image",
-          metadata: {
-            altText,
-            caption,
-            sizeBytes: compressedFile.size,
-            mimeType: compressedFile.type,
-            extension: file.name.split('.').pop(),
-          },
-          uploaded_by: user.id
-        });
-        
-        if (dbError) {
-          throw new Error("डेटाबेस में चित्र सुरक्षित करने में विफल। " + dbError.message);
-        }
+      const { error: dbError } = await supabase.from("media_assets").insert({
+        filename: file.name,
+        url: publicUrl,
+        type: "image",
+        metadata: {
+          altText,
+          caption,
+          sizeBytes: compressedFile.size,
+          mimeType: compressedFile.type,
+          extension: file.name.split('.').pop(),
+        },
+        uploaded_by: user.id
+      });
+      
+      if (dbError) {
+        throw new Error("डेटाबेस में चित्र सुरक्षित करने में विफल। " + dbError.message);
       }
 
       setUploadProgress(100);

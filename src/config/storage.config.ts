@@ -1,5 +1,5 @@
 export const STORAGE_CONFIG = {
-  BUCKET_NAME: "yuvakshar-media",
+  BUCKET_NAME: process.env.NEXT_PUBLIC_SUPABASE_BUCKET || "yuvakshar-media",
   MAX_FILE_SIZE_MB: 10,
   MAX_FILE_SIZE_BYTES: 10 * 1024 * 1024,
   ALLOWED_MIME_TYPES: ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"],

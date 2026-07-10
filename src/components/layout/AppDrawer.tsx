@@ -15,12 +15,19 @@ interface AppDrawerProps {
   onClose: () => void;
   mode: "navigation" | "profile";
   onLogout?: () => void;
+  categories?: any[];
 }
 
-export default function AppDrawer({ isOpen, onClose, mode, onLogout }: AppDrawerProps) {
+import { ChevronDown } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+
+export default function AppDrawer({ isOpen, onClose, mode, onLogout, categories = [] }: AppDrawerProps) {
   const { locale } = useLanguage();
   const { currentUser } = useCms();
   const drawerRef = useRef<HTMLDivElement>(null);
+  
+  // Track which accordion item is expanded
+  const [expandedItem, setExpandedItem] = React.useState<string | null>(null);
 
   // Focus trap & Escape close listeners
   useEffect(() => {
@@ -124,20 +131,92 @@ export default function AppDrawer({ isOpen, onClose, mode, onLogout }: AppDrawer
           {/* Links feed */}
           <nav className="space-y-5">
             {mode === "navigation" ? (
-              primaryLinks.map((link) => {
-                const Icon = link.icon;
-                return (
-                  <Link 
-                    key={link.href}
-                    href={link.href}
-                    onClick={onClose}
-                    className="flex items-center space-x-3.5 px-4 py-3 rounded-lg hover:bg-[#f97316]/10 text-gray-700 hover:text-[#f97316] dark:text-gray-300 dark:hover:text-[#f97316] text-sm font-bold font-sans transition-all duration-200 min-h-[44px]"
-                  >
-                    <Icon className="w-4.5 h-4.5 shrink-0" strokeWidth={2.2} />
-                    <span>{locale === "hi" ? link.labelHi : link.labelEn}</span>
-                  </Link>
-                );
-              })
+              (() => {
+                const navLinks = [...primaryLinks];
+                const newsLinkIndex = navLinks.findIndex(l => l.href === "/current-affairs");
+                
+                if (newsLinkIndex !== -1 && categories.length > 0) {
+                  const newsLink = { ...navLinks[newsLinkIndex] };
+                  newsLink.subLinks = [
+                    ...(newsLink.subLinks || []),
+                    ...categories.filter(c => c.is_active && !c.parent_id).map(c => ({
+                      labelHi: c.name_hi,
+                      labelEn: c.name_en,
+                      href: `/category/${c.slug}`
+                    }))
+                  ];
+                  navLinks[newsLinkIndex] = newsLink;
+                }
+
+                return navLinks.map((link) => {
+                  const Icon = link.icon;
+                  const isExpanded = expandedItem === link.href;
+                  const hasSubLinks = link.subLinks && link.subLinks.length > 0;
+
+                  return (
+                    <div key={link.href} className="flex flex-col">
+                      <div 
+                        className="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-[#f97316]/10 text-gray-700 hover:text-[#f97316] dark:text-gray-300 dark:hover:text-[#f97316] transition-all duration-200 min-h-[44px] cursor-pointer"
+                        onClick={() => {
+                          if (hasSubLinks) {
+                            setExpandedItem(isExpanded ? null : link.href);
+                          } else {
+                            onClose();
+                            // Using standard Link navigation if it doesn't have sublinks would usually wrap this. 
+                            // Since we have onClick, we'll manually push or let a Link wrap it.
+                            // But actually, we want the whole row to be clickable. Let's make it a button or Link depending on hasSubLinks.
+                          }
+                        }}
+                      >
+                        {hasSubLinks ? (
+                          <button className="flex-1 flex items-center space-x-3.5 text-sm font-bold font-sans text-left">
+                            <Icon className="w-4.5 h-4.5 shrink-0" strokeWidth={2.2} />
+                            <span>{locale === "hi" ? link.labelHi : link.labelEn}</span>
+                          </button>
+                        ) : (
+                          <Link href={link.href} onClick={onClose} className="flex-1 flex items-center space-x-3.5 text-sm font-bold font-sans">
+                            <Icon className="w-4.5 h-4.5 shrink-0" strokeWidth={2.2} />
+                            <span>{locale === "hi" ? link.labelHi : link.labelEn}</span>
+                          </Link>
+                        )}
+
+                        {hasSubLinks && (
+                          <ChevronDown 
+                            className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180 text-[#f97316]" : ""}`} 
+                          />
+                        )}
+                      </div>
+
+                      {hasSubLinks && (
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2, ease: "easeInOut" }}
+                              className="overflow-hidden ml-11 border-l-2 border-gray-100 dark:border-gray-800"
+                            >
+                              <div className="flex flex-col py-2 space-y-1">
+                                {link.subLinks!.map((sub) => (
+                                  <Link
+                                    key={sub.href}
+                                    href={sub.href}
+                                    onClick={onClose}
+                                    className="block px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-[#f97316] dark:hover:text-[#f97316] transition-colors"
+                                  >
+                                    {locale === "hi" ? sub.labelHi : sub.labelEn}
+                                  </Link>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      )}
+                    </div>
+                  );
+                });
+              })()
             ) : (
               profileActions.map((action) => {
                 const Icon = action.icon;

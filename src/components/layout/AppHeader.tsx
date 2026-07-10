@@ -4,15 +4,83 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, Search, Sun, Moon, User } from "lucide-react";
+import { Menu, Search, Sun, Moon, User, ChevronDown } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
-import { primaryLinks } from "@/config/navigation.config";
+import { primaryLinks, NavigationLink } from "@/config/navigation.config";
 import AppDrawer from "./AppDrawer";
 import SearchModal from "./SearchModal";
 import { ROUTES } from "@/utils/routes";
+import { AnimatePresence, motion } from "framer-motion";
 
-export default function AppHeader() {
+function DesktopNavItem({ link, pathname, locale }: { link: NavigationLink, pathname: string, locale: string }) {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  // A link is active if its own href matches OR any of its sublinks match
+  const isActive = pathname === link.href || (link.subLinks && link.subLinks.some(sub => pathname.startsWith(sub.href) && sub.href !== "/"));
+
+  return (
+    <div 
+      className="relative group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Link
+        href={link.href}
+        className={`flex items-center gap-1 py-1.5 text-xs font-bold uppercase tracking-widest font-sans transition-all duration-300 ${
+          isActive 
+            ? "text-[#f97316] drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]" 
+            : "text-gray-700 dark:text-gray-300 hover:text-[#f97316]"
+        }`}
+      >
+        <span>{locale === "hi" ? link.labelHi : link.labelEn}</span>
+        {link.subLinks && (
+          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isHovered ? "rotate-180" : ""}`} />
+        )}
+        
+        {/* Active Underline */}
+        {isActive && (
+          <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-[#f97316] rounded-full shadow-[0_0_8px_#f97316]" />
+        )}
+        {!isActive && (
+          <span className="absolute -bottom-1 left-1/2 right-1/2 h-[2px] bg-[#f97316] rounded-full transition-all duration-300 opacity-0 group-hover:left-0 group-hover:right-0 group-hover:opacity-100" />
+        )}
+      </Link>
+
+      {/* Dropdown Menu */}
+      {link.subLinks && (
+        <AnimatePresence>
+          {isHovered && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute top-full left-0 mt-4 w-48 bg-white dark:bg-[#151b2b] border border-gray-150 dark:border-gray-800 rounded-xl shadow-xl overflow-hidden z-50"
+            >
+              {/* Invisible bridge to prevent hover loss when moving mouse to dropdown */}
+              <div className="absolute -top-4 left-0 right-0 h-4 bg-transparent" />
+              
+              <div className="py-2">
+                {link.subLinks.map((sub, idx) => (
+                  <Link
+                    key={idx}
+                    href={sub.href}
+                    className="block px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-[#f97316] dark:hover:text-[#f97316] transition-colors"
+                  >
+                    {locale === "hi" ? sub.labelHi : sub.labelEn}
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+    </div>
+  );
+}
+
+export default function AppHeader({ categories = [] }: { categories?: any[] }) {
   const pathname = usePathname();
   const router = useRouter();
   const { locale, setLocale } = useLanguage();
@@ -128,28 +196,29 @@ export default function AppHeader() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center space-x-6">
-            {primaryLinks.slice(0, 6).map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`group relative py-1.5 text-xs font-bold uppercase tracking-widest font-sans transition-all duration-300 ${
-                    isActive 
-                      ? "text-[#f97316] drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]" 
-                      : "text-gray-700 dark:text-gray-300 hover:text-[#f97316]"
-                  }`}
-                >
-                  <span>{locale === "hi" ? link.labelHi : link.labelEn}</span>
-                  {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#f97316] rounded-full shadow-[0_0_8px_#f97316]" />
-                  )}
-                  {!isActive && (
-                    <span className="absolute bottom-0 left-1/2 right-1/2 h-[2px] bg-[#f97316] rounded-full transition-all duration-300 opacity-0 group-hover:left-0 group-hover:right-0 group-hover:opacity-100" />
-                  )}
-                </Link>
-              );
-            })}
+            {(() => {
+              // Create a localized copy of primaryLinks to inject categories
+              const navLinks = [...primaryLinks];
+              const newsLinkIndex = navLinks.findIndex(l => l.href === "/current-affairs");
+              
+              if (newsLinkIndex !== -1 && categories.length > 0) {
+                // Clone the news link to avoid mutating the exported constant
+                const newsLink = { ...navLinks[newsLinkIndex] };
+                newsLink.subLinks = [
+                  ...(newsLink.subLinks || []),
+                  ...categories.filter(c => c.is_active && !c.parent_id).map(c => ({
+                    labelHi: c.name_hi,
+                    labelEn: c.name_en,
+                    href: `/category/${c.slug}`
+                  }))
+                ];
+                navLinks[newsLinkIndex] = newsLink;
+              }
+
+              return navLinks.slice(0, 6).map((link) => (
+                <DesktopNavItem key={link.href} link={link} pathname={pathname} locale={locale} />
+              ));
+            })()}
           </nav>
 
           {/* Actions toolbar: Write | Search | Theme | Profile */}
@@ -218,6 +287,7 @@ export default function AppHeader() {
         onClose={() => setDrawerOpen(false)}
         mode={drawerMode}
         onLogout={handleLogout}
+        categories={categories}
       />
 
       {/* 3. Universal Search Modal */}

@@ -26,61 +26,61 @@ export async function getAdminUsersList(): Promise<AdminUserRecord[]> {
     throw new Error("Unauthorized to access user management");
   }
 
-  const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers({
-    page: 1,
-    perPage: 1000,
-  });
+  const adminSlugs = ['founder', 'co_founder', 'super_admin', 'admin', 'eic', 'managing_editor', 'editor'];
+  
+  const { data: rolesData, error: rolesError } = await supabaseAdmin.from('roles').select('id, slug').in('slug', adminSlugs);
+  if (rolesError) {
+    console.error("Error fetching admin roles:", rolesError);
+    return [];
+  }
+  const roleIds = rolesData?.map((r: any) => r.id) || [];
+  
+  const { data: userRolesData, error: userRolesError } = await supabaseAdmin.from('user_roles').select('user_id').in('role_id', roleIds);
+  if (userRolesError) {
+    console.error("Error fetching user roles:", userRolesError);
+    return [];
+  }
+  const adminUserIds = Array.from(new Set(userRolesData?.map((ur: any) => ur.user_id) || []));
+  
+  if (adminUserIds.length === 0) return [];
+  
+  const { data: profilesData, error: profilesError } = await supabaseAdmin
+    .from('profiles')
+    .select(`
+      id, email, username, name, avatar_url, created_at, status,
+      user_roles (
+        roles (
+          id, name, slug
+        )
+      )
+    `)
+    .in('id', adminUserIds);
 
-  if (authError) {
-    console.error("Error fetching auth users:", authError);
+  if (profilesError) {
+    console.error("Error fetching profiles:", profilesError);
     throw new Error("Failed to retrieve users list");
   }
 
-  if (!authData || !authData.users) {
-    return [];
-  }
+  return profilesData.map((user: any) => {
+    const roles = user.user_roles
+      ?.filter((ur: any) => ur.roles)
+      .map((ur: any) => ({
+        id: ur.roles.id,
+        name: ur.roles.name,
+        slug: ur.roles.slug
+      })) || [];
 
-  const userIds = authData.users.map((u: any) => u.id);
-  
-  const { data: roleData, error: roleError } = await supabaseAdmin
-    .from('user_roles')
-    .select(`
-      user_id,
-      roles (
-        id,
-        name,
-        slug
-      )
-    `)
-    .in('user_id', userIds);
-
-  if (roleError) {
-    console.error("Error fetching user roles:", roleError);
-  }
-
-  const rolesMap: Record<string, { id: string; name: string; slug: string }[]> = {};
-  if (roleData) {
-    for (const row of roleData) {
-      if (!rolesMap[row.user_id]) {
-        rolesMap[row.user_id] = [];
-      }
-      if (row.roles) {
-        rolesMap[row.user_id].push(row.roles as unknown as { id: string; name: string; slug: string });
-      }
-    }
-  }
-
-  return authData.users.map((u: any) => ({
-    id: u.id,
-    email: u.email || "",
-    username: u.user_metadata?.username || u.email?.split("@")[0] || "user",
-    name: u.user_metadata?.name || u.email?.split("@")[0] || "User",
-    avatar_url: u.user_metadata?.avatar_url || "",
-    created_at: u.created_at,
-    last_sign_in_at: u.last_sign_in_at || undefined,
-    status: u.banned_until ? "suspended" : "active",
-    roles: rolesMap[u.id] || []
-  }));
+    return {
+      id: user.id,
+      email: user.email || "",
+      username: user.username || user.email?.split("@")[0] || "user",
+      name: user.name || user.email?.split("@")[0] || "User",
+      avatar_url: user.avatar_url || "",
+      created_at: user.created_at,
+      status: user.status || "active",
+      roles: roles
+    };
+  });
 }
 
 export async function createAdminMember(email: string, name: string, username: string, password: string, roleSlug: string): Promise<{ success: boolean; error?: string }> {

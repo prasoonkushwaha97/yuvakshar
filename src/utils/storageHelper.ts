@@ -30,6 +30,13 @@ export async function uploadImage(file: File, folder: StorageFolder = STORAGE_CO
   const filePath = `${folder}/${fileName}`;
 
   try {
+    // 5. Check auth session right before upload to guarantee token attachment
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      throw new Error("सत्र समाप्त हो गया है। कृपया फ़ाइल अपलोड करने के लिए फिर से लॉगिन करें। (Session expired or unauthorized)");
+    }
+
     // 5. Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from(STORAGE_CONFIG.BUCKET_NAME)
@@ -41,6 +48,14 @@ export async function uploadImage(file: File, folder: StorageFolder = STORAGE_CO
     // 6. Handle Storage API Errors
     if (uploadError) {
       if (process.env.NODE_ENV === "development") {
+        console.error("[Storage Upload Error Detailed]", {
+          bucket: STORAGE_CONFIG.BUCKET_NAME,
+          folder,
+          filename: fileName,
+          errorObject: uploadError,
+          fullError: JSON.stringify(uploadError)
+        });
+      } else {
         console.error("[Storage Upload Error]", {
           bucket: STORAGE_CONFIG.BUCKET_NAME,
           folder,
@@ -51,7 +66,7 @@ export async function uploadImage(file: File, folder: StorageFolder = STORAGE_CO
 
       // Translate common Supabase errors
       if (uploadError.message.includes("Bucket not found")) {
-        throw new Error("सर्वर पर मीडिया स्टोरेज कॉन्फ़िगर नहीं है। कृपया व्यवस्थापक से संपर्क करें। (Storage bucket missing)");
+        throw new Error(`सर्वर पर मीडिया स्टोरेज कॉन्फ़िगर नहीं है। (Storage bucket '${STORAGE_CONFIG.BUCKET_NAME}' missing). Please run the '037_yuvakshar_media_bucket.sql' migration via Supabase Dashboard or CLI.`);
       }
       if (uploadError.message.includes("new row violates row-level security policy")) {
         throw new Error("फ़ाइल अपलोड करने की अनुमति नहीं है। कृपया लॉगिन करें। (Unauthorized or Policy Violation)");
