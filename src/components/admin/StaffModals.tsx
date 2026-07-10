@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { createStaff, resetStaffPassword } from '@/lib/actions/userManagementActions';
+import { createAdminMember, resetStaffPassword } from '@/lib/actions/userManagementActions';
 import { toast } from 'sonner';
 
 export function CreateStaffModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
@@ -14,7 +14,7 @@ export function CreateStaffModal({ isOpen, onClose }: { isOpen: boolean, onClose
 
   const handleCreate = async () => {
     setLoading(true);
-    const res = await createStaff(email, name, password);
+    const res = await createAdminMember(email, name, email.split('@')[0], password, 'editor');
     setLoading(false);
     if (res.success) {
       toast.success('Staff created successfully');

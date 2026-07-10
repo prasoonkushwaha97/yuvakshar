@@ -5,7 +5,7 @@ import {
   Heading1, Heading2, Heading3, List, ListOrdered, 
   Quote, AlignLeft, AlignCenter, AlignRight, AlignJustify,
   CheckSquare, Image as ImageIcon, Link2, Video,
-  Undo, Redo, Table
+  Undo, Redo, Table, Terminal, Minus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -82,7 +82,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-[#E7E2D8] dark:border-slate-800 bg-white dark:bg-[#0D1527] sticky top-0 z-10 rounded-t-xl">
+    <div className="flex flex-wrap items-center gap-1 p-2 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
       <MediaUploadModal 
         isOpen={isMediaModalOpen}
         onClose={() => setIsMediaModalOpen(false)}
@@ -168,6 +168,13 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       >
         <Code className="w-4 h-4" />
       </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+        isActive={editor.isActive('codeBlock')}
+        title="Code Block"
+      >
+        <Terminal className="w-4 h-4" />
+      </ToolbarButton>
 
       <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
 
@@ -231,6 +238,12 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         title="Blockquote"
       >
         <Quote className="w-4 h-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        title="Horizontal Rule"
+      >
+        <Minus className="w-4 h-4" />
       </ToolbarButton>
 
       <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />

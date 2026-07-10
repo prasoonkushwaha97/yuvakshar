@@ -2,6 +2,14 @@ import { createClient } from "@/utils/supabase/server";
 import { analyticsService } from "./analyticsService";
 
 export interface ArticleAnalytics {
+  total: number;
+  drafts: number;
+  submitted: number;
+  revisions: number;
+  published: number;
+  rejected: number;
+  archived: number;
+  
   totalArticles: number;
   totalPublished: number;
   totalViews: number;
@@ -15,14 +23,34 @@ export const contentAnalyticsService = {
   async getArticleAnalytics(): Promise<ArticleAnalytics> {
     const supabase = await createClient();
     
-    // Total Articles
-    const totalArticles = await analyticsService.getTableCounts("articles");
+    const countStatus = async (status: string) => {
+      const { count } = await supabase
+        .from('articles')
+        .select('*', { count: 'exact', head: true })
+        .ilike('status', status);
+      return count || 0;
+    };
     
-    // Total Published
-    const totalPublished = await analyticsService.getTableCounts("articles", { status: "published" });
-    
-    // Total Views
-    const totalViews = await analyticsService.getSum("articles", "view_count");
+    // Fetch counts in parallel
+    const [
+      totalArticles,
+      totalViews,
+      drafts,
+      submitted,
+      revisions,
+      published,
+      rejected,
+      archived
+    ] = await Promise.all([
+      analyticsService.getTableCounts("articles"),
+      analyticsService.getSum("articles", "views"),
+      countStatus('draft'),
+      countStatus('submitted'),
+      countStatus('revision_requested'),
+      countStatus('published'),
+      countStatus('rejected'),
+      countStatus('archived'),
+    ]);
     
     // Average reading time
     // Fallback to 5 mins if no data available
@@ -38,13 +66,20 @@ export const contentAnalyticsService = {
     // Most Viewed
     const { data: mostViewed } = await supabase
       .from("articles")
-      .select("id, title_hi, view_count, status")
-      .order("view_count", { ascending: false })
+      .select("id, title_hi, views, status")
+      .order("views", { ascending: false })
       .limit(5);
 
     return {
+      total: totalArticles,
+      drafts,
+      submitted,
+      revisions,
+      published,
+      rejected,
+      archived,
       totalArticles,
-      totalPublished,
+      totalPublished: published,
       totalViews,
       averageReadingTime,
       recentlyUpdated: recentlyUpdated || [],

@@ -33,7 +33,6 @@ export interface UserSummary {
   id: string;
   name: string;
   username: string;
-  display_name?: string;
   avatar_url?: string;
   cover_url?: string;
   website?: string;
@@ -67,7 +66,6 @@ export type Magazine = MagazineIssue;
 export interface Profile {
   id: string;
   name: string;
-  display_name?: string;
   username: string;
   verified?: boolean;
   username_changed_at?: string;

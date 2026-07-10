@@ -18,11 +18,12 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import { Highlight } from '@tiptap/extension-highlight';
 import CharacterCount from '@tiptap/extension-character-count';
+import { Markdown } from 'tiptap-markdown';
 import { EditorToolbar } from './EditorToolbar';
 
 interface RichTextEditorProps {
   content: string;
-  onChange: (html: string) => void;
+  onChange: (markdown: string) => void;
   placeholder?: string;
   minHeight?: string;
 }
@@ -39,6 +40,7 @@ export function RichTextEditor({
   const editor = useEditor({
     extensions: [
       StarterKit,
+      Markdown,
       Underline,
       Superscript,
       Subscript,
@@ -75,42 +77,36 @@ export function RichTextEditor({
     content,
     editorProps: {
       attributes: {
-        class: 'prose prose-slate dark:prose-invert max-w-none focus:outline-none w-full p-4 font-hindi prose-headings:font-serif prose-headings:font-bold prose-a:text-[#EA580C] prose-p:leading-relaxed prose-p:text-lg',
+        class: 'prose prose-slate dark:prose-invert max-w-none focus:outline-none w-full font-hindi prose-headings:font-serif prose-headings:font-bold prose-a:text-[#EA580C] prose-p:leading-relaxed prose-p:text-lg',
       },
     },
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      onChange((editor.storage as any).markdown.getMarkdown());
     },
   });
 
   // Handle external updates to content (e.g. initial load)
   useEffect(() => {
     if (editor && content && editor.isEmpty) {
-      // Check if it's markdown or html
-      if (content.startsWith('<')) {
-        editor.commands.setContent(content);
-      } else {
-        // If it's markdown (legacy), we might need a markdown parser here,
-        // but for now setting content will just insert it as text if it's not HTML.
-        // In a full production app, tiptap-markdown extension would parse it perfectly.
-        editor.commands.setContent(content);
-      }
+      editor.commands.setContent(content);
     }
   }, [content, editor]);
 
   if (!isMounted) {
-    return <div className={`flex flex-col border border-[#E7E2D8] dark:border-slate-700 rounded-xl bg-white dark:bg-[#0D1527] overflow-hidden shadow-sm ${minHeight}`}></div>;
+    return <div className={`flex flex-col w-full ${minHeight}`}></div>;
   }
 
   return (
-    <div className="flex flex-col border border-[#E7E2D8] dark:border-slate-700 rounded-xl bg-white dark:bg-[#0D1527] overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-[#EA580C] focus-within:border-transparent">
-      <EditorToolbar editor={editor} />
+    <div className="flex flex-col w-full group">
+      <div className="sticky top-14 z-10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md pb-2 transition-opacity opacity-0 focus-within:opacity-100 group-hover:opacity-100">
+        <EditorToolbar editor={editor} />
+      </div>
       
-      <div className={`w-full overflow-y-auto ${minHeight} bg-slate-50 dark:bg-slate-800/50`}>
+      <div className={`w-full ${minHeight}`}>
         <EditorContent editor={editor} />
       </div>
 
-      <div className="flex items-center justify-between p-3 border-t border-[#E7E2D8] dark:border-slate-800 text-xs text-slate-500 bg-white dark:bg-[#0D1527]">
+      <div className="flex items-center justify-between py-3 text-xs text-slate-400 mt-8 border-t border-slate-100 dark:border-slate-800/50">
         <div>
           {editor?.storage.characterCount?.words() || 0} words
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Upload, Folder, Search, Image as ImageIcon, FileText, Video, HardDrive, FileImage, Trash2, LayoutGrid, List as ListIcon, Database } from "lucide-react";
+import { Upload, Folder, Search, Image as ImageIcon, FileText, HardDrive, FileImage, Trash2, LayoutGrid, List as ListIcon, Database } from "lucide-react";
 import MediaUploadModal from "@/components/media/MediaUploadModal";
 
 export default function MediaLibrary() {
@@ -24,7 +24,6 @@ export default function MediaLibrary() {
     { id: "a1", name: "pm-rally-delhi.jpg", type: "image", size: "2.4 MB", date: "2 hours ago", resolution: "2400x1600", folder: "articles" },
     { id: "a2", name: "author-rahul.jpg", type: "image", size: "1.1 MB", date: "Yesterday", resolution: "800x800", folder: "authors" },
     { id: "a3", name: "cricket-finals.jpg", type: "image", size: "3.8 MB", date: "3 days ago", resolution: "4000x3000", folder: "articles" },
-    { id: "a4", name: "interview-clip.mp4", type: "video", size: "45 MB", date: "1 week ago", resolution: "1080p", folder: "misc" },
   ];
 
   const filteredAssets = activeFolder === "all" ? assets : assets.filter(a => a.folder === activeFolder);
@@ -132,7 +131,6 @@ export default function MediaLibrary() {
                 <div key={asset.id} className="group relative border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-primary transition-colors cursor-pointer bg-slate-50 dark:bg-slate-900">
                   <div className="aspect-square bg-slate-100 dark:bg-slate-800 flex items-center justify-center relative">
                     {asset.type === 'image' ? <FileImage className="w-12 h-12 text-slate-300 dark:text-slate-600" /> : 
-                     asset.type === 'video' ? <Video className="w-12 h-12 text-slate-300 dark:text-slate-600" /> : 
                      <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600" />}
                      <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-1.5 py-0.5 rounded backdrop-blur-md uppercase tracking-wider">
                        {asset.type}
@@ -165,7 +163,7 @@ export default function MediaLibrary() {
                   {filteredAssets.map(asset => (
                     <tr key={asset.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                       <td className="px-4 py-3 font-medium text-slate-900 dark:text-white flex items-center gap-2">
-                        {asset.type === 'image' ? <FileImage className="w-4 h-4 text-slate-400" /> : <Video className="w-4 h-4 text-slate-400" />}
+                        {asset.type === 'image' ? <FileImage className="w-4 h-4 text-slate-400" /> : <FileText className="w-4 h-4 text-slate-400" />}
                         {asset.name}
                       </td>
                       <td className="px-4 py-3 text-slate-500 capitalize">{asset.type}</td>

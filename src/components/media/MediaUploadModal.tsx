@@ -108,7 +108,7 @@ export default function MediaUploadModal({ isOpen, onClose, onSelect, requireAlt
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
-        await supabase.from("media_assets").insert({
+        const { error: dbError } = await supabase.from("media_assets").insert({
           filename: file.name,
           url: publicUrl,
           type: "image",
@@ -121,6 +121,10 @@ export default function MediaUploadModal({ isOpen, onClose, onSelect, requireAlt
           },
           uploaded_by: user.id
         });
+        
+        if (dbError) {
+          throw new Error("डेटाबेस में चित्र सुरक्षित करने में विफल। " + dbError.message);
+        }
       }
 
       setUploadProgress(100);

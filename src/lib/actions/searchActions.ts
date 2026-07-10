@@ -85,8 +85,8 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
     // 3. Authors/Profiles Search
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, name, display_name, username, bio, avatar_url')
-      .or(`name.ilike.${likeQuery},display_name.ilike.${likeQuery},username.ilike.${likeQuery}`)
+      .select('id, name, username, bio, avatar_url')
+      .or(`name.ilike.${likeQuery},username.ilike.${likeQuery}`)
       .limit(5);
 
     if (profiles) {
@@ -94,12 +94,11 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
         let score = 0;
         if (p.name && p.name.toLowerCase().includes(q)) score += 10;
         if (p.username && p.username.toLowerCase().includes(q)) score += 8;
-        if (p.display_name && p.display_name.toLowerCase().includes(q)) score += 8;
 
         results.push({
           id: `profile-${p.id}`,
           type: "author",
-          title: p.display_name || p.name,
+          title: p.name,
           subtitle: p.bio,
           thumbnail: p.avatar_url,
           url: `/u/${p.username}`,

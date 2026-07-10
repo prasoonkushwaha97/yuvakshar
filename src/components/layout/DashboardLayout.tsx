@@ -8,7 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Menu, X, Search, Bell, Moon, 
-  LayoutDashboard, FileText, Layers, BookOpen, Video,
+  LayoutDashboard, FileText, Layers, BookOpen,
   CheckSquare, Activity,
   Users, UsersRound, MessageSquare,
   Shield, Key, ClipboardList,
@@ -61,7 +61,6 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
               { label: "Articles", href: "/admin/articles", icon: FileText },
               { label: "Categories", href: "/admin/categories", icon: Layers },
               { label: "Magazine", href: "/admin/magazine", icon: BookOpen },
-              { label: "Videos", href: "/admin/videos", icon: Video },
             ]
           },
           {

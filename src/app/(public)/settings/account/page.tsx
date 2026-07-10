@@ -70,8 +70,8 @@ export default function AccountSettingsPage() {
 
       if (!currentUser.username) {
         setShowWarning(true);
-        // Automatically generate a username from name/display_name
-        const baseName = currentUser.name || currentUser.display_name || "user";
+        // Automatically generate a username from name
+        const baseName = currentUser.name || "user";
         let base = baseName
           .toLowerCase()
           .replace(/[^a-z0-9_.-]/g, '-')

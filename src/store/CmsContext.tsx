@@ -741,7 +741,6 @@ export function CmsProvider({
             const payload = {
               id: newProfile.id,
               name: newProfile.name,
-              display_name: newProfile.name,
               email: newProfile.email,
               username: newProfile.username,
               slug: newProfile.slug,
@@ -2383,7 +2382,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     // Ensure canonical name is kept synchronized in memory
     if (data.name !== undefined) {
       updatedUser.name = data.name;
-      updatedUser.display_name = data.name;
     }
 
     if (isSupabaseConfigured()) {

@@ -95,10 +95,9 @@ export async function updateUserAccount(data: Partial<Profile>) {
     id: user.id,
   };
 
-  // Ensure canonical name and display_name are synchronized
+  // Ensure canonical name is synchronized
   if (data.name !== undefined) {
     profileToUpdate.name = data.name.trim();
-    profileToUpdate.display_name = data.name.trim();
   }
 
   // Synchronize username and slug with full validation

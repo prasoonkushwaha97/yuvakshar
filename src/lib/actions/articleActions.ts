@@ -19,10 +19,10 @@ export async function getArticles(
   
   let query = supabase
     .from("articles")
-    .select("*, categories(name, slug), profiles(id, name, avatar_url, social_links)", { count: 'exact' });
+    .select("*, categories(name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)", { count: 'exact' });
 
   if (filters?.status) {
-    query = query.eq("status", filters.status);
+    query = query.ilike("status", filters.status);
   }
   if (filters?.category_id) {
     query = query.eq("category_id", filters.category_id);
@@ -57,6 +57,7 @@ export async function getArticles(
     summary_hi: art.summary || "",
     summary_en: art.summary || "",
     is_featured: art.featured || false,
+    status: art.status ? art.status.toLowerCase() : "draft",
     view_count: art.views || 0,
     like_count: art.likes || 0,
     categories: art.categories ? {
@@ -75,7 +76,7 @@ export async function getArticleById(id: string) {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("articles")
-      .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
+      .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)")
       .eq("id", id)
       .maybeSingle();
 
@@ -98,6 +99,7 @@ export async function getArticleById(id: string) {
       summary_hi: art.summary || "",
       summary_en: art.summary || "",
       is_featured: art.featured || false,
+      status: art.status ? art.status.toLowerCase() : "draft",
       view_count: art.views || 0,
       like_count: art.likes || 0,
       categories: art.categories ? {
@@ -118,7 +120,7 @@ export async function getArticleBySlug(slug: string) {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("articles")
-      .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
+      .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)")
       .eq("slug", slug)
       .maybeSingle();
 
@@ -141,6 +143,7 @@ export async function getArticleBySlug(slug: string) {
       summary_hi: art.summary || "",
       summary_en: art.summary || "",
       is_featured: art.featured || false,
+      status: art.status ? art.status.toLowerCase() : "draft",
       view_count: art.views || 0,
       like_count: art.likes || 0,
       categories: art.categories ? {
@@ -176,7 +179,7 @@ export async function createArticle(data: Partial<Article>) {
 
   await logGovernanceAction("create", "article", result.id, { title: data.title_hi, status: insertData.status });
   revalidatePath("/admin/articles");
-  revalidatePath("/admin/articles");
+  revalidatePath("/admin");
   return { success: true, id: result.id };
 }
 
@@ -197,8 +200,28 @@ export async function updateArticle(id: string, data: Partial<Article>) {
 
   await logGovernanceAction("update", "article", id, { fields_updated: Object.keys(updateData), new_status: data.status });
   revalidatePath("/admin/articles");
-  revalidatePath("/admin/articles");
+  revalidatePath("/admin");
   revalidatePath(`/admin/articles/${id}`);
+  return { success: true };
+}
+
+export async function toggleFeaturedArticle(id: string, is_featured: boolean) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
+  const supabase = await createClient();
+  
+  const { error } = await supabase
+    .from("articles")
+    .update({ featured: is_featured })
+    .eq("id", id);
+
+  if (error) throw new Error(error.message);
+
+  await logGovernanceAction("update", "article", id, { fields_updated: ['featured'], new_featured_status: is_featured });
+  revalidatePath("/admin/articles");
+  revalidatePath("/admin");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -217,7 +240,7 @@ export async function deleteArticle(id: string) {
 
   await logGovernanceAction("delete", "article", id);
   revalidatePath("/admin/articles");
-  revalidatePath("/admin/articles");
+  revalidatePath("/admin");
   return { success: true };
 }
 
@@ -236,7 +259,60 @@ export async function bulkDeleteArticles(ids: string[]) {
 
   await logGovernanceAction("bulk_delete", "article", null, { deleted_count: ids.length });
   revalidatePath("/admin/articles");
+  revalidatePath("/admin");
   return { success: true };
+}
+
+export async function bulkUpdateArticleStatus(ids: string[], status: ArticleStatus | string) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
+  const supabase = await createClient();
+  
+  const { error } = await supabase
+    .from("articles")
+    .update({ status })
+    .in("id", ids);
+
+  if (error) throw new Error(error.message);
+
+  await logGovernanceAction("bulk_status_update", "article", null, { updated_count: ids.length, new_status: status });
+  revalidatePath("/admin/articles");
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function duplicateArticle(id: string) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
+  if (!isAuthorized) throw new Error("Unauthorized action.");
+
+  const supabase = await createClient();
+  
+  const { data: original, error: fetchError } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (fetchError || !original) throw new Error("Article not found");
+
+  const { id: _oldId, created_at: _ca, updated_at: _ua, ...copyData } = original;
+  copyData.title = `${copyData.title} (Copy)`;
+  copyData.slug = `${copyData.slug}-copy-${Math.random().toString(36).substring(2, 7)}`;
+  copyData.status = 'Draft';
+
+  const { data: newArticle, error: insertError } = await supabase
+    .from("articles")
+    .insert([copyData])
+    .select("id")
+    .single();
+
+  if (insertError) throw new Error(insertError.message);
+
+  await logGovernanceAction("create", "article", newArticle.id, { notes: "Duplicated from " + id });
+  revalidatePath("/admin/articles");
+  revalidatePath("/admin");
+  return { success: true, id: newArticle.id };
 }
 
 export async function updateArticleStatus(id: string, status: ArticleStatus | string) {
@@ -293,7 +369,7 @@ export async function updateArticleStatus(id: string, status: ArticleStatus | st
 
   await logGovernanceAction("status_change", "article", id, { new_status: status });
   revalidatePath("/admin/articles");
-  revalidatePath("/admin/articles");
+  revalidatePath("/admin");
   revalidatePath(`/admin/articles/${id}`);
   return { success: true };
 }
@@ -332,7 +408,7 @@ export async function getRelatedArticlesForInfiniteScroll(
     // or just rely on supabase to give us some matches.
     let query = supabase
       .from("articles")
-      .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
+      .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)")
       .eq("status", "Published")
       .not("id", "in", `(${excludeIds.join(',')})`)
       .order("created_at", { ascending: false })
@@ -341,26 +417,26 @@ export async function getRelatedArticlesForInfiniteScroll(
     if (categoryId) {
        // Ideally we do an OR query or rank by category, but Supabase doesn't easily let us order by condition.
        // Let's just fetch the exact category first.
-       const { data: catData, error: catError } = await supabase
-         .from("articles")
-         .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
-         .eq("status", "Published")
-         .eq("category_id", categoryId)
-         .not("id", "in", `(${excludeIds.join(',')})`)
-         .order("created_at", { ascending: false })
-         .limit(limit);
+         const { data: catData, error: catError } = await supabase
+           .from("articles")
+           .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)")
+           .ilike("status", "Published")
+           .eq("category_id", categoryId)
+           .not("id", "in", `(${excludeIds.join(',')})`)
+           .order("created_at", { ascending: false })
+           .limit(limit);
          
        if (!catError && catData && catData.length > 0) {
          let results = catData;
          if (results.length < limit) {
            const newExcludes = [...excludeIds, ...results.map(r => r.id)];
-           const { data: fallbackData } = await supabase
-             .from("articles")
-             .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
-             .eq("status", "Published")
-             .not("id", "in", `(${newExcludes.join(',')})`)
-             .order("created_at", { ascending: false })
-             .limit(limit - results.length);
+             const { data: fallbackData } = await supabase
+               .from("articles")
+               .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)")
+               .ilike("status", "Published")
+               .not("id", "in", `(${newExcludes.join(',')})`)
+               .order("created_at", { ascending: false })
+               .limit(limit - results.length);
            if (fallbackData) {
              results = [...results, ...fallbackData];
            }

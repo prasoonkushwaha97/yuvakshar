@@ -272,17 +272,13 @@ export const mapDbProfileToProfile = (dbProfile: any): Profile => {
   if (!dbProfile) return dbProfile;
   const profile = { ...dbProfile };
   
-  // Migration strategy: Use 'name' as canonical. Fallback to 'display_name' if 'name' is generic.
   const name = dbProfile.name;
-  const displayName = dbProfile.display_name;
-  
   let canonicalName = name;
-  if (displayName && (!name || name === "NEW USER" || name === "" || name.includes("@"))) {
-    canonicalName = displayName;
+  if (!name || name === "NEW USER" || name === "" || name.includes("@")) {
+    canonicalName = name || "User";
   }
   
   profile.name = canonicalName;
-  profile.display_name = canonicalName;
 
   const custom = dbProfile.social_links || {};
   
@@ -331,7 +327,7 @@ export const updateProfileInDb = async (profile: Profile, supabaseClient?: any):
   if (FEATURES.USE_SUPABASE_PROFILES && isSupabaseConfigured()) {
     try {
       const allowed = [
-        "id", "name", "display_name", "role", "status", "bio", "avatar_url", "social_links", "badges",
+        "id", "name", "role", "status", "bio", "avatar_url", "social_links", "badges",
         "views_count", "cover_url", "location", "website", "slug", "username", "username_changed_at", "previous_username", "email"
       ];
       const filtered: any = {};
@@ -341,10 +337,9 @@ export const updateProfileInDb = async (profile: Profile, supabaseClient?: any):
         }
       });
 
-      // Synchronize name and display_name for DB updates to prevent drift/ensure consistency
+      // Synchronize name for DB updates
       if (profile.name !== undefined) {
         filtered.name = profile.name;
-        filtered.display_name = profile.name;
       }
 
       const customFields = [

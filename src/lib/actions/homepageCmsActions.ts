@@ -269,7 +269,6 @@ export async function getHomepageAuditLogs(limit = 20) {
     created_at: log.created_at,
     profiles: {
       name: log.profiles?.name || "संपादक",
-      display_name: log.profiles?.name || "संपादक",
       email: log.profiles?.email || ""
     }
   }));

@@ -1,4 +1,4 @@
-export type MediaType = "image" | "video" | "audio" | "document" | "archive";
+export type MediaType = "image" | "document";
 
 export interface MediaMetadata {
   width?: number;

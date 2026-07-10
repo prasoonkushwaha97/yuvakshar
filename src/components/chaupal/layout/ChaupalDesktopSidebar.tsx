@@ -1,11 +1,15 @@
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Home, MessageSquare, Users, Bell, PlusCircle } from "lucide-react";
 import { CH_ANIMATIONS, CH_COLORS, CH_RADIUS } from "../shared/design";
+import { useCms } from "@/store/CmsContext";
+import { openCreateSheet } from "@/components/layout/GlobalCreateSheet";
 
 export default function ChaupalDesktopSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { currentUser } = useCms();
 
   const links = [
     { name: "चौपाल", href: "/community", icon: Home },
@@ -36,7 +40,13 @@ export default function ChaupalDesktopSidebar() {
         })}
       </nav>
 
-      <button className={`mt-6 w-full py-3.5 flex items-center justify-center gap-2 ${CH_COLORS.primary} ${CH_COLORS.primaryHover} ${CH_RADIUS.button} font-bold shadow-md shadow-orange-500/20 ${CH_ANIMATIONS.transition} hover:-translate-y-0.5`}>
+      <button 
+        onClick={() => {
+          if (!currentUser) router.push("/login");
+          else openCreateSheet();
+        }}
+        className={`mt-6 w-full py-3.5 flex items-center justify-center gap-2 ${CH_COLORS.primary} ${CH_COLORS.primaryHover} ${CH_RADIUS.button} font-bold shadow-md shadow-orange-500/20 ${CH_ANIMATIONS.transition} hover:-translate-y-0.5`}
+      >
         <PlusCircle className="w-5 h-5" />
         नया पोस्ट लिखें
       </button>

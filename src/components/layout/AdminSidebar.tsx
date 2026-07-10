@@ -34,7 +34,7 @@ export default function AdminSidebar() {
     { name: "Chaupaal", href: "/admin/community", icon: MessageSquare, requiredPermission: "manage_users" as const },
     { name: "Users", href: "/admin/users", icon: Users, requiredPermission: "manage_users" as const },
     { name: "Media Library", href: "/admin/media", icon: ImageIcon, requiredPermission: "create_article" as const },
-    { name: "Notifications", href: "/admin/notifications", icon: Bell, requiredPermission: "manage_settings" as const },
+    { name: "Notifications", href: "/admin/notifications", icon: Bell, requiredPermission: "review_article" as const },
     { name: "Settings", href: "/admin/cms/settings", icon: Settings, requiredPermission: "manage_settings" as const }
   ];
 

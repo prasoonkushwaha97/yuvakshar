@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Smile, Paperclip, Send, Mic } from "lucide-react";
 import { CH_ANIMATIONS } from "../shared/design";
+import EmojiPicker, { Theme, EmojiClickData } from "emoji-picker-react";
 
 interface ChatInputAreaProps {
   onSendMessage: (content: string) => void;
@@ -11,12 +12,41 @@ interface ChatInputAreaProps {
 
 export default function ChatInputArea({ onSendMessage, placeholder = "संदेश लिखें..." }: ChatInputAreaProps) {
   const [message, setMessage] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
     onSendMessage(message);
     setMessage("");
+    setShowEmojiPicker(false);
+  };
+
+  const onEmojiClick = (emojiData: EmojiClickData, event: MouseEvent) => {
+    const cursor = inputRef.current?.selectionStart || message.length;
+    const text = message.slice(0, cursor) + emojiData.emoji + message.slice(cursor);
+    setMessage(text);
+    
+    // Set cursor position back
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.selectionStart = cursor + emojiData.emoji.length;
+        inputRef.current.selectionEnd = cursor + emojiData.emoji.length;
+        inputRef.current.focus();
+      }
+    }, 10);
   };
 
   return (
@@ -27,12 +57,32 @@ export default function ChatInputArea({ onSendMessage, placeholder = "संद�
           <Paperclip className="w-5 h-5" />
         </button>
 
-        <div className="flex-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl flex items-end min-h-[44px] overflow-hidden border border-transparent focus-within:border-[#F97316] transition-colors">
-          <button type="button" className={`p-2.5 text-slate-400 hover:text-[#F97316] shrink-0 ${CH_ANIMATIONS.transition}`}>
-            <Smile className="w-5 h-5" />
-          </button>
+        <div className="flex-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl flex items-end min-h-[44px] overflow-hidden border border-transparent focus-within:border-[#F97316] transition-colors relative">
+          <div className="relative" ref={emojiPickerRef}>
+            <button 
+              type="button" 
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className={`p-2.5 text-slate-400 hover:text-[#F97316] shrink-0 ${CH_ANIMATIONS.transition}`}
+            >
+              <Smile className="w-5 h-5" />
+            </button>
+            
+            {showEmojiPicker && (
+              <div className="absolute bottom-full left-0 mb-2 z-50 shadow-xl rounded-xl">
+                <EmojiPicker 
+                  onEmojiClick={onEmojiClick} 
+                  theme={Theme.AUTO}
+                  searchPlaceHolder="Search Emoji"
+                  previewConfig={{ showPreview: false }}
+                  height={350}
+                  width={300}
+                />
+              </div>
+            )}
+          </div>
           
           <textarea
+            ref={inputRef}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder={placeholder}

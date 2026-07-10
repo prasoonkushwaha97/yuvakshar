@@ -9,9 +9,10 @@ import { Article } from "@/types/content";
 
 interface ArticleContentProps {
   article: Article;
+  isPreview?: boolean;
 }
 
-export default function ArticleContent({ article }: ArticleContentProps) {
+export default function ArticleContent({ article, isPreview = false }: ArticleContentProps) {
   const title = stripMarkdown(article?.title_hi || "");
 
   return (
@@ -79,13 +80,15 @@ export default function ArticleContent({ article }: ArticleContentProps) {
             ))}
           </div>
 
-          <ArticleActions articleId={article.id} slug={article.slug} title={title} />
+          {!isPreview && <ArticleActions articleId={article.id} slug={article.slug} title={title} />}
         </div>
 
         {/* Comment Section */}
-        <div className="mt-12">
-          <CommentSection articleId={article.id} />
-        </div>
+        {!isPreview && (
+          <div className="mt-12">
+            <CommentSection articleId={article.id} />
+          </div>
+        )}
         
       </article>
     </div>

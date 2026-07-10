@@ -1,8 +1,9 @@
 "use client";
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { updateArticleStatus, deleteArticle, bulkDeleteArticles } from "@/lib/actions/articleActions";
-import { Search, Plus, Edit2, Trash2, FileText, CheckCircle, Clock, Eye, MoreHorizontal, MessageSquare, Star, ChevronLeft, ChevronRight, X, Calendar } from "lucide-react";
+import { updateArticleStatus, deleteArticle, bulkDeleteArticles, toggleFeaturedArticle, bulkUpdateArticleStatus, duplicateArticle, updateArticle } from "@/lib/actions/articleActions";
+import { getAdminUsersList } from "@/lib/actions/userManagementActions";
+import { Search, Plus, Edit2, Trash2, FileText, CheckCircle, Clock, Eye, MoreHorizontal, MessageSquare, Star, ChevronLeft, ChevronRight, X, Calendar, UserPlus, Copy, UploadCloud, Archive } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -31,9 +32,54 @@ export default function ArticleManager({
 
   const [articles, setArticles] = useState(initialArticles);
   const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
+  const [debouncedSearch, setDebouncedSearch] = useState(searchInput);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const activeStatus = searchParams.get("status") || "all";
   const isFeaturedFilter = searchParams.get("featured") === "true";
+
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  
+  // Assignment state
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
+  const [adminUsers, setAdminUsers] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setActiveMenu(null);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  // Sync initial articles when page changes
+  useEffect(() => {
+    setArticles(initialArticles);
+  }, [initialArticles]);
+
+  // Debounced Search Effect
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
+
+  useEffect(() => {
+    if (debouncedSearch !== (searchParams.get("search") || "")) {
+      updateUrlParams({ search: debouncedSearch || null });
+    }
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    if (assignModalOpen && adminUsers.length === 0) {
+      setLoadingUsers(true);
+      getAdminUsersList().then(res => {
+        if (res) setAdminUsers(res);
+        setLoadingUsers(false);
+      });
+    }
+  }, [assignModalOpen]);
 
   const totalPages = Math.ceil(totalCount / currentLimit) || 1;
 
@@ -57,6 +103,11 @@ export default function ArticleManager({
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     updateUrlParams({ search: searchInput || null });
+  };
+
+  const handleActionMenuClick = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setActiveMenu(activeMenu === id ? null : id);
   };
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,6 +143,39 @@ export default function ArticleManager({
     }
   };
 
+  const handleBulkUpdateStatus = async (status: string) => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Are you sure you want to change status of ${selectedIds.size} articles to ${status}?`)) return;
+    
+    startTransition(async () => {
+      try {
+        await bulkUpdateArticleStatus(Array.from(selectedIds), status);
+        setSelectedIds(new Set());
+        toast.success(`Articles updated to ${status}`);
+        router.refresh();
+      } catch (err) {
+        toast.error("Failed to update articles");
+      }
+    });
+  };
+
+  const handleToggleFeatured = async (e: React.MouseEvent, id: string, currentFeatured: boolean) => {
+    e.stopPropagation();
+    // Optimistic update
+    setArticles(articles.map(a => a.id === id ? { ...a, is_featured: !currentFeatured } : a));
+    startTransition(async () => {
+      try {
+        await toggleFeaturedArticle(id, !currentFeatured);
+        toast.success(currentFeatured ? "Removed from featured" : "Added to featured");
+        router.refresh();
+      } catch (err) {
+        // Revert
+        setArticles(articles.map(a => a.id === id ? { ...a, is_featured: currentFeatured } : a));
+        toast.error("Failed to update featured status");
+      }
+    });
+  };
+
   const tabs = [
     { id: "all", label: "All Articles", count: stats?.total || 0 },
     { id: "draft", label: "Drafts", count: stats?.drafts || 0 },
@@ -125,7 +209,8 @@ export default function ArticleManager({
   };
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-serif font-bold text-slate-900 dark:text-white tracking-tight">Articles</h1>
@@ -195,8 +280,11 @@ export default function ArticleManager({
           <div className="flex items-center gap-3 px-4 py-1 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20">
             <span className="text-sm font-medium text-primary">{selectedIds.size} selected</span>
             <div className="w-px h-4 bg-primary/20"></div>
-            <button className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary transition-colors flex items-center gap-1">
-              <Star className="w-4 h-4" /> Feature
+            <button onClick={() => handleBulkUpdateStatus('Published')} className="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 transition-colors flex items-center gap-1">
+              <UploadCloud className="w-4 h-4" /> Publish
+            </button>
+            <button onClick={() => handleBulkUpdateStatus('Archived')} className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1">
+              <Archive className="w-4 h-4" /> Archive
             </button>
             <button onClick={handleBulkDelete} className="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors flex items-center gap-1">
               <Trash2 className="w-4 h-4" /> Delete
@@ -231,8 +319,8 @@ export default function ArticleManager({
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
               {articles?.length > 0 ? (
                 articles.map(article => (
-                  <tr key={article.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors group">
-                    <td className="px-4 py-4 text-center">
+                  <tr key={article.id} onClick={() => router.push(`/admin/articles/${article.id}`)} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors group cursor-pointer">
+                    <td className="px-4 py-4 text-center" onClick={e => e.stopPropagation()}>
                       <input 
                         type="checkbox" 
                         className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-700"
@@ -241,15 +329,15 @@ export default function ArticleManager({
                       />
                     </td>
                     <td className="px-4 py-4 max-w-[240px]">
-                      <Link href={`/admin/articles/${article.id}`} className="font-bold text-slate-900 dark:text-white hover:text-primary transition-colors block truncate">
+                      <span className="font-bold text-slate-900 dark:text-white hover:text-primary transition-colors block truncate">
                         {article.title_hi}
-                      </Link>
+                      </span>
                       <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
                         {article.categories ? (
-                          <span className="flex items-center gap-1">
+                          <button onClick={(e) => { e.stopPropagation(); updateUrlParams({ category_id: article.categories!.id }); }} className="flex items-center gap-1 hover:text-primary transition-colors">
                              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: article.categories.color || '#94a3b8' }}></span>
                              {article.categories.name_hi}
-                          </span>
+                          </button>
                         ) : 'Uncategorized'}
                         {article.priority === 'urgent' && <span className="text-red-500 font-bold uppercase text-[10px] bg-red-50 dark:bg-red-500/10 px-1.5 py-0.5 rounded">Urgent</span>}
                       </div>
@@ -261,7 +349,7 @@ export default function ArticleManager({
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex items-center gap-2">
+                      <button onClick={(e) => { e.stopPropagation(); updateUrlParams({ author_id: article.profiles?.id || null }); }} className="flex items-center gap-2 hover:text-primary transition-colors">
                          {article.profiles?.avatar_url ? (
                             <img src={article.profiles.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover bg-slate-100 dark:bg-slate-800" />
                          ) : (
@@ -270,7 +358,7 @@ export default function ArticleManager({
                             </div>
                          )}
                          <span className="font-medium text-slate-700 dark:text-slate-300">{article.profiles?.name || 'Unknown'}</span>
-                      </div>
+                      </button>
                     </td>
                     <td className="px-4 py-4">
                       <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -278,7 +366,11 @@ export default function ArticleManager({
                       </div>
                     </td>
                     <td className="px-4 py-4 text-center">
-                      <button className={`p-1.5 rounded-md transition-colors ${article.is_featured ? 'text-amber-500 bg-amber-500/10' : 'text-slate-300 dark:text-slate-600 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
+                      <button 
+                        onClick={(e) => handleToggleFeatured(e, article.id, article.is_featured)}
+                        disabled={isPending}
+                        className={`p-1.5 rounded-md transition-colors disabled:opacity-50 ${article.is_featured ? 'text-amber-500 bg-amber-500/10' : 'text-slate-300 dark:text-slate-600 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                      >
                         <Star className={`w-5 h-5 ${article.is_featured ? 'fill-current' : ''}`} />
                       </button>
                     </td>
@@ -293,12 +385,72 @@ export default function ArticleManager({
                     </td>
                     <td className="px-4 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Link href={`/admin/articles/${article.id}`} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors">
+                        <Link onClick={e => e.stopPropagation()} href={`/admin/articles/${article.id}`} className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors">
                           <Edit2 className="w-4 h-4" />
                         </Link>
-                        <button className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
+                        <div className="relative" onClick={(e) => e.stopPropagation()}>
+                          <button onClick={(e) => handleActionMenuClick(e, article.id)} className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </button>
+                          
+                          {activeMenu === article.id && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-20 py-1 overflow-hidden text-left">
+                              <Link href={`/${article.slug}`} target="_blank" className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center">
+                                <Eye className="w-4 h-4 mr-2 text-slate-400" /> Preview
+                              </Link>
+                              <button onClick={() => {
+                                startTransition(async () => {
+                                  try {
+                                    await duplicateArticle(article.id);
+                                    toast.success("Article duplicated");
+                                    setActiveMenu(null);
+                                  } catch (e) {
+                                    toast.error("Failed to duplicate");
+                                  }
+                                });
+                              }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center">
+                                <Copy className="w-4 h-4 mr-2 text-slate-400" /> Duplicate
+                              </button>
+                              <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+                              <button onClick={() => { setSelectedArticleId(article.id); setAssignModalOpen(true); setActiveMenu(null); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center">
+                                <UserPlus className="w-4 h-4 mr-2 text-slate-400" /> Assign Editor
+                              </button>
+                              <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+                              {article.status !== 'published' ? (
+                                <button onClick={() => {
+                                  startTransition(async () => {
+                                    await updateArticleStatus(article.id, 'published');
+                                    setActiveMenu(null);
+                                    toast.success("Article published");
+                                  });
+                                }} className="w-full text-left px-4 py-2 text-sm text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex items-center">
+                                  <UploadCloud className="w-4 h-4 mr-2" /> Publish
+                                </button>
+                              ) : (
+                                <button onClick={() => {
+                                  startTransition(async () => {
+                                    await updateArticleStatus(article.id, 'draft');
+                                    setActiveMenu(null);
+                                    toast.success("Article unpublished");
+                                  });
+                                }} className="w-full text-left px-4 py-2 text-sm text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 flex items-center">
+                                  <Archive className="w-4 h-4 mr-2" /> Unpublish
+                                </button>
+                              )}
+                              <button onClick={() => {
+                                startTransition(async () => {
+                                  if (confirm("Are you sure you want to delete this article?")) {
+                                    await deleteArticle(article.id);
+                                    setActiveMenu(null);
+                                    toast.success("Article deleted");
+                                  }
+                                });
+                              }} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center">
+                                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -321,23 +473,128 @@ export default function ArticleManager({
       <div className="md:hidden space-y-4">
          {articles?.length > 0 ? (
            articles.map(article => (
-              <div key={article.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
-                 <div className="flex justify-between items-start mb-2">
-                    <Link href={`/admin/articles/${article.id}`} className="font-bold text-slate-900 dark:text-white">
+              <div key={article.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col gap-3">
+                 <div className="flex justify-between items-start gap-2">
+                    <Link href={`/admin/articles/${article.id}`} className="font-bold text-slate-900 dark:text-white leading-tight">
                       {article.title_hi}
                     </Link>
-                    {getStatusBadge(article.status)}
+                    <div className="shrink-0 flex flex-col gap-1 items-end">
+                      {getStatusBadge(article.status)}
+                      <button 
+                        onClick={(e) => handleToggleFeatured(e, article.id, article.is_featured)}
+                        disabled={isPending}
+                        className={`p-1.5 rounded-full transition-colors disabled:opacity-50 ${article.is_featured ? 'text-amber-500 bg-amber-500/10' : 'text-slate-400 bg-slate-100 dark:bg-slate-800'}`}
+                      >
+                        <Star className={`w-4 h-4 ${article.is_featured ? 'fill-current' : ''}`} />
+                      </button>
+                    </div>
                  </div>
-                 <div className="flex items-center gap-2 mb-3">
+                 
+                 <div className="flex flex-wrap items-center gap-2 text-xs">
                     {getWorkflowBadge(article.workflow_stage)}
                     {article.priority === 'urgent' && <span className="text-red-500 font-bold uppercase text-[10px] bg-red-50 dark:bg-red-500/10 px-1.5 py-0.5 rounded">Urgent</span>}
+                    {article.categories && (
+                      <span className="flex items-center gap-1 text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: article.categories.color || '#94a3b8' }}></span>
+                         {article.categories.name_hi}
+                      </span>
+                    )}
                  </div>
-                 <div className="flex items-center justify-between text-xs text-slate-500">
-                    <div className="flex items-center gap-1">
-                       <Clock className="w-3 h-3" />
-                       {format(new Date(article.deadline || article.created_at), 'MMM d, yy')}
+
+                 <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                   <div className="flex items-center gap-1.5">
+                     {article.profiles?.avatar_url ? (
+                        <img src={article.profiles.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover" />
+                     ) : (
+                        <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px]">
+                           {article.profiles?.name?.charAt(0) || '?'}
+                        </div>
+                     )}
+                     <span className="font-medium">{article.profiles?.name || 'Unknown'}</span>
+                   </div>
+                   <span className="text-slate-300 dark:text-slate-600">•</span>
+                   <div className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      {format(new Date(article.deadline || article.created_at), 'MMM d')}
+                   </div>
+                 </div>
+
+                 <div className="pt-3 mt-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-700"
+                        checked={selectedIds.has(article.id)}
+                        onChange={() => handleSelect(article.id)}
+                      />
+                      <span className="text-xs text-slate-500">Select</span>
                     </div>
-                    <Link href={`/admin/articles/${article.id}`} className="text-primary font-medium">Edit</Link>
+                    <div className="flex items-center gap-3 relative">
+                      <Link href={`/admin/articles/${article.id}`} className="text-primary font-medium text-sm flex items-center gap-1">
+                        <Edit2 className="w-3.5 h-3.5" /> Edit
+                      </Link>
+                      <button onClick={(e) => handleActionMenuClick(e, article.id + '_mobile')} className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                      
+                      {activeMenu === article.id + '_mobile' && (
+                            <div className="absolute right-0 bottom-full mb-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-20 py-1 overflow-hidden text-left">
+                              <Link href={`/${article.slug}`} target="_blank" className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center">
+                                <Eye className="w-4 h-4 mr-2 text-slate-400" /> Preview
+                              </Link>
+                              <button onClick={() => {
+                                startTransition(async () => {
+                                  try {
+                                    await duplicateArticle(article.id);
+                                    toast.success("Article duplicated");
+                                    setActiveMenu(null);
+                                  } catch (e) {
+                                    toast.error("Failed to duplicate");
+                                  }
+                                });
+                              }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center">
+                                <Copy className="w-4 h-4 mr-2 text-slate-400" /> Duplicate
+                              </button>
+                              <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+                              <button onClick={() => { setSelectedArticleId(article.id); setAssignModalOpen(true); setActiveMenu(null); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center">
+                                <UserPlus className="w-4 h-4 mr-2 text-slate-400" /> Assign Editor
+                              </button>
+                              <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+                              {article.status !== 'published' ? (
+                                <button onClick={() => {
+                                  startTransition(async () => {
+                                    await updateArticleStatus(article.id, 'published');
+                                    setActiveMenu(null);
+                                    toast.success("Article published");
+                                  });
+                                }} className="w-full text-left px-4 py-2 text-sm text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex items-center">
+                                  <UploadCloud className="w-4 h-4 mr-2" /> Publish
+                                </button>
+                              ) : (
+                                <button onClick={() => {
+                                  startTransition(async () => {
+                                    await updateArticleStatus(article.id, 'draft');
+                                    setActiveMenu(null);
+                                    toast.success("Article unpublished");
+                                  });
+                                }} className="w-full text-left px-4 py-2 text-sm text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 flex items-center">
+                                  <Archive className="w-4 h-4 mr-2" /> Unpublish
+                                </button>
+                              )}
+                              <button onClick={() => {
+                                startTransition(async () => {
+                                  if (confirm("Are you sure you want to delete this article?")) {
+                                    await deleteArticle(article.id);
+                                    setActiveMenu(null);
+                                    toast.success("Article deleted");
+                                  }
+                                });
+                              }} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center">
+                                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                              </button>
+                            </div>
+                      )}
+                    </div>
                  </div>
               </div>
            ))
@@ -372,5 +629,82 @@ export default function ArticleManager({
           </div>
         )}
       </div>
+      
+      {/* Assignment Modal */}
+      {assignModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-primary" /> Assign Editor
+              </h3>
+              <button onClick={() => setAssignModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-4 flex-1 overflow-y-auto max-h-[60vh]">
+              {loadingUsers ? (
+                <div className="flex items-center justify-center p-8">
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : adminUsers.length === 0 ? (
+                <div className="text-center p-8 text-slate-500">No admin users found</div>
+              ) : (
+                <div className="space-y-2">
+                  <button 
+                    onClick={() => {
+                      startTransition(async () => {
+                        try {
+                          await updateArticle(selectedArticleId!, { assigned_to: null });
+                          toast.success("Assignment removed");
+                          setAssignModalOpen(false);
+                          router.refresh();
+                        } catch (e) {
+                          toast.error("Failed to update assignment");
+                        }
+                      });
+                    }}
+                    className="w-full flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Unassign</span>
+                  </button>
+                  {adminUsers.map(user => (
+                    <button 
+                      key={user.id}
+                      onClick={() => {
+                        startTransition(async () => {
+                          try {
+                            await updateArticle(selectedArticleId!, { assigned_to: user.id });
+                            toast.success("Editor assigned");
+                            setAssignModalOpen(false);
+                            router.refresh();
+                          } catch (e) {
+                            toast.error("Failed to assign editor");
+                          }
+                        });
+                      }}
+                      className="w-full flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-primary/30 transition-colors text-left"
+                    >
+                      {user.avatar_url ? (
+                        <img src={user.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-500">
+                          {user.name?.charAt(0) || user.email?.charAt(0) || '?'}
+                        </div>
+                      )}
+                      <div>
+                        <div className="text-sm font-medium text-slate-900 dark:text-white">{user.name || 'Unnamed'}</div>
+                        <div className="text-xs text-slate-500 capitalize">{user.role?.replace('_', ' ') || 'Editor'}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

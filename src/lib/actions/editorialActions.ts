@@ -16,7 +16,7 @@ export async function getAdminEditorialQueue(statusFilter?: string) {
     .order('created_at', { ascending: false });
 
   if (statusFilter && statusFilter !== 'all') {
-    query = query.eq('status', statusFilter);
+    query = query.ilike('status', statusFilter);
   }
 
   const { data, error } = await query;

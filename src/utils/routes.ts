@@ -92,10 +92,10 @@ export function resolveAuthorFromUsers(
     }
   }
 
-  // 2. Try to find from the users list by name or display_name
+  // 2. Try to find from the users list by name
   if (users && authorName) {
     const found = users.find(
-      (u) => u.name === authorName || u.display_name === authorName
+      (u) => u.name === authorName
     );
     if (found) {
       return { profile: found, href: getProfileUrl(found) };

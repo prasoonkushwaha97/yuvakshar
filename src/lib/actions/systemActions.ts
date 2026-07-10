@@ -28,22 +28,22 @@ export async function getSystemMetrics() {
     .from('role_assignment_logs')
     .select('*', { count: 'exact', head: true });
 
-  let publishedCount = 412;
+  let publishedCount = 0;
   try {
-    const { count } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).eq('status', 'published');
-    publishedCount = count || 412;
+    const { count } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).ilike('status', 'published');
+    publishedCount = count || 0;
   } catch (e) {}
 
-  let pendingReviewsCount = 24;
+  let pendingReviewsCount = 0;
   try {
-    const { count } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).eq('status', 'in_review');
-    pendingReviewsCount = count || 24;
+    const { count } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).or('status.ilike.submitted,status.ilike.revision_requested,status.ilike.in_review');
+    pendingReviewsCount = count || 0;
   } catch (e) {}
 
-  let reportsCount = 15;
+  let reportsCount = 0;
   try {
-    const { count } = await supabaseAdmin.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'open');
-    reportsCount = count || 15;
+    const { count } = await supabaseAdmin.from('reports').select('*', { count: 'exact', head: true }).ilike('status', 'open');
+    reportsCount = count || 0;
   } catch (e) {}
 
   return {
@@ -76,7 +76,7 @@ export async function getFounderDashboardStats() {
     const { count: articles } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true });
     totalArticles = articles || 0;
     
-    const { count: pending } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).eq('status', 'in_review');
+    const { count: pending } = await supabaseAdmin.from('articles').select('*', { count: 'exact', head: true }).or('status.ilike.submitted,status.ilike.revision_requested,status.ilike.in_review');
     pendingReviews = pending || 0;
   } catch (e) {
     console.error("Failed to fetch articles count:", e);
