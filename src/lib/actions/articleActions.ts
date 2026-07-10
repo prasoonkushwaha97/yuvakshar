@@ -391,6 +391,9 @@ function mapArticleToDb(data: Partial<Article>): any {
   if (data.read_time !== undefined) dbData.read_time = data.read_time;
   if (data.scheduled_publish_at !== undefined) dbData.scheduled_for = data.scheduled_publish_at;
   if (data.language !== undefined) dbData.language_code = data.language;
+  if (data.meta_title !== undefined) dbData.meta_title = data.meta_title;
+  if (data.meta_description !== undefined) dbData.meta_description = data.meta_description;
+  if (data.meta_keywords !== undefined) dbData.meta_keywords = data.meta_keywords;
   return dbData;
 }
 
