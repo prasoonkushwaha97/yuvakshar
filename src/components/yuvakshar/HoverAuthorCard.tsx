@@ -3,8 +3,9 @@ import Image from "next/image";
 
 
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
-import { MessageCircle, BookOpen } from "lucide-react";
+import { X } from "lucide-react";
 import { RoleBadgeList } from "@/components/ui/RoleBadge";
 import AuthorLink from "@/components/shared/AuthorLink";
 import Avatar from "@/components/shared/Avatar";
@@ -15,6 +16,7 @@ interface AuthorData {
   slug?: string;
   name: string;
   avatar_url?: string | null;
+  cover_url?: string | null;
   role?: string;
   bio?: string;
 }
@@ -26,8 +28,13 @@ interface HoverAuthorCardProps {
 
 export default function HoverAuthorCard({ author, children }: HoverAuthorCardProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleMouseEnter = () => {
     if (window.innerWidth < 1024) return; // Desktop only for hover
@@ -77,6 +84,46 @@ export default function HoverAuthorCard({ author, children }: HoverAuthorCardPro
     };
   }, [isOpen]);
 
+  const cardContent = (
+    <>
+      <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsOpen(false); }} className="md:hidden absolute top-3 right-3 z-20 p-1.5 bg-black/20 hover:bg-black/40 rounded-full text-white backdrop-blur-md transition-colors">
+        <X className="w-4 h-4" />
+      </button>
+
+      {/* Cover Banner */}
+      <div className="h-[80px] bg-gradient-to-r from-primary/80 to-blue-600/80 w-full relative shrink-0">
+        {author.cover_url && (
+          <Image src={author.cover_url} alt="Cover" className="w-full h-full object-cover" fill unoptimized />
+        )}
+      </div>
+
+      <div className="px-4 pb-5 relative -mt-8">
+        <div className="flex justify-between items-end mb-3">
+          <AuthorLink author={author as any} className="w-[64px] h-[64px] rounded-full bg-slate-200 dark:bg-slate-800 border-4 border-white dark:border-[#070B14] shrink-0 overflow-hidden flex items-center justify-center relative z-10 hover:opacity-90 transition-opacity">
+            <Avatar url={author.avatar_url} alt={author.name} className="w-full h-full object-cover" />
+          </AuthorLink>
+        </div>
+
+        <div className="mb-2">
+          <AuthorLink author={author as any} className="block text-base font-bold text-slate-900 dark:text-white font-hindi hover:underline decoration-primary">
+            {author.name}
+          </AuthorLink>
+          <div className="text-[11px] text-slate-500 font-mono">@{author.slug || author.username || author.id}</div>
+          {(author as any).roles && <div className="mt-2"><RoleBadgeList roles={(author as any).roles} /></div>}
+        </div>
+
+        <div className="text-xs text-slate-700 dark:text-slate-300 font-hindi leading-relaxed">
+          <div className="line-clamp-2">{author.bio || "युवाक्षर समुदाय के एक महत्वपूर्ण सदस्य और साहित्यिक प्रेमी।"}</div>
+          {(author.bio?.length || 0) > 80 && (
+            <AuthorLink author={author as any} className="text-primary hover:underline mt-1 inline-block font-medium">
+              और पढ़ें
+            </AuthorLink>
+          )}
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div 
       className="relative inline-block"
@@ -92,41 +139,33 @@ export default function HoverAuthorCard({ author, children }: HoverAuthorCardPro
         {children}
       </div>
 
-      {/* The Floating Card */}
       {isOpen && (
-        <div className="absolute z-[100] left-1/2 -translate-x-1/2 mt-2 md:mt-0 md:top-full md:left-0 md:translate-x-0 w-[280px] sm:w-[320px] bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-slate-700/80 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-200">
-          
-          <div className="flex justify-between items-center mb-3">
-            <AuthorLink author={author as any} className="shrink-0 flex items-center justify-center">
-              <Avatar url={author.avatar_url} alt={author.name} className="h-10 w-10 md:h-10 md:w-10 sm:h-9 sm:w-9 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0" />
-            </AuthorLink>
+        <>
+          {/* Desktop View */}
+          <div 
+            className="hidden md:block absolute z-[100] top-full left-0 mt-2 w-[320px] bg-white dark:bg-[#070B14] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 cursor-default text-left"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {cardContent}
           </div>
 
-          <div className="mb-2">
-            <AuthorLink author={author as any} className="block text-base font-bold text-slate-800 dark:text-white font-hindi hover:underline decoration-primary">
-              {author.name}
-            </AuthorLink>
-            <div className="text-[11px] text-slate-500 font-mono">@{author.slug || author.username || author.id}</div>
-            {(author as any).roles && <div className="mt-2"><RoleBadgeList roles={(author as any).roles} /></div>}
-          </div>
-
-          <div className="text-xs text-slate-600 dark:text-slate-300 font-hindi mb-4 line-clamp-2">
-            {author.bio || "युवाक्षर समुदाय के एक महत्वपूर्ण सदस्य और साहित्यिक प्रेमी।"}
-          </div>
-
-
-          <div className="flex gap-2">
-            <AuthorLink author={author as any} className="flex-1 flex justify-center items-center gap-1.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-xs font-bold font-hindi hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-              <BookOpen className="w-3.5 h-3.5" />
-              प्रोफ़ाइल
-            </AuthorLink>
-            <Link href={`/community/messages?to=${author.id}`} className="flex-1 flex justify-center items-center gap-1.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-xs font-bold font-hindi hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-              <MessageCircle className="w-3.5 h-3.5" />
-              संदेश
-            </Link>
-          </div>
-
-        </div>
+          {/* Mobile View */}
+          {mounted && createPortal(
+            <div className="md:hidden fixed inset-0 z-[9999] flex items-center justify-center p-4">
+              <div 
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" 
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsOpen(false); }} 
+              />
+              <div 
+                className="relative w-[calc(100vw-32px)] max-w-[360px] max-h-[80vh] overflow-y-auto bg-white dark:bg-[#070B14] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 cursor-default text-left"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {cardContent}
+              </div>
+            </div>,
+            document.body
+          )}
+        </>
       )}
     </div>
   );

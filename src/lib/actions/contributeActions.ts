@@ -93,6 +93,11 @@ export async function submitContributorArticle(formData: FormData, isDraft: bool
     meta_description: metaDescription || null,
   };
   
+  const summary_hi = formData.get("summary_hi") as string;
+  if (summary_hi !== null && summary_hi !== undefined) {
+    payload.summary = summary_hi;
+  }
+  
   if (coverImage) {
     payload.cover_image = coverImage;
   }

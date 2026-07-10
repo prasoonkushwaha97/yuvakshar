@@ -20,21 +20,27 @@ import { Category } from "@/types/content";
 export default function EditorClient({ article, isNew, reviewNotes, isEditorialRole = false }: { article: any, isNew: boolean, reviewNotes: any[], isEditorialRole?: boolean }) {
   const router = useRouter();
   const [title, setTitle] = useState(article?.title_hi || "");
+  const [subtitle, setSubtitle] = useState(article?.summary_hi || article?.summary || "");
   const titleRef = useRef<HTMLTextAreaElement>(null);
+  const subtitleRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (titleRef.current) {
       titleRef.current.style.height = 'auto';
       titleRef.current.style.height = `${titleRef.current.scrollHeight}px`;
     }
-  }, [title]);
+    if (subtitleRef.current) {
+      subtitleRef.current.style.height = 'auto';
+      subtitleRef.current.style.height = `${subtitleRef.current.scrollHeight}px`;
+    }
+  }, [title, subtitle]);
   const [content, setContent] = useState(article?.content || "");
   const [status, setStatus] = useState(article?.status || ArticleStatus.Draft);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(new Date());
   
   // Right Panel Metadata
-  const [author, setAuthor] = useState(article?.author_id || "");
+  const [author, setAuthor] = useState(article?.author_id || article?.profiles?.id || "");
   const [category, setCategory] = useState(article?.category_id || "");
   const [tags, setTags] = useState<string[]>(article?.tags || []);
   const [coverImage, setCoverImage] = useState(article?.cover_image || "");
@@ -92,6 +98,7 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
     ...article,
     id: article?.id || 'preview-id',
     title_hi: title,
+    summary_hi: subtitle,
     content: content,
     cover_image: coverImage,
     tags: tags,
@@ -110,12 +117,13 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
     try {
       if (isEditorialRole) {
         if (isNew) {
-          await createArticle({ title_hi: title, content: content, status: saveStatus as any, cover_image: coverImage, author_id: author });
+          await createArticle({ title_hi: title, summary_hi: subtitle, content: content, status: saveStatus as any, cover_image: coverImage, author_id: author });
           toast.success("Draft created successfully. Redirecting...");
           router.push("/admin/articles");
         } else {
           await updateArticle(article.id, { 
               title_hi: title, 
+              summary_hi: subtitle,
               content: content,
               cover_image: coverImage,
               slug: slug,
@@ -134,6 +142,7 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
         // Contributor Flow
         const formData = new FormData();
         formData.append("title", title);
+        formData.append("summary_hi", subtitle);
         formData.append("content", content);
         if (coverImage) formData.append("cover_image", coverImage);
         if (category) formData.append("category", category);
@@ -287,7 +296,7 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
 
         {/* Editor Canvas */}
         <div className="flex-1 px-4 lg:px-8 py-8 flex flex-col pb-32 w-full">
-          <div className="w-full space-y-6">
+          <div className="w-full space-y-3 lg:space-y-4">
             <textarea
               ref={titleRef}
               value={title}
@@ -301,7 +310,21 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
               className="w-full text-4xl lg:text-5xl font-serif font-black bg-transparent border-none outline-none text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-700 resize-none leading-normal py-2 overflow-hidden"
             />
             
-            <div className="w-full">
+            <textarea
+              ref={subtitleRef}
+              value={subtitle}
+              onChange={(e) => {
+                setSubtitle(e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = `${e.target.scrollHeight}px`;
+              }}
+              rows={1}
+              maxLength={220}
+              placeholder="लेख का संक्षिप्त परिचय लिखें..."
+              className={`w-full text-xl lg:text-2xl font-serif text-slate-600 dark:text-slate-400 bg-transparent border-none outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 resize-none leading-relaxed py-1 overflow-hidden transition-all duration-300 ${subtitle ? "opacity-100 h-auto" : "opacity-60 focus:opacity-100 hover:opacity-100"}`}
+            />
+            
+            <div className="w-full pt-4">
                 <RichTextEditor 
                   content={content}
                   onChange={(md) => setContent(md)}

@@ -4,8 +4,10 @@ import React, { useState, useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { hi } from "date-fns/locale";
 import { useCms } from "@/store/CmsContext";
-import { Heart, Flag, Edit2, Trash2, Reply, MoreVertical, User, ChevronDown, ChevronUp, X, Smile, Image as ImageIcon, AtSign, Hash, Link as LinkIcon } from "lucide-react";
+import { Heart, Flag, Edit2, Trash2, Reply, MoreVertical, User, ChevronDown, ChevronUp, X } from "lucide-react";
 import Avatar from "@/components/shared/Avatar";
+import DiscussionComposer from "@/components/shared/DiscussionComposer";
+import { supabase } from "@/lib/supabaseClient";
 
 interface CommentSectionProps {
   articleId: string;
@@ -25,9 +27,7 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
   const { comments, currentUser, openAuthModal, addComment, likeComment, editComment, deleteComment, reportComment } = useCms();
   
   const [replyTo, setReplyTo] = useState<{ id: string, name: string } | null>(null);
-  const [newComment, setNewComment] = useState("");
   const [visibleCount, setVisibleCount] = useState(5);
-  const [isFocused, setIsFocused] = useState(false);
 
   const articleComments = useMemo(() => {
     return comments.filter(c => c.article_id === articleId && c.status === "approved").sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -36,13 +36,34 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
   const parentComments = articleComments.filter(c => !c.parent_id);
   const getReplies = (parentId: string) => articleComments.filter(c => c.parent_id === parentId);
 
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCommentSubmit = async (content: string, imageFile: File | null) => {
     if (!currentUser) return openAuthModal();
-    if (!newComment.trim()) return;
+    
+    let finalContent = content.trim();
 
-    await addComment(articleId, currentUser.name, newComment.trim(), replyTo?.id);
-    setNewComment("");
+    if (imageFile) {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${currentUser.id}/${fileName}`;
+  
+      const { error: uploadError } = await supabase.storage
+        .from('chaupal-media')
+        .upload(filePath, imageFile);
+  
+      if (uploadError) {
+        throw uploadError;
+      }
+  
+      const { data } = supabase.storage
+        .from('chaupal-media')
+        .getPublicUrl(filePath);
+        
+      finalContent += `\n\n![Attached Image](${data.publicUrl})`;
+    }
+
+    if (!finalContent) return;
+
+    await addComment(articleId, currentUser.name, finalContent, replyTo?.id);
     setReplyTo(null);
   };
 
@@ -169,76 +190,24 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
       </div>
 
       {/* Comment Input Box */}
-      <div className="mb-8 relative flex gap-3 md:gap-4">
-        
-        {/* User Avatar */}
-        <div className="shrink-0 hidden sm:block">
-           <Avatar url={currentUser?.avatar_url} alt="Avatar" className="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800" />
-        </div>
-
-        {/* Composer Body */}
-        <div className={`flex-grow bg-slate-50 dark:bg-[#0E1322] rounded-2xl border ${isFocused ? 'border-primary/40 ring-[3px] ring-primary/10' : 'border-slate-200 dark:border-slate-800'} transition-all duration-200 relative shadow-sm overflow-hidden flex flex-col`}>
-          {!currentUser && (
-            <div className="absolute inset-0 bg-white/60 dark:bg-[#0E1322]/80 backdrop-blur-[2px] z-20 flex items-center justify-center">
-              <button onClick={() => openAuthModal()} className="bg-primary text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm">
-                टिप्पणी करने के लिए लॉग इन करें
-              </button>
-            </div>
-          )}
-          
-          {replyTo && (
-            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800/80 px-4 py-2 text-xs text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-              <span><span className="font-semibold">{replyTo.name}</span> को जवाब दे रहे हैं...</span>
-              <button onClick={() => setReplyTo(null)} className="hover:text-slate-800 dark:hover:text-slate-200"><X className="w-3.5 h-3.5" /></button>
-            </div>
-          )}
-
-          <form onSubmit={handleAddComment} className="flex flex-col flex-grow relative z-10">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => { if(!newComment) setIsFocused(false); }}
-              placeholder="अपने विचार लिखें..."
-              className={`w-full bg-transparent resize-none focus:outline-none text-slate-800 dark:text-slate-200 placeholder:text-slate-400 p-4 transition-all duration-300 ${isFocused || newComment.length > 0 ? 'min-h-[140px]' : 'min-h-[60px]'}`}
-            />
-            
-            <div className={`flex items-center justify-between px-4 py-2.5 bg-white dark:bg-[#13192B] border-t border-slate-100 dark:border-slate-800/60 mt-auto transition-opacity duration-200 ${isFocused || newComment.length > 0 ? 'opacity-100' : 'opacity-60'}`}>
-              
-              {/* Toolbar */}
-              <div className="flex items-center gap-1 sm:gap-1.5 text-slate-400">
-                <button type="button" className="p-1.5 hover:text-primary hover:bg-primary/10 rounded-full transition-colors"><Smile className="w-[18px] h-[18px]" /></button>
-                <button type="button" className="p-1.5 hover:text-primary hover:bg-primary/10 rounded-full transition-colors"><ImageIcon className="w-[18px] h-[18px]" /></button>
-                <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
-                <button type="button" className="p-1.5 hover:text-primary hover:bg-primary/10 rounded-full transition-colors"><AtSign className="w-[18px] h-[18px]" /></button>
-                <button type="button" className="p-1.5 hover:text-primary hover:bg-primary/10 rounded-full transition-colors"><Hash className="w-[18px] h-[18px]" /></button>
-                <button type="button" className="p-1.5 hover:text-primary hover:bg-primary/10 rounded-full transition-colors"><LinkIcon className="w-[18px] h-[18px]" /></button>
-              </div>
-
-              {/* Actions & Counter */}
-              <div className="flex items-center gap-4">
-                <span className="text-[11px] font-medium text-slate-400 hidden sm:inline-block">
-                  {newComment.length} / 3000
-                </span>
-                
-                <div className="flex items-center gap-2">
-                  {(isFocused || newComment.length > 0) && (
-                    <button type="button" onClick={() => { setNewComment(""); setIsFocused(false); setReplyTo(null); }} className="text-[13px] font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 px-3 py-1.5 transition-colors">
-                      रद्द करें
-                    </button>
-                  )}
-                  <button 
-                    type="submit" 
-                    disabled={!newComment.trim()}
-                    className="px-5 py-1.5 bg-primary text-white rounded-full font-semibold text-sm hover:bg-primary/90 transition-all disabled:opacity-50 disabled:bg-slate-300 dark:disabled:bg-slate-700 shadow-sm"
-                  >
-                    प्रकाशित करें
-                  </button>
-                </div>
-              </div>
-            </div>
-          </form>
-        </div>
+      <div className="mb-8 relative">
+        {!currentUser && (
+          <div className="absolute inset-0 bg-white/60 dark:bg-[#0E1322]/80 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-2xl">
+            <button onClick={() => openAuthModal()} className="bg-primary text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm">
+              टिप्पणी करने के लिए लॉग इन करें
+            </button>
+          </div>
+        )}
+        <DiscussionComposer 
+          currentUser={{ id: currentUser?.id || '', name: currentUser?.name || 'Guest', avatarUrl: currentUser?.avatar_url }}
+          placeholder="अपने विचार लिखें..."
+          submitLabel="प्रकाशित करें"
+          replyTo={replyTo}
+          onCancelReply={() => setReplyTo(null)}
+          maxLength={3000}
+          onSubmit={handleCommentSubmit}
+          className="bg-slate-50 dark:bg-[#0E1322] rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm"
+        />
       </div>
       
       {/* Community Guidelines Link */}
