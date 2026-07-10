@@ -114,3 +114,47 @@ export async function deleteNotification(id: string) {
     return { success: false, error: err.message };
   }
 }
+
+export async function createNotification(
+  recipient_id: string,
+  type: string,
+  title: string,
+  message: string,
+  priority: 'Low' | 'Normal' | 'Urgent' = 'Normal',
+  category: 'Editorial' | 'Community' | 'Security' | 'System' | 'Marketing' | 'AI' = 'System'
+) {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("notifications")
+      .insert({
+        recipient_id,
+        type,
+        priority,
+        category,
+        title,
+        message,
+        status: 'pending',
+        is_read: false
+      });
+
+    if (error) {
+      console.error("Error creating notification:", error);
+      return { success: false, error: error.message };
+    }
+    
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function createInternalNotification(
+  userId: string,
+  eventType: string,
+  title: string,
+  message: string,
+  linkUrl?: string
+) {
+  return createNotification(userId, eventType, title, message);
+}
