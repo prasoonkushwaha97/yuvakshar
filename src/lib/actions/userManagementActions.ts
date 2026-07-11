@@ -131,7 +131,7 @@ export async function promoteUserToEditor(userId: string): Promise<{ success: bo
   const result = await supabase
     .from("profiles")
     .update({
-      role: 'editor',
+      role: 'Editor',
     })
     .eq("id", userId)
     .select();
@@ -164,7 +164,7 @@ export async function promoteUserToAdmin(userId: string): Promise<{ success: boo
   const result = await supabase
     .from("profiles")
     .update({
-      role: 'admin',
+      role: 'Admin',
     })
     .eq("id", userId)
     .select();
@@ -204,10 +204,13 @@ export async function changeEditorialRole(userId: string, newRole: string): Prom
   
   console.log("AUTH USER:", user?.id);
 
+  // Ensure role is correctly capitalized for the DB CHECK constraint
+  const dbRole = newRole.charAt(0).toUpperCase() + newRole.slice(1).toLowerCase();
+
   const result = await supabase
     .from("profiles")
     .update({
-      role: newRole,
+      role: dbRole,
     })
     .eq("id", userId)
     .select();
@@ -245,7 +248,7 @@ export async function removeEditorialRole(userId: string): Promise<{ success: bo
   const result = await supabase
     .from("profiles")
     .update({
-      role: null as any,
+      role: 'Member',
     })
     .eq("id", userId)
     .select();
