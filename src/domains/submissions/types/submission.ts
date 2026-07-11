@@ -51,7 +51,7 @@ export interface EditorialThreadMessage {
   id: string;
   submissionId: string;
   senderId: string; // Author or Editor
-  senderRole: "contributor" | "editor";
+  senderRole: "author" | "editor";
   message: string;
   attachments?: string[];
   createdAt: string;

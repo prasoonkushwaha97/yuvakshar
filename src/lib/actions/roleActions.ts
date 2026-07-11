@@ -7,13 +7,8 @@ import { getCurrentUser, getCurrentUserRoles, FOUNDER_EMAIL, Role, hasAnyRole } 
 // Lower number means higher authority.
 const ROLE_HIERARCHY_RANK: Record<string, number> = {
   'founder': 0,
-  'co_founder': 1,
-  'super_admin': 2,
-  'admin': 3,
-  'editor_in_chief': 4,
-  'editor': 5,
-  'moderator': 6,
-  'reviewer': 7,
+  'admin': 1,
+  'editor': 2,
 };
 
 type ActionResponse = {
@@ -66,7 +61,7 @@ export async function getRolesList(): Promise<Role[]> {
   console.log("[DIAGNOSTICS] getRolesList server action initiated");
   
   // Check authorization
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
   if (!isAuthorized) {
     console.warn("[DIAGNOSTICS] getRolesList: Unauthorized access attempt");
     throw new Error("Unauthorized to access roles list");
@@ -265,36 +260,4 @@ export async function demoteRole(targetUserId: string, newRoleId: string, oldRol
   return { success: true };
 }
 
-export async function assignAuthorRoleByEmail(email: string): Promise<ActionResponse> {
-  const actor = await getCurrentUser();
-  if (!actor) return { success: false, error: 'Unauthenticated.' };
 
-  // Get user by email via admin API
-  const { data: usersData, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
-  if (usersError || !usersData.users) return { success: false, error: 'Failed to search users.' };
-  
-  const targetUser = usersData.users.find((u: any) => u.email === email);
-  if (!targetUser) return { success: false, error: 'User with this email not found.' };
-
-  // Get Author role ID
-  const { data: roleData } = await supabaseAdmin
-    .from('roles')
-    .select('id')
-    .ilike('name', 'Author')
-    .single();
-
-  if (!roleData) return { success: false, error: 'Author role not found in system.' };
-
-  return assignRole(targetUser.id, roleData.id, 'Onboarded via Author Pipeline');
-}
-
-export async function removeAuthorRoleByUserId(userId: string): Promise<ActionResponse> {
-  const { data: roleData } = await supabaseAdmin
-    .from('roles')
-    .select('id')
-    .ilike('name', 'Author')
-    .single();
-
-  if (!roleData) return { success: false, error: 'Author role not found in system.' };
-  return removeRole(userId, roleData.id, 'Revoked via Author Pipeline');
-}

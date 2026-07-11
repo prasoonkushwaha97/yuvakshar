@@ -57,3 +57,16 @@ latest_lint.json
 final_eslint.json
 
 .vercel
+# Supabase temp
+supabase/.temp/
+
+# Debug files
+out*.html
+test*.mjs
+check_css.js
+dev.css
+ast_replace.ts
+replace*.mjs
+rbac_auth_checks.txt
+rbac_search_results.txt
+drop_legacy_tables.sql

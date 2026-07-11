@@ -149,7 +149,7 @@ export default function PostCard({
           
           <HoverUserCard userId={hoverUserId}>
               <AuthorLink author={effectiveAuthorProfile || { id: post.user_id }} className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-200 flex items-center justify-center text-sm text-slate-500 shrink-0 overflow-hidden hover:opacity-90 block border border-slate-300 dark:border-slate-700">
-                <Avatar url={effectiveAuthorProfile?.avatar_url} alt={post.user_name} className="w-full h-full" />
+                <Avatar url={effectiveAuthorProfile?.avatar_url} alt={post.user_name} name={post.user_name} className="w-full h-full" />
             </AuthorLink>
           </HoverUserCard>
           
@@ -369,7 +369,7 @@ export default function PostCard({
         </div>
 
         {/* Convert to Article Draft (Admin/Editor/Author role check) */}
-        {onConvert && currentUser && (hasRole("प्रशासन") || hasRole("संस्थापक") || hasRole("Editor") || hasRole("Author") || hasRole("योगदानकर्ता")) && (
+        {onConvert && currentUser && (hasRole("Admin") || hasRole("Founder") || hasRole("Editor")) && (
           <button
             onClick={() => onConvert(post)}
             className="hidden sm:flex items-center space-x-1.5 text-[11px] text-primary hover:bg-primary/10 px-2 py-1.5 rounded-lg transition-colors font-bold cursor-pointer font-hindi"

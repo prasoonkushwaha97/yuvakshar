@@ -111,7 +111,7 @@ export default function ChaupalSearchPage() {
               <div key={user.id} className="bg-white dark:bg-[#0F172A] p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-200 relative shrink-0">
-                    <Avatar url={user.avatar_url} alt={user.name} className="w-full h-full" />
+                    <Avatar url={user.avatar_url} alt={user.name} name={user.name} className="w-full h-full" />
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1">
@@ -129,7 +129,7 @@ export default function ChaupalSearchPage() {
               <div key={group.id} className="bg-white dark:bg-[#0F172A] p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 relative shrink-0">
-                    <Avatar url={group.avatar_url} alt={group.name} className="w-full h-full rounded-xl" />
+                    <Avatar url={group.avatar_url} alt={group.name} name={group.name} className="w-full h-full" />
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1">

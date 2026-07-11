@@ -391,7 +391,7 @@ export async function updateArticleStatus(id: string, status: ArticleStatus | st
   const { data: currentArticle } = await supabase.from("articles").select("status").eq("id", id).single();
   const current_status = currentArticle?.status;
   
-  const isFounder = await hasAnyRole(['founder', 'co_founder']);
+  const isFounder = await hasAnyRole(['founder']);
   
   if (!isFounder) {
     const allowedTransitions: Record<string, string[]> = {
@@ -563,7 +563,7 @@ export async function getRelatedArticlesForInfiniteScroll(
 
 export async function getAuthorsForSelect() {
   try {
-    const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'managing_editor', 'editor_in_chief']);
+    const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
     if (!isAuthorized) return [];
 
     const supabase = await createClient();

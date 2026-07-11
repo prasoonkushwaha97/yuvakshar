@@ -22,7 +22,7 @@ export default function EditorialCard({ article }: EditorialCardProps) {
   const authorRole = article.authorRole || "वरिष्ठ स्तंभकार";
   const innerContent = (
     <div className="flex items-center gap-2.5 mb-4 text-left">
-      <Avatar url={authorAvatar} alt={article.author} className="h-10 w-10 md:h-10 md:w-10 sm:h-9 sm:w-9 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0" />
+      <Avatar url={authorAvatar} alt={article.author} name={article.author} className="h-10 w-10 md:h-10 md:w-10 sm:h-9 sm:w-9 flex-shrink-0" />
       <div className="flex flex-col">
         <span className="font-extrabold text-sm text-gray-850 dark:text-gray-200 block mb-0.5 group-hover/avatar:text-[#f97316] transition-colors">
           {article.author}

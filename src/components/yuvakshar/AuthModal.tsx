@@ -133,7 +133,7 @@ export default function AuthModal() {
     setIsLoading(true);
 
     setTimeout(async () => {
-      const success = await registerUser(email.trim(), username.trim(), "Subscriber", name.trim(), mobile.trim(), password);
+      const success = await registerUser(email.trim(), username.trim(), "Normal User", name.trim(), mobile.trim(), password);
       setIsLoading(false);
 
       if (success) {

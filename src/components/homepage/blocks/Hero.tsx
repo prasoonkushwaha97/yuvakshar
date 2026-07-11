@@ -110,7 +110,7 @@ export default function Hero() {
                 <Avatar 
                   url={resolvedAuthor?.avatar_url} 
                   alt={resolvedAuthorName} 
-                  className="h-10 w-10 md:h-10 md:w-10 sm:h-9 sm:w-9 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0" 
+                  className="h-10 w-10 md:h-10 md:w-10 sm:h-9 sm:w-9 flex-shrink-0" name={resolvedAuthorName} 
                 />
                 <span className="text-[15px] md:text-base">{resolvedAuthorName}</span>
                 {resolvedAuthor?.verified && (

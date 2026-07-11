@@ -1,95 +1,97 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, Loader2, UserPlus, Mail, Lock, Shield, Hash, User } from "lucide-react";
-import { createAdminMember } from "@/lib/actions/userManagementActions";
+import { X, Loader2, UserPlus, Search, Shield } from "lucide-react";
+import { getCommunityUsersList, promoteUserToEditor, promoteUserToAdmin, AdminUserRecord } from "@/lib/actions/userManagementActions";
 import { toast } from "sonner";
+import Avatar from "@/components/shared/Avatar";
 
 interface AddMemberModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
-  currentUserIsFounder: boolean;
+  onSuccess: (user: AdminUserRecord) => void;
 }
 
-export function AddMemberModal({ open, onOpenChange, onSuccess, currentUserIsFounder }: AddMemberModalProps) {
+export function AddMemberModal({ open, onOpenChange, onSuccess }: AddMemberModalProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [results, setResults] = useState<AdminUserRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    roleSlug: "editor", // default role
-  });
+  const [promotingId, setPromotingId] = useState<string | null>(null);
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
-  const validate = () => {
-    const newErrors: { [key: string]: string } = {};
-    if (!formData.name.trim()) newErrors.name = "Full Name is required";
-    if (!formData.username.trim()) newErrors.username = "Username is required";
-    if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) newErrors.username = "Username can only contain letters, numbers, and underscores";
-    if (!formData.email.trim()) newErrors.email = "Email is required";
-    if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
-    if (formData.password.length < 8) newErrors.password = "Password must be at least 8 characters";
-    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  useEffect(() => {
+    if (!open) {
+      setSearchTerm("");
+      setResults([]);
+    }
+  }, [open]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    setLoading(true);
-    try {
-      const res = await createAdminMember(
-        formData.email,
-        formData.name,
-        formData.username,
-        formData.password,
-        formData.roleSlug
-      );
-      
-      if (res.success) {
-        toast.success("Member created successfully!");
-        setFormData({
-            name: "", username: "", email: "", password: "", confirmPassword: "", roleSlug: "editor"
+  useEffect(() => {
+    async function searchUsers() {
+      if (!debouncedSearchTerm.trim()) {
+        setResults([]);
+        return;
+      }
+      setLoading(true);
+      try {
+        const { data } = await getCommunityUsersList({
+          search: debouncedSearchTerm,
+          perPage: 5,
+          statusFilter: "active"
         });
-        setErrors({});
-        onSuccess();
+        setResults(data as AdminUserRecord[]);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    if (open) {
+      searchUsers();
+    }
+  }, [debouncedSearchTerm, open]);
+
+  const handlePromote = async (user: AdminUserRecord, role: "admin" | "editor") => {
+    setPromotingId(user.id);
+    try {
+      const res = role === "admin" ? await promoteUserToAdmin(user.id) : await promoteUserToEditor(user.id);
+      if (res.success) {
+        toast.success(`${user.name} promoted to ${role === "admin" ? "Admin" : "Editor"}!`);
+        const updatedUser = { 
+            ...user, 
+            roles: [{ id: role, name: role === "admin" ? "Admin" : "Editor", slug: role }] 
+        };
+        onSuccess(updatedUser);
         onOpenChange(false);
       } else {
-        toast.error(res.error || "Failed to create member");
+        toast.error(res.error || "Failed to promote user");
       }
     } catch (err: any) {
       toast.error(err.message || "An unexpected error occurred");
     } finally {
-      setLoading(false);
+      setPromotingId(null);
     }
   };
-
-  const roles = [
-    { slug: "founder", name: "Founder", disabled: !currentUserIsFounder },
-    { slug: "eic", name: "Editor-in-Chief", disabled: false },
-    { slug: "managing_editor", name: "Managing Editor", disabled: false },
-    { slug: "editor", name: "Editor", disabled: false },
-  ];
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 animate-in fade-in duration-200" />
-        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200 overflow-hidden">
+        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-2xl translate-x-[-50%] translate-y-[-50%] bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200 overflow-hidden">
           
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
             <Dialog.Title className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <UserPlus className="w-5 h-5 text-primary" />
-              Add Admin Member
+              Promote to Editorial Team
             </Dialog.Title>
             <Dialog.Close asChild>
               <button className="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
@@ -99,110 +101,70 @@ export function AddMemberModal({ open, onOpenChange, onSuccess, currentUserIsFou
           </div>
 
           {/* Body */}
-          <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 p-6 space-y-4">
-            
-            {/* Basic Info */}
-            <div className="space-y-4">
-                <div>
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1"><User className="w-4 h-4"/> Full Name *</label>
-                    <input 
-                        type="text" 
-                        value={formData.name}
-                        onChange={e => setFormData({...formData, name: e.target.value})}
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white" 
-                        placeholder="John Doe"
-                    />
-                    {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-                </div>
-                
-                <div>
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1"><Hash className="w-4 h-4"/> Username *</label>
-                    <input 
-                        type="text" 
-                        value={formData.username}
-                        onChange={e => setFormData({...formData, username: e.target.value.toLowerCase()})}
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white" 
-                        placeholder="johndoe"
-                    />
-                    {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
-                </div>
+          <div className="p-6 flex flex-col gap-4 overflow-y-auto">
+            <p className="text-sm text-slate-500">
+              Search for an existing Community User to promote them to the Editorial Team.
+            </p>
 
-                <div>
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1"><Mail className="w-4 h-4"/> Email Address *</label>
-                    <input 
-                        type="email" 
-                        value={formData.email}
-                        onChange={e => setFormData({...formData, email: e.target.value})}
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white" 
-                        placeholder="john@example.com"
-                    />
-                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-                </div>
-
-                <div>
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1"><Shield className="w-4 h-4"/> Role *</label>
-                    <select
-                        value={formData.roleSlug}
-                        onChange={e => setFormData({...formData, roleSlug: e.target.value})}
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white"
-                    >
-                        {roles.map(role => (
-                            <option key={role.slug} value={role.slug} disabled={role.disabled}>
-                                {role.name} {role.disabled ? "(Founders Only)" : ""}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search by Name, Username, or Email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white" 
+              />
             </div>
-            
-            <hr className="border-slate-100 dark:border-slate-800" />
 
-            {/* Password */}
-            <div className="space-y-4">
-                <div>
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1"><Lock className="w-4 h-4"/> Password *</label>
-                    <input 
-                        type="password" 
-                        value={formData.password}
-                        onChange={e => setFormData({...formData, password: e.target.value})}
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white" 
-                        placeholder="Min 8 characters"
-                    />
-                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+            <div className="mt-4 space-y-3">
+              {loading ? (
+                <div className="py-8 text-center text-slate-500">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
+                  Searching users...
                 </div>
-                
-                <div>
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1"><Lock className="w-4 h-4"/> Confirm Password *</label>
-                    <input 
-                        type="password" 
-                        value={formData.confirmPassword}
-                        onChange={e => setFormData({...formData, confirmPassword: e.target.value})}
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white" 
-                        placeholder="Repeat password"
-                    />
-                    {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+              ) : debouncedSearchTerm.trim() === "" ? (
+                <div className="py-8 text-center text-slate-500 text-sm">
+                  Type a name or email to begin searching.
                 </div>
+              ) : results.length === 0 ? (
+                <div className="py-8 text-center text-slate-500 text-sm">
+                  No community users found matching "{debouncedSearchTerm}".
+                </div>
+              ) : (
+                results.map((user) => (
+                  <div key={user.id} className="flex items-center justify-between bg-white dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0">
+                        <Avatar url={user.avatar_url} alt={user.name} name={user.name} className="w-full h-full" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm text-slate-900 dark:text-white">{user.name}</div>
+                        <div className="text-xs text-slate-500">{user.email || `@${user.username}`}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handlePromote(user, 'editor')}
+                          disabled={promotingId === user.id}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-primary hover:text-white text-slate-700 dark:text-slate-300 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+                        >
+                          {promotingId === user.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5" />}
+                          Make Editor
+                        </button>
+                        <button
+                          onClick={() => handlePromote(user, 'admin')}
+                          disabled={promotingId === user.id}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-primary hover:text-white text-slate-700 dark:text-slate-300 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+                        >
+                          {promotingId === user.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5" />}
+                          Make Admin
+                        </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-          </form>
-
-          {/* Footer */}
-          <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-[#0F172A] flex justify-end gap-3 shrink-0">
-            <Dialog.Close asChild>
-              <button 
-                type="button" 
-                className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-transparent hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-            </Dialog.Close>
-            <button 
-              onClick={handleSubmit}
-              disabled={loading}
-              className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-              Create Member
-            </button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

@@ -23,7 +23,7 @@ export default async function AdminLayout({
 
   // Ensure they have at least one valid backend role
   // Any role except standard 'reader' is allowed in some capacity
-  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator', 'sub_editor', 'author', 'contributor']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
   
   if (!isAuthorized) {
     redirect('/unauthorized');

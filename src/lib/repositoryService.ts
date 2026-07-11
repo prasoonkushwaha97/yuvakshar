@@ -41,9 +41,9 @@ export const getLiteraryIdentities = (
   const identities: string[] = [];
 
   // 1. Role-based identities
-  if (profile.role === "Founder" || profile.role === "Editor-in-Chief") {
+  if (profile.role === "Founder" || profile.role === "Admin") {
     identities.push("संपादकीय सहयोगी");
-  } else if (profile.role === "Managing Editor" || profile.role === "Editor") {
+  } else if (profile.role === "Editor") {
     identities.push("समीक्षक");
   }
 

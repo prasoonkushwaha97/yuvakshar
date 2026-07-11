@@ -103,7 +103,7 @@ export class SupabaseCommunityRepository {
       user_id: p.user_id,
       user_name: p.profiles?.name || "Unknown User",
       user_avatar: p.profiles?.avatar_url,
-      user_rank: p.profiles?.role || "Member",
+      user_rank: p.profiles?.role || "Normal User",
       group_id: p.group_id,
       group_name: p.groups?.name,
       title: p.title,

@@ -202,8 +202,6 @@ export default function ArticleManager({
     if (!stage) return null;
     const map: Record<string, string> = {
       editor_review: "Editor",
-      me_review: "Managing Editor",
-      eic_review: "EIC",
       completed: "Done"
     };
     return <span className="px-2 py-0.5 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 rounded text-[10px] font-bold uppercase tracking-wider">{map[stage] || stage}</span>;
@@ -351,7 +349,7 @@ export default function ArticleManager({
                     </td>
                     <td className="px-4 py-4">
                       <button onClick={(e) => { e.stopPropagation(); updateUrlParams({ author_id: article.profiles?.id || null }); }} className="flex items-center gap-2 hover:text-primary transition-colors">
-                         <Avatar url={article.profiles?.avatar_url} alt={article.profiles?.name || ''} className="w-6 h-6 rounded-full object-cover bg-slate-100 dark:bg-slate-800" />
+                         <Avatar url={article.profiles?.avatar_url} alt={article.profiles?.name || ''} name={article.profiles?.name} className="w-6 h-6" />
                          <span className="font-medium text-slate-700 dark:text-slate-300">{article.profiles?.name || 'Unknown'}</span>
                       </button>
                     </td>
@@ -498,7 +496,7 @@ export default function ArticleManager({
 
                  <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                    <div className="flex items-center gap-1.5">
-                     <Avatar url={article.profiles?.avatar_url} alt={article.profiles?.name || ''} className="w-5 h-5 rounded-full object-cover" />
+                     <Avatar url={article.profiles?.avatar_url} alt={article.profiles?.name || ''} name={article.profiles?.name} className="w-5 h-5" />
                      <span className="font-medium">{article.profiles?.name || 'Unknown'}</span>
                    </div>
                    <span className="text-slate-300 dark:text-slate-600">•</span>
@@ -675,7 +673,7 @@ export default function ArticleManager({
                       }}
                       className="w-full flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-primary/30 transition-colors text-left"
                     >
-                      <Avatar url={user.avatar_url} alt={user.name || ''} className="w-8 h-8 rounded-full object-cover" />
+                      <Avatar url={user.avatar_url} alt={user.name || ''} name={user.name} className="w-8 h-8" />
                       <div>
                         <div className="text-sm font-medium text-slate-900 dark:text-white">{user.name || 'Unnamed'}</div>
                         <div className="text-xs text-slate-500 capitalize">{user.role?.replace('_', ' ') || 'Editor'}</div>

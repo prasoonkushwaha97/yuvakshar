@@ -8,7 +8,6 @@ export default function ContributorSubmissionPage() {
     <EditorClient 
       article={null} 
       isNew={true} 
-      reviewNotes={[]} 
       isEditorialRole={false}
     />
   );

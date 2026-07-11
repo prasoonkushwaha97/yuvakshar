@@ -115,7 +115,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
         <div className="px-4 pb-5 relative -mt-8">
           <div className="flex justify-between items-end mb-3">
             <Link href={userLink} className="w-[64px] h-[64px] rounded-full bg-slate-200 dark:bg-slate-800 border-4 border-white dark:border-[#070B14] shrink-0 overflow-hidden flex items-center justify-center relative z-10 hover:opacity-90 transition-opacity">
-              <Avatar url={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+              <Avatar url={user.avatar_url} alt={user.name} name={user.name} className="w-full h-full" />
             </Link>
           </div>
 

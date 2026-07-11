@@ -5,7 +5,7 @@ import { hasAnyRole } from "@/lib/rbacService";
 
 export async function getPermissionsMatrix() {
   console.log("[DIAGNOSTICS] getPermissionsMatrix server action initiated");
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
   if (!isAuthorized) {
     console.warn("[DIAGNOSTICS] getPermissionsMatrix: Unauthorized access attempt");
     throw new Error("Unauthorized to access permissions matrix");
@@ -23,8 +23,7 @@ export async function getPermissionsMatrix() {
 
   // Define hardcoded rank for sorting (since DB doesn't have rank natively)
   const ROLE_HIERARCHY_RANK: Record<string, number> = {
-    'founder': 0, 'co_founder': 1, 'super_admin': 2, 'admin': 3,
-    'editor_in_chief': 4, 'editor': 5, 'moderator': 6, 'reviewer': 7,
+    'founder': 0, 'admin': 1, 'editor': 2,
   };
 
   const sortedRoles = rolesData.sort((a: any, b: any) => 

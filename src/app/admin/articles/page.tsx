@@ -6,11 +6,10 @@ import ArticleManager from "@/components/founder/articles/ArticleManager";
 
 export const dynamic = 'force-dynamic';
 
-export default async function ArticlesPage({
-  searchParams
-}: {
-  searchParams: { page?: string; limit?: string; sortBy?: string; sortOrder?: string; status?: string; search?: string }
+export default async function ArticlesPage(props: {
+  searchParams: Promise<{ page?: string; limit?: string; sortBy?: string; sortOrder?: string; status?: string; search?: string }>
 }) {
+  const searchParams = await props.searchParams;
   const page = searchParams.page ? parseInt(searchParams.page) : 1;
   const limit = searchParams.limit ? parseInt(searchParams.limit) : 10;
   

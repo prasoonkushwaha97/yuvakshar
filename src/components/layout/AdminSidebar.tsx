@@ -74,7 +74,7 @@ export default function AdminSidebar() {
       <div className="p-4 border-t border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-3 px-3 py-2">
           <div className="relative w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0 border border-slate-200 dark:border-slate-800">
-             <Avatar url={currentUser?.avatar_url} alt={currentUser?.name} className="w-full h-full" />
+             <Avatar url={currentUser?.avatar_url} alt={currentUser?.name} name={currentUser?.name} className="w-full h-full" />
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-sm font-bold text-slate-900 dark:text-white truncate">

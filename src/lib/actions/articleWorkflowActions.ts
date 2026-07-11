@@ -10,11 +10,13 @@ import { ArticleStatus } from "@/types/content";
 
 export async function transitionArticleState(articleId: string, newState: ArticleStatus, notes: string = "") {
   // Authentication & Authorization check based on target state
-  const isReviewer = await hasAnyRole(['reviewer', 'editor', 'editor_in_chief', 'admin', 'super_admin', 'founder']);
-  const isEditor = await hasAnyRole(['editor', 'editor_in_chief', 'admin', 'super_admin', 'founder']);
-  const isEIC = await hasAnyRole(['editor_in_chief', 'admin', 'super_admin', 'founder']);
+  const isReviewAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
+  const isEditorAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
+  const isAdminOrFounder = await hasAnyRole(['founder', 'admin']);
 
-  if (!isReviewer) throw new Error("Unauthorized to perform workflow transitions.");
+  const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
+  if (!authData?.user) throw new Error("Unauthenticated");
+  const currentUserId = authData.user.id;
 
   // Fetch current article
   const { data: article, error: fetchError } = await supabase
@@ -32,23 +34,22 @@ export async function transitionArticleState(articleId: string, newState: Articl
 
   switch (newState) {
     case ArticleStatus.UnderReview:
-      // Anyone can submit Draft -> Under Review, but we assume author action or reviewer pull
-      canTransition = oldState === ArticleStatus.Draft || oldState === ArticleStatus.RevisionRequested;
+      canTransition = (oldState === ArticleStatus.Draft || oldState === ArticleStatus.RevisionRequested) && (isEditorAuthorized || article.author_id === currentUserId);
       break;
     case ArticleStatus.RevisionRequested:
-      canTransition = (oldState === ArticleStatus.UnderReview || oldState === ArticleStatus.Approved) && isReviewer;
+      canTransition = (oldState === ArticleStatus.UnderReview || oldState === ArticleStatus.Approved) && isReviewAuthorized;
       break;
     case ArticleStatus.Approved:
-      canTransition = oldState === ArticleStatus.UnderReview && isEditor;
+      canTransition = oldState === ArticleStatus.UnderReview && isEditorAuthorized;
       break;
     case ArticleStatus.Scheduled:
-      canTransition = oldState === ArticleStatus.Approved && isEditor;
+      canTransition = oldState === ArticleStatus.Approved && isEditorAuthorized;
       break;
     case ArticleStatus.Published:
-      canTransition = (oldState === ArticleStatus.Approved || oldState === ArticleStatus.Scheduled) && isEIC;
+      canTransition = (oldState === ArticleStatus.Approved || oldState === ArticleStatus.Scheduled) && isAdminOrFounder;
       break;
     case ArticleStatus.Archived:
-      canTransition = isEIC; // EIC can archive from almost any state
+      canTransition = isAdminOrFounder; // Admin/Founder can archive from almost any state
       break;
     default:
       throw new Error(`Invalid state transition: ${newState}`);

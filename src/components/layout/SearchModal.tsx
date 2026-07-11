@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X, Clock, TrendingUp, User, BookOpen, Tag, Newspaper, MessageSquare, Folder, Users, Mic, AlertCircle } from "lucide-react";
+import { Search, X, Clock, TrendingUp, User, BookOpen, Tag, Newspaper, MessageSquare, Folder, Users, Mic, AlertCircle, BadgeCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { globalSearch, SearchResult } from "@/lib/actions/searchActions";
 import Link from "next/link";
@@ -338,29 +338,44 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                             </h3>
                             <div className="space-y-2">
                               {authors.slice(0, 3).map(author => (
-                                <button
-                                  key={author.id}
-                                  data-search-item="true"
-                                  onKeyDown={handleKeyboardNav}
-                                  onClick={() => handleSelectResult(author.url, query)}
-                                  className="w-full text-left group flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 focus:bg-slate-50 focus:outline-none dark:hover:bg-slate-800/50 dark:focus:bg-slate-800/50 transition-colors"
-                                >
-                                  {author.thumbnail ? (
-                                    <img src={author.thumbnail} alt={author.title} className="w-10 h-10 rounded-full object-cover" />
-                                  ) : (
-                                    <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold shrink-0">
-                                      {author.title.charAt(0)}
-                                    </div>
-                                  )}
-                                  <div>
-                                    <h4 className="text-slate-900 dark:text-slate-100 font-medium font-hindi group-hover:text-[#ea580c] transition-colors">
-                                      <Highlight text={author.title} />
-                                    </h4>
-                                    {author.subtitle && (
-                                      <p className="text-xs text-slate-500 font-hindi line-clamp-1">{author.subtitle}</p>
+                                <div key={author.id} className="flex items-center gap-2 group w-full p-2 rounded-xl hover:bg-slate-50 focus-within:bg-slate-50 dark:hover:bg-slate-800/50 dark:focus-within:bg-slate-800/50 transition-colors">
+                                  <button
+                                    data-search-item="true"
+                                    onKeyDown={handleKeyboardNav}
+                                    onClick={() => handleSelectResult(author.url, query)}
+                                    className="flex-grow text-left flex items-center gap-3 focus:outline-none"
+                                  >
+                                    {author.thumbnail ? (
+                                      <img src={author.thumbnail} alt={author.title} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                                    ) : (
+                                      <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold shrink-0">
+                                        {author.title.charAt(0)}
+                                      </div>
                                     )}
-                                  </div>
-                                </button>
+                                    <div className="flex-grow min-w-0">
+                                      <div className="flex items-center gap-1.5">
+                                        <h4 className="text-slate-900 dark:text-slate-100 font-semibold font-hindi text-sm line-clamp-1 group-hover:text-[#ea580c] transition-colors">
+                                          <Highlight text={author.title} />
+                                        </h4>
+                                        {author.meta?.is_verified && <BadgeCheck className="w-3.5 h-3.5 text-blue-500 shrink-0" />}
+                                        {author.meta?.role && (author.meta.role === 'founder' || author.meta.role === 'admin' || author.meta.role === 'editor') && (
+                                          <span className="bg-primary/10 text-primary text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
+                                            {author.meta.role}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs text-slate-500 font-hindi truncate">
+                                        <Highlight text={`@${author.meta?.username || author.url.split('/').pop()}`} />
+                                      </p>
+                                    </div>
+                                  </button>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); }}
+                                    className="shrink-0 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                  >
+                                    Follow
+                                  </button>
+                                </div>
                               ))}
                             </div>
                           </div>

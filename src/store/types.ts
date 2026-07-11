@@ -70,7 +70,7 @@ export interface Profile {
   verified?: boolean;
   username_changed_at?: string;
   previous_username?: string;
-  role: "Founder" | "Editor-in-Chief" | "Managing Editor" | "Editor" | "Normal User" | null;
+  role: "Founder" | "Admin" | "Editor" | "Normal User" | null;
   status: "active" | "suspended" | "pending" | "Draft" | "Pending Approval" | "Approved" | "Rejected" | "Resigned";
   password?: string;
   department?: string; // Hindi department identifier
@@ -105,7 +105,7 @@ export interface Profile {
   website?: string;
   designation?: string;
   current_role?: string;
-  verification_badge?: "Verified Author" | "Verified Researcher" | "Editorial Team" | "Editor" | "Managing Editor" | "Editor-in-Chief" | "Founder" | null;
+  verification_badge?: "Verified Author" | "Verified Researcher" | "Editorial Team" | "Editor" | "Admin" | "Founder" | null;
   institution?: string;
   expertise_tags?: string[];
   orcid_id?: string;

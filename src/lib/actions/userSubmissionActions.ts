@@ -46,7 +46,7 @@ export async function submitGuestArticle(formData: FormData) {
   return { success: true, data };
 }
 
-export async function submitContributorArticle(formData: FormData, isDraft: boolean = false) {
+export async function submitUserArticle(formData: FormData, isDraft: boolean = false) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -67,19 +67,25 @@ export async function submitContributorArticle(formData: FormData, isDraft: bool
     return { error: "Missing required fields" };
   }
 
-  const isAdmin = await hasAnyRole(["admin", "editor", "superadmin", "founder"]);
+  const isAdmin = await hasAnyRole(["admin", "editor", "founder"]);
   const mode = formData.get("mode") as string;
   const isEditingAsAdmin = isAdmin && mode === "admin";
   const publishAs = formData.get("publishAs") as string;
 
-  // Find category ID
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("id")
-    .eq("slug", category)
-    .limit(1);
-
-  const categoryId = categories && categories.length > 0 ? categories[0].id : null;
+  // Find category ID (handles both UUID and Slug formats)
+  let categoryId = null;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  
+  if (uuidRegex.test(category)) {
+    categoryId = category;
+  } else {
+    const { data: categories } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("slug", category)
+      .limit(1);
+    categoryId = categories && categories.length > 0 ? categories[0].id : null;
+  }
 
   const status = isDraft ? ArticleStatus.Draft : ArticleStatus.Submitted;
   
@@ -143,7 +149,10 @@ export async function submitContributorArticle(formData: FormData, isDraft: bool
       .eq("id", articleId);
 
     if (!isEditingAsAdmin) {
-      updateQuery = updateQuery.eq("author_id", user.id); // security check for authors
+      // Normal users can only edit their own articles, and only if they are Draft or RevisionRequested.
+      // (The update query will silently fail if the article is in UnderReview/Published state, which is correct).
+      updateQuery = updateQuery.eq("author_id", user.id).in("status", [ArticleStatus.Draft, ArticleStatus.RevisionRequested, ArticleStatus.Submitted]); 
+      // Included Submitted for the edge case where the transition just happened but UI sent a double-click
     }
 
     console.log("updateQuery payload", payload);
@@ -174,7 +183,7 @@ export async function submitContributorArticle(formData: FormData, isDraft: bool
   }
 }
 
-export async function getContributorSubmissions() {
+export async function getUserSubmissions() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 

@@ -91,7 +91,7 @@ export async function getCategories() {
 }
 
 export async function createCategory(data: Partial<Category>) {
-  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   const supabase = await createClient();
@@ -116,7 +116,7 @@ export async function createCategory(data: Partial<Category>) {
 }
 
 export async function updateCategory(id: string, data: Partial<Category>) {
-  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   const supabase = await createClient();
@@ -148,7 +148,7 @@ export async function updateCategory(id: string, data: Partial<Category>) {
 }
 
 export async function deleteCategory(id: string) {
-  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   const supabase = await createClient();

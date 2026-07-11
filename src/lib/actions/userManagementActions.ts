@@ -2,6 +2,7 @@
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { hasAnyRole } from "@/lib/rbacService";
+import { createClient } from "@/utils/supabase/server";
 
 export type AdminUserRecord = {
   id: string;
@@ -17,265 +18,304 @@ export type AdminUserRecord = {
 };
 
 export async function checkIfCurrentUserIsFounder(): Promise<boolean> {
-  return await hasAnyRole(['founder', 'co_founder']);
+  return await hasAnyRole(['founder']);
 }
 
 export async function getAdminUsersList(): Promise<AdminUserRecord[]> {
   console.log("Current User - Checking Authorization");
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
   if (!isAuthorized) {
     console.error("Authorization Error: User lacks required roles for Admin Users List");
     return [];
   }
   console.log("Authorization: Success");
 
-  const adminSlugs = ['founder', 'co_founder', 'super_admin', 'admin', 'eic', 'managing_editor', 'editor'];
-  
-  const { data: rolesData, error: rolesError } = await supabaseAdmin.from('roles').select('id, slug').in('slug', adminSlugs);
-  if (rolesError) {
-    console.error("Roles Error", rolesError);
-    return [];
-  }
-  const roleIds = rolesData?.map((r: any) => r.id) || [];
-  console.log("Role IDs", roleIds);
-  
-  const { data: userRolesData, error: userRolesError } = await supabaseAdmin.from('user_roles').select('user_id').in('role_id', roleIds);
-  if (userRolesError) {
-    console.error("User Roles Error", userRolesError);
-    return [];
-  }
-  const adminUserIds = Array.from(new Set(userRolesData?.map((ur: any) => ur.user_id) || []));
-  console.log("Admin User IDs", adminUserIds);
-  
-  if (adminUserIds.length === 0) return [];
-  
-  // Fix: Removed nested select due to missing direct FK relationship between profiles and user_roles.
-  // Replaced with safer multi-query approach.
   const { data: profilesData, error: profilesError } = await supabaseAdmin
     .from('profiles')
-    .select('id, email, username, name, avatar_url, created_at, status')
-    .in('id', adminUserIds);
+    .select('id, slug, name, avatar_url, created_at, status, role');
 
   if (profilesError) {
     console.error("Profiles Query Error", profilesError);
     return [];
   }
   
-  console.log("Profiles Count", profilesData?.length || 0);
+  const profiles = profilesData || [];
 
-  // Fetch roles independently and map them in JS
-  const { data: allUserRoles, error: allRolesError } = await supabaseAdmin
-    .from('user_roles')
-    .select(`
-      user_id,
-      roles ( id, name, slug )
-    `)
-    .in('user_id', adminUserIds);
+  console.table(
+    profiles.map((p: any) => ({
+      name: p.name,
+      role: p.role,
+      normalized: p.role?.trim().toLowerCase()
+    }))
+  );
 
-  if (allRolesError) {
-    console.error("All User Roles Query Error", allRolesError);
-  }
+  const adminRoles = ['founder', 'admin', 'editor'];
+  
+  const adminProfiles = profiles.filter((p: any) => {
+    const normalizedRole = (p.role ?? "").trim().toLowerCase();
+    return adminRoles.includes(normalizedRole);
+  });
 
-  const userRolesMap: Record<string, any[]> = {};
-  if (allUserRoles) {
-    for (const ur of allUserRoles) {
-      if (ur.roles) {
-        if (!userRolesMap[ur.user_id]) userRolesMap[ur.user_id] = [];
-        if (Array.isArray(ur.roles)) {
-          userRolesMap[ur.user_id].push(...ur.roles);
-        } else {
-          userRolesMap[ur.user_id].push(ur.roles);
-        }
+  let uniqueAdminProfilesMap = new Map();
+  adminProfiles.forEach((p: any) => {
+    if (!uniqueAdminProfilesMap.has(p.id)) {
+      uniqueAdminProfilesMap.set(p.id, p);
+    }
+  });
+  const uniqueAdminProfiles = Array.from(uniqueAdminProfilesMap.values());
+
+  let authUsersMap: Record<string, string> = {};
+  try {
+    const { data: authData } = await supabaseAdmin.auth.admin.listUsers();
+    if (authData?.users) {
+      for (const u of authData.users) {
+        authUsersMap[u.id] = u.email || "";
       }
     }
-  }
+  } catch (e) {}
 
-  return profilesData.map((user: any) => {
-    const roles = userRolesMap[user.id] || [];
+  return uniqueAdminProfiles.map((user: any) => {
+    const email = authUsersMap[user.id] || "";
+    const normalizedRole = (user.role ?? "").trim().toLowerCase();
 
     return {
       id: user.id,
-      email: user.email || "",
-      username: user.username || user.email?.split("@")[0] || "user",
-      name: user.name || user.email?.split("@")[0] || "User",
+      email: email,
+      username: user.slug || email.split("@")[0] || "user",
+      name: user.name || "User",
       avatar_url: user.avatar_url || "",
       created_at: user.created_at,
       status: user.status || "active",
-      roles: roles
+      roles: [{ id: normalizedRole, name: user.role, slug: normalizedRole }]
     };
   });
 }
 
-export async function createAdminMember(email: string, name: string, username: string, password: string, roleSlug: string): Promise<{ success: boolean; error?: string }> {
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
-  if (!isAuthorized) {
-    console.error("Authorization Error: Unauthorized to create staff");
-    return { success: false, error: 'Unauthorized to create staff' };
-  }
+export async function promoteUserToEditor(userId: string): Promise<{ success: boolean; error?: string }> {
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
+  if (!isAuthorized) return { success: false, error: 'Unauthorized to promote users.' };
 
-  if (roleSlug === 'founder') {
-    const isFounder = await checkIfCurrentUserIsFounder();
-    if (!isFounder) {
-      console.error("Authorization Error: Only Founders can create Founder accounts");
-      return { success: false, error: 'Only Founders can create Founder accounts' };
-    }
-  }
-
-  const { data, error } = await supabaseAdmin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: { name, username }
-  });
-
-  if (error || !data.user) {
-    console.error("Auth Create User Error", error);
-    return { success: false, error: error?.message || 'Failed to create staff' };
-  }
-
-  const userId = data.user.id;
-
-  const { error: profileError } = await supabaseAdmin.from('profiles').insert({
-    id: userId,
-    email,
-    name: name,
-    username: username,
-    status: 'active'
-  });
-
-  if (profileError) {
-    console.error("Profiles Insert Error", profileError);
-  }
-
-  const { data: roleData, error: roleError } = await supabaseAdmin.from('roles').select('id').eq('slug', roleSlug).single();
-  if (roleError) {
-    console.error("Role Select Error", roleError);
-  }
+  const supabase = await createClient();
   
-  if (roleData) {
-    const { error: urError } = await supabaseAdmin.from('user_roles').insert({
-      user_id: userId,
-      role_id: roleData.id
-    });
-    if (urError) {
-      console.error("User Roles Insert Error", urError);
-    }
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+  
+  console.log("AUTH USER:", user);
+
+  if (!user) {
+    console.error("Server Action is executing without an authenticated session.");
+    return { success: false, error: 'Unauthenticated session' };
+  }
+
+  const me = await supabase
+    .from("profiles")
+    .select("id,name,role")
+    .eq("id", user.id)
+    .single();
+
+  console.log("CURRENT PROFILE:", me);
+
+  if (me.data?.role?.toLowerCase() !== 'founder' && me.data?.role?.toLowerCase() !== 'admin') {
+    console.error("RLS is denying the update. CURRENT PROFILE.role is not Founder/Admin.");
+  }
+
+  const profile = await supabase
+    .from("profiles")
+    .select("id,name,role")
+    .eq("id", userId)
+    .single();
+
+  console.log("TARGET PROFILE:", profile);
+
+  const result = await supabase
+    .from("profiles")
+    .update({
+      role: 'editor',
+    })
+    .eq("id", userId)
+    .select();
+
+  console.log(result.data);
+  console.log(result.error);
+  
+  if (!result.data || result.data.length === 0) {
+    throw new Error("Database update affected zero rows.");
+  }
+
+  return { success: true };
+}
+
+export async function promoteUserToAdmin(userId: string): Promise<{ success: boolean; error?: string }> {
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
+  if (!isAuthorized) return { success: false, error: 'Unauthorized to promote users.' };
+
+  const supabase = await createClient();
+
+  console.log("TARGET USER:", userId);
+  console.log("ROLE:", 'admin');
+  
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+  
+  console.log("AUTH USER:", user?.id);
+
+  const result = await supabase
+    .from("profiles")
+    .update({
+      role: 'admin',
+    })
+    .eq("id", userId)
+    .select();
+
+  console.log(result.data);
+  console.log(result.error);
+  
+  if (!result.data || result.data.length === 0) {
+    throw new Error("Database update affected zero rows.");
+  }
+
+  return { success: true };
+}
+
+export async function changeEditorialRole(userId: string, newRole: string): Promise<{ success: boolean; error?: string }> {
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
+  if (!isAuthorized) return { success: false, error: 'Unauthorized to change roles.' };
+
+  if (newRole === 'founder') {
+      const isFounder = await checkIfCurrentUserIsFounder();
+      if (!isFounder) return { success: false, error: 'Only Founders can assign the Founder role.' };
+  }
+
+  const supabase = await createClient();
+
+  const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', userId).single();
+  if (targetProfile?.role?.toLowerCase() === 'founder') {
+     return { success: false, error: 'Cannot change the role of a Founder.' };
+  }
+
+  console.log("TARGET USER:", userId);
+  console.log("ROLE:", newRole);
+  
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+  
+  console.log("AUTH USER:", user?.id);
+
+  const result = await supabase
+    .from("profiles")
+    .update({
+      role: newRole,
+    })
+    .eq("id", userId)
+    .select();
+
+  console.log(result.data);
+  console.log(result.error);
+  
+  if (!result.data || result.data.length === 0) {
+    throw new Error("Database update affected zero rows.");
+  }
+
+  return { success: true };
+}
+
+export async function removeEditorialRole(userId: string): Promise<{ success: boolean; error?: string }> {
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
+  if (!isAuthorized) return { success: false, error: 'Unauthorized to remove roles.' };
+
+  const supabase = await createClient();
+
+  const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', userId).single();
+  if (targetProfile?.role?.toLowerCase() === 'founder') {
+     return { success: false, error: 'Cannot change the role of a Founder.' };
+  }
+
+  console.log("TARGET USER:", userId);
+  console.log("ROLE:", null);
+  
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+  
+  console.log("AUTH USER:", user?.id);
+
+  const result = await supabase
+    .from("profiles")
+    .update({
+      role: null as any,
+    })
+    .eq("id", userId)
+    .select();
+
+  console.log(result.data);
+  console.log(result.error);
+  
+  if (!result.data || result.data.length === 0) {
+    throw new Error("Database update affected zero rows.");
   }
 
   return { success: true };
 }
 
 export async function suspendUser(userId: string): Promise<{ success: boolean; error?: string }> {
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
-  if (!isAuthorized) {
-    console.error("Authorization Error: Unauthorized to suspend user");
-    return { success: false, error: 'Unauthorized' };
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
+  if (!isAuthorized) return { success: false, error: 'Unauthorized' };
+
+  const { data: targetProfile } = await supabaseAdmin.from('profiles').select('role').eq('id', userId).single();
+  if (targetProfile?.role?.toLowerCase() === 'founder') {
+     return { success: false, error: 'Cannot suspend a Founder account.' };
   }
 
-  const { data: roleData, error: roleError } = await supabaseAdmin.from('user_roles').select('roles(slug)').eq('user_id', userId);
-  if (roleError) {
-    console.error("User Roles Query Error in suspendUser", roleError);
-  }
-    
-  if (roleData && roleData.some((r: any) => r.roles?.slug === 'founder')) {
-    return { success: false, error: 'Cannot suspend a Founder account.' };
-  }
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, { ban_duration: '87600h' });
+  if (error) return { success: false, error: 'Failed to suspend user' };
 
-  const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-    ban_duration: '87600h'
-  });
-
-  if (error) {
-    console.error("Auth Suspend Error", error);
-    return { success: false, error: 'Failed to suspend user' };
-  }
-
-  const { error: profileError } = await supabaseAdmin.from('profiles').update({ status: 'suspended' }).eq('id', userId);
-  if (profileError) {
-    console.error("Profiles Update Error in suspendUser", profileError);
-  }
-
+  await supabaseAdmin.from('profiles').update({ status: 'suspended' }).eq('id', userId);
   return { success: true };
 }
 
 export async function activateUser(userId: string): Promise<{ success: boolean; error?: string }> {
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
-  if (!isAuthorized) {
-    console.error("Authorization Error: Unauthorized to activate user");
-    return { success: false, error: 'Unauthorized' };
-  }
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
+  if (!isAuthorized) return { success: false, error: 'Unauthorized' };
 
-  const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-    ban_duration: 'none'
-  });
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, { ban_duration: 'none' });
+  if (error) return { success: false, error: 'Failed to activate user' };
 
-  if (error) {
-    console.error("Auth Activate Error", error);
-    return { success: false, error: 'Failed to activate user' };
-  }
-
-  const { error: profileError } = await supabaseAdmin.from('profiles').update({ status: 'active' }).eq('id', userId);
-  if (profileError) {
-    console.error("Profiles Update Error in activateUser", profileError);
-  }
-
+  await supabaseAdmin.from('profiles').update({ status: 'active' }).eq('id', userId);
   return { success: true };
 }
 
 export async function deleteUser(userId: string): Promise<{ success: boolean; error?: string }> {
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder']);
-  if (!isAuthorized) {
-    console.error("Authorization Error: Only founders can delete users");
-    return { success: false, error: 'Only founders can delete users' };
-  }
+  const isAuthorized = await hasAnyRole(['founder']);
+  if (!isAuthorized) return { success: false, error: 'Only founders can delete users' };
 
-  const { data: roleData, error: roleError } = await supabaseAdmin.from('user_roles').select('roles(slug)').eq('user_id', userId);
-  if (roleError) {
-    console.error("User Roles Query Error in deleteUser", roleError);
-  }
-    
-  if (roleData && roleData.some((r: any) => r.roles?.slug === 'founder')) {
-    return { success: false, error: 'Cannot delete a Founder account.' };
+  const { data: targetProfile } = await supabaseAdmin.from('profiles').select('role').eq('id', userId).single();
+  if (targetProfile?.role?.toLowerCase() === 'founder') {
+     return { success: false, error: 'Cannot delete a Founder account.' };
   }
 
   const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
-
-  if (error) {
-    console.error("Auth Delete Error", error);
-    return { success: false, error: 'Failed to delete user' };
-  }
+  if (error) return { success: false, error: 'Failed to delete user' };
 
   return { success: true };
 }
 
 export async function resetStaffPassword(userId: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
-  if (!isAuthorized) {
-    console.error("Authorization Error: Unauthorized to reset password");
-    return { success: false, error: 'Unauthorized to reset password' };
-  }
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
+  if (!isAuthorized) return { success: false, error: 'Unauthorized to reset password' };
 
-  const { data: roleData, error: roleError } = await supabaseAdmin.from('user_roles').select('roles(slug)').eq('user_id', userId);
-  if (roleError) {
-    console.error("User Roles Query Error in resetStaffPassword", roleError);
-  }
-    
-  if (roleData && roleData.some((r: any) => r.roles?.slug === 'founder')) {
+  const { data: targetProfile } = await supabaseAdmin.from('profiles').select('role').eq('id', userId).single();
+  if (targetProfile?.role?.toLowerCase() === 'founder') {
     const isFounderActor = await hasAnyRole(['founder']);
     if (!isFounderActor) {
-      console.error("Authorization Error: Cannot reset a Founder account password.");
       return { success: false, error: 'Cannot reset a Founder account password.' };
     }
   }
 
-  const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-    password: newPassword
-  });
-
-  if (error) {
-    console.error("Auth Update Password Error", error);
-    return { success: false, error: error.message || 'Failed to reset password' };
-  }
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, { password: newPassword });
+  if (error) return { success: false, error: error.message || 'Failed to reset password' };
 
   return { success: true };
 }
@@ -293,24 +333,49 @@ export async function getCommunityUsersList({
   statusFilter?: string;
   sort?: string;
 }) {
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin', 'editor', 'managing_editor']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
   if (!isAuthorized) {
     console.error("Authorization Error: Unauthorized to access community users");
     return { data: [], count: 0 };
   }
 
-  const { data: adminRoles, error: rolesError } = await supabaseAdmin.from('user_roles').select('user_id');
-  if (rolesError) {
-    console.error("User Roles Query Error in getCommunityUsersList", rolesError);
+  const adminRoles = ['founder', 'admin', 'editor'];
+
+  // Fetch all profiles to find which ones are admins
+  const { data: allProfiles, error: allProfilesError } = await supabaseAdmin
+    .from('profiles')
+    .select('id, role');
+
+  if (allProfilesError) {
+    console.error("Profiles Query Error in getCommunityUsersList", allProfilesError);
     return { data: [], count: 0 };
   }
 
-  const adminIds = adminRoles.map((r: any) => r.user_id);
-  const uniqueAdminIds = Array.from(new Set(adminIds));
+  let uniqueAdminIds: string[] = [];
+  if (allProfiles) {
+    uniqueAdminIds = allProfiles
+      .filter((p: any) => adminRoles.includes((p.role ?? "").trim().toLowerCase()))
+      .map((p: any) => p.id);
+  }
+
+  // Fetch Auth Users mapping to attach emails and search by email
+  let authUsersMap: Record<string, string> = {};
+  let userIdsMatchingEmail: string[] = [];
+  try {
+    const { data: authData } = await supabaseAdmin.auth.admin.listUsers();
+    if (authData?.users) {
+      for (const u of authData.users) {
+        authUsersMap[u.id] = u.email || "";
+        if (search && u.email?.toLowerCase().includes(search.toLowerCase())) {
+           userIdsMatchingEmail.push(u.id);
+        }
+      }
+    }
+  } catch (e) {}
 
   let query = supabaseAdmin
     .from('profiles')
-    .select('id, email, name, username, avatar_url, status, created_at', { count: 'exact' });
+    .select('id, slug, name, avatar_url, status, created_at', { count: 'exact' });
 
   if (uniqueAdminIds.length > 0) {
     query = query.not('id', 'in', `(${uniqueAdminIds.join(',')})`);
@@ -318,7 +383,11 @@ export async function getCommunityUsersList({
 
   if (search) {
     const s = `%${search}%`;
-    query = query.or(`name.ilike.${s},email.ilike.${s},username.ilike.${s}`);
+    if (userIdsMatchingEmail.length > 0) {
+      query = query.or(`name.ilike.${s},slug.ilike.${s},id.in.(${userIdsMatchingEmail.join(',')})`);
+    } else {
+      query = query.or(`name.ilike.${s},slug.ilike.${s}`);
+    }
   }
 
   if (statusFilter !== 'All') {
@@ -342,8 +411,23 @@ export async function getCommunityUsersList({
     return { data: [], count: 0 };
   }
 
+  const mappedData = data?.map((user: any) => ({
+    ...user,
+    email: authUsersMap[user.id] || "",
+    username: user.slug || user.name?.replace(/\s+/g, '').toLowerCase() || "user",
+    roles: []
+  })) || [];
+
+  let uniqueDataMap = new Map();
+  mappedData.forEach((user: any) => {
+    if (!uniqueDataMap.has(user.id)) {
+      uniqueDataMap.set(user.id, user);
+    }
+  });
+  const uniqueMappedData = Array.from(uniqueDataMap.values());
+
   return {
-    data: data || [],
+    data: uniqueMappedData,
     count: count || 0
   };
 }

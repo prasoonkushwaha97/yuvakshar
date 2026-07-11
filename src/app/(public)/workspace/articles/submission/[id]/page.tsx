@@ -1,5 +1,5 @@
 import React from "react";
-import { getSubmissionDetails } from "@/lib/actions/contributeActions";
+import { getSubmissionDetails } from "@/lib/actions/userSubmissionActions";
 import { notFound } from "next/navigation";
 import EditorClient from "@/components/editor/SharedEditorClient";
 
@@ -13,14 +13,10 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
     notFound();
   }
 
-  // Extract review notes
-  const reviewNotes = submission.notes || [];
-
   return (
     <EditorClient 
       article={submission} 
       isNew={false} 
-      reviewNotes={reviewNotes} 
       isEditorialRole={false}
     />
   );

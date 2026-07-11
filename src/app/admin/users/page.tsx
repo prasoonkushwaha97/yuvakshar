@@ -1,11 +1,12 @@
 "use client";
-import Image from "next/image";
 import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { deleteUser, getAdminUsersList, AdminUserRecord, checkIfCurrentUserIsFounder, getCommunityUsersList, suspendUser, activateUser } from "@/lib/actions/userManagementActions";
+import { 
+  deleteUser, getAdminUsersList, AdminUserRecord, checkIfCurrentUserIsFounder, 
+  getCommunityUsersList, suspendUser, activateUser, promoteUserToEditor, 
+  promoteUserToAdmin, changeEditorialRole, removeEditorialRole 
+} from "@/lib/actions/userManagementActions";
 import { RoleBadge } from "@/components/ui/RoleBadge";
-import { Search, Eye, MoreVertical, Ban, RefreshCw, ChevronLeft, ChevronRight, Shield, Users, Trash2, CheckCircle } from "lucide-react";
-import { RoleAssignmentModal } from "@/components/founder/RoleAssignmentModal";
-import { RoleRemovalModal } from "@/components/founder/RoleRemovalModal";
+import { Search, Eye, MoreVertical, Ban, RefreshCw, ChevronLeft, ChevronRight, Users, Trash2, CheckCircle, ArrowRightLeft, UserMinus, Shield } from "lucide-react";
 import { UserDetailDrawer } from "@/components/founder/UserDetailDrawer";
 import { AddMemberModal } from "@/components/founder/AddMemberModal";
 import { toast } from "sonner";
@@ -15,7 +16,7 @@ import Avatar from "@/components/shared/Avatar";
 
 export default function UsersManagementPage() {
   const [users, setUsers] = useState<AdminUserRecord[]>([]);
-  const [communityUsers, setCommunityUsers] = useState<any[]>([]);
+  const [communityUsers, setCommunityUsers] = useState<AdminUserRecord[]>([]);
   const [totalCommunityUsers, setTotalCommunityUsers] = useState(0);
   const [loading, setLoading] = useState(true);
   const [communityLoading, setCommunityLoading] = useState(false);
@@ -37,16 +38,11 @@ export default function UsersManagementPage() {
 
   // Modal States
   const [selectedUser, setSelectedUser] = useState<AdminUserRecord | null>(null);
-  const [assignModalOpen, setAssignModalOpen] = useState(false);
-  const [removalModalOpen, setRemovalModalOpen] = useState(false);
   const [createStaffOpen, setCreateStaffOpen] = useState(false);
-  const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
-  const [roleToRemoveId, setRoleToRemoveId] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   
   // Action Menu State
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-
   const [currentUserIsFounder, setCurrentUserIsFounder] = useState(false);
 
   const fetchAdminUsers = async () => {
@@ -73,7 +69,7 @@ export default function UsersManagementPage() {
         search: debouncedSearchTerm,
         statusFilter,
       });
-      setCommunityUsers(data);
+      setCommunityUsers(data as AdminUserRecord[]);
       setTotalCommunityUsers(count);
     } catch (err) {
       toast.error("Failed to fetch community users");
@@ -107,13 +103,12 @@ export default function UsersManagementPage() {
         ? user.status === statusFilter
         : true;
 
-      const isAdmin = user.roles.some(r => ["founder", "eic", "managing_editor", "editor"].includes(r.slug.toLowerCase()));
+      const isAdmin = user.roles.some(r => ["founder", "admin", "editor"].includes(r.slug.toLowerCase()));
         
       return matchesSearch && matchesRole && matchesStatus && isAdmin;
     });
   }, [users, debouncedSearchTerm, roleFilter, statusFilter]);
 
-  // Pagination logic
   const totalPages = userGroup === "admin" 
     ? Math.ceil(filteredAdminUsers.length / usersPerPage)
     : Math.ceil(totalCommunityUsers / usersPerPage);
@@ -128,12 +123,217 @@ export default function UsersManagementPage() {
     setActiveMenu(activeMenu === userId ? null : userId);
   };
 
-  // Close menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => setActiveMenu(null);
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.action-menu-container')) {
+        setActiveMenu(null);
+      }
+    };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
+
+  // --- ACTIONS ---
+
+  const handleMakeEditor = async (user: AdminUserRecord) => {
+    if(!confirm(`Promote User\n\nPromote ${user.name} to Editor?\n\nEditors can:\n• Create Articles\n• Edit Articles\n• Publish Articles\n\nClick OK to Promote.`)) return;
+    const res = await promoteUserToEditor(user.id);
+    if(res.success) {
+      toast.success(`${user.name} promoted to Editor`);
+      const updatedUser = { ...user, roles: [{ id: 'editor', name: 'Editor', slug: 'editor' }] };
+      setCommunityUsers(prev => prev.filter(u => u.id !== user.id));
+      setUsers(prev => prev.some(u => u.id === user.id) ? prev.map(u => u.id === user.id ? updatedUser : u) : [updatedUser, ...prev]);
+    } else {
+      toast.error(res.error || "Failed to promote user");
+    }
+    setActiveMenu(null);
+  };
+
+  const handleMakeAdmin = async (user: AdminUserRecord) => {
+    if(!confirm(`Promote User\n\nPromote ${user.name} to Admin?\n\nClick OK to Promote.`)) return;
+    const res = await promoteUserToAdmin(user.id);
+    if(res.success) {
+      toast.success(`${user.name} promoted to Admin`);
+      const updatedUser = { ...user, roles: [{ id: 'admin', name: 'Admin', slug: 'admin' }] };
+      setCommunityUsers(prev => prev.filter(u => u.id !== user.id));
+      setUsers(prev => prev.some(u => u.id === user.id) ? prev.map(u => u.id === user.id ? updatedUser : u) : [updatedUser, ...prev]);
+    } else {
+      toast.error(res.error || "Failed to promote user");
+    }
+    setActiveMenu(null);
+  };
+
+  const handleChangeRole = async (user: AdminUserRecord, newRole: string) => {
+    if(!confirm(`Change role of ${user.name} to ${newRole === 'admin' ? 'Admin' : 'Editor'}?`)) return;
+    const res = await changeEditorialRole(user.id, newRole);
+    if(res.success) {
+      toast.success(`Role changed to ${newRole}`);
+      const updatedUser = { ...user, roles: [{ id: newRole, name: newRole.charAt(0).toUpperCase() + newRole.slice(1), slug: newRole }] };
+      setUsers(prev => prev.map(u => u.id === user.id ? updatedUser : u));
+    } else {
+      toast.error(res.error || "Failed to change role");
+    }
+    setActiveMenu(null);
+  };
+
+  const handleRemoveRole = async (user: AdminUserRecord) => {
+    if(!confirm(`Remove Editorial Role?\n\nThis user will become a Community User.`)) return;
+    const res = await removeEditorialRole(user.id);
+    if(res.success) {
+      toast.success(`${user.name} removed from Editorial Team`);
+      const updatedUser = { ...user, roles: [] };
+      setUsers(prev => prev.filter(u => u.id !== user.id));
+      setCommunityUsers(prev => prev.some(u => u.id === user.id) ? prev.map(u => u.id === user.id ? updatedUser : u) : [updatedUser, ...prev]);
+    } else {
+      toast.error(res.error || "Failed to remove role");
+    }
+    setActiveMenu(null);
+  };
+
+  const handleSuspendToggle = async (user: AdminUserRecord) => {
+    const isSuspended = user.status === 'suspended';
+    if(isSuspended) {
+      const res = await activateUser(user.id);
+      if(res.success) {
+        toast.success("User activated successfully");
+        const updatedUser = { ...user, status: 'active' };
+        if(userGroup === 'admin') setUsers(prev => prev.map(u => u.id === user.id ? updatedUser : u));
+        else setCommunityUsers(prev => prev.map(u => u.id === user.id ? updatedUser : u));
+      } else {
+        toast.error(res.error || "Failed to activate user");
+      }
+    } else {
+      if(confirm(`Are you sure you want to suspend ${user.name}?`)) {
+        const res = await suspendUser(user.id);
+        if(res.success) {
+          toast.success("User suspended successfully");
+          const updatedUser = { ...user, status: 'suspended' };
+          if(userGroup === 'admin') setUsers(prev => prev.map(u => u.id === user.id ? updatedUser : u));
+          else setCommunityUsers(prev => prev.map(u => u.id === user.id ? updatedUser : u));
+        } else {
+          toast.error(res.error || "Failed to suspend user");
+        }
+      }
+    }
+    setActiveMenu(null);
+  };
+
+  const handleDelete = async (user: AdminUserRecord) => {
+    if(confirm(`Are you sure you want to delete ${user.name}? This cannot be undone.`)) {
+      const res = await deleteUser(user.id);
+      if(res.success) {
+        toast.success("User deleted successfully");
+        if(userGroup === 'admin') setUsers(prev => prev.filter(u => u.id !== user.id));
+        else setCommunityUsers(prev => prev.filter(u => u.id !== user.id));
+      } else {
+        toast.error(res.error || "Failed to delete user");
+      }
+    }
+    setActiveMenu(null);
+  };
+
+  const renderActionMenu = (user: AdminUserRecord) => {
+    const isFounder = user.roles?.some((r: any) => r.slug === 'founder');
+    const isEditor = user.roles?.some((r: any) => r.slug === 'editor');
+    const isAdmin = user.roles?.some((r: any) => r.slug === 'admin');
+
+    return (
+      <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-50 py-1 overflow-hidden">
+        <button
+          onClick={() => { setSelectedUser(user); setDrawerOpen(true); setActiveMenu(null); }}
+          className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center"
+        >
+          <Eye className="w-4 h-4 mr-2 text-slate-400" />
+          View Profile
+        </button>
+        
+        {isFounder ? (
+          <>
+            <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+            <button
+              onClick={() => handleRemoveRole(user)}
+              className="w-full text-left px-4 py-2 text-sm text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 flex items-center"
+            >
+              <UserMinus className="w-4 h-4 mr-2" />
+              Remove From Editorial Team
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+            
+            {userGroup === 'community' ? (
+              <>
+                <button
+                  onClick={() => handleMakeEditor(user)}
+                  className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center"
+                >
+                  <Shield className="w-4 h-4 mr-2 text-primary" />
+                  Make Editor
+                </button>
+                <button
+                  onClick={() => handleMakeAdmin(user)}
+                  className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center"
+                >
+                  <Shield className="w-4 h-4 mr-2 text-primary" />
+                  Make Admin
+                </button>
+              </>
+            ) : (
+              <>
+                {isEditor && (
+                  <button
+                    onClick={() => handleChangeRole(user, 'admin')}
+                    className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center"
+                  >
+                    <ArrowRightLeft className="w-4 h-4 mr-2 text-slate-400" />
+                    Change Role → Admin
+                  </button>
+                )}
+                {isAdmin && (
+                  <button
+                    onClick={() => handleChangeRole(user, 'editor')}
+                    className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center"
+                  >
+                    <ArrowRightLeft className="w-4 h-4 mr-2 text-slate-400" />
+                    Change Role → Editor
+                  </button>
+                )}
+                <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+                <button
+                  onClick={() => handleRemoveRole(user)}
+                  className="w-full text-left px-4 py-2 text-sm text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 flex items-center"
+                >
+                  <UserMinus className="w-4 h-4 mr-2" />
+                  Remove From Editorial Team
+                </button>
+              </>
+            )}
+
+            <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+
+            <button
+              onClick={() => handleSuspendToggle(user)}
+              className={`w-full text-left px-4 py-2 text-sm flex items-center ${user.status === 'suspended' ? 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20' : 'text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20'}`}
+            >
+              {user.status === 'suspended' ? <CheckCircle className="w-4 h-4 mr-2" /> : <Ban className="w-4 h-4 mr-2" />}
+              {user.status === 'suspended' ? 'Activate User' : 'Suspend User'}
+            </button>
+            {(currentUserIsFounder || userGroup === 'community') && (
+              <button
+                onClick={() => handleDelete(user)}
+                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete User
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6 pb-20">
@@ -173,7 +373,7 @@ export default function UsersManagementPage() {
               className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors shrink-0"
             >
               <UserPlus className="w-4 h-4" />
-              Add Member
+              Promote Member
             </button>
           )}
 
@@ -199,8 +399,7 @@ export default function UsersManagementPage() {
               >
                 <option value="All">All Roles</option>
                 <option value="founder">Founder</option>
-                <option value="eic">Editor-in-Chief</option>
-                <option value="managing_editor">Managing Editor</option>
+                <option value="admin">Admin</option>
                 <option value="editor">Editor</option>
               </select>
             )}
@@ -218,21 +417,21 @@ export default function UsersManagementPage() {
         </div>
       </div>
 
-      {/* Users Table (Desktop) */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden hidden md:block">
-        <div className="overflow-x-auto">
+      {/* Users Table */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hidden md:block">
+        <div className="w-full">
           <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
             <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="px-6 py-4">User</th>
+                <th className="px-6 py-4 rounded-tl-xl">User</th>
                 <th className="px-6 py-4">Roles</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Last Active</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                <th className="px-6 py-4 text-right rounded-tr-xl">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {loading ? (
+              {loading || (userGroup === 'community' && communityLoading) ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
@@ -252,7 +451,7 @@ export default function UsersManagementPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FF5A1F] to-amber-400 p-[1.5px] shrink-0">
                           <div className="relative w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center overflow-hidden">
-                            <Avatar url={user.avatar_url} alt={user.name} className="w-full h-full rounded-full" />
+                            <Avatar url={user.avatar_url} alt={user.name} name={user.name} className="w-full h-full" />
                           </div>
                         </div>
                         <div>
@@ -284,116 +483,15 @@ export default function UsersManagementPage() {
                     <td className="px-6 py-4 text-xs">
                       {user.last_sign_in_at ? formatDistanceToNow(new Date(user.last_sign_in_at), { addSuffix: true }) : 'Never'}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="relative inline-block text-left" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          onClick={() => handleActionClick(user.id)}
-                          className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
-                        >
-                          <MoreVertical className="w-5 h-5" />
-                        </button>
-                        
-                        {activeMenu === user.id && (
-                          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-10 py-1 overflow-hidden">
-                            <button
-                              onClick={() => {
-                                setSelectedUser(user);
-                                setDrawerOpen(true);
-                                setActiveMenu(null);
-                              }}
-                              className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center"
-                            >
-                              <Eye className="w-4 h-4 mr-2 text-slate-400" />
-                              View Profile
-                            </button>
-                            {!user.roles?.some((r: any) => r.slug === 'founder') && (
-                              <button
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  setAssignModalOpen(true);
-                                  setActiveMenu(null);
-                                }}
-                                className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center"
-                              >
-                                <Shield className="w-4 h-4 mr-2 text-slate-400" />
-                                Manage Roles
-                              </button>
-                            )}
-                            <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
-                            {userGroup === 'admin' && (
-                              <button
-                                onClick={() => {
-                                  toast.info("Password reset logic pending");
-                                  setActiveMenu(null);
-                                }}
-                                className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center"
-                              >
-                                <RefreshCw className="w-4 h-4 mr-2 text-slate-400" />
-                                Reset Password
-                              </button>
-                            )}
-                            {!user.roles?.some((r: any) => r.slug === 'founder') && (
-                              user.status === 'suspended' ? (
-                                <button
-                                  onClick={async () => {
-                                    const res = await activateUser(user.id);
-                                    if(res.success) {
-                                      toast.success("User activated successfully");
-                                      userGroup === 'admin' ? fetchAdminUsers() : fetchCommunityUsers();
-                                    } else {
-                                      toast.error(res.error || "Failed to activate user");
-                                    }
-                                    setActiveMenu(null);
-                                  }}
-                                  className="w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center"
-                                >
-                                  <CheckCircle className="w-4 h-4 mr-2" />
-                                  Activate User
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={async () => {
-                                    if(confirm("Are you sure you want to suspend this user?")) {
-                                      const res = await suspendUser(user.id);
-                                      if(res.success) {
-                                        toast.success("User suspended successfully");
-                                        userGroup === 'admin' ? fetchAdminUsers() : fetchCommunityUsers();
-                                      } else {
-                                        toast.error(res.error || "Failed to suspend user");
-                                      }
-                                    }
-                                    setActiveMenu(null);
-                                  }}
-                                  className="w-full text-left px-4 py-2 text-sm text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 flex items-center"
-                                >
-                                  <Ban className="w-4 h-4 mr-2" />
-                                  Suspend User
-                                </button>
-                              )
-                            )}
-                            {(currentUserIsFounder || userGroup === 'community') && !user.roles?.some((r: any) => r.slug === 'founder') && (
-                              <button
-                                onClick={async () => {
-                                  if(confirm("Are you sure you want to delete this user?")) {
-                                    const res = await deleteUser(user.id);
-                                    if(res.success) {
-                                      toast.success("User deleted successfully");
-                                      userGroup === 'admin' ? fetchAdminUsers() : fetchCommunityUsers();
-                                    } else {
-                                      toast.error(res.error || "Failed to delete user");
-                                    }
-                                  }
-                                  setActiveMenu(null);
-                                }}
-                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Delete User
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                    <td className="px-6 py-4 text-right relative action-menu-container">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleActionClick(user.id); }}
+                        className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
+                      >
+                        <MoreVertical className="w-5 h-5" />
+                      </button>
+                      
+                      {activeMenu === user.id && renderActionMenu(user)}
                     </td>
                   </tr>
                 ))
@@ -405,7 +503,7 @@ export default function UsersManagementPage() {
 
       {/* Mobile Responsive Cards */}
       <div className="md:hidden space-y-4">
-        {loading ? (
+        {loading || (userGroup === 'community' && communityLoading) ? (
           <div className="py-12 text-center text-slate-500 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
             Loading users...
@@ -421,7 +519,7 @@ export default function UsersManagementPage() {
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FF5A1F] to-amber-400 p-[1.5px] shrink-0">
                     <div className="relative w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center overflow-hidden">
-                      <Avatar url={user.avatar_url} alt={user.name} className="w-full h-full rounded-full" />
+                      <Avatar url={user.avatar_url} alt={user.name} name={user.name} className="w-full h-full" />
                     </div>
                   </div>
                   <div>
@@ -430,7 +528,7 @@ export default function UsersManagementPage() {
                   </div>
                 </div>
                 
-                <div className="relative" onClick={(e) => e.stopPropagation()}>
+                <div className="relative action-menu-container" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => handleActionClick(user.id)}
                     className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md transition-colors"
@@ -438,94 +536,7 @@ export default function UsersManagementPage() {
                     <MoreVertical className="w-5 h-5" />
                   </button>
                   
-                  {activeMenu === user.id && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-10 py-1 overflow-hidden">
-                      <button
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setDrawerOpen(true);
-                          setActiveMenu(null);
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center"
-                      >
-                        <Eye className="w-4 h-4 mr-2 text-slate-400" />
-                        View Profile
-                      </button>
-                      {!user.roles?.some((r: any) => r.slug === 'founder') && (
-                        <button
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setAssignModalOpen(true);
-                            setActiveMenu(null);
-                          }}
-                          className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center"
-                        >
-                          <Shield className="w-4 h-4 mr-2 text-slate-400" />
-                          Manage Roles
-                        </button>
-                      )}
-                      <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
-                      {!user.roles?.some((r: any) => r.slug === 'founder') && (
-                        user.status === 'suspended' ? (
-                          <button
-                            onClick={async () => {
-                              const res = await activateUser(user.id);
-                              if(res.success) {
-                                toast.success("User activated successfully");
-                                userGroup === 'admin' ? fetchAdminUsers() : fetchCommunityUsers();
-                              } else {
-                                toast.error(res.error || "Failed to activate user");
-                              }
-                              setActiveMenu(null);
-                            }}
-                            className="w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center"
-                          >
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Activate User
-                          </button>
-                        ) : (
-                          <button
-                            onClick={async () => {
-                              if(confirm("Are you sure you want to suspend this user?")) {
-                                const res = await suspendUser(user.id);
-                                if(res.success) {
-                                  toast.success("User suspended successfully");
-                                  userGroup === 'admin' ? fetchAdminUsers() : fetchCommunityUsers();
-                                } else {
-                                  toast.error(res.error || "Failed to suspend user");
-                                }
-                              }
-                              setActiveMenu(null);
-                            }}
-                            className="w-full text-left px-4 py-2 text-sm text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 flex items-center"
-                          >
-                            <Ban className="w-4 h-4 mr-2" />
-                            Suspend User
-                          </button>
-                        )
-                      )}
-                      {(currentUserIsFounder || userGroup === 'community') && !user.roles?.some((r: any) => r.slug === 'founder') && (
-                        <button
-                          onClick={async () => {
-                            if(confirm("Are you sure you want to delete this user?")) {
-                              const res = await deleteUser(user.id);
-                              if(res.success) {
-                                toast.success("User deleted successfully");
-                                userGroup === 'admin' ? fetchAdminUsers() : fetchCommunityUsers();
-                              } else {
-                                toast.error(res.error || "Failed to delete user");
-                              }
-                            }
-                            setActiveMenu(null);
-                          }}
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete User
-                        </button>
-                      )}
-                    </div>
-                  )}
+                  {activeMenu === user.id && renderActionMenu(user)}
                 </div>
               </div>
               <div className="flex flex-wrap gap-1 mb-3">
@@ -556,7 +567,7 @@ export default function UsersManagementPage() {
       </div>
 
       {/* Pagination */}
-      {!loading && (userGroup === 'admin' ? filteredAdminUsers.length > 0 : totalCommunityUsers > 0) && (
+      {!(loading || (userGroup === 'community' && communityLoading)) && (userGroup === 'admin' ? filteredAdminUsers.length > 0 : totalCommunityUsers > 0) && (
         <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950/50 rounded-b-xl">
           <div className="text-sm text-slate-500">
             Showing <span className="font-medium text-slate-900 dark:text-white">{((currentPage - 1) * usersPerPage) + 1}</span> to <span className="font-medium text-slate-900 dark:text-white">{Math.min(currentPage * usersPerPage, userGroup === 'admin' ? filteredAdminUsers.length : totalCommunityUsers)}</span> of <span className="font-medium text-slate-900 dark:text-white">{userGroup === 'admin' ? filteredAdminUsers.length : totalCommunityUsers}</span> results
@@ -583,41 +594,22 @@ export default function UsersManagementPage() {
         </div>
       )}
       
-      {/* Modals & Drawers */}
+      {/* Drawers & Modals */}
       {selectedUser && (
-        <>
-          <RoleAssignmentModal
-            open={assignModalOpen}
-            onOpenChange={setAssignModalOpen}
-            targetUserId={selectedUser!.id}
-            targetUserName={selectedUser!.name}
-            currentRoles={selectedUser!.roles}
-            onSuccess={userGroup === 'admin' ? fetchAdminUsers : fetchCommunityUsers}
-          />
-          <UserDetailDrawer
-            open={drawerOpen}
-            onOpenChange={setDrawerOpen}
-            user={selectedUser!}
-          />
-          <RoleRemovalModal
-            open={removalModalOpen}
-            onOpenChange={setRemovalModalOpen}
-            targetUserId={selectedUser!.id}
-            targetUserName={selectedUser!.name}
-            roleToRemoveId={roleToRemoveId}
-            onSuccess={() => {
-              userGroup === 'admin' ? fetchAdminUsers() : fetchCommunityUsers();
-              setDrawerOpen(false);
-            }}
-          />
-        </>
+        <UserDetailDrawer
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          user={selectedUser!}
+        />
       )}
 
       <AddMemberModal 
         open={createStaffOpen} 
         onOpenChange={setCreateStaffOpen} 
-        onSuccess={fetchAdminUsers} 
-        currentUserIsFounder={currentUserIsFounder}
+        onSuccess={(promotedUser) => {
+           setCommunityUsers(prev => prev.filter(u => u.id !== promotedUser.id));
+           setUsers(prev => prev.some(u => u.id === promotedUser.id) ? prev.map(u => u.id === promotedUser.id ? promotedUser : u) : [promotedUser, ...prev]);
+        }} 
       />
     </div>
   );

@@ -20,8 +20,7 @@ export default function CreateBottomSheet({ isOpen, onClose }: CreateBottomSheet
   
   const isCommunity = pathname?.startsWith("/community");
   const isAdmin = currentUser?.role === "Founder" || 
-                  currentUser?.role === "Editor-in-Chief" || 
-                  currentUser?.role === "Managing Editor" || 
+                  currentUser?.role === "Admin" || 
                   currentUser?.role === "Editor";
 
   // Close on Escape key

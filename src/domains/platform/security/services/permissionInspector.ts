@@ -8,17 +8,17 @@ export class PermissionInspector {
    */
   public async inspectUser(userId: string) {
     // fallback data for debugging purposes
-    const isSuperAdmin = userId === "admin-1";
+    const isAdmin = userId === "admin-1";
 
     return {
       userId,
-      assignedRoles: isSuperAdmin ? ["SuperAdmin"] : ["योगदानकर्ता", "Subscriber"],
-      effectivePermissions: isSuperAdmin ? ["*"] : [
+      assignedRoles: isAdmin ? ["Admin"] : ["Normal User"],
+      effectivePermissions: isAdmin ? ["*"] : [
         "article:read",
         "article:write",
         "comment:write"
       ],
-      deniedPermissions: isSuperAdmin ? [] : [
+      deniedPermissions: isAdmin ? [] : [
         "article:publish",
         "article:delete",
         "user:manage",

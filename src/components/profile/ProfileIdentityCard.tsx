@@ -31,7 +31,7 @@ export default function ProfileIdentityCard({ user }: ProfileIdentityCardProps) 
           <Avatar 
             url={user.avatar_url} 
             alt={user.name || ""} 
-            className="w-full h-full transition-transform duration-500 group-hover:scale-105" 
+            className="w-full h-full" name={user.name || ""} 
           />
         </div>
 

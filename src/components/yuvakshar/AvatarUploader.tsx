@@ -7,6 +7,7 @@ import { Camera, Loader2, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import MediaUploadModal from "../media/MediaUploadModal";
 import { STORAGE_CONFIG } from "@/config/storage.config";
+import Avatar from "../shared/Avatar";
 
 interface AvatarUploaderProps {
   currentAvatarUrl: string;
@@ -35,18 +36,11 @@ export default function AvatarUploader({ currentAvatarUrl }: AvatarUploaderProps
     <>
       <div className="relative group w-24 h-24 sm:w-32 sm:h-32">
         <div className="w-full h-full rounded-full overflow-hidden border-4 border-white shadow-lg bg-slate-100">
-          {currentAvatarUrl ? (
-            <Image
-              src={currentAvatarUrl}
-              alt="Profile"
-              fill
-              className="object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400">
-              <ImageIcon className="w-10 h-10" />
-            </div>
-          )}
+          <Avatar 
+            url={currentAvatarUrl} 
+            name={currentUser?.name || ""} 
+            className="w-full h-full" 
+          />
         </div>
         
         {/* Upload Overlay Button */}

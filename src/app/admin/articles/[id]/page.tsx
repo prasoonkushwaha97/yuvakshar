@@ -1,6 +1,5 @@
 import React from "react";
 import { getArticleById } from "@/lib/actions/articleActions";
-import { getReviewNotes } from "@/lib/actions/reviewActions";
 import { hasPermission } from "@/lib/rbacService";
 import { redirect } from "next/navigation";
 import EditorClient from "@/components/editor/SharedEditorClient";
@@ -17,21 +16,17 @@ export default async function ArticleEditor({ params }: { params: Promise<{ id: 
   }
 
   let article = null;
-  let reviewNotes: any[] = [];
-
   if (!isNew) {
     article = await getArticleById(id);
     if (!article) {
       redirect("/admin/articles");
     }
-    reviewNotes = await getReviewNotes(id);
   }
 
   return (
     <EditorClient 
       article={article} 
       isNew={isNew} 
-      reviewNotes={reviewNotes} 
       isEditorialRole={true}
     />
   );

@@ -259,7 +259,7 @@ export default function AppHeader({ categories = [] }: { categories?: any[] }) {
                 className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-500 hover:text-[#f97316] transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Open profile actions"
               >
-                <Avatar url={currentUser?.avatar_url} alt="Profile" className="h-10 w-10 md:h-10 md:w-10 sm:h-9 sm:w-9 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0" />
+                <Avatar url={currentUser?.avatar_url} name={currentUser?.name} alt="Profile" className="h-10 w-10 md:h-10 md:w-10 sm:h-9 sm:w-9 flex-shrink-0" />
               </button>
             </div>
           </div>

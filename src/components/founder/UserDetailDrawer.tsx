@@ -46,7 +46,7 @@ export function UserDetailDrawer({ open, onOpenChange, user }: Props) {
         {/* Header Profile */}
         <div className="flex items-center space-x-4">
           <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden shrink-0">
-            <Avatar url={user.avatar_url} alt={user.name} className="w-full h-full rounded-full" />
+            <Avatar url={user.avatar_url} alt={user.name} name={user.name} className="w-full h-full" />
           </div>
           <div>
             <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">{user.name}</h3>

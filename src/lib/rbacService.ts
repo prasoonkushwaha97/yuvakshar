@@ -42,7 +42,6 @@ export const getCurrentUserRoles = cache(async (): Promise<Role[]> => {
   const user = await getCurrentUser();
   if (!user) return [];
 
-  // PHASE 2: FOUNDER SAFETY SYSTEM (Fallback Mechanism)
   if (user.email === FOUNDER_EMAIL || user.email === 'antigravity.validation@gmail.com') {
     return [{
       id: 'founder-fallback-id',
@@ -54,38 +53,25 @@ export const getCurrentUserRoles = cache(async (): Promise<Role[]> => {
 
   try {
     const supabase = await createClient();
-    // Resolve user_roles -> roles
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select(`
-        roles (
-          id,
-          name,
-          slug,
-          is_system_role
-        )
-      `)
-      .eq('user_id', user.id);
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
 
-    if (error) {
-      console.error("Error fetching user roles:", error);
+    if (error || !profile?.role) {
+      console.error("Error fetching user role from profile:", error);
       return [];
     }
 
-    // Extract roles from the join
-    const roles: Role[] = [];
-    if (data) {
-      for (const item of data) {
-        if (item.roles) {
-          if (Array.isArray(item.roles)) {
-            roles.push(...(item.roles as Role[]));
-          } else {
-            roles.push(item.roles as Role);
-          }
-        }
-      }
-    }
-    return roles;
+    const normalizedSlug = profile.role.trim().toLowerCase();
+
+    return [{
+      id: normalizedSlug,
+      name: profile.role,
+      slug: normalizedSlug,
+      is_system_role: true
+    }];
   } catch (error) {
     console.error("Exception fetching user roles:", error);
     return [];
@@ -97,10 +83,10 @@ export const getCurrentUserPermissions = cache(async (): Promise<Permission[]> =
   const user = await getCurrentUser();
   if (!user) return [];
 
-  // PHASE 2: FOUNDER SAFETY SYSTEM (Fallback)
-  if (user.email === FOUNDER_EMAIL || user.email === 'antigravity.validation@gmail.com') {
+  // Allow all permissions for founder
+  const isFounder = user.email === FOUNDER_EMAIL || user.email === 'antigravity.validation@gmail.com';
+  if (isFounder) {
     const supabase = await createClient();
-    // Fetch all permissions for the emergency founder
     const { data } = await supabase.from('permissions').select('*');
     return (data as Permission[]) || [];
   }
@@ -109,51 +95,16 @@ export const getCurrentUserPermissions = cache(async (): Promise<Permission[]> =
     const roles = await getCurrentUserRoles();
     if (roles.length === 0) return [];
     
-    const roleIds = roles.map(r => r.id);
-    
-    const supabase = await createClient();
-    // Resolve: user_roles -> role_permissions -> permissions
-    const { data, error } = await supabase
-      .from('role_permissions')
-      .select(`
-        permissions (
-          id,
-          name,
-          slug,
-          category
-        )
-      `)
-      .in('role_id', roleIds);
-
-    if (error) {
-      console.error("Error fetching user permissions:", error);
-      return [];
-    }
-
+    // Fallback: Editor/Admin have built-in permissions when not using role_permissions DB table
     const permissions: Permission[] = [];
-    if (data) {
-      for (const item of data) {
-        if (item.permissions) {
-          if (Array.isArray(item.permissions)) {
-            permissions.push(...(item.permissions as Permission[]));
-          } else {
-            permissions.push(item.permissions as Permission);
-          }
-        }
-      }
+    const roleSlug = roles[0].slug;
+
+    if (['editor', 'admin', 'founder'].includes(roleSlug)) {
+        permissions.push({ id: 'manage-articles', name: 'Manage Articles', slug: 'manage-articles', category: 'editorial' });
+        permissions.push({ id: 'manage-users', name: 'Manage Users', slug: 'manage-users', category: 'admin' });
     }
-    
-    // Deduplicate permissions by slug
-    const uniquePermissions: Permission[] = [];
-    const seen = new Set<string>();
-    for (const p of permissions) {
-      if (!seen.has(p.slug)) {
-        seen.add(p.slug);
-        uniquePermissions.push(p);
-      }
-    }
-    
-    return uniquePermissions;
+
+    return permissions;
 
   } catch (error) {
     console.error("Exception fetching user permissions:", error);
@@ -182,13 +133,13 @@ export const hasPermission = async (permissionSlug: string): Promise<boolean> =>
 };
 
 // 5. Role Resolution Helper
-const ROLE_PRIORITY = ['Founder', 'प्रशासन', 'Moderator', 'Editor', 'Author', 'Member'];
+const ROLE_PRIORITY = ['Founder', 'Admin', 'Editor'];
 
-export const getHighestRole = (roles: { name: string }[]): string => {
-  if (!roles || roles.length === 0) return 'Member';
+export const getHighestRole = (roles: { name: string }[]): string | null => {
+  if (!roles || roles.length === 0) return null;
   
   let highestIndex = ROLE_PRIORITY.length;
-  let highestRole = 'Member';
+  let highestRole: string | null = null;
   
   for (const role of roles) {
     // Exact match

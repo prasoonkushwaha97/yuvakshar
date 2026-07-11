@@ -21,7 +21,7 @@ export interface CommunityGroupMember {
   id: string;
   group_id: string;
   user_id: string;
-  role: "संस्थापक" | "प्रशासन" | "Moderator" | "Mentor" | "Member";
+  role: "Founder" | "Admin" | "Editor" | "Normal User";
   joined_at: string;
 }
 
@@ -171,7 +171,7 @@ export const fetchPosts = async (groupId?: string): Promise<CommunityPost[]> => 
     user_id: p.user_id,
     user_name: p.profiles?.name || "Unknown User",
     user_avatar: p.profiles?.avatar_url,
-    user_rank: p.profiles?.role || "Member",
+    user_rank: p.profiles?.role || "Normal User",
     group_id: p.group_id,
     group_name: p.groups?.name,
     title: p.title,
@@ -215,7 +215,7 @@ export const fetchUserPosts = async (userId: string): Promise<CommunityPost[]> =
     user_id: p.user_id,
     user_name: p.profiles?.name || "Unknown User",
     user_avatar: p.profiles?.avatar_url,
-    user_rank: p.profiles?.role || "Member",
+    user_rank: p.profiles?.role || "Normal User",
     group_id: p.group_id,
     group_name: p.groups?.name,
     title: p.title,

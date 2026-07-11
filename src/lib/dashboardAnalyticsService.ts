@@ -52,7 +52,7 @@ export const dashboardAnalyticsService = {
     };
 
     const getEditorialCount = async () => {
-      const { data, error } = await supabaseAdmin.from('user_roles').select('user_id, roles!inner(slug)').in('roles.slug', ['founder', 'co_founder', 'super_admin', 'admin', 'editor_in_chief', 'managing_editor', 'editor']);
+      const { data, error } = await supabaseAdmin.from('user_roles').select('user_id, roles!inner(slug)').in('roles.slug', ['founder', 'admin', 'editor']);
       if (!data || error) return 0;
       const uniqueUsers = new Set(data.map((d: any) => d.user_id));
       return uniqueUsers.size;

@@ -7,6 +7,8 @@ import Link from "next/link";
 import { MoreHorizontal, Heart, MessageCircle, Repeat2, Bookmark, Share, Globe, Users, Trash2, Edit3, ShieldAlert, EyeOff, Pin, Lock } from "lucide-react";
 import { CH_CLASS, CH_COLORS, CH_ANIMATIONS, CH_RADIUS } from "../shared/design";
 import { toggleLikePost, deletePost, toggleBookmarkPost, reportPost, pinPost, lockPost, hidePost } from "@/lib/actions/chaupalFeedActions";
+import Avatar from "@/components/shared/Avatar";
+
 
 interface FeedCardProps {
   post: {
@@ -89,7 +91,7 @@ export default function FeedCard({ post, onDelete }: FeedCardProps) {
   
   const { currentUser } = useCms();
   const isOwner = currentUser?.id === post.author.id;
-  const isAdmin = currentUser?.role === 'Founder' || currentUser?.role === 'Editor-in-Chief';
+  const isAdmin = currentUser?.role === 'Founder' || currentUser?.role === 'Admin';
 
   if (isHidden) return null;
 
@@ -172,13 +174,7 @@ export default function FeedCard({ post, onDelete }: FeedCardProps) {
         <div className="flex items-center gap-3 w-full">
           {/* Avatar */}
           <AuthorLink author={post.author as any} className="relative w-[48px] h-[48px] rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700 hover:opacity-90 transition-opacity">
-            {post.author.avatarUrl ? (
-              <Image src={post.author.avatarUrl} alt={post.author.name} fill className="object-cover" />
-            ) : (
-              <span className="flex items-center justify-center w-full h-full font-serif font-bold text-slate-500 text-lg">
-                {post.author.name.charAt(0).toUpperCase()}
-              </span>
-            )}
+            <Avatar url={post.author.avatarUrl} name={post.author.name} className="w-full h-full" />
           </AuthorLink>
           
           {/* Info */}

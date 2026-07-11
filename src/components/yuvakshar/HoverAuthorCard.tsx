@@ -100,7 +100,7 @@ export default function HoverAuthorCard({ author, children }: HoverAuthorCardPro
       <div className="px-4 pb-5 relative -mt-8">
         <div className="flex justify-between items-end mb-3">
           <AuthorLink author={author as any} className="w-[64px] h-[64px] rounded-full bg-slate-200 dark:bg-slate-800 border-4 border-white dark:border-[#070B14] shrink-0 overflow-hidden flex items-center justify-center relative z-10 hover:opacity-90 transition-opacity">
-            <Avatar url={author.avatar_url} alt={author.name} className="w-full h-full object-cover" />
+            <Avatar url={author.avatar_url} alt={author.name} name={author.name} className="w-full h-full" />
           </AuthorLink>
         </div>
 

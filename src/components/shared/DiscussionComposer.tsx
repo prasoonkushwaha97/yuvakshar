@@ -152,7 +152,7 @@ export default function DiscussionComposer({
 
       <div className="flex gap-3 md:gap-4 relative">
         <div className="shrink-0 hidden sm:block pt-1">
-          <Avatar url={currentUser.avatarUrl} alt={currentUser.name} className="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800" />
+          <Avatar url={currentUser?.avatarUrl} name={currentUser?.name} className="w-10 h-10" />
         </div>
         <div className="flex-1 flex flex-col pt-1 relative">
           <textarea

@@ -5,7 +5,7 @@ import { ArrowLeft, Save, Settings, Check, Clock, Globe, Calendar, Image as Imag
 import Link from "next/link";
 import { toast } from "sonner";
 import { createArticle, updateArticle, updateArticleStatus } from "@/lib/actions/articleActions";
-import { submitContributorArticle } from "@/lib/actions/contributeActions";
+import { submitUserArticle } from "@/lib/actions/userSubmissionActions";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArticleStatus } from "@/types/content";
@@ -17,7 +17,7 @@ import { getCategories } from "@/lib/actions/categoryActions";
 import { getAuthorsForSelect } from "@/lib/actions/articleActions";
 import { Category } from "@/types/content";
 
-export default function EditorClient({ article, isNew, reviewNotes, isEditorialRole = false }: { article: any, isNew: boolean, reviewNotes: any[], isEditorialRole?: boolean }) {
+export default function EditorClient({ article, isNew, isEditorialRole = false }: { article: any, isNew: boolean, isEditorialRole?: boolean }) {
   const router = useRouter();
   const [title, setTitle] = useState(article?.title_hi || "");
   const [subtitle, setSubtitle] = useState(article?.summary_hi || article?.summary || "");
@@ -117,7 +117,7 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
     try {
       if (isEditorialRole) {
         if (isNew) {
-          await createArticle({ title_hi: title, summary_hi: subtitle, content: content, status: saveStatus as any, cover_image: coverImage, author_id: author });
+          await createArticle({ title_hi: title, summary_hi: subtitle, content: content, status: saveStatus as any, cover_image: coverImage, author_id: author, category_id: category });
           toast.success("Draft created successfully. Redirecting...");
           router.push("/admin/articles");
         } else {
@@ -132,6 +132,7 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
               access_level: visibility,
               tags: tags,
               author_id: author,
+              category_id: category,
               status: saveStatus as any
           });
           toast.success("Changes saved successfully");
@@ -149,7 +150,7 @@ export default function EditorClient({ article, isNew, reviewNotes, isEditorialR
         if (!isNew && article?.id) formData.append("id", article.id);
         
         const isDraft = saveStatus === ArticleStatus.Draft;
-        const result = await submitContributorArticle(formData, isDraft);
+        const result = await submitUserArticle(formData, isDraft);
         
         if (result.error) {
           throw new Error(result.error);

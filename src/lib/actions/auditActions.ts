@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { hasAnyRole } from "@/lib/rbacService";
 
 export async function getAuditLogsForUser(userId: string) {
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
   if (!isAuthorized) {
     throw new Error("Unauthorized to access audit logs");
   }
@@ -24,7 +24,7 @@ export async function getAuditLogsForUser(userId: string) {
 }
 
 export async function getGlobalAuditLogs() {
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin', 'admin']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
   if (!isAuthorized) {
     throw new Error("Unauthorized to access audit logs");
   }

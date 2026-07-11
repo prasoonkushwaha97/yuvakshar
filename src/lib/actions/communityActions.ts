@@ -11,7 +11,7 @@ import crypto from "crypto";
  * Automatically grants access if the user is a Platform Founder/Super Admin.
  */
 export async function hasCommunityRole(communityId: string, allowedRoles: string[]) {
-  const isPlatformAdmin = await hasAnyRole(['founder', 'super_admin']);
+  const isPlatformAdmin = await hasAnyRole(['founder', 'admin']);
   if (isPlatformAdmin) return true;
 
   const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
@@ -36,7 +36,7 @@ export async function isCommunityOwner(communityId: string) {
  * MUTATIONS
  */
 export async function createCommunity(name: string, description: string) {
-  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
@@ -119,8 +119,8 @@ export async function joinCommunity(communityId: string) {
   return true;
 }
 
-export async function inviteMember(communityId: string, email: string, role: 'moderator' | 'editor' | 'member') {
-  const isAuthorized = await hasCommunityRole(communityId, ['owner', 'moderator']);
+export async function inviteMember(communityId: string, email: string, role: 'admin' | 'editor' | 'member') {
+  const isAuthorized = await hasCommunityRole(communityId, ['owner', 'admin']);
   if (!isAuthorized) throw new Error("Only Owners and Moderators can invite members.");
 
   const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
@@ -187,13 +187,13 @@ export async function acceptInvitation(token: string) {
 }
 
 export async function removeMember(communityId: string, targetUserId: string) {
-  const isPlatformAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  const isPlatformAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
   if (!isPlatformAuthorized) throw new Error("Unauthorized action.");
 
-  const isAuthorized = await hasCommunityRole(communityId, ['owner', 'moderator']);
+  const isAuthorized = await hasCommunityRole(communityId, ['owner', 'admin']);
   if (!isAuthorized) throw new Error("Unauthorized to remove members.");
 
-  // Check target's role to prevent moderator kicking owner
+  // Check target's role to prevent admin kicking owner
   const { data: target } = await supabase
     .from('community_members')
     .select('role')
@@ -206,8 +206,8 @@ export async function removeMember(communityId: string, targetUserId: string) {
 
   // If actor is moderator, they can only kick editors/members (not other moderators or owner)
   const isActorOwner = await isCommunityOwner(communityId);
-  const isPlatformAdmin = await hasAnyRole(['founder', 'super_admin']);
-  if (!isActorOwner && !isPlatformAdmin && target.role === 'moderator') {
+  const isPlatformAdmin = await hasAnyRole(['founder', 'admin']);
+  if (!isActorOwner && !isPlatformAdmin && target.role === 'admin') {
     throw new Error("Moderators cannot remove other Moderators.");
   }
 
@@ -227,7 +227,7 @@ export async function removeMember(communityId: string, targetUserId: string) {
 
 export async function transferOwnership(communityId: string, newOwnerId: string) {
   const isAuthorizedOwner = await isCommunityOwner(communityId);
-  const isPlatformAdmin = await hasAnyRole(['founder', 'super_admin']);
+  const isPlatformAdmin = await hasAnyRole(['founder', 'admin']);
   if (!isAuthorizedOwner && !isPlatformAdmin) throw new Error("Only the current Owner or Platform Admins can transfer ownership.");
 
   // Verify new owner is a member
@@ -246,7 +246,7 @@ export async function transferOwnership(communityId: string, newOwnerId: string)
 
   // Demote current owner to moderator (unless platform admin forced it, then just update owner_id)
   if (isAuthorizedOwner) {
-    await supabase.from('community_members').update({ role: 'moderator' }).eq('community_id', communityId).eq('user_id', currentUserId);
+    await supabase.from('community_members').update({ role: 'admin' }).eq('community_id', communityId).eq('user_id', currentUserId);
   }
 
   // Promote new user

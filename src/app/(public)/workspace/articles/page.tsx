@@ -1,9 +1,9 @@
 import React from "react";
-import { getContributorSubmissions } from "@/lib/actions/contributeActions";
+import { getUserSubmissions } from "@/lib/actions/userSubmissionActions";
 import ArticlesDashboardClient from "./ArticlesDashboardClient";
 
-export default async function ContributorDashboard() {
-  const { submissions, error } = await getContributorSubmissions();
+export default async function UserDashboard() {
+  const { submissions, error } = await getUserSubmissions();
   
   return <ArticlesDashboardClient initialSubmissions={submissions || []} error={error} />;
 }

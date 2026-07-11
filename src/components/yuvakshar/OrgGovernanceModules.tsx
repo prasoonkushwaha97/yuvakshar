@@ -38,7 +38,7 @@ export function CandidateManagement({ currentUser }: { currentUser: Profile }) {
   const [district, setDistrict] = useState("");
   const [state, setState] = useState("");
 
-  const isAuthorized = currentUser && (hasRole("Founder") || hasRole("संस्थापक") || hasRole("प्रशासन"));
+  const isAuthorized = currentUser && (hasRole("Founder") || hasRole("Admin"));
 
   if (!isAuthorized) {
     return (

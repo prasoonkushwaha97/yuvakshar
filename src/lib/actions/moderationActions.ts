@@ -6,7 +6,7 @@ import { logGovernanceAction } from "./governanceAuditActions";
 import { createNotification } from "./notificationActions";
 
 export async function getOpenReports() {
-  const isAuthorized = await hasAnyRole(['moderator', 'admin', 'super_admin', 'founder']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
   if (!isAuthorized) throw new Error("Unauthorized");
 
   const { data, error } = await supabase
@@ -28,7 +28,7 @@ export async function moderateReport(
   action: 'dismiss' | 'warn' | 'hide' | 'suspend' | 'escalate',
   notes: string
 ) {
-  const isAuthorized = await hasAnyRole(['moderator', 'admin', 'super_admin', 'founder']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
   if (!isAuthorized) throw new Error("Unauthorized");
 
   // Fetch report details
@@ -51,7 +51,7 @@ export async function moderateReport(
     await createNotification(report.target_id, 'moderation_warning', 'Community Guideline Warning', `Your account has received a warning regarding recent activity. Note: ${notes}`);
   } else if (action === 'suspend' && report.target_type === 'user') {
     // Requires Admin client to suspend user, usually restricted to higher roles
-    const isAdmin = await hasAnyRole(['admin', 'super_admin', 'founder']);
+    const isAdmin = await hasAnyRole(['founder', 'admin']);
     if (!isAdmin) throw new Error("Only Administrators can suspend users.");
     
     // In a real app: await supabaseAdmin.auth.admin.updateUserById(report.target_id, { ban_duration: '87600h' })

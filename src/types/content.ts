@@ -12,9 +12,8 @@ export enum ArticleStatus {
 
 export type EditorialWorkflowStage =
   | "editor_review"
-  | "me_review"
-  | "eic_review"
   | "completed";
+
 
 export interface Category {
   id: string;
@@ -176,7 +175,7 @@ export interface ArticleAssignment {
   id: string;
   article_id: string;
   user_id: string;
-  role_type: 'reviewer' | 'editor' | 'fact_checker';
+  role_type: 'editor';
   assigned_by?: string;
   created_at: string;
   user?: {

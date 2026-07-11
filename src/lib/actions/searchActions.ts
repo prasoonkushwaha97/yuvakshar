@@ -85,26 +85,47 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
     // 3. Authors/Profiles Search
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, name, username, bio, avatar_url')
+      .select('id, name, username, bio, avatar_url, role, is_verified, status')
+      .neq('status', 'suspended')
+      .neq('status', 'deleted')
       .or(`name.ilike.${likeQuery},username.ilike.${likeQuery}`)
-      .limit(5);
+      .limit(20);
 
     if (profiles) {
+      const profileResults: SearchResult[] = [];
       profiles.forEach((p: any) => {
         let score = 0;
-        if (p.name && p.name.toLowerCase().includes(q)) score += 10;
-        if (p.username && p.username.toLowerCase().includes(q)) score += 8;
+        const nameLower = p.name ? p.name.toLowerCase() : "";
+        const usernameLower = p.username ? p.username.toLowerCase() : "";
 
-        results.push({
-          id: `profile-${p.id}`,
-          type: "author",
-          title: p.name,
-          subtitle: p.bio,
-          thumbnail: p.avatar_url,
-          url: `/u/${p.username}`,
-          score
-        });
+        if (usernameLower === q) score += 100;
+        else if (nameLower === q) score += 90;
+        else if (usernameLower.startsWith(q)) score += 80;
+        else if (nameLower.startsWith(q)) score += 70;
+        else if (usernameLower.includes(q)) score += 60;
+        else if (nameLower.includes(q)) score += 50;
+
+        if (score > 0) {
+          profileResults.push({
+            id: `profile-${p.id}`,
+            type: "author",
+            title: p.name,
+            subtitle: p.bio,
+            thumbnail: p.avatar_url,
+            url: `/u/${p.username}`,
+            score,
+            meta: {
+              username: p.username,
+              role: p.role,
+              is_verified: p.is_verified
+            }
+          });
+        }
       });
+      
+      // Take top 10 profiles
+      profileResults.sort((a, b) => b.score - a.score);
+      results.push(...profileResults.slice(0, 10));
     }
 
     // 4. Chaupal Posts
@@ -121,7 +142,7 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
             id: `chaupal-${post.id}`,
             type: "chaupal_post",
             title: post.content ? (post.content.length > 80 ? post.content.substring(0, 80) + "..." : post.content) : "Post",
-            author: profile?.name || "Member",
+            author: profile?.name || "User",
             thumbnail: profile?.avatar_url,
             url: `/community/post/${post.id}`,
             date: post.created_at,

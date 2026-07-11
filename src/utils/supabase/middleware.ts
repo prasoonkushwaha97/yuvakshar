@@ -13,7 +13,6 @@ export async function updateSession(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
     const isProtectedRoute = 
       (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) ||
-      pathname.startsWith('/author') ||
       pathname.startsWith('/workspace');
 
     // Validate environment variables explicitly as per strict production requirements
@@ -79,7 +78,6 @@ export async function updateSession(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
     const isProtectedRoute = 
       (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) ||
-      pathname.startsWith('/author') ||
       pathname.startsWith('/workspace');
 
     if (isProtectedRoute) {

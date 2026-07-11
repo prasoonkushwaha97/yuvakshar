@@ -49,7 +49,6 @@ export default function MobileBottomNav() {
   // Exclude bottom navigation inside dashboard settings & specific pathways
   if (
     pathname?.startsWith("/admin") || 
-    pathname?.startsWith("/author") ||
     pathname === "/login" ||
     pathname === "/register" ||
     pathname?.startsWith("/workspace/articles/new")

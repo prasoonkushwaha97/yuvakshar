@@ -418,13 +418,9 @@ interface CmsContextType {
 
 const CmsContext = createContext<CmsContextType | undefined>(undefined);
 
-const isOwner = (role?: string | null) => role === "संस्थापक" || role === "Founder" || role === "संस्थापक";
-const isAdmin = (role?: string | null) => role === "प्रशासन" || role === "प्रशासक" || role === "प्रधान प्रशासक" || isOwner(role);
-const isEIC = (role?: string | null) => role === "Editor-in-Chief" || role === "प्रधान संपादक" || isAdmin(role);
-const isManagingEditor = (role?: string | null) => role === "Managing Editor" || role === "कार्यकारी संपादक" || role === "प्रबंध संपादक" || isEIC(role);
-const isEditor = (role?: string | null) => role === "Editor" || role === "संपादक" || role === "वरिष्ठ संपादक" || isManagingEditor(role);
-const isSubEditor = (role?: string | null) => role === "Sub Editor" || role === "सहायक संपादक" || isEditor(role);
-
+const isOwner = (role?: string | null) => role === "Founder";
+const isAdmin = (role?: string | null) => role === "Admin" || isOwner(role);
+const isEditor = (role?: string | null) => role === "Editor" || isAdmin(role);
 export function CmsProvider({ 
   children,
   initialSettings,
@@ -670,8 +666,8 @@ export function CmsProvider({
             .eq('user_id', session.user.id);
             
           const rolesArray: string[] = [];
-          let highestRole = "Member";
-          const ROLE_PRIORITY = ['Founder', 'प्रशासन', 'Moderator', 'Editor', 'Author', 'Member'];
+          let highestRole = "Normal User";
+          const ROLE_PRIORITY = ['Founder', 'Admin', 'Editor'];
           let highestIndex = ROLE_PRIORITY.length;
           
           if (session.user.email === 'prasoonkushwaha9754@gmail.com' || session.user.email === 'antigravity.validation@gmail.com') {
@@ -801,93 +797,6 @@ export function CmsProvider({
       const slug = user.slug || (user.name ? user.name.toLowerCase().replace(/[^a-z0-9_]/g, "") : "user");
       const authorArticles = currentArticlesList.filter(a => a.author === user.name);
 
-      if (user.id === "u-2" || user.id === "staff-chief") {
-
-        const defaultTimeline = [
-          { id: "t1", title: "युवाक्षर की स्थापना", description: "हिंदी में स्वतंत्र वैचारिक मंच युवाक्षर की नींव रखी।", date: "२०२१", type: "milestone" },
-          { id: "t2", title: "डिजिटल मीडिया पुरस्कार", description: "भाषाई पत्रकारिता में उत्कृष्ट योगदान हेतु सम्मानित।", date: "२०२३", type: "award" },
-          { id: "t3", title: "राष्ट्रीय संगोष्ठी का आयोजन", description: "भारतीय लोकतंत्र और मीडिया पर राष्ट्रीय संगोष्ठी का सफल नेतृत्व।", date: "२०२५", type: "event" }
-        ];
-        const defaultPortfolio = [
-          { id: "p1", name: "डिजिटल युग में हिंदी पत्रकारिता.pdf", url: "#", type: "book" as const, is_public: true },
-          { id: "p2", name: "स्वतंत्र मीडिया और लोकतंत्र - शोध पत्र.pdf", url: "#", type: "research_paper" as const, is_public: true }
-        ];
-        const defaultAchievements = [
-          { id: "a1", title: "भाषाई पत्रकारिता गौरव सम्मान", description: "भारतीय भाषा संवर्धन परिषद द्वारा प्रदान किया गया।", year: "२०२३" },
-          { id: "a2", title: "यूथ मीडिया लीडरशिप अवार्ड", description: "डिजिटल समाचार महासंघ द्वारा सम्मानित।", year: "२०२५" }
-        ];
-
-        const enrichedFields = {
-          ...user,
-          slug,
-          cover_url: user.cover_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
-          bio: user.bio || "युवाक्षर के सह-संस्थापक एवं संपादक। हिंदी पत्रकारिता, समाजशास्त्र और सामयिक विषयों पर सतत लेखन।",
-          designation: user.designation || "सह-संस्थापक एवं प्रधान संपादक",
-          current_role: user.current_role || "युवाक्षर संपादकीय बोर्ड",
-          verification_badge: user.verification_badge || "Editor-in-Chief",
-          institution: user.institution || "युवाक्षर मीडिया संस्थान",
-          expertise_tags: user.expertise_tags || ["संपादकीय", "राजनीति", "हिंदी साहित्य", "समाजशास्त्र"],
-          orcid_id: user.orcid_id || "0000-0002-1825-0097",
-          google_scholar_url: user.google_scholar_url || "https://scholar.google.com/citations?user=prasoon-yuvakshar",
-          academic_credentials: user.academic_credentials || ["एम.ए. जनसंचार (माखनलाल चतुर्वेदी विश्वविद्यालय)", "पीएच.डी. हिंदी पत्रकारिता"],
-          education: user.education || "एम.ए. एवं पीएच.डी. - जनसंचार एवं हिंदी साहित्य",
-          academic_background: user.academic_background || "पत्रकारिता और जनसंचार के क्षेत्र में १० से अधिक वर्षों का शैक्षणिक एवं व्यावहारिक अनुभव।",
-          research_interests: user.research_interests || "भारतीय लोकतंत्र में स्वतंत्र मीडिया की भूमिका, हिंदी भाषा का डिजिटलीकरण और भाषाई पत्रकारिता का भविष्य।",
-          professional_experience: user.professional_experience || "विभिन्न राष्ट्रीय समाचार पत्रों और डिजिटल पोर्टलों में संपादकीय भूमिकाओं का अनुभव। २०१६ से युवाक्षर के विकास में योगदान।",
-          social_contributions: user.social_contributions || "ग्रामीण क्षेत्रों में साक्षरता अभियान और युवाओं के लिए स्वतंत्र अभिव्यक्ति कार्यशालाओं का आयोजन।",
-          publications_list: user.publications_list || "१. डिजिटल युग में हिंदी पत्रकारिता (पुस्तक, २०२३)\n२. स्वतंत्र मीडिया और लोकतंत्र (शोध पत्र, २०२४)",
-
-          timeline: user.timeline || defaultTimeline,
-          portfolio: user.portfolio || defaultPortfolio,
-          achievements: user.achievements || defaultAchievements
-        };
-
-        const { score, tier } = calculateAuthorReputation(enrichedFields, authorArticles);
-        return {
-          ...enrichedFields,
-          reputation_score: score,
-          reputation_tier: tier
-        };
-      }
-
-      if (user.id === "u-1" || user.id === "staff-owner") {
-        const enrichedFields = {
-          ...user,
-          slug,
-          cover_url: user.cover_url || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
-          designation: user.designation || "संस्थापक एवं स्वामी",
-          current_role: user.current_role || "युवाक्षर मीडिया नेटवर्क",
-          verification_badge: user.verification_badge || "Founder",
-          institution: user.institution || "युवाक्षर मीडिया नेटवर्क",
-          expertise_tags: user.expertise_tags || ["प्रबंधन", "उद्यमिता", "डिजिटल मीडिया"]
-        };
-        const { score, tier } = calculateAuthorReputation(enrichedFields, authorArticles);
-        return {
-          ...enrichedFields,
-          reputation_score: score,
-          reputation_tier: tier
-        };
-      }
-
-      if (user.id === "staff-admin") {
-        const enrichedFields = {
-          ...user,
-          slug,
-          cover_url: user.cover_url || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80",
-          designation: user.designation || "तकनीकी प्रमुख एवं प्रबंधक",
-          current_role: user.current_role || "यूटिलिटी और एडमिनिस्ट्रेशन",
-          verification_badge: user.verification_badge || "Editorial Team",
-          institution: user.institution || "युवाक्षर नेटवर्क",
-          expertise_tags: user.expertise_tags || ["तकनीक", "वेब डेवलपमेंट", "सुरक्षा"]
-        };
-        const { score, tier } = calculateAuthorReputation(enrichedFields, authorArticles);
-        return {
-          ...enrichedFields,
-          reputation_score: score,
-          reputation_tier: tier
-        };
-      }
-
       const { score, tier } = calculateAuthorReputation(user, authorArticles);
       return {
         ...user,
@@ -944,10 +853,7 @@ export function CmsProvider({
     if (localAds) {
       setAds(JSON.parse(localAds));
     } else {
-      const initial: Ad[] = [
-        { id: "ad-1", name: "Sidebar Banner Ad", zone: "after_first_p", type: "banner", image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80", link_url: "https://yuvakshar.tech/magazine", active: true, click_count: 0, impression_count: 0 },
-        { id: "ad-2", name: "Google AdSense Ad Block", zone: "mid_content", type: "adsense", code: "<div style='background:#f3ece0;padding:20px;text-align:center;font-size:11px;color:#EA580C;font-weight:bold;border:1px dashed #EA580C'>[Google AdSense Mid Content Banner]</div>", active: true, click_count: 0, impression_count: 0 }
-      ];
+      const initial: Ad[] = [];
       setAds(initial);
     }
 
@@ -987,18 +893,7 @@ export function CmsProvider({
     if (localCategories && JSON.parse(localCategories).length >= 8) {
       setCategories(JSON.parse(localCategories));
     } else {
-      const initial: Category[] = [
-        { id: "cat-1", name: "समाचार", slug: "samachar", language_code: "hi" },
-        { id: "cat-2", name: "विशेष लेख", slug: "vishesh-lekh", language_code: "hi" },
-        { id: "cat-3", name: "विचार", slug: "vichar", language_code: "hi" },
-        { id: "cat-4", name: "साहित्य", slug: "sahitya", language_code: "hi" },
-        { id: "cat-5", name: "साक्षात्कार", slug: "sakshatkar", language_code: "hi" },
-        { id: "cat-6", name: "शिक्षा", slug: "shiksha", language_code: "hi" },
-        { id: "cat-7", name: "पर्यावरण", slug: "paryavaran", language_code: "hi" },
-        { id: "cat-8", name: "इतिहास", slug: "itihas", language_code: "hi" },
-        { id: "cat-9", name: "वीडियो", slug: "video", language_code: "hi" },
-        { id: "cat-10", name: "पत्रिका", slug: "patrika", language_code: "hi" }
-      ];
+      const initial: Category[] = [];
       setCategories(initial);
     }
 
@@ -1099,11 +994,7 @@ export function CmsProvider({
     if (localTasks) {
       setTasks(JSON.parse(localTasks));
     } else {
-      const initial: OrgTask[] = [
-        { id: "task-1", title: "निराला जयंती विशेषांक संपादन", description: "सूर्यकांत त्रिपाठी निराला जी की जयंती पर विशेष लेखों का संकलन और संपादन पूर्ण करें।", assigned_by: "u-2", assigned_by_name: "प्रसून कुशवाहा", assigned_to: "staff-editor", assigned_to_name: "Ravi Sharma", department: "संपादकीय", priority: "High", due_date: "2026-06-25", status: "In Progress", created_at: "2026-06-10T12:00:00Z" },
-        { id: "task-2", title: "प्रशासनिक भूमिका समीक्षा", description: "सभी नवीन टीम सदस्यों की भूमिकाओं की समीक्षा करें और अनुमतियाँ अद्यतन करें।", assigned_by: "u-1", assigned_by_name: "संस्थापक", assigned_to: "staff-admin", assigned_to_name: "Amit Admin", department: "प्रशासन", priority: "Medium", due_date: "2026-06-30", status: "Pending", created_at: "2026-06-11T10:00:00Z" },
-        { id: "task-3", title: "वेबसाइट वर्तनी सुधार", description: "मुखपृष्ठ पर हाल ही में प्रकाशित लेखों की भाषा और वर्तनी सुधार करें।", assigned_by: "staff-chief", assigned_by_name: "Prasoon Chief", assigned_to: "staff-factchecker", assigned_to_name: "Nitin Checker", department: "गुणवत्ता", priority: "Low", due_date: "2026-06-18", status: "Needs Revision", created_at: "2026-06-12T09:30:00Z" }
-      ];
+      const initial: OrgTask[] = [];
       setTasks(initial);
     }
 
@@ -1112,10 +1003,7 @@ export function CmsProvider({
     if (localVerifications) {
       setVerifications(JSON.parse(localVerifications));
     } else {
-      const initial: VerificationRequest[] = [
-        { id: "ver-1", user_id: "staff-editor", user_name: "Ravi Sharma", badge_requested: "सत्यापित लेखक", status: "Pending", supporting_docs: "प्रकाशित लेखों के लिंक और साहित्यिक बायो", review_notes: "सभी आलेखों की समीक्षा जारी है", created_at: "2026-06-12T10:00:00Z" },
-        { id: "ver-2", user_id: "u-3", user_name: "Guest Author", badge_requested: "सत्यापित साहित्यकार", status: "Approved", supporting_docs: "३ साहित्यिक पुस्तकों के आईएसबीएन विवरण", review_notes: "मान्य राष्ट्रीय साहित्यिक योगदान", decided_by: "u-1", decided_by_name: "संस्थापक", decided_at: "2026-06-10T15:00:00Z", created_at: "2026-06-09T08:00:00Z" }
-      ];
+      const initial: VerificationRequest[] = [];
       setVerifications(initial);
     }
 
@@ -1124,10 +1012,7 @@ export function CmsProvider({
     if (localOrgAuditLogs) {
       setOrgAuditLogs(JSON.parse(localOrgAuditLogs));
     } else {
-      const initial: OrgAuditLog[] = [
-        { id: "log-1", user_id: "u-1", user_name: "संस्थापक", action: "भूमिका परिवर्तन", details: "Amit Admin की भूमिका प्रशासक से प्रधान प्रशासक में बदली", severity: "Info", timestamp: "2026-06-10T12:00:00Z" },
-        { id: "log-2", user_id: "u-2", user_name: "प्रसून कुशवाहा", action: "सुरक्षा घटना", details: "अनधिकृत उपयोगकर्ता u-4 द्वारा /admin पर पहुंच का प्रयास - अस्वीकृत", severity: "Warning", timestamp: "2026-06-12T15:30:00Z" }
-      ];
+      const initial: OrgAuditLog[] = [];
       setOrgAuditLogs(initial);
     }
 
@@ -1136,9 +1021,7 @@ export function CmsProvider({
     if (localRoleTransfers) {
       setRoleTransfers(JSON.parse(localRoleTransfers));
     } else {
-      const initial: RoleTransfer[] = [
-        { id: "trans-1", user_id: "staff-admin", user_name: "Amit Admin", old_role: "प्रशासक", new_role: "प्रधान प्रशासक", changed_by: "u-1", changed_by_name: "संस्थापक", date: "10 जून २०२६" }
-      ];
+      const initial: RoleTransfer[] = [];
       setRoleTransfers(initial);
     }
 
@@ -1147,10 +1030,7 @@ export function CmsProvider({
     if (localPrivateMessages) {
       setPrivateMessages(JSON.parse(localPrivateMessages));
     } else {
-      const initial: PrivateMessage[] = [
-        { id: "msg-1", sender_id: "u-2", sender_name: "प्रसून कुशवाहा", receiver_id: "staff-editor", receiver_name: "Ravi Sharma", content: "नमस्कार रवि जी, निराला विशेषांक के संपादन का काम कहाँ तक पहुँचा?", timestamp: "2026-06-12T09:00:00Z", read: true },
-        { id: "msg-2", sender_id: "staff-editor", sender_name: "Ravi Sharma", receiver_id: "u-2", receiver_name: "प्रसून कुशवाहा", content: "जी प्रसून जी, ७०% आलेख संपादित हो चुके हैं, कल दोपहर तक ड्राफ्ट भेज दूँगा।", timestamp: "2026-06-12T09:15:00Z", read: true, reply_to: "msg-1" }
-      ];
+      const initial: PrivateMessage[] = [];
       setPrivateMessages(initial);
     }
   }, []);
@@ -1209,18 +1089,7 @@ export function CmsProvider({
       if (dbCategories && dbCategories.length > 0) {
         setCategories(dbCategories);
       } else {
-        const initialCategories: Category[] = [
-          { id: "cat-1", name: "समाचार", slug: "samachar", language_code: "hi" },
-          { id: "cat-2", name: "विशेष लेख", slug: "vishesh-lekh", language_code: "hi" },
-          { id: "cat-3", name: "विचार", slug: "vichar", language_code: "hi" },
-          { id: "cat-4", name: "साहित्य", slug: "sahitya", language_code: "hi" },
-          { id: "cat-5", name: "साक्षात्कार", slug: "sakshatkar", language_code: "hi" },
-          { id: "cat-6", name: "शिक्षा", slug: "shiksha", language_code: "hi" },
-          { id: "cat-7", name: "पर्यावरण", slug: "paryavaran", language_code: "hi" },
-          { id: "cat-8", name: "इतिहास", slug: "itihas", language_code: "hi" },
-          { id: "cat-9", name: "वीडियो", slug: "video", language_code: "hi" },
-          { id: "cat-10", name: "पत्रिका", slug: "patrika", language_code: "hi" }
-        ];
+        const initialCategories: Category[] = [];
         setCategories(initialCategories);
       }
 
@@ -1229,12 +1098,7 @@ export function CmsProvider({
       if (dbTags && dbTags.length > 0) {
         setTags(dbTags);
       } else {
-        const initialTags: Tag[] = [
-          { id: "tag-1", name: "स्वतंत्रता", slug: "swatantrata", language_code: "hi" },
-          { id: "tag-2", name: "संस्कृति", slug: "sanskriti", language_code: "hi" },
-          { id: "tag-3", name: "संविधान", slug: "samvidhan", language_code: "hi" },
-          { id: "tag-4", name: "अधिकार", slug: "adhikar", language_code: "hi" }
-        ];
+        const initialTags: Tag[] = [];
         setTags(initialTags);
       }
 
@@ -1279,10 +1143,7 @@ export function CmsProvider({
       if (dbAds && dbAds.length > 0) {
         setAds(dbAds);
       } else {
-        const initialAds: Ad[] = [
-          { id: "ad-1", name: "Sidebar Banner Ad", zone: "after_first_p", type: "banner", image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80", link_url: "https://yuvakshar.tech/magazine", active: true, click_count: 0, impression_count: 0 },
-          { id: "ad-2", name: "Google AdSense Ad Block", zone: "mid_content", type: "adsense", code: "<div style='background:#f3ece0;padding:20px;text-align:center;font-size:11px;color:#EA580C;font-weight:bold;border:1px dashed #EA580C'>[Google AdSense Mid Content Banner]</div>", active: true, click_count: 0, impression_count: 0 }
-        ];
+        const initialAds: Ad[] = [];
         setAds(initialAds);
       }
 
@@ -1359,14 +1220,11 @@ export function CmsProvider({
         const defaultStaff: Profile[] = [
           { id: "staff-owner", name: "Ravi Owner", username: "owner@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "owner@yuvakshar.in", role: "Founder", status: "active", badges: ["Primary Owner"], joinDate: "जून २०२६", dob: "1988-08-12", gender: "Male", location: "नई दिल्ली, भारत" },
           { id: "staff-admin", name: "Amit Admin", username: "admin@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "admin@yuvakshar.in", role: "Normal User", status: "active", badges: ["Administrator"], joinDate: "जून २०२६", dob: "1992-04-15", gender: "Male", location: "नोएडा, उत्तर प्रदेश" },
-          { id: "staff-chief", name: "Prasoon Chief", username: "chief@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "chief@yuvakshar.in", role: "Editor-in-Chief", status: "active", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
-          { id: "staff-managing", name: "Sumit Managing", username: "managing@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "managing@yuvakshar.in", role: "Managing Editor", status: "active", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
+          { id: "staff-chief", name: "Prasoon Chief", username: "chief@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "chief@yuvakshar.in", role: "Editor", status: "active", badges: ["Editor-in-Chief"], joinDate: "जून २०२६", dob: "1990-11-20", gender: "Male", location: "भोपाल, मध्य प्रदेश" },
+          { id: "staff-managing", name: "Sumit Managing", username: "managing@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "managing@yuvakshar.in", role: "Editor", status: "active", badges: ["Managing Editor"], joinDate: "जून २०२६", dob: "1993-01-30", gender: "Male", location: "इंदौर, मध्य प्रदेश" },
           { id: "staff-editor", name: "Ravi Sharma", username: "editor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "editor@yuvakshar.in", role: "Editor", status: "active", badges: ["Editor"], joinDate: "जून २०२६", dob: "1995-05-15", gender: "Male", location: "पटना, बिहार" },
           { id: "staff-subeditor", name: "Alok SubEditor", username: "subeditor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "subeditor@yuvakshar.in", role: "Editor", status: "active", badges: ["Sub Editor"], joinDate: "जून २०२६", dob: "1996-09-05", gender: "Male", location: "जयपुर, राजस्थान" },
-          { id: "staff-factchecker", name: "Nitin Checker", username: "factchecker@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "factchecker@yuvakshar.in", role: "Normal User", status: "active", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" },
-          { id: "staff-reviewer", name: "Varun Reviewer", username: "reviewer@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "reviewer@yuvakshar.in", role: "Editor", status: "active", badges: ["Reviewer"], joinDate: "जून २०२६", dob: "1994-07-22", gender: "Male", location: "रांची, झारखंड" },
-          { id: "staff-author", name: "Manoj Author", username: "author@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "author@yuvakshar.in", role: "Normal User", status: "active", badges: ["Author"], joinDate: "जून २०२६", dob: "1989-03-25", gender: "Male", location: "वाराणसी, उत्तर प्रदेश" },
-          { id: "staff-contributor", name: "Vijay Contributor", username: "contributor@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "contributor@yuvakshar.in", role: "Normal User", status: "active", badges: ["योगदानकर्ता"], joinDate: "जून २०२६", dob: "1998-10-10", gender: "Male", location: "हरिद्वार, उत्तराखंड" }
+          { id: "staff-factchecker", name: "Nitin Checker", username: "factchecker@yuvakshar.in".split('@')[0].replace(/['"]/g, ''), email: "factchecker@yuvakshar.in", role: "Normal User", status: "active", badges: ["Fact Checker"], joinDate: "जून २०२६", dob: "1997-12-18", gender: "Male", location: "लखनऊ, उत्तर प्रदेश" }
         ];
 
          const initialUsers: Profile[] = [
@@ -1465,7 +1323,7 @@ export function CmsProvider({
             name: customName,
             username: username,
             mobile: customMobile,
-            role: role || "Subscriber"
+            role: role || "Normal User"
           }
         }
       });
@@ -1482,7 +1340,7 @@ export function CmsProvider({
           name: customName || email.split("@")[0].toUpperCase(),
           username: username, email: email,
           mobile: customMobile,
-          role: (role || "Subscriber") as Profile["role"],
+          role: (role || "Normal User") as Profile["role"],
           status: "active",
           joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
           slug: (customName || email.split("@")[0]).toLowerCase().replace(/[^a-z0-9_]/g, ""),
@@ -1619,7 +1477,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     const performerRole = resolvedRole;
     
     // Authorization check
-    if (!performerRole || !isManagingEditor(performerRole)) {
+    if (!performerRole || !isAdmin(performerRole)) {
       alert("त्रुटि: आपके पास नया उपयोगकर्ता बनाने की अनुमति नहीं है!");
       return;
     }
@@ -1634,7 +1492,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
       return;
     }
 
-    if ((user.role === "Editor-in-Chief" || user.role === "Managing Editor" || user.role === "Editor" || user.role === null) && !isAdmin(performerRole)) {
+    if ((user.role === "Editor" || user.role === null) && !isAdmin(performerRole)) {
       alert("त्रुटि: केवल Owner या Admin ही संपादकीय नेतृत्व या पाठक खाते बना सकते हैं!");
       return;
     }
@@ -1654,9 +1512,9 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
     const updatedUsers = [...users, newProfile];
     setUsers(updatedUsers);
-    logActivity(`Created user: ${user.email} (${user.role || "Subscriber"})`, {
+    logActivity(`Created user: ${user.email} (${user.role || "Normal User"})`, {
       performer: currentUser?.name || "System",
-      performerRole: performerRole || "Subscriber",
+      performerRole: performerRole || "Normal User",
       targetUser: user.email,
       actionType: "Create User",
       dateTime: new Date().toISOString()
@@ -1668,7 +1526,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
-    if (!performerRole || !isManagingEditor(performerRole)) {
+    if (!performerRole || !isAdmin(performerRole)) {
       alert("त्रुटि: आपके पास उपयोगकर्ता संशोधित करने की अनुमति नहीं है!");
       return;
     }
@@ -1715,7 +1573,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
     logActivity(`Updated user details for ${targetUser.email}`, {
       performer: currentUser?.name || "System",
-      performerRole: performerRole || "Subscriber",
+      performerRole: performerRole || "Normal User",
       targetUser: targetUser.email,
       actionType: "Update User",
       dateTime: new Date().toISOString()
@@ -1727,7 +1585,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     const targetUser = users.find(u => u.id === userId);
     if (!targetUser) return;
 
-    if (!performerRole || !isManagingEditor(performerRole)) {
+    if (!performerRole || !isAdmin(performerRole)) {
       alert("त्रुटि: आपके पास उपयोगकर्ता हटाने की अनुमति नहीं है!");
       return;
     }
@@ -1748,7 +1606,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     setUsers(updatedUsers);
     logActivity(`Deleted user account: ${targetUser.email}`, {
       performer: currentUser?.name || "System",
-      performerRole: performerRole || "Subscriber",
+      performerRole: performerRole || "Normal User",
       targetUser: targetUser.email,
       actionType: "Delete User",
       dateTime: new Date().toISOString()
@@ -1783,7 +1641,7 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
     logActivity(`Transferred ownership to ${targetUser.email}`, {
       performer: currentUser?.name || "System",
-      performerRole: performerRole || "Subscriber",
+      performerRole: performerRole || "Normal User",
       targetUser: targetUser.email,
       actionType: "Transfer Ownership",
       dateTime: new Date().toISOString()
@@ -3100,11 +2958,11 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
 
       if (error) {
         console.error("Error in getResolvedUserRole:", error);
-        return localUser?.role || "Member";
+        return localUser?.role || "Normal User";
       }
 
-      const ROLE_PRIORITY = ['Founder', 'प्रशासन', 'Moderator', 'Editor', 'Author', 'Member'];
-      let highestRole = "Member";
+      const ROLE_PRIORITY = ['Founder', 'Admin', 'Editor'];
+      let highestRole = "Normal User";
       let highestIndex = ROLE_PRIORITY.length;
 
       if (roleData && roleData.length > 0) {
@@ -3120,35 +2978,34 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
         }
       } else {
         if (localUser?.role) {
-          if (isOwner(localUser.role)) return "संस्थापक";
-          if (isAdmin(localUser.role)) return "प्रशासन";
+          if (isOwner(localUser.role)) return "Founder";
+          if (isAdmin(localUser.role)) return "Admin";
           if (isEditor(localUser.role)) return "Editor";
-          if (isSubEditor(localUser.role)) return "Author";
-          return "Member";
+          return "Normal User";
         }
       }
 
       return highestRole;
     } catch (e) {
       console.error(e);
-      return localUser?.role || "Member";
+      return localUser?.role || "Normal User";
     }
   };
 
   const canManageArticles = () => {
-    return hasRole("Founder") || hasRole("संस्थापक") || hasRole("प्रशासन") || hasRole("Editor-in-Chief") || hasRole("Managing Editor") || hasRole("Editor") || hasRole("Author");
+    return hasRole("Founder") || hasRole("Admin") || hasRole("Editor");
   };
 
   const canPublishArticles = (contentType: string) => {
     const isSpecialContent = ["Editorial", "Special Report", "Research Report"].includes(contentType);
     if (isSpecialContent) {
-      return hasRole("Founder") || hasRole("संस्थापक") || hasRole("Editor-in-Chief");
+      return hasRole("Founder") || hasRole("Admin");
     }
-    return hasRole("Founder") || hasRole("संस्थापक") || hasRole("प्रशासन") || hasRole("Editor-in-Chief") || hasRole("Managing Editor") || hasRole("Editor");
+    return hasRole("Founder") || hasRole("Admin") || hasRole("Editor");
   };
 
   const canAccessAdmin = () => {
-    return currentUserRoles.some(r => !["Subscriber", "Member", "User", "सदस्य"].includes(r));
+    return currentUserRoles.some(r => !["Normal User", "User", "?????"].includes(r));
   };
 
   function mapFeatureToModule(feature: string): string {
@@ -3272,7 +3129,7 @@ Body: बधाई हो ${u.name}! आपका संगठन खाता �
     return currentUserPermissions.includes(permission);
   };
   const getDisplayRole = () => {
-    if (!resolvedRole || ['Subscriber', 'User', 'Member', 'सदस्य'].includes(resolvedRole)) return null;
+    if (!resolvedRole || ['Normal User', 'User', 'सदस्य'].includes(resolvedRole)) return null;
     return resolvedRole;
   };
 

@@ -104,10 +104,10 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
             items: [
               { label: "Admin Dashboard", href: "/admin", icon: LayoutDashboard },
               { label: "Users", href: "/admin/users", icon: Users, roles: ["admin"] },
-              { label: "Communities", href: "/admin/community", icon: UsersRound, roles: ["admin", "moderator"] },
-              { label: "Comments", href: "/admin/comments", icon: MessageSquare, roles: ["admin", "moderator"] },
-              { label: "Moderation", href: "/admin/moderation", icon: Shield, roles: ["admin", "moderator"] },
-              { label: "Reports", href: "/admin/reports", icon: ClipboardList, roles: ["admin", "moderator"] },
+              { label: "Communities", href: "/admin/community", icon: UsersRound, roles: ["admin"] },
+              { label: "Comments", href: "/admin/comments", icon: MessageSquare, roles: ["admin"] },
+              { label: "Moderation", href: "/admin/moderation", icon: Shield, roles: ["admin"] },
+              { label: "Reports", href: "/admin/reports", icon: ClipboardList, roles: ["admin"] },
             ]
           }
         ];
@@ -117,25 +117,22 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
             title: "Publishing",
             items: [
               { label: "Editorial Desk", href: "/admin", icon: LayoutDashboard },
-              { label: "Articles", href: "/admin/articles", icon: FileText, roles: ["editor_in_chief", "managing_editor", "editor"] },
-              { label: "Categories", href: "/admin/categories", icon: Layers, roles: ["editor_in_chief"] },
-              { label: "Magazine", href: "/admin/magazine", icon: BookOpen, roles: ["editor_in_chief"] },
-              { label: "Reviews", href: "/admin/reviews", icon: CheckSquare, roles: ["editor_in_chief", "editor"] },
-              { label: "Workflow", href: "/admin/workflow", icon: Activity, roles: ["editor_in_chief", "managing_editor", "editor"] },
-              { label: "Assignments", href: "/admin/workflow", icon: ClipboardList, roles: ["editor_in_chief", "managing_editor"] },
-              { label: "Publishing Queue", href: "/admin/workflow", icon: CheckSquare, roles: ["editor_in_chief", "managing_editor"] },
-              { label: "Fact Check Queue", href: "/admin/workflow", icon: Shield, roles: ["fact_checker"] },
+              { label: "Articles", href: "/admin/articles", icon: FileText, roles: ["editor"] },
+              { label: "Categories", href: "/admin/categories", icon: Layers, roles: ["admin"] },
+              { label: "Magazine", href: "/admin/magazine", icon: BookOpen, roles: ["admin"] },
+              { label: "Reviews", href: "/admin/reviews", icon: CheckSquare, roles: ["editor"] },
+              { label: "Workflow", href: "/admin/workflow", icon: Activity, roles: ["editor"] },
+              { label: "Assignments", href: "/admin/workflow", icon: ClipboardList, roles: ["editor"] },
+              { label: "Publishing Queue", href: "/admin/workflow", icon: CheckSquare, roles: ["editor"] },
             ]
           }
         ];
       case "author":
         return [
           {
-            title: "Author Workspace",
+            title: "Menu",
             items: [
-              { label: "My Articles", href: "/author", icon: LayoutDashboard },
-              { label: "Drafts", href: "/author", icon: FileText },
-              { label: "Review Notes", href: "/author", icon: MessageSquare },
+              { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
             ]
           }
         ];
@@ -180,7 +177,7 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
             // Filter items inside section based on currentUserRoles
             const visibleItems = section.items.filter(item => {
               if (!item.roles) return true; // Accessible to everyone in this workspace
-              return item.roles.some((r: string) => currentUserRoles.includes(r) || currentUserRoles.includes('founder') || currentUserRoles.includes('co_founder') || currentUserRoles.includes('super_admin'));
+              return item.roles.some((r: string) => currentUserRoles.includes(r) || currentUserRoles.includes('founder') || currentUserRoles.includes('admin'));
             });
             if (visibleItems.length === 0) return null;
 
@@ -252,7 +249,7 @@ export default function DashboardLayout({ children, role: workspace }: Dashboard
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FF5A1F] to-amber-400 p-[1.5px] overflow-hidden shrink-0 flex items-center justify-center">
                   <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center overflow-hidden">
-                    <Avatar url={currentUser?.avatar_url} alt={currentUser?.name} className="w-full h-full rounded-full" />
+                    <Avatar url={currentUser?.avatar_url} alt={currentUser?.name} name={currentUser?.name} className="w-full h-full" />
                   </div>
                 </div>
                 <div className="hidden sm:flex flex-col items-start text-left">

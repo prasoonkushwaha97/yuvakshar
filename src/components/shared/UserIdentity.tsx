@@ -26,7 +26,7 @@ const AvatarComponent = ({ sizeClass, avatarUrl, name }: { sizeClass: number, av
   <Avatar 
     url={avatarUrl} 
     alt={name} 
-    className="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-800"
+     name={name}
     // size class logic requires inline style or predefined classes. Let's wrap it in a div that applies the width/height
   />
 );
@@ -36,14 +36,14 @@ const WrappedAvatar = ({ sizeClass, avatarUrl, name, customClasses }: { sizeClas
     <Avatar 
       url={avatarUrl} 
       alt={name} 
-      className={customClasses}
+      className={customClasses} name={name}
     />
   ) : (
     <div style={{ width: sizeClass, height: sizeClass }}>
       <Avatar 
         url={avatarUrl} 
         alt={name} 
-        className="w-full h-full rounded-full border border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-800"
+        className="w-full h-full" name={name}
       />
     </div>
   )
@@ -105,7 +105,7 @@ export default function UserIdentity({
   const name = resolvedUser.name || (resolvedUser as any).full_name || "Unknown";
   
   const avatarUrl = resolvedUser.avatar_url || (resolvedUser as any).avatar || null;
-  const role = resolvedUser.role || "Member";
+  const role = resolvedUser.role || "Normal User";
   const isVerified = (resolvedUser as any).is_verified || (resolvedUser as any).verified || false;
 
   const profileHref = getProfileUrl(resolvedUser);
@@ -139,7 +139,7 @@ export default function UserIdentity({
             {name}
           </span>
           {showBadge && isVerified && <VerifiedBadge />}
-          {showRole && role && role !== "Member" && <RoleBadge role={role} />}
+          {showRole && role && role !== "Normal User" && <RoleBadge role={role} />}
         </div>
         
         {(showUsername || (variant === "card" || variant === "hero")) && (

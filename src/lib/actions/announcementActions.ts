@@ -5,7 +5,7 @@ import { hasAnyRole } from "@/lib/rbacService";
 import { logGovernanceAction } from "./governanceAuditActions";
 
 export async function getAnnouncements() {
-  const isAuthorized = await hasAnyRole(['founder', 'co_founder', 'super_admin']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin']);
   if (!isAuthorized) throw new Error("Unauthorized");
 
   const { data, error } = await supabase
@@ -28,7 +28,7 @@ export async function createAnnouncement(
   isPinned: boolean,
   expiresAt: string | null
 ) {
-  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   if (!isAuthorized) throw new Error("Only Founders can create platform announcements.");
@@ -68,7 +68,7 @@ export async function createAnnouncement(
 }
 
 export async function updateAnnouncementStatus(id: string, newStatus: 'draft' | 'published' | 'archived') {
-  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor', 'moderator']);
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
   if (!isAuthorized) throw new Error("Unauthorized action.");
 
   if (!isAuthorized) throw new Error("Unauthorized");
