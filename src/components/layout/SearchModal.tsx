@@ -19,10 +19,10 @@ const trendingTopics = [
 ];
 
 const categorySuggestions = [
-  { name: "राजनीति (Politics)", slug: "politics" },
-  { name: "शिक्षा (Education)", slug: "education" },
-  { name: "साहित्य (Literature)", slug: "literature" },
-  { name: "समाज (Society)", slug: "society" },
+  { name: "राजनीति", slug: "politics" },
+  { name: "शिक्षा", slug: "education" },
+  { name: "साहित्य", slug: "literature" },
+  { name: "समाज", slug: "society" },
 ];
 
 interface SearchModalProps {
@@ -365,7 +365,11 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                                         )}
                                       </div>
                                       <p className="text-xs text-slate-500 font-hindi truncate">
-                                        <Highlight text={`@${author.meta?.username || author.url.split('/').pop()}`} />
+                                        {(() => {
+                                          const userSlug = author.meta?.slug || (author.url ? author.url.split('/').pop() : null);
+                                          if (!userSlug || userSlug === "undefined" || userSlug === "null") return null;
+                                          return <Highlight text={`@${userSlug}`} />;
+                                        })()}
                                       </p>
                                     </div>
                                   </button>
@@ -558,7 +562,14 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                                   <h4 className="text-slate-900 dark:text-slate-100 font-medium font-hindi group-hover:text-[#ea580c] transition-colors">
                                     {author.name}
                                   </h4>
-                                  <p className="text-xs text-slate-500 font-hindi line-clamp-1">{author.bio || `@${author.username}`}</p>
+                                  <p className="text-xs text-slate-500 font-hindi line-clamp-1">
+                                     {(() => {
+                                       if (author.bio) return author.bio;
+                                       const s = author.slug || author.username;
+                                       if (s && s !== "undefined" && s !== "null") return `@${s}`;
+                                       return null;
+                                     })()}
+                                  </p>
                                 </div>
                               </button>
                             ))}

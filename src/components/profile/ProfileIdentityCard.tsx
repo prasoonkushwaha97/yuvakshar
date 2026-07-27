@@ -48,9 +48,15 @@ export default function ProfileIdentityCard({ user }: ProfileIdentityCardProps) 
             </div>
             
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-2">
-              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                @{user.username || user.slug || user.id}
-              </span>
+              {(() => {
+                const s = user.slug || user.username;
+                if (!s || s === "undefined" || s === "null") return null;
+                return (
+                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+                    @{s}
+                  </span>
+                );
+              })()}
               
               {user.designation || user.role ? (
                 <span className="inline-flex items-center text-[10px] font-bold font-sans rounded-full px-2.5 py-0.5 bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/20">

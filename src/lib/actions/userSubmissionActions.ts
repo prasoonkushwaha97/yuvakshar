@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "../supabaseServer";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { revalidatePath } from "next/cache";
 import { mapDbProfileToProfile } from "../repositoryService";
 import { hasAnyRole } from "../rbacService";
@@ -20,9 +21,7 @@ export async function submitGuestArticle(formData: FormData) {
     return { error: "Missing required fields" };
   }
 
-  // Generate a safe slug if needed, but for guest_submissions we don't strictly need a slug yet.
-  
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("guest_submissions")
     .insert([
       {
@@ -63,8 +62,8 @@ export async function submitUserArticle(formData: FormData, isDraft: boolean = f
   const customSlug = formData.get("slug") as string;
   const coverImage = formData.get("cover_image") as string;
 
-  if (!title || !content || !category) {
-    return { error: "Missing required fields" };
+  if (!title || !content) {
+    return { error: "Title and content are required." };
   }
 
   const isAdmin = await hasAnyRole(["admin", "editor", "founder"]);
@@ -76,21 +75,28 @@ export async function submitUserArticle(formData: FormData, isDraft: boolean = f
   let categoryId = null;
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   
-  if (uuidRegex.test(category)) {
-    categoryId = category;
-  } else {
-    const { data: categories } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("slug", category)
-      .limit(1);
-    categoryId = categories && categories.length > 0 ? categories[0].id : null;
+  if (category) {
+    if (uuidRegex.test(category)) {
+      categoryId = category;
+    } else {
+      const { data: categories } = await supabaseAdmin
+        .from("categories")
+        .select("id")
+        .eq("slug", category)
+        .limit(1);
+      categoryId = categories && categories.length > 0 ? categories[0].id : null;
+    }
   }
 
-  const status = isDraft ? ArticleStatus.Draft : ArticleStatus.Submitted;
-  
+  // Normal community users MUST ONLY be allowed status Draft or Submitted
+  let status = isDraft ? ArticleStatus.Draft : ArticleStatus.Submitted;
+  if (!isAdmin && status !== ArticleStatus.Draft && status !== ArticleStatus.Submitted) {
+    status = ArticleStatus.Submitted;
+  }
+
   const payload: any = {
     title: title,
+    title_hi: title,
     english_title: title,
     content,
     status,
@@ -102,6 +108,7 @@ export async function submitUserArticle(formData: FormData, isDraft: boolean = f
   const summary_hi = formData.get("summary_hi") as string;
   if (summary_hi !== null && summary_hi !== undefined) {
     payload.summary = summary_hi;
+    payload.summary_hi = summary_hi;
   }
   
   if (coverImage) {
@@ -114,24 +121,22 @@ export async function submitUserArticle(formData: FormData, isDraft: boolean = f
     payload.slug = `contrib-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   }
 
-  // Only set author_id if it's a new article OR if we are explicitly overriding it
-  // Otherwise, leave author_id untouched so the original author is preserved
-  if (!articleId) {
+  // Always enforce author_id = user.id for normal users
+  if (!isEditingAsAdmin) {
+    payload.author_id = user.id;
+  } else if (!articleId && !payload.author_id) {
     payload.author_id = user.id;
   }
 
   // Handle Admin "Publish As" override
   if (isEditingAsAdmin && publishAs) {
     if (publishAs === "युवाक्षर संपादकीय" || publishAs === "संपादकीय मंडल" || publishAs === "Guest Author") {
-       // Ideally find the profile id, but for now we fallback to string logic in display
        payload.author = publishAs; 
-       // In a real system, we'd lookup the ID of the special account.
     }
   }
 
   if (isEditingAsAdmin) {
     payload.editor_id = user.id;
-    // Add internal metadata for tracking
     payload.editorial_metadata = {
       edited_by: user.id,
       edited_at: new Date().toISOString()
@@ -142,21 +147,33 @@ export async function submitUserArticle(formData: FormData, isDraft: boolean = f
     payload.category_id = categoryId;
   }
 
-  if (articleId) {
-    let updateQuery = supabase
-      .from("articles")
-      .update(payload)
-      .eq("id", articleId);
+  console.log("[submitUserArticle]", { userId: user.id, articleId, isDraft, status, payload });
 
+  if (articleId) {
+    // If editing existing article, ensure normal user can only update their own article
     if (!isEditingAsAdmin) {
-      // Normal users can only edit their own articles, and only if they are Draft or RevisionRequested.
-      // (The update query will silently fail if the article is in UnderReview/Published state, which is correct).
-      updateQuery = updateQuery.eq("author_id", user.id).in("status", [ArticleStatus.Draft, ArticleStatus.RevisionRequested, ArticleStatus.Submitted]); 
-      // Included Submitted for the edge case where the transition just happened but UI sent a double-click
+      const { data: existing } = await supabaseAdmin
+        .from("articles")
+        .select("id, author_id, status")
+        .eq("id", articleId)
+        .single();
+
+      if (!existing || existing.author_id !== user.id) {
+        return { error: "Unauthorized: You can only edit your own articles." };
+      }
+
+      // Normal users cannot edit published or archived articles
+      if (existing.status === ArticleStatus.Published || existing.status === ArticleStatus.Archived) {
+        return { error: "Published articles cannot be edited by contributor." };
+      }
     }
 
-    console.log("updateQuery payload", payload);
-    const { data, error } = await updateQuery.select().single();
+    const { data, error } = await supabaseAdmin
+      .from("articles")
+      .update(payload)
+      .eq("id", articleId)
+      .select()
+      .single();
 
     if (error) {
       console.error("Update contributor article error:", error);
@@ -166,8 +183,7 @@ export async function submitUserArticle(formData: FormData, isDraft: boolean = f
     revalidatePath("/workspace/articles");
     return { success: true, data };
   } else {
-    console.log("insertQuery payload", payload);
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("articles")
       .insert([payload])
       .select()
@@ -191,9 +207,9 @@ export async function getUserSubmissions() {
     return { error: "Not logged in", submissions: [] };
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("articles")
-    .select("id, title, status, updated_at")
+    .select("id, title, status, updated_at, created_at, cover_image, summary")
     .eq("author_id", user.id)
     .order("updated_at", { ascending: false });
 
@@ -213,9 +229,9 @@ export async function getSubmissionDetails(id: string) {
     return { error: "Not logged in", data: null };
   }
 
-  const { data: article, error: articleError } = await supabase
+  const { data: article, error: articleError } = await supabaseAdmin
     .from("articles")
-    .select("id, title, content, status, created_at, updated_at")
+    .select("id, title, content, status, created_at, updated_at, cover_image, summary, category_id, slug")
     .eq("id", id)
     .eq("author_id", user.id)
     .single();
@@ -225,7 +241,7 @@ export async function getSubmissionDetails(id: string) {
   }
 
   // Fetch feedback notes if any
-  const { data: notes } = await supabase
+  const { data: notes } = await supabaseAdmin
     .from("review_notes")
     .select("id, note, created_at, profiles(id, name, avatar_url, social_links)")
     .eq("article_id", id)

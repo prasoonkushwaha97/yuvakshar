@@ -22,7 +22,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 
   if (isEditorPage) {
     return (
-      <div className="min-h-screen bg-[#FDFCF7] dark:bg-[#0B0F19] pt-16">
+      <div className="min-h-screen bg-[#FDFCF7] dark:bg-[#0B0F19] pt-0">
         <div className="w-full">
           {children}
         </div>

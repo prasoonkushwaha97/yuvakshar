@@ -85,10 +85,10 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
     // 3. Authors/Profiles Search
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, name, username, bio, avatar_url, role, is_verified, status')
+      .select('id, name, slug, bio, avatar_url, role, is_verified, status')
       .neq('status', 'suspended')
       .neq('status', 'deleted')
-      .or(`name.ilike.${likeQuery},username.ilike.${likeQuery}`)
+      .or(`name.ilike.${likeQuery},slug.ilike.${likeQuery}`)
       .limit(20);
 
     if (profiles) {
@@ -96,26 +96,29 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
       profiles.forEach((p: any) => {
         let score = 0;
         const nameLower = p.name ? p.name.toLowerCase() : "";
-        const usernameLower = p.username ? p.username.toLowerCase() : "";
+        const slugLower = p.slug ? p.slug.toLowerCase() : "";
+        const normalizedSlug = slugLower.replace(/[-_]/g, "");
+        const queryNormalized = q.replace(/[-_]/g, "");
 
-        if (usernameLower === q) score += 100;
+        if (slugLower === q || normalizedSlug === queryNormalized) score += 100;
         else if (nameLower === q) score += 90;
-        else if (usernameLower.startsWith(q)) score += 80;
+        else if (slugLower.startsWith(q) || normalizedSlug.startsWith(queryNormalized)) score += 80;
         else if (nameLower.startsWith(q)) score += 70;
-        else if (usernameLower.includes(q)) score += 60;
+        else if (slugLower.includes(q) || normalizedSlug.includes(queryNormalized)) score += 60;
         else if (nameLower.includes(q)) score += 50;
 
         if (score > 0) {
           profileResults.push({
             id: `profile-${p.id}`,
             type: "author",
-            title: p.name,
+            title: p.name || "User",
             subtitle: p.bio,
             thumbnail: p.avatar_url,
-            url: `/u/${p.username}`,
+            url: `/u/${p.slug || p.id}`,
             score,
             meta: {
-              username: p.username,
+              username: p.slug,
+              slug: p.slug,
               role: p.role,
               is_verified: p.is_verified
             }

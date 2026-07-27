@@ -17,7 +17,17 @@ import { getCategories } from "@/lib/actions/categoryActions";
 import { getAuthorsForSelect } from "@/lib/actions/articleActions";
 import { Category } from "@/types/content";
 
-export default function EditorClient({ article, isNew, isEditorialRole = false }: { article: any, isNew: boolean, isEditorialRole?: boolean }) {
+export default function EditorClient({ 
+  article, 
+  isNew, 
+  isEditorialRole = false,
+  showBackButton = false
+}: { 
+  article: any, 
+  isNew: boolean, 
+  isEditorialRole?: boolean,
+  showBackButton?: boolean 
+}) {
   const router = useRouter();
   const [title, setTitle] = useState(article?.title_hi || "");
   const [subtitle, setSubtitle] = useState(article?.summary_hi || article?.summary || "");
@@ -175,7 +185,7 @@ export default function EditorClient({ article, isNew, isEditorialRole = false }
 
   if (isPreviewMode) {
     return (
-      <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-[#FDFCF7] dark:bg-[#0B0F19] lg:overflow-hidden relative">
+      <div className="flex flex-col min-h-[calc(100vh-52px)] lg:min-h-[calc(100vh-72px)] bg-[#FDFCF7] dark:bg-[#0B0F19] lg:overflow-hidden relative">
         {/* Preview Header */}
         <div className="sticky top-0 z-20 h-14 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 border-b border-slate-200 dark:border-slate-800 shrink-0 shadow-sm">
           <div className="flex items-center gap-3 lg:gap-4">
@@ -226,29 +236,31 @@ export default function EditorClient({ article, isNew, isEditorialRole = false }
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)] bg-white dark:bg-slate-950 lg:overflow-hidden relative">
+    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-52px)] lg:min-h-[calc(100vh-72px)] bg-white dark:bg-slate-950 lg:overflow-hidden relative">
       
       {/* Main Pane: Editor */}
-      <div className="flex-1 flex flex-col min-w-0 lg:border-r border-slate-200 dark:border-slate-800 lg:overflow-y-auto lg:h-[calc(100vh-4rem)]">
+      <div className="flex-1 flex flex-col min-w-0 lg:border-r border-slate-200 dark:border-slate-800 lg:overflow-y-auto lg:h-[calc(100vh-72px)]">
         
         {/* Editor Header (Sticky on Mobile) */}
         <div className="sticky top-0 z-20 h-14 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-6 border-b border-slate-100 dark:border-slate-800/50 shrink-0">
-          <div className="flex items-center gap-3 lg:gap-4">
-            <Link href="/admin/articles" className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors p-1 -ml-1">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <div className="flex flex-col lg:flex-row lg:items-center gap-0 lg:gap-2">
-                <span className="text-sm font-medium text-slate-900 dark:text-slate-200">
+          <div className="flex items-center gap-2 lg:gap-3">
+            {showBackButton && (
+              <Link href={isEditorialRole ? "/admin/articles" : "/workspace/articles"} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors p-1 -ml-1 mr-1">
+                <ArrowLeft className="w-5 h-5" />
+              </Link>
+            )}
+            <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-slate-900 dark:text-slate-200">
                 {isNew ? "New Draft" : "Edit Article"}
                 </span>
-                <span className="hidden lg:inline text-slate-300 dark:text-slate-600">•</span>
+                <span className="text-slate-300 dark:text-slate-600">•</span>
                 <span className="text-[10px] lg:text-xs text-slate-400 flex items-center gap-1">
                     <Activity className="w-3 h-3 hidden lg:block" />
                     {lastSaved ? `Saved ${lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Unsaved'}
                 </span>
             </div>
           </div>
-           <div className="flex items-center gap-2 lg:gap-3">
+          <div className="flex items-center gap-2 lg:gap-3">
              <button 
                 onClick={() => setIsPublishSheetOpen(true)}
                 className="lg:hidden p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-full"
@@ -336,7 +348,7 @@ export default function EditorClient({ article, isNew, isEditorialRole = false }
       </div>
 
       {/* Desktop Right Pane: Publishing Panel */}
-      <div className="hidden lg:block w-[300px] bg-slate-50 dark:bg-[#0F172A] overflow-y-auto flex-shrink-0 lg:h-[calc(100vh-4rem)]">
+      <div className="hidden lg:block w-[300px] bg-slate-50 dark:bg-[#0F172A] overflow-y-auto flex-shrink-0 lg:h-[calc(100vh-72px)]">
         <div className="p-6 space-y-8">
             
             {/* Status & Visibility */}

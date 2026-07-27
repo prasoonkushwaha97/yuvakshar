@@ -724,30 +724,35 @@ export function CmsProvider({
             setCurrentUser(profile);
           } else {
             // Profile does not exist yet - create it dynamically!
+            const emailPrefix = session.user.email ? session.user.email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "") : "user";
+            const generatedSlug = session.user.user_metadata?.name
+              ? session.user.user_metadata.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
+              : (emailPrefix || `user-${Math.floor(1000 + Math.random() * 9000)}`);
+
             const newProfile: Profile = {
               id: session.user.id,
-              name: session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "NEW USER", username: generateFallbackUsername(session.user.email), email: session.user.email || "",
+              name: session.user.user_metadata?.name || session.user.email?.split("@")[0].toUpperCase() || "NEW USER",
+              username: generatedSlug,
+              email: session.user.email || "",
               role: highestRole as any,
               status: "active",
               joinDate: new Date().toLocaleDateString("hi-IN", { year: "numeric", month: "long" }),
-              slug: generateFallbackUsername(session.user.email)
+              slug: generatedSlug
             };
             
-            // Write to database
+            // Write to database (using schema columns: id, name, email, slug, role, status, social_links)
             const payload = {
               id: newProfile.id,
               name: newProfile.name,
               email: newProfile.email,
-              username: newProfile.username,
               slug: newProfile.slug,
               role: highestRole,
               status: newProfile.status,
               social_links: {
-                username: newProfile.username,
                 slug: newProfile.slug
               }
             };
-            console.log("PROFILE UPDATE PAYLOAD", payload);
+            console.log("PROFILE INSERT PAYLOAD", payload);
             const { error: insertError } = await supabase
               .from("profiles")
               .insert(payload);
@@ -756,7 +761,6 @@ export function CmsProvider({
               setCurrentUser(newProfile);
             } else {
               console.error("Error inserting profile on auth state change:", insertError.message);
-              // Fallback
               setCurrentUser(newProfile);
             }
           }

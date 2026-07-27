@@ -335,7 +335,11 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
                                   )}
                                 </div>
                                 <p className="text-xs text-slate-500 font-hindi truncate">
-                                  <Highlight text={`@${author.meta?.username || author.url.split('/').pop()}`} />
+                                  {(() => {
+                                    const userSlug = author.meta?.slug || (author.url ? author.url.split('/').pop() : null);
+                                    if (!userSlug || userSlug === "undefined" || userSlug === "null") return null;
+                                    return <Highlight text={`@${userSlug}`} />;
+                                  })()}
                                 </p>
                               </div>
                             </button>
