@@ -67,7 +67,6 @@ export async function updateUserSettings(category: string, data: any) {
 }
 
 export async function updateUserAccount(data: Partial<Profile>) {
-  console.log("LOGGING settingsActions: submitted payload:", data);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
 
@@ -153,17 +152,25 @@ export async function updateUserAccount(data: Partial<Profile>) {
     };
   }
 
-  console.log("LOGGING settingsActions: validated payload:", profileToUpdate);
+  // Handle location fields (city, state, country)
+  if (data.city !== undefined || data.state !== undefined || data.country !== undefined) {
+    const cleanCity = data.city !== undefined ? data.city.trim() : (existingProfile.city || '').trim();
+    const cleanState = data.state !== undefined ? data.state.trim() : (existingProfile.state || '').trim();
+    const cleanCountry = data.country !== undefined ? data.country.trim() : (existingProfile.country || '').trim();
+
+    profileToUpdate.city = cleanCity;
+    profileToUpdate.state = cleanState;
+    profileToUpdate.country = cleanCountry;
+
+    const parts = [cleanCity, cleanState, cleanCountry].filter(Boolean);
+    profileToUpdate.location = parts.length > 0 ? parts.join(", ") : null;
+  }
 
   const { data: updatedProfile, error } = await updateProfile(profileToUpdate, supabase);
 
-  console.log("LOGGING settingsActions: Supabase UPDATE result success:", !error);
   if (error) {
-    console.log("LOGGING settingsActions: Supabase UPDATE error:", error);
     throw new Error(error);
   }
-
-  console.log("LOGGING settingsActions: returned row:", updatedProfile);
 
   revalidatePath("/settings/account");
   return { success: true, user: updatedProfile };

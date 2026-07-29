@@ -1,117 +1,131 @@
 import React from "react";
-import Image from "next/image";
-import { CheckCircle2, Calendar, MapPin, Link as LinkIcon } from "lucide-react";
+import { CheckCircle2, MapPin, Link as LinkIcon } from "lucide-react";
 import { Profile } from "@/store/types";
-import { supabase } from "@/lib/supabaseClient";
-import { STORAGE_CONFIG } from "@/config/storage.config";
 import Avatar from "@/components/shared/Avatar";
-
-// Social SVG Icons for cleaner presentation
-const TwitterIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-);
-const LinkedinIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-);
+import { getProfileSocialLinks } from "@/config/socialPlatforms";
+import SocialIcon from "@/components/shared/SocialIcon";
+import { formatProfileLocation } from "@/utils/formatLocation";
+import ProfileActions from "./ProfileActions";
 
 interface ProfileIdentityCardProps {
   user: Profile;
+  isOwner?: boolean;
+  onMessageClick?: () => void;
+  onShareClick?: () => void;
 }
 
-export default function ProfileIdentityCard({ user }: ProfileIdentityCardProps) {
+export default function ProfileIdentityCard({
+  user,
+  isOwner = false,
+  onMessageClick = () => {},
+  onShareClick = () => {},
+}: ProfileIdentityCardProps) {
   const isVerified = (user as any).is_verified || user.verified || false;
-  const joinDate = user.joinDate || "जून २०२६";
+  const username = user.username || user.slug;
+  const socialLinks = getProfileSocialLinks(user);
+  const hasSocialLinks = socialLinks.length > 0;
+  const formattedLocation = formatProfileLocation(user);
 
   return (
-    <div className="relative z-20 -mt-24 sm:-mt-28 md:-mt-32 p-6 sm:p-8 bg-white dark:bg-[#0F172A] rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/40 border border-slate-100 dark:border-slate-800 font-sans">
-      <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start text-center md:text-left">
-        
-        {/* Profile Photo */}
-        <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-white dark:border-[#0F172A] overflow-hidden bg-slate-50 dark:bg-slate-900 shadow-md shrink-0 relative group">
+    <div className="relative z-20 -mt-14 sm:-mt-20 md:-mt-24 font-sans">
+      
+      {/* Top Header Row: Floating Avatar & Action Buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        {/* Floating Profile Photo overlapping the banner */}
+        <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full border-4 border-[#FDFCF7] dark:border-[#0B0F19] overflow-hidden bg-white dark:bg-slate-900 shadow-xl shrink-0 relative">
           <Avatar 
             url={user.avatar_url} 
             alt={user.name || ""} 
-            className="w-full h-full" name={user.name || ""} 
+            className="w-full h-full object-cover" 
+            name={user.name || ""} 
           />
         </div>
 
-        {/* Info */}
-        <div className="space-y-4 flex-grow w-full">
-          <div>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-              <h1 className="text-2xl sm:text-3xl font-extrabold font-serif text-slate-850 dark:text-white flex items-center gap-2">
-                <span>{user.name}</span>
-                {isVerified && (
-                  <CheckCircle2 className="w-6 h-6 text-blue-500 fill-blue-500/10 shrink-0" />
-                )}
-              </h1>
-            </div>
-            
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-2">
-              {(() => {
-                const s = user.slug || user.username;
-                if (!s || s === "undefined" || s === "null") return null;
-                return (
-                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                    @{s}
-                  </span>
-                );
-              })()}
-              
-              {user.designation || user.role ? (
-                <span className="inline-flex items-center text-[10px] font-bold font-sans rounded-full px-2.5 py-0.5 bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/20">
-                  {user.designation || user.role}
-                </span>
-              ) : null}
-            </div>
+        {/* Action Buttons (Right-aligned on desktop, full width/aligned on mobile) */}
+        <div className="pt-2 sm:pt-0 sm:pb-2">
+          <ProfileActions 
+            isOwner={isOwner} 
+            onMessageClick={onMessageClick}
+            onShareClick={onShareClick}
+          />
+        </div>
+      </div>
+
+      {/* Floating Profile Details (Unwrapped, modern typography) */}
+      <div className="mt-5 space-y-4">
+        
+        {/* Name, Handle, Location */}
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-serif text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <span>{user.name}</span>
+              {isVerified && (
+                <CheckCircle2 className="w-6 h-6 text-blue-500 fill-blue-500/10 shrink-0" />
+              )}
+            </h1>
           </div>
 
-          {/* Short Bio */}
-          {user.bio && (
-            <p className="text-slate-655 dark:text-slate-300 text-sm sm:text-base font-serif leading-relaxed max-w-3xl">
-              {user.bio}
-            </p>
+          {/* Username */}
+          {username && username !== "undefined" && username !== "null" && (
+            <div className="mt-1">
+              <span className="text-sm sm:text-base font-semibold font-mono text-slate-500 dark:text-slate-400">
+                @{username}
+              </span>
+            </div>
           )}
 
-          {/* Metadata: Join Date & Location */}
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-xs text-slate-450 dark:text-slate-500 font-sans pt-1">
-            {user.location && (
-              <span className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5" />
-                <span>{user.location}</span>
-              </span>
-            )}
-            
-            {user.website && (
-              <a href={user.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-[#F97316] transition-colors">
-                <LinkIcon className="w-3.5 h-3.5" />
-                <span className="underline decoration-slate-300 dark:decoration-slate-700 underline-offset-4">वेबसाइट</span>
-              </a>
-            )}
-
-            <span className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>सदस्यता (Joined): {joinDate}</span>
-            </span>
-          </div>
-
-          {/* Social Links */}
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-3 border-t border-slate-100 dark:border-slate-800/60 mt-3">
-            {user.social_links?.twitter && (
-              <a href={user.social_links.twitter} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 hover:bg-[#1DA1F2]/10 text-slate-600 hover:text-[#1DA1F2] dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-[#1DA1F2]/20 dark:hover:text-[#1DA1F2] transition-colors">
-                <TwitterIcon className="w-4 h-4" />
-              </a>
-            )}
-            {user.social_links?.linkedin && (
-              <a href={user.social_links.linkedin} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 hover:bg-[#0A66C2]/10 text-slate-600 hover:text-[#0A66C2] dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-[#0A66C2]/20 dark:hover:text-[#0A66C2] transition-colors">
-                <LinkedinIcon className="w-4 h-4" />
-              </a>
-            )}
-            {!user.social_links?.twitter && !user.social_links?.linkedin && (
-              <span className="text-[10px] text-slate-400 font-sans italic">सोशल मीडिया लिंक उपलब्ध नहीं हैं</span>
-            )}
-          </div>
+          {/* Location (Directly below Username) */}
+          {formattedLocation && (
+            <div className="flex items-center gap-1.5 mt-2 text-xs sm:text-sm font-sans font-medium text-slate-600 dark:text-slate-400">
+              <MapPin className="w-4 h-4 text-[#F97316] shrink-0" />
+              <span className="leading-snug">{formattedLocation}</span>
+            </div>
+          )}
         </div>
+
+        {/* Bio */}
+        {user.bio && (
+          <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base font-serif leading-relaxed max-w-3xl">
+            {user.bio}
+          </p>
+        )}
+
+        {/* Website URL */}
+        {user.website && (
+          <div className="pt-1">
+            <a 
+              href={user.website} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 hover:text-[#F97316] dark:hover:text-[#F97316] transition-colors"
+            >
+              <LinkIcon className="w-3.5 h-3.5" />
+              <span className="underline underline-offset-4 decoration-slate-300 dark:decoration-slate-700">
+                {user.website.replace(/^https?:\/\//, '')}
+              </span>
+            </a>
+          </div>
+        )}
+
+        {/* Social Icons */}
+        {hasSocialLinks && (
+          <div className="flex flex-wrap items-center gap-2.5 pt-2">
+            {socialLinks.map((link) => (
+              <a
+                key={link.key}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 hover:bg-[#F97316]/10 text-slate-600 hover:text-[#F97316] dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-[#F97316]/20 dark:hover:text-[#F97316] transition-colors border border-slate-200/80 dark:border-slate-700/60"
+                title={link.label}
+                aria-label={link.label}
+              >
+                <SocialIcon iconName={link.iconName} className="w-4 h-4" />
+              </a>
+            ))}
+          </div>
+        )}
+
       </div>
     </div>
   );

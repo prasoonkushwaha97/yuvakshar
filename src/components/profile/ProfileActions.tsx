@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Edit3, Settings, Share2, MessageSquare, PenTool, BookCopy } from "lucide-react";
+import { Edit3, Settings, Share2, MessageSquare, PenTool } from "lucide-react";
 
 interface ProfileActionsProps {
   isOwner: boolean;
@@ -23,14 +23,6 @@ export default function ProfileActions({
           >
             <PenTool className="w-4 h-4" />
             <span>नया लेख</span>
-          </Link>
-
-          <Link 
-            href="/workspace/articles"
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white hover:bg-slate-50 dark:bg-[#0F172A] dark:hover:bg-[#1E293B] border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 px-6 py-2.5 rounded-full text-sm font-bold font-serif shadow-sm transition-all active:scale-95"
-          >
-            <BookCopy className="w-4 h-4" />
-            <span>मेरे लेख</span>
           </Link>
           
           <Link 

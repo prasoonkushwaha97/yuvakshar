@@ -13,7 +13,6 @@ import { SITE_URL } from "@/utils/routes";
 import ProfileCover from "@/components/profile/ProfileCover";
 import ProfileIdentityCard from "@/components/profile/ProfileIdentityCard";
 import ProfileActions from "@/components/profile/ProfileActions";
-import ProfileStats from "@/components/profile/ProfileStats";
 import ProfileTabs, { ProfileTabId } from "@/components/profile/ProfileTabs";
 import ProfileArticleCard from "@/components/profile/ProfileArticleCard";
 import ProfileDraftsTab from "@/components/profile/ProfileDraftsTab";
@@ -21,6 +20,7 @@ import ProfileBookmarksTab from "@/components/profile/ProfileBookmarksTab";
 import ProfileAboutTab from "@/components/profile/ProfileAboutTab";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
 import ShareModal from "@/components/shared/ShareModal";
+import CreateUsernameModal from "@/components/profile/CreateUsernameModal";
 
 export default function UserProfile() {
   const params = useParams();
@@ -136,32 +136,21 @@ export default function UserProfile() {
     <div className="min-h-screen bg-[#FDFCF7] dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 transition-colors duration-300 pb-20">
       
       {/* Cover Banner */}
-      <ProfileCover coverUrl={user.cover_url} isOwner={isOwner} />
+      <ProfileCover user={user} coverUrl={user.cover_url} isOwner={isOwner} />
 
       {/* Profile Card Container */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         
-        {/* Identity & Details card */}
-        <ProfileIdentityCard user={user} />
-
-        {/* Action button triggers */}
-        <div className="mt-6 flex justify-center md:justify-start">
-          <ProfileActions 
-            isOwner={isOwner} 
-            onMessageClick={() => setContactOpen(true)}
-            onShareClick={handleShareClick}
-          />
-        </div>
-
-        {/* Quick Stats Grid */}
-        <div className="mt-8">
-          <ProfileStats 
-            articlesCount={userArticles.length}
-          />
-        </div>
+        {/* Identity & Details floating section */}
+        <ProfileIdentityCard 
+          user={user} 
+          isOwner={isOwner}
+          onMessageClick={() => setContactOpen(true)}
+          onShareClick={handleShareClick}
+        />
 
         {/* Navigation Tabs */}
-        <div className="mt-10">
+        <div className="mt-6">
           <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} isOwner={isOwner} />
         </div>
 
@@ -184,13 +173,10 @@ export default function UserProfile() {
 
                 {/* 2. Latest Articles Feed */}
                 {latestArticles.length > 0 && (
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-extrabold text-slate-500 dark:text-slate-455 uppercase tracking-wider border-b border-slate-100 dark:border-slate-850 pb-2">नवीनतम आलेख (Latest Articles)</h3>
-                    <div className="flex flex-col">
-                      {latestArticles.map((art) => (
-                        <ProfileArticleCard key={art.id} article={art} />
-                      ))}
-                    </div>
+                  <div className="flex flex-col">
+                    {latestArticles.map((art) => (
+                      <ProfileArticleCard key={art.id} article={art} />
+                    ))}
                   </div>
                 )}
 
@@ -265,6 +251,19 @@ export default function UserProfile() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Create Username Modal (Prompt if mandatory username is missing) */}
+      {isOwner && (!currentUser?.username || currentUser.username.trim() === "") && (
+        <CreateUsernameModal 
+          isOpen={true}
+          onSuccess={(newUsername) => {
+            router.replace(`/u/${newUsername}`);
+            if (typeof window !== "undefined") {
+              window.location.reload();
+            }
+          }}
+        />
       )}
 
     </div>

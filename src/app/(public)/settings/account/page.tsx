@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { useCms } from "@/store/CmsContext";
 import { updateUserAccount } from "@/lib/actions/settingsActions";
-import { AlertCircle, CheckCircle2, RotateCw } from "lucide-react";
+import { AlertCircle, CheckCircle2, RotateCw, MapPin } from "lucide-react";
 import AvatarUploader from "@/components/yuvakshar/AvatarUploader";
+import BannerUploader from "@/components/yuvakshar/BannerUploader";
 import { validateUsername, RESERVED_USERNAMES } from "@/utils/username";
+import { SOCIAL_PLATFORMS } from "@/config/socialPlatforms";
 
 export default function AccountSettingsPage() {
   const { currentUser, users } = useCms();
@@ -13,7 +15,12 @@ export default function AccountSettingsPage() {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
-  const [socialLinks, setSocialLinks] = useState({ twitter: "", linkedin: "", website: "" });
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [country, setCountry] = useState("");
+  const [socialLinks, setSocialLinks] = useState<Record<string, string>>({});
+  const [customBannerUrl, setCustomBannerUrl] = useState("");
+  const [selectedGalleryBannerId, setSelectedGalleryBannerId] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -60,13 +67,33 @@ export default function AccountSettingsPage() {
     if (currentUser) {
       setName(currentUser.name || "");
       setBio(currentUser.bio || "");
-      if (currentUser.social_links) {
-        setSocialLinks({
-          twitter: currentUser.social_links.twitter || "",
-          linkedin: currentUser.social_links.linkedin || "",
-          website: currentUser.social_links.website || "",
-        });
-      }
+      setCity(currentUser.city || "");
+      setState(currentUser.state || "");
+      setCountry(currentUser.country || "");
+      setCustomBannerUrl(currentUser.custom_banner_url || currentUser.cover_url || "");
+      setSelectedGalleryBannerId(currentUser.selected_gallery_banner_id || "");
+      const initialSocial: Record<string, string> = {};
+      SOCIAL_PLATFORMS.forEach((platform) => {
+        let val = "";
+        if (currentUser.social_links && typeof currentUser.social_links === "object") {
+          for (const fk of platform.fieldKeys) {
+            if (currentUser.social_links[fk]) {
+              val = currentUser.social_links[fk];
+              break;
+            }
+          }
+        }
+        if (!val) {
+          for (const fk of platform.fieldKeys) {
+            if ((currentUser as any)[fk]) {
+              val = (currentUser as any)[fk];
+              break;
+            }
+          }
+        }
+        initialSocial[platform.key] = val || "";
+      });
+      setSocialLinks(initialSocial);
 
       if (!currentUser.username) {
         setShowWarning(true);
@@ -112,7 +139,13 @@ export default function AccountSettingsPage() {
         name: name.trim(),
         username: username.trim(),
         bio: bio.trim(),
+        city: city.trim(),
+        state: state.trim(),
+        country: country.trim(),
         social_links: socialLinks,
+        custom_banner_url: customBannerUrl,
+        selected_gallery_banner_id: selectedGalleryBannerId,
+        cover_url: customBannerUrl,
       });
       setIsSuccess(true);
       setShowWarning(false);
@@ -144,10 +177,22 @@ export default function AccountSettingsPage() {
 
       <form onSubmit={handleSave} className="space-y-6">
         
-        {/* Avatar Upload System */}
+        {/* 1. Avatar Upload System */}
         <div className="space-y-2">
           <label className="text-sm font-bold text-slate-700 dark:text-slate-300">प्रोफ़ाइल फ़ोटो</label>
           <AvatarUploader currentAvatarUrl={currentUser.avatar_url || ""} />
+        </div>
+
+        {/* 2. Profile Banner Section */}
+        <div className="space-y-2 pt-4 border-t border-slate-200 dark:border-slate-800">
+          <BannerUploader
+            customBannerUrl={customBannerUrl}
+            selectedGalleryBannerId={selectedGalleryBannerId}
+            onChange={(data) => {
+              setCustomBannerUrl(data.customBannerUrl || "");
+              setSelectedGalleryBannerId(data.selectedGalleryBannerId || "");
+            }}
+          />
         </div>
 
         {/* Name Field */}
@@ -222,30 +267,69 @@ export default function AccountSettingsPage() {
           />
         </div>
 
+        {/* Location Section */}
+        <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+          <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-[#F97316]" />
+            <span>स्थान (Location)</span>
+          </label>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">देश (Country)</label>
+              <input
+                type="text"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                maxLength={100}
+                className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white"
+                placeholder="उदा. भारत"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">राज्य (State)</label>
+              <input
+                type="text"
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                maxLength={100}
+                className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white"
+                placeholder="उदा. मध्य प्रदेश"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">शहर (City)</label>
+              <input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                maxLength={100}
+                className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white"
+                placeholder="उदा. भोपाल"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Social Links */}
         <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
           <label className="text-sm font-bold text-slate-700 dark:text-slate-300">सोशल लिंक्स (Social Links)</label>
-          <input
-            type="url"
-            value={socialLinks.twitter}
-            onChange={(e) => setSocialLinks({...socialLinks, twitter: e.target.value})}
-            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white"
-            placeholder="ट्विटर (Twitter) लिंक"
-          />
-          <input
-            type="url"
-            value={socialLinks.linkedin}
-            onChange={(e) => setSocialLinks({...socialLinks, linkedin: e.target.value})}
-            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white"
-            placeholder="लिंक्डइन (LinkedIn) लिंक"
-          />
-          <input
-            type="url"
-            value={socialLinks.website}
-            onChange={(e) => setSocialLinks({...socialLinks, website: e.target.value})}
-            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white"
-            placeholder="व्यक्तिगत वेबसाइट लिंक"
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {SOCIAL_PLATFORMS.map((platform) => (
+              <div key={platform.key} className="space-y-1">
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{platform.label}</label>
+                <input
+                  type="url"
+                  value={socialLinks[platform.key] || ""}
+                  onChange={(e) => setSocialLinks({ ...socialLinks, [platform.key]: e.target.value })}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-900 dark:text-white"
+                  placeholder={platform.placeholder}
+                />
+              </div>
+            ))}
+          </div>
         </div>
 
         {errorMsg && (

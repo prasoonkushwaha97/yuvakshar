@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: bio,
       url: url,
       type: 'profile',
-      siteName: 'Yuvakshar',
+      siteName: 'युवाक्षर',
     },
     twitter: {
       card: 'summary_large_image',
@@ -45,7 +45,7 @@ export default async function ProfileLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ username: string }>;
+  params: any;
 }) {
   const resolvedParams = await params;
   const username = resolvedParams.username;
@@ -53,7 +53,7 @@ export default async function ProfileLayout({
   const url = `${SITE_URL}${getCanonicalProfileUrl({ username: cleanUsername }) ?? `/u/${cleanUsername}`}`;
   const name = cleanUsername
     .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 
   const jsonLd = {

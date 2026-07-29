@@ -10,15 +10,16 @@ export default function ProfileSkeleton() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative -mt-16 md:-mt-24 z-10">
         <div className="flex flex-col xl:flex-row gap-6 xl:gap-10 items-start">
           <div className="w-full xl:w-2/3">
-            {/* Identity Card Skeleton */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
-              <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-                <BaseSkeleton className="w-32 h-32 rounded-full border-4 border-white dark:border-slate-900 shrink-0" />
-                <div className="flex-1 w-full space-y-3">
-                  <BaseSkeleton className="h-8 w-2/3 md:w-1/2" />
-                  <BaseSkeleton className="h-5 w-1/3 md:w-1/4" />
-                  <BaseSkeleton className="h-16 w-full mt-4" />
-                </div>
+            {/* Floating Identity Skeleton */}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <BaseSkeleton className="w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full border-4 border-[#FAFAF9] dark:border-[#0A0F1D] shrink-0" />
+                <BaseSkeleton className="h-10 w-48 rounded-full" />
+              </div>
+              <div className="space-y-3 pt-2">
+                <BaseSkeleton className="h-8 w-1/2" />
+                <BaseSkeleton className="h-4 w-1/4" />
+                <BaseSkeleton className="h-14 w-full max-w-2xl" />
               </div>
             </div>
             
