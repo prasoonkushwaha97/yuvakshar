@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { HelpCircle, PlusCircle, MessageSquareOff } from "lucide-react";
+import { PlusCircle, MessageSquareOff } from "lucide-react";
 import { useCms } from "@/store/CmsContext";
 import {
   getQnaQuestions,
@@ -102,12 +102,11 @@ export default function QnaListPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
         <div>
-          <h1 className="font-serif font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white flex items-center gap-2.5">
-            <HelpCircle className="w-7 h-7 text-[#F97316]" />
-            <span>प्रश्नोत्तर (Q&A)</span>
+          <h1 className="font-serif font-extrabold text-2xl sm:text-3xl lg:text-[42px] text-slate-900 dark:text-white tracking-tight leading-[1.4]">
+            प्रश्नोत्तर
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-            युवाक्षर चौपाल समुदाय से प्रश्न पूछें, समाधान पाएं और अपना ज्ञान साझा करें।
+          <p className="text-[#6B7280] dark:text-slate-400 text-base mt-2.5">
+            युवाक्षर समुदाय से प्रश्न पूछें, समाधान पाएँ और अपना ज्ञान साझा करें।
           </p>
         </div>
 

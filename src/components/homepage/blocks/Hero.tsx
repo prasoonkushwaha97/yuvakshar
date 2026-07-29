@@ -49,13 +49,15 @@ export default function Hero() {
 
   if (!currentArticle) return null;
 
-  // Right Column: editorial items proxy (3 items)
+  // Right Column: editorial items stack (3 items) using DB categories
   const remaining = articles ? [...articles].filter((art) => art.id !== currentArticle.id) : [];
-  const editorialStack = [
-    { title: "कविता", article: remaining[0] || currentArticle },
-    { title: "संपादकीय विचार", article: remaining[1] || currentArticle },
-    { title: "साक्षात्कार", article: remaining[2] || currentArticle }
-  ].filter(item => item.article);
+  const editorialStack = (remaining.length > 0 ? remaining : [currentArticle])
+    .slice(0, 3)
+    .map((art) => ({
+      title: art.category || art.categories?.name_hi || art.categories?.name || "विशेष लेख",
+      article: art,
+    }))
+    .filter((item) => item.article);
 
   return (
     <SectionContainer bgClassName="bg-transparent" noTopPadding>
@@ -97,7 +99,7 @@ export default function Hero() {
           <div className="absolute bottom-0 left-0 z-20 p-6 pb-10 md:p-8 md:pb-12 lg:p-10 lg:pb-14 pr-12 md:pr-16 text-white w-full pointer-events-none flex flex-col justify-end">
 
             {/* Headline - Significantly larger on mobile/tablet */}
-            <h2 className="text-[32px] md:text-[40px] lg:text-[44px] font-serif font-bold leading-[1.2] drop-shadow-xl mb-4 md:mb-5 line-clamp-3 md:line-clamp-none w-full max-w-[85%] md:max-w-[80%] pointer-events-auto">
+            <h2 className="text-[32px] md:text-[40px] lg:text-[44px] font-serif font-bold leading-[1.45] drop-shadow-xl mb-4 md:mb-5 line-clamp-3 md:line-clamp-none w-full max-w-[85%] md:max-w-[80%] pointer-events-auto">
               {stripMarkdown(currentArticle.title || currentArticle.title_hi || "")}
             </h2>
 
@@ -105,7 +107,7 @@ export default function Hero() {
             <div className="flex flex-wrap items-center gap-3 text-sm md:text-base font-sans text-stone-200 pointer-events-auto">
               <AuthorLink 
                 author={resolvedAuthor || { name: resolvedAuthorName }}
-                className="hover:text-primary transition-colors font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded flex items-center gap-2"
+                className="hover:text-primary transition-colors font-bold cursor-pointer rounded flex items-center gap-2"
               >
                 <Avatar 
                   url={resolvedAuthor?.avatar_url} 
@@ -188,9 +190,9 @@ export default function Hero() {
 
                   <Link 
                     href={getArticleUrl(article)}
-                    className="block group-hover/card:text-[#f97316] transition-colors duration-250"
+                    className="block"
                   >
-                    <h4 className="font-serif text-base lg:text-lg leading-snug text-stone-800 dark:text-stone-200 line-clamp-2 hover:text-stone-600 dark:hover:text-stone-300 transition-colors">
+                    <h4 className="font-serif text-base lg:text-lg leading-[1.5] text-stone-800 dark:text-stone-200 line-clamp-2">
                       {title}
                     </h4>
                   </Link>

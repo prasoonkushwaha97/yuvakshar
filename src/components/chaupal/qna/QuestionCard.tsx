@@ -52,7 +52,7 @@ export default function QuestionCard({ question, onVote }: QuestionCardProps) {
 
       {/* Title & Excerpt */}
       <Link href={`/community/qna/${question.slug}`} className="group space-y-2">
-        <h2 className="font-serif font-bold text-lg sm:text-xl text-slate-900 dark:text-white group-hover:text-[#F97316] transition-colors leading-snug">
+        <h2 className="font-serif font-bold text-lg sm:text-xl text-slate-900 dark:text-white group-hover:text-[#F97316] transition-colors leading-[1.5]">
           {question.title}
         </h2>
         <p className="text-slate-600 dark:text-slate-300 font-sans text-sm line-clamp-2 leading-relaxed">

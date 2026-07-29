@@ -5,6 +5,7 @@ import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
 import ArticleCardMedium from "../cards/ArticleCardMedium";
 import SectionContainer from "../layout/SectionContainer";
+import { isPublishedWithinDays, getArticleTimestamp } from "@/utils/date";
 
 interface LatestNewsProps {
   excludeIds?: string[];
@@ -19,13 +20,14 @@ export default function LatestNews({ excludeIds = [] }: LatestNewsProps) {
     (art: any) => art.status === "Published" || art.status === "Approved" || !art.status
   );
 
-  // Filter out any articles rendered in Hero or TopStories
-  const feedArticles = published.filter((a: any) => !excludeIds.includes(a.id));
+  // Filter out hero/featured excluded articles AND articles older than 5 days
+  // Sort descending by publication date (newest first)
+  const visibleArticles = published
+    .filter((a: any) => !excludeIds.includes(a.id))
+    .filter((a: any) => isPublishedWithinDays(a, 5))
+    .sort((a: any, b: any) => getArticleTimestamp(b) - getArticleTimestamp(a));
 
-  if (feedArticles.length === 0) return null;
-
-  // Only show the first 10, let InfiniteArticleFeed handle the rest below it
-  const visibleArticles = feedArticles.slice(0, 10);
+  if (visibleArticles.length === 0) return null;
 
   return (
     <SectionContainer bgClassName="bg-[#FAFAF9] dark:bg-[#1C1917]">

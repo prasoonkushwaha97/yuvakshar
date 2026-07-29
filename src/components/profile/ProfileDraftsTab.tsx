@@ -49,7 +49,7 @@ export default function ProfileDraftsTab({ user }: ProfileDraftsTabProps) {
                 {getStatusBadge(draft.status)}
                 <span className="text-xs text-slate-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {draft.lastEdited}</span>
               </div>
-              <h4 className="font-bold text-base text-slate-900 dark:text-white truncate group-hover:text-[#F97316] transition-colors">
+              <h4 className="font-bold text-base text-slate-900 dark:text-white truncate leading-[1.5]">
                 {draft.title}
               </h4>
             </div>

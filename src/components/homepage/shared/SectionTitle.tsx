@@ -18,7 +18,7 @@ export default function SectionTitle({ title, link, className = "" }: SectionTit
     <div className={`flex justify-between items-end mb-6 pb-2.5 border-b-2 border-gray-900 dark:border-gray-800 ${className}`}>
       <div className="flex items-center space-x-3.5">
         <span className="w-1.5 h-6 bg-[#f97316]" />
-        <h2 className="text-xl md:text-2xl font-black font-serif uppercase tracking-tight text-[#111] dark:text-[#F5F5F5]">
+        <h2 className="text-xl md:text-2xl font-black font-serif uppercase tracking-tight text-[#111] dark:text-[#F5F5F5] leading-[1.4]">
           {title}
         </h2>
       </div>

@@ -79,8 +79,8 @@ export default function TopStories() {
 
 
                 {/* Title */}
-                <Link href={getArticleUrl(art)} className="block hover:text-[#f97316] transition-colors duration-250 mb-2">
-                  <h3 className="text-base md:text-lg font-bold font-serif leading-snug text-gray-900 dark:text-white line-clamp-2">
+                <Link href={getArticleUrl(art)} className="block mb-2">
+                  <h3 className="text-base md:text-lg font-bold font-serif leading-[1.5] text-gray-900 dark:text-white line-clamp-2">
                     {title}
                   </h3>
                 </Link>

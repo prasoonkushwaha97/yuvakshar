@@ -20,10 +20,10 @@ export default function ArticleCardHero({ article }: ArticleCardHeroProps) {
   const imageUrl = article.coverImage || article.cover_image || article.image || "/images/placeholder-news.jpg";
 
   return (
-    <div className="group flex flex-col w-full h-full bg-white dark:bg-zinc-900/40 rounded-2xl overflow-hidden border border-slate-200/60 dark:border-zinc-800/50 hover:border-slate-300 dark:hover:border-zinc-700/60 hover:shadow-md transition-all duration-300">
+    <div className="group flex flex-col w-full h-full bg-white dark:bg-zinc-900/40 rounded-2xl overflow-hidden border border-slate-200/60 dark:border-zinc-800/50 hover:border-[#f97316]/30 dark:hover:border-[#f97316]/30 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
       {/* 1. Cover Image */}
       <Link href={getArticleUrl(article)} className="block relative aspect-[16/10] w-full overflow-hidden bg-slate-100 dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800/50 shrink-0">
-        <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out" loading="eager" fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px" />
+        <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.025] transition-transform duration-500 ease-out" loading="eager" fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px" />
         <div className="absolute top-4 left-4 z-10">
           <CategoryBadge category={article.category || "समाचार"} />
         </div>
@@ -32,8 +32,8 @@ export default function ArticleCardHero({ article }: ArticleCardHeroProps) {
 
       {/* 2. Text Content */}
       <div className="flex-1 flex flex-col p-6 sm:p-7">
-        <Link href={getArticleUrl(article)} className="block group-hover:text-[#F97316] transition-colors duration-300">
-          <h1 className="text-2xl md:text-3xl font-black font-serif leading-[1.25] text-slate-900 dark:text-zinc-100 group-hover:text-[#F97316] dark:group-hover:text-[#F97316] mb-3 tracking-tight">
+        <Link href={getArticleUrl(article)} className="block">
+          <h1 className="text-2xl md:text-3xl font-black font-serif leading-[1.5] text-slate-900 dark:text-zinc-100 mb-3 tracking-tight">
             {title}
           </h1>
         </Link>

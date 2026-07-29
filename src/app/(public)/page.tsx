@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCms } from "@/store/CmsContext";
 import { useLanguage } from "@/store/LanguageContext";
@@ -41,7 +41,7 @@ class SectionErrorBoundary extends React.Component<{ children: React.ReactNode }
   }
 }
 
-export default function Home() {
+function HomeContent() {
   const { locale } = useLanguage();
   const { articles, homepageSections, authLoading, cmsDataLoading } = useCms();
   const searchParams = useSearchParams();
@@ -287,5 +287,13 @@ export default function Home() {
         excludeIds={finalExcludesBeforeEditorial}
       />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
   );
 }

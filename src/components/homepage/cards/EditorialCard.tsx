@@ -41,8 +41,8 @@ export default function EditorialCard({ article }: EditorialCardProps) {
       </AuthorLink>
 
       {/* Column Title */}
-      <Link href={getArticleUrl(article)} className="block flex-grow group-hover:text-[#f97316] transition-colors">
-        <h4 className="font-serif font-black text-[15px] leading-snug text-gray-900 dark:text-gray-150 line-clamp-3 mb-3">
+      <Link href={getArticleUrl(article)} className="block flex-grow">
+        <h4 className="font-serif font-black text-[15px] leading-[1.5] text-gray-900 dark:text-gray-150 line-clamp-3 mb-3">
           "{title}"
         </h4>
       </Link>

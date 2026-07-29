@@ -14,6 +14,7 @@ export interface RolePermissions {
   assign_articles: boolean;
   manage_users: boolean;
   manage_settings: boolean;
+  manage_contact_messages: boolean;
 }
 
 // Default strict RBAC implementation
@@ -27,6 +28,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<CmsRole, RolePermissions> = {
     assign_articles: true,
     manage_users: true,
     manage_settings: true,
+    manage_contact_messages: true,
   },
   "Editor-in-Chief": {
     create_article: true,
@@ -37,6 +39,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<CmsRole, RolePermissions> = {
     assign_articles: true,
     manage_users: false,
     manage_settings: false,
+    manage_contact_messages: false,
   },
   "Managing Editor": {
     create_article: true,
@@ -47,6 +50,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<CmsRole, RolePermissions> = {
     assign_articles: true,
     manage_users: false,
     manage_settings: false,
+    manage_contact_messages: false,
   },
   "Editor": {
     create_article: true,
@@ -57,6 +61,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<CmsRole, RolePermissions> = {
     assign_articles: false,
     manage_users: false,
     manage_settings: false,
+    manage_contact_messages: false,
   },
   "Normal User": {
     create_article: true,
@@ -67,6 +72,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<CmsRole, RolePermissions> = {
     assign_articles: false,
     manage_users: false,
     manage_settings: false,
+    manage_contact_messages: false,
   },
 };
 

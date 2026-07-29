@@ -17,13 +17,30 @@ export default function GlobalSettingsPage() {
     fetchSettings();
   }, []);
 
+  const DEFAULT_BRANDING_SETTINGS = [
+    { key: 'brand_logo', value: '/yuvakshar-logo.png', description: 'Official Yuvakshar Portal Logo URL' },
+    { key: 'brand_favicon', value: '/favicon.ico', description: 'Website Favicon Icon URL' },
+    { key: 'brand_app_icon', value: '/icon-192.png', description: 'PWA Mobile App Icon URL (192x192)' },
+    { key: 'brand_default_thumbnail', value: '/default-article.jpg', description: 'Fallback Thumbnail image URL for articles without a cover image' },
+    { key: 'brand_og_image', value: '/og-image.jpg', description: 'Default Open Graph Social Sharing Image URL' },
+  ];
+
   const fetchSettings = async () => {
     try {
       const data = await getSiteSettings();
-      setSettings(data);
+      
+      const existingKeys = new Set(data.map(s => s.key));
+      const combined = [...data];
+      DEFAULT_BRANDING_SETTINGS.forEach(b => {
+        if (!existingKeys.has(b.key)) {
+          combined.push(b);
+        }
+      });
+      
+      setSettings(combined);
       
       const initialForm: Record<string, string> = {};
-      data.forEach(s => {
+      combined.forEach(s => {
         initialForm[s.key] = s.value;
       });
       setFormData(initialForm);
@@ -78,6 +95,7 @@ export default function GlobalSettingsPage() {
 
   const tabs = [
     { id: 'general', label: 'General' },
+    { id: 'branding', label: 'Branding & Shared Assets' },
     { id: 'navigation', label: 'Navigation' },
     { id: 'footer', label: 'Footer' },
     { id: 'features', label: 'Features' },
@@ -86,6 +104,7 @@ export default function GlobalSettingsPage() {
 
   const getTabForKey = (key: string) => {
     const k = key.toLowerCase();
+    if (k.startsWith('brand_') || k.startsWith('logo') || k.startsWith('favicon') || k.startsWith('icon') || k.startsWith('og_') || k.startsWith('thumbnail')) return 'branding';
     if (k.startsWith('nav_')) return 'navigation';
     if (k.startsWith('footer_')) return 'footer';
     if (k.startsWith('feature_') || k.startsWith('features_')) return 'features';

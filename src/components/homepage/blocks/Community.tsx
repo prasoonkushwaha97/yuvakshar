@@ -52,7 +52,7 @@ export default function Community() {
                 <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#f97316] mb-2.5 inline-block">
                   {topic.tag}
                 </span>
-                <h5 className="font-serif font-bold text-sm text-gray-800 dark:text-gray-200 group-hover:text-[#f97316] leading-snug line-clamp-2 mb-6">
+                <h5 className="font-serif font-bold text-sm text-gray-800 dark:text-gray-200 leading-[1.5] line-clamp-2 mb-6">
                   {topic.title}
                 </h5>
               </div>

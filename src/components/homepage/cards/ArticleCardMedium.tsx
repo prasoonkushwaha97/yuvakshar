@@ -21,11 +21,11 @@ export default function ArticleCardMedium({ article, showImage = true }: Article
   const cleanDate = formatDisplayDate(article.date);
 
   return (
-    <div className="group flex flex-col h-full bg-transparent rounded-2xl p-2.5 sm:p-3 border border-transparent hover:border-slate-200/80 dark:hover:border-zinc-800/80 hover:bg-white dark:hover:bg-zinc-900/50 hover:shadow-md transition-all duration-200">
+    <div className="group flex flex-col h-full bg-white dark:bg-zinc-900/40 rounded-2xl p-3 border border-slate-200/60 dark:border-zinc-800/50 hover:border-[#f97316]/30 dark:hover:border-[#f97316]/30 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
       
       {showImage && (
         <Link href={getArticleUrl(article)} className="block relative w-full aspect-[16/10] mb-3 shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-900">
-          <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 400px" unoptimized={imageUrl.includes('supabase')} />
+          <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.025] transition-transform duration-500 ease-out" loading="lazy" fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 400px" unoptimized={imageUrl.includes('supabase')} />
         </Link>
       )}
 
@@ -39,7 +39,7 @@ export default function ArticleCardMedium({ article, showImage = true }: Article
 
           {/* Title */}
           <Link href={getArticleUrl(article)} className="block min-h-0">
-            <h4 className="font-bold font-serif text-base sm:text-[17px] leading-snug text-slate-900 dark:text-zinc-100 group-hover:text-[#F97316] dark:group-hover:text-[#F97316] transition-colors duration-200 line-clamp-3 mb-2.5">
+            <h4 className="font-bold font-serif text-base sm:text-[17px] leading-[1.5] text-slate-900 dark:text-zinc-100 line-clamp-3 mb-2.5">
               {title}
             </h4>
           </Link>

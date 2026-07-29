@@ -29,7 +29,7 @@ export default function ArticleContent({ article, isPreview = false }: ArticleCo
         )}
 
         {/* Article Main Headline */}
-        <h1 className="font-serif font-black text-[32px] md:text-[46px] md:leading-[1.15] text-gray-900 dark:text-white leading-tight mb-4 md:mb-6 tracking-tight">
+        <h1 className="font-serif font-black text-[32px] md:text-[46px] leading-[1.4] md:leading-[1.35] text-gray-900 dark:text-white mb-4 md:mb-6 tracking-tight">
           {title}
         </h1>
 

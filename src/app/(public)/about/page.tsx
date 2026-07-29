@@ -90,7 +90,7 @@ export default function AboutPage() {
           मूल घोषणापत्र
         </span>
         <h1 className="font-serif text-3xl md:text-5xl font-extrabold tracking-tight mt-6 text-slate-900 dark:text-white font-hindi">
-          युवाक्षर : लेखन, चिंतन और परिवर्तन का राष्ट्रीय अभियान
+          लेखन, चिंतन और परिवर्तन का राष्ट्रीय अभियान
         </h1>
         <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 font-hindi max-w-2xl mx-auto leading-relaxed">
           भारत की युवा चेतना, ज्ञान और राष्ट्रनिर्माण का डिजिटल आंदोलन

@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { 
   Mail, 
-  Phone, 
   MapPin, 
   Send, 
   MessageSquare, 
@@ -29,6 +28,7 @@ import { useCms } from "@/store/CmsContext";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ROUTES } from "@/utils/routes";
+import { createContactMessage } from "@/lib/actions/contactActions";
 
 const CONTACT_CATEGORIES = [
   { id: "Collaboration", label: "सहयोग", desc: "साझेदारी और सहयोग प्रस्ताव", icon: Zap },
@@ -189,46 +189,50 @@ export default function ContactPage() {
     setSubmittingStep(1);
 
     try {
-      await submitPublicArticle({
+      const selectedCatObj = CONTACT_CATEGORIES.find(c => c.id === category);
+      const categoryLabel = selectedCatObj ? selectedCatObj.label : category;
+
+      const res = await createContactMessage({
         type: "contact",
+        category: categoryLabel,
         name,
         email,
-        mobile,
-        subject: `संपर्क संदेश: ${CONTACT_CATEGORIES.find(c => c.id === category)?.label || category}`,
+        mobile: mobile || null,
+        subject: `संपर्क संदेश: ${categoryLabel}`,
         content: message,
-        category: category
       });
 
-      // Pipeline simulation for high-fidelity UX (without DB jargon)
-      setTimeout(() => {
-        setSubmittingStep(2);
-        setTimeout(() => {
-          setSubmittingStep(3);
-          setTimeout(() => {
-            setIsSubmitting(false);
-            setSubmittingStep(0);
-            setSubmitSuccess(true);
-            
-            // Clear inputs and localStorage draft
-            setName(currentUser?.name || "");
-            setEmail(currentUser?.email || "");
-            setMobile(currentUser?.mobile || "");
-            setMessage("");
-            setCategory("Collaboration");
-            localStorage.removeItem("yuvakshar_contact_draft");
-            setDraftToRestore(null);
-            
-            // Hide success banner after 8 seconds
-            setTimeout(() => setSubmitSuccess(false), 8000);
-          }, 1000);
-        }, 1200);
-      }, 1000);
+      if (!res.success) {
+        throw new Error(res.error || "संदेश भेजने में कोई त्रुटि हुई।");
+      }
 
-    } catch (err) {
+      setSubmittingStep(2);
+      setTimeout(() => {
+        setSubmittingStep(3);
+        setTimeout(() => {
+          setIsSubmitting(false);
+          setSubmittingStep(0);
+          setSubmitSuccess(true);
+          
+          // Clear inputs and localStorage draft
+          setName(currentUser?.name || "");
+          setEmail(currentUser?.email || "");
+          setMobile(currentUser?.mobile || "");
+          setMessage("");
+          setCategory("Collaboration");
+          localStorage.removeItem("yuvakshar_contact_draft");
+          setDraftToRestore(null);
+          
+          // Hide success banner after 8 seconds
+          setTimeout(() => setSubmitSuccess(false), 8000);
+        }, 600);
+      }, 600);
+
+    } catch (err: any) {
       console.error(err);
       setIsSubmitting(false);
       setSubmittingStep(0);
-      setSubmitError("क्षमा करें, संदेश प्रेषित करने में कोई तकनीकी त्रुटि हुई है। कृपया पुनः प्रयास करें।");
+      setSubmitError(err.message || "क्षमा करें, संदेश प्रेषित करने में कोई तकनीकी त्रुटि हुई है। कृपया पुनः प्रयास करें।");
     }
   };
 
@@ -257,7 +261,7 @@ export default function ContactPage() {
       </div>
 
       {/* SECTION 2 - CONTACT OPTIONS GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {/* Card 1: Email */}
         <div className="bg-white dark:bg-[#0F172A]/40 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg hover:border-orange-500/30 transition-all duration-300 flex flex-col items-center text-center space-y-3">
           <div className="p-3 bg-orange-500/10 dark:bg-orange-500/20 text-[#EA580C] rounded-xl">
@@ -274,21 +278,7 @@ export default function ContactPage() {
           </p>
         </div>
 
-        {/* Card 2: Mobile */}
-        <div className="bg-white dark:bg-[#0F172A]/40 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg hover:border-orange-500/30 transition-all duration-300 flex flex-col items-center text-center space-y-3">
-          <div className="p-3 bg-orange-500/10 dark:bg-orange-500/20 text-[#EA580C] rounded-xl">
-            <Phone className="w-6 h-6" />
-          </div>
-          <h3 className="font-bold text-base text-slate-800 dark:text-white">📱 मोबाइल</h3>
-          <p className="text-sm font-sans font-medium text-slate-600 dark:text-slate-300 select-all">
-            +91 95168 95730
-          </p>
-          <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-            त्वरित संपर्क एवं आवश्यक संवाद
-          </p>
-        </div>
-
-        {/* Card 3: Address */}
+        {/* Card 2: Address */}
         <div className="bg-white dark:bg-[#0F172A]/40 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg hover:border-orange-500/30 transition-all duration-300 flex flex-col items-center text-center space-y-3">
           <div className="p-3 bg-orange-500/10 dark:bg-orange-500/20 text-[#EA580C] rounded-xl">
             <MapPin className="w-6 h-6" />
@@ -302,7 +292,7 @@ export default function ContactPage() {
           </p>
         </div>
 
-        {/* Card 4: Response Time */}
+        {/* Card 3: Response Time */}
         <div className="bg-white dark:bg-[#0F172A]/40 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg hover:border-orange-500/30 transition-all duration-300 flex flex-col items-center text-center space-y-3">
           <div className="p-3 bg-orange-500/10 dark:bg-orange-500/20 text-[#EA580C] rounded-xl">
             <Clock className="w-6 h-6" />
@@ -410,9 +400,9 @@ export default function ContactPage() {
               >
                 <CheckCircle className="w-5.5 h-5.5 text-emerald-500 shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <p className="font-bold text-sm">संदेश सफलतापूर्वक प्रेषित!</p>
+                  <p className="font-bold text-sm">संदेश प्राप्त हुआ!</p>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-light">
-                    आपका संदेश सफलतापूर्वक दर्ज कर लिया गया है। संपादक मंडल जल्द ही आपसे संपर्क करेगा। आपकी प्रतिलिपि ईमेल पर प्रेषित की गई है।
+                    आपका संदेश सफलतापूर्वक प्राप्त हुआ। हमारी संपादकीय टीम शीघ्र संपर्क करेगी।
                   </p>
                 </div>
               </motion.div>

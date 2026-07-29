@@ -35,7 +35,7 @@ export default function ProfileArticleCard({ article }: ProfileArticleCardProps)
 
         {/* Title */}
         <Link href={getArticleUrl(article)} className="block">
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-snug group-hover:text-[#F97316] transition-colors line-clamp-2">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-[1.5] line-clamp-2">
             {article.title}
           </h2>
         </Link>

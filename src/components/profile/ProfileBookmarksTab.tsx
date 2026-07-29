@@ -54,7 +54,7 @@ export default function ProfileBookmarksTab({ user }: ProfileBookmarksTabProps) 
                 <span className="text-slate-300 dark:text-slate-700">•</span>
                 <span className="text-[11px] text-slate-400 font-sans">{item.date}</span>
               </div>
-              <h4 className="font-bold text-base text-slate-900 dark:text-white truncate group-hover:text-[#F97316] transition-colors">
+              <h4 className="font-bold text-base text-slate-900 dark:text-white truncate leading-[1.5]">
                 {item.title}
               </h4>
               <p className="text-xs text-slate-500 mt-1">द्वारा {item.author}</p>

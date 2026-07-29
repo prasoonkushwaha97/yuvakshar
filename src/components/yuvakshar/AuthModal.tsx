@@ -76,7 +76,8 @@ export default function AuthModal() {
     if (isLoading) return;
     setIsLoading(true);
     setSuccessMessage("Google से लॉगिन किया जा रहा है...");
-    await loginWithGoogle();
+    const currentPath = typeof window !== "undefined" ? (window.location.pathname + window.location.search) : "/";
+    await loginWithGoogle(currentPath);
     // Intentionally do NOT reset isLoading or close modal here.
     // The browser will redirect to Google OAuth and return.
   };

@@ -83,8 +83,8 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
               {/* Text Section */}
               <div className="flex-1 flex flex-col px-1">
                 {/* Title */}
-                <Link href={getArticleUrl(art)} className="block hover:text-stone-600 dark:hover:text-stone-400 transition-colors duration-250 mb-2">
-                  <h3 className="text-base md:text-lg font-serif font-semibold leading-tight text-stone-900 dark:text-stone-100 line-clamp-2">
+                <Link href={getArticleUrl(art)} className="block mb-2">
+                  <h3 className="text-base md:text-lg font-serif font-semibold leading-[1.5] text-stone-900 dark:text-stone-100 line-clamp-2">
                     {title}
                   </h3>
                 </Link>

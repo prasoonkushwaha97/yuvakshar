@@ -282,7 +282,7 @@ interface CmsContextType {
   leaderboard: QuizLeaderboardEntry[];
   // Auth Operations
   loginUser: (email: string, passwordInput?: string) => Promise<boolean>;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: (redirectToUrl?: string) => Promise<void>;
   registerUser: (email: string, username: string, role: string, customName: string, customMobile: string, passwordInput: string) => Promise<boolean>;
   checkUsernameAvailability: (username: string) => { available: boolean; message: string };
   logoutUser: () => void;
@@ -1244,15 +1244,19 @@ export function CmsProvider({
   }, []);
 
   // 2. Auth Operations
-  const loginWithGoogle = async (): Promise<void> => {
+  const loginWithGoogle = async (redirectToUrl?: string): Promise<void> => {
     const configError = getSupabaseConfigError();
     if (configError) {
       alert(configError);
       return;
     }
+
+    const targetPath = redirectToUrl || (typeof window !== "undefined" ? (window.location.pathname + window.location.search) : "/");
+    const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(targetPath)}`;
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.href }
+      options: { redirectTo: callbackUrl }
     });
     if (error) {
       alert("❌ Google provider disabled: " + error.message);
@@ -1955,13 +1959,14 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
 
     if (supabaseConfigured) {
       await supabase.from("contact_messages").insert({
-        type: sub.type,
-        name: sub.name, email: sub.email,
-        mobile: sub.mobile,
-        subject: sub.subject || sub.title,
+        type: sub.type || "contact",
+        category: sub.category || "General",
+        name: sub.name, 
+        email: sub.email,
+        mobile: sub.mobile || null,
+        subject: sub.subject || sub.title || `संपर्क संदेश: ${sub.category || "General"}`,
         content: sub.content,
-        status: "New",
-        replies: []
+        status: "NEW",
       });
     } else {
       const updated = [newSub, ...submissions];

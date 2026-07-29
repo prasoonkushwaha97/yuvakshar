@@ -64,7 +64,7 @@ export default function MagazineShowcaseCard({ magazine, featured = false }: Mag
       {/* Metadata */}
       <div className="space-y-1.5 px-2 flex flex-col items-center">
         {/* Issue Title */}
-        <h4 className={`font-serif font-bold text-stone-900 dark:text-stone-100 leading-snug line-clamp-1 group-hover:text-[#f97316] transition-colors duration-300 ${featured ? 'text-lg md:text-xl' : 'text-base'}`}>
+        <h4 className={`font-serif font-bold text-stone-900 dark:text-stone-100 leading-[1.5] line-clamp-1 ${featured ? 'text-lg md:text-xl' : 'text-base'}`}>
           अंक: {issueLabel}
         </h4>
 

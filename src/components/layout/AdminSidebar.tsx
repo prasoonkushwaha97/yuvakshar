@@ -13,6 +13,7 @@ import {
   FolderTree,
   BookOpen, 
   MessageSquare,
+  Mail,
   Image as ImageIcon,
   Sparkles,
   Users,
@@ -20,25 +21,38 @@ import {
   Settings
 } from "lucide-react";
 import Avatar from "@/components/shared/Avatar";
+import { getContactStats } from "@/lib/actions/contactActions";
 
 export default function AdminSidebar() {
   const pathname = usePathname();
   const { currentUser } = useCms();
+  const [newMessagesCount, setNewMessagesCount] = React.useState<number>(0);
+  
+  // Fetch unread contact message badge count
+  React.useEffect(() => {
+    async function loadStats() {
+      const res = await getContactStats();
+      if (res.success && res.stats.newCount > 0) {
+        setNewMessagesCount(res.stats.newCount);
+      }
+    }
+    loadStats();
+  }, []);
   
   // Note: we fetch the resolved role directly or default to Reader
   const role = currentUser?.role || "Reader";
 
   const navItems = [
-    { name: "Dashboard", href: "/admin", icon: LayoutDashboard, requiredPermission: null },
-    { name: "Articles", href: "/admin/articles", icon: FileText, requiredPermission: "create_article" as const },
-    { name: "Categories", href: "/admin/categories", icon: FolderTree, requiredPermission: "manage_settings" as const },
-    { name: "Magazine", href: "/admin/magazine", icon: BookOpen, requiredPermission: "publish_article" as const },
-    { name: "Chaupaal", href: "/admin/community", icon: MessageSquare, requiredPermission: "manage_users" as const },
-    { name: "Users", href: "/admin/users", icon: Users, requiredPermission: "manage_users" as const },
-    { name: "Media Library", href: "/admin/media", icon: ImageIcon, requiredPermission: "create_article" as const },
-    { name: "Banner Gallery", href: "/admin/media/banners", icon: Sparkles, requiredPermission: "manage_settings" as const },
-    { name: "Notifications", href: "/admin/notifications", icon: Bell, requiredPermission: "review_article" as const },
-    { name: "Settings", href: "/admin/cms/settings", icon: Settings, requiredPermission: "manage_settings" as const }
+    { name: "डैशबोर्ड", href: "/admin", icon: LayoutDashboard, requiredPermission: null },
+    { name: "लेख", href: "/admin/articles", icon: FileText, requiredPermission: "create_article" as const },
+    { name: "श्रेणियाँ", href: "/admin/categories", icon: FolderTree, requiredPermission: "manage_settings" as const },
+    { name: "पत्रिका", href: "/admin/magazine", icon: BookOpen, requiredPermission: "publish_article" as const },
+    { name: "चौपाल", href: "/admin/community", icon: MessageSquare, requiredPermission: "manage_users" as const },
+    { name: "संपर्क संदेश", href: "/admin/contact-messages", icon: Mail, requiredPermission: "manage_contact_messages" as const, badge: newMessagesCount },
+    { name: "उपयोगकर्ता", href: "/admin/users", icon: Users, requiredPermission: "manage_users" as const },
+    { name: "बैनर गैलरी", href: "/admin/media/banners", icon: Sparkles, requiredPermission: "manage_settings" as const },
+    { name: "सूचनाएँ", href: "/admin/notifications", icon: Bell, requiredPermission: "review_article" as const },
+    { name: "सेटिंग्स", href: "/admin/cms/settings", icon: Settings, requiredPermission: "manage_settings" as const }
   ];
 
   const visibleItems = navItems.filter(item => 
@@ -48,7 +62,7 @@ export default function AdminSidebar() {
   return (
     <aside className="w-64 bg-white dark:bg-[#0F172A] border-r border-slate-200 dark:border-slate-800 hidden md:flex flex-col h-screen sticky top-0">
       <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center">
-        <h1 className="text-2xl font-serif font-black text-primary tracking-tight whitespace-nowrap">Yuvakshar<span className="text-slate-800 dark:text-white">Admin</span></h1>
+        <h1 className="text-2xl font-serif font-black text-primary tracking-tight whitespace-nowrap">युवाक्षर <span className="text-slate-800 dark:text-white text-lg font-sans">एडमिन</span></h1>
       </div>
       
       <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
@@ -67,7 +81,12 @@ export default function AdminSidebar() {
               }`}
             >
               <Icon className="w-5 h-5 shrink-0" />
-              <span>{item.name}</span>
+              <span className="flex-1 truncate">{item.name}</span>
+              {!!item.badge && item.badge > 0 && (
+                <span className="px-2 py-0.5 text-xs font-bold bg-orange-500 text-white rounded-full animate-pulse">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           );
         })}

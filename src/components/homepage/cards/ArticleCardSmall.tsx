@@ -28,7 +28,7 @@ export default function ArticleCardSmall({
   const cleanDate = formatDisplayDate(article.date);
 
   return (
-    <div className={`group flex gap-3.5 p-2 rounded-xl bg-transparent hover:bg-stone-50 dark:hover:bg-zinc-900/50 border-b border-slate-100/80 dark:border-zinc-800/60 last:border-b-0 transition-all duration-200 ${className}`}>
+    <div className={`group flex gap-3.5 p-2 rounded-xl bg-transparent hover:bg-stone-50 dark:hover:bg-zinc-900/50 border-b border-slate-100/80 dark:border-zinc-800/60 last:border-b-0 hover:-translate-y-0.5 transition-all duration-200 ${className}`}>
       {indexNumber !== undefined && (
         <span className="text-lg font-black text-slate-400 dark:text-zinc-600 font-sans w-6 text-right shrink-0 select-none">
           {indexNumber}
@@ -37,7 +37,7 @@ export default function ArticleCardSmall({
 
       {showThumbnail && (
         <Link href={getArticleUrl(article)} className="block relative w-16 h-16 shrink-0 overflow-hidden bg-slate-100 dark:bg-zinc-900 rounded-lg">
-          <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" fill sizes="64px" />
+          <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.025] transition-transform duration-500 ease-out" loading="lazy" fill sizes="64px" />
         </Link>
       )}
 
@@ -47,7 +47,7 @@ export default function ArticleCardSmall({
         </div>
 
         <Link href={getArticleUrl(article)} className="block min-h-0">
-          <h4 className="font-bold font-serif text-[14px] leading-snug text-slate-900 dark:text-zinc-100 group-hover:text-[#F97316] dark:group-hover:text-[#F97316] line-clamp-2 transition-colors duration-200">
+          <h4 className="font-bold font-serif text-[14px] leading-[1.5] text-slate-900 dark:text-zinc-100 line-clamp-2">
             {title}
           </h4>
         </Link>

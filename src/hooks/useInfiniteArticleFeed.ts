@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useMemo } from "react";
 import { Article } from "@/store/types";
+import { isOlderThanDays, getArticleTimestamp } from "@/utils/date";
 
 const BATCH_SIZE = 12;
 
@@ -24,11 +25,8 @@ interface UseInfiniteArticleFeedReturn {
 }
 
 /**
- * Paginates through the remaining published articles in batches,
- * excluding any already displayed in homepage sections.
- *
- * All data is client-side (from CmsContext), so "loading" is a brief
- * simulated delay to allow skeleton cards to render for smooth UX.
+ * Paginates through older published articles (>= 5 days old) in batches,
+ * excluding any already displayed in hero/featured homepage sections.
  */
 export function useInfiniteArticleFeed({
   allArticles,
@@ -38,16 +36,13 @@ export function useInfiniteArticleFeed({
   const [isLoading, setIsLoading] = useState(false);
   const loadingRef = useRef(false);
 
-  // Build the sorted, deduplicated pool of articles not shown in homepage sections
+  // Build the sorted pool of articles >= 5 days old not shown in hero/featured sections
   const feedPool = useMemo(() => {
     const excludeSet = new Set(excludeIds);
     return allArticles
       .filter((a) => !excludeSet.has(a.id))
-      .sort((a, b) => {
-        const dateA = a.date ? new Date(a.date).getTime() : 0;
-        const dateB = b.date ? new Date(b.date).getTime() : 0;
-        return dateB - dateA; // Descending (newest first)
-      });
+      .filter((a) => isOlderThanDays(a, 5))
+      .sort((a, b) => getArticleTimestamp(b) - getArticleTimestamp(a)); // Descending (newest first)
   }, [allArticles, excludeIds]);
 
   const totalPages = Math.ceil(feedPool.length / BATCH_SIZE);

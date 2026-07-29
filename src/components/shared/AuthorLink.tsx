@@ -18,8 +18,11 @@ export default function AuthorLink({ author, children, className = "", onClick }
   
   const href = isValidUsername ? `/u/${username.trim().toLowerCase()}` : "#";
 
+  // Base focus style: Remove outline & ring on mouse click; apply subtle focus ring ONLY on keyboard navigation (:focus-visible)
+  const baseFocusClass = "outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#f97316]/50 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900 rounded-sm";
+
   return (
-    <Link href={href} className={className} onClick={onClick}>
+    <Link href={href} className={`${baseFocusClass} ${className}`.trim()} onClick={onClick}>
       {children}
     </Link>
   );
