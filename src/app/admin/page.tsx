@@ -8,14 +8,24 @@ import Link from "next/link";
 export const dynamic = 'force-dynamic';
 
 function getHindiGreeting(userName: string = "संपादक"): { greeting: string; subtitle: string } {
-  const currentHour = new Date().getHours();
-  let greetingText = "";
+  // Always use IST (Asia/Kolkata) — never rely on the server's local timezone.
+  // This guarantees correct greetings on Vercel production where the server
+  // runs in UTC and new Date().getHours() would return the wrong hour.
+  const hour = Number(
+    new Intl.DateTimeFormat("en-IN", {
+      hour: "numeric",
+      hour12: false,
+      timeZone: "Asia/Kolkata",
+    }).format(new Date())
+  );
 
-  if (currentHour >= 5 && currentHour < 12) {
+  let greetingText: string;
+
+  if (hour >= 5 && hour < 12) {
     greetingText = `सुप्रभात, ${userName}!`;
-  } else if (currentHour >= 12 && currentHour < 17) {
+  } else if (hour >= 12 && hour < 17) {
     greetingText = `शुभ दोपहर, ${userName}!`;
-  } else if (currentHour >= 17 && currentHour < 21) {
+  } else if (hour >= 17 && hour < 21) {
     greetingText = `शुभ संध्या, ${userName}!`;
   } else {
     greetingText = `शुभ रात्रि, ${userName}!`;
