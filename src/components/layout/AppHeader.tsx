@@ -182,16 +182,18 @@ export default function AppHeader({ categories = [] }: { categories?: any[] }) {
           {/* Mobile Menu Trigger & Logo Group */}
           <div className="flex items-center space-x-3.5">
 
-            <Link href="/" className="flex items-center shrink-0 hover:opacity-90 transition-opacity duration-200 cursor-pointer">
+            <Link href="/" className="flex items-center shrink-0 hover:opacity-90 transition-opacity duration-200 cursor-pointer" title="युवाक्षर">
               <Image
                 src="/yuvakshar_logo_official.png"
                 alt="युवाक्षर"
-                width={240}
-                height={60}
-                className="h-[42px] md:h-[48px] lg:h-[58px] w-auto object-contain"
+                width={232}
+                height={58}
+                className="h-[42px] md:h-[48px] lg:h-[58px] w-auto object-contain dark:brightness-110 dark:drop-shadow-[0_2px_8px_rgba(255,255,255,0.25)] transition-all"
+                style={{ width: 'auto' }}
                 priority
                 sizes="(max-width: 768px) 160px, (max-width: 1024px) 200px, 240px"
               />
+              <span className="sr-only">युवाक्षर</span>
             </Link>
           </div>
 

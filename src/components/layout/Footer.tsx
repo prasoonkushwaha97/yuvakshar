@@ -15,7 +15,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="w-full bg-[#FAF8F3] dark:bg-[#0A0F1D] text-[#1E1E1E] dark:text-slate-300 border-t border-[#E7E2D8] dark:border-slate-800 pt-8 pb-6 lg:pt-12 lg:pb-8 relative z-30">
+    <footer className="w-full bg-[#FAF8F3] dark:bg-[#040711] text-[#1E1E1E] dark:text-slate-300 border-t border-[#E7E2D8] dark:border-slate-800/80 pt-8 pb-6 lg:pt-12 lg:pb-8 relative z-30">
       <div className="max-w-6xl mx-auto px-4 md:px-8">
         
         {/* Mobile & Tablet Layout (< 1024px) */}
@@ -25,12 +25,13 @@ export default function Footer() {
             <Image 
               src={settings.appearance.logo_url || "/yuvakshar_logo_official.png"} 
               alt="युवाक्षर लोगो" 
-              className="h-[36px] w-auto object-contain" 
+              className="h-[36px] w-auto object-contain dark:brightness-110 dark:drop-shadow-[0_2px_8px_rgba(255,255,255,0.25)] transition-all" 
+              style={{ width: 'auto' }}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = "/yuvakshar_logo_official.png";
               }} 
-              width={400} 
-              height={400} 
+              width={144} 
+              height={36} 
             />
             <p className="text-slate-500 font-serif text-[11px]">
               लेखन, चिंतन और परिवर्तन
@@ -80,12 +81,13 @@ export default function Footer() {
               <Image 
                 src={settings.appearance.logo_url || "/yuvakshar_logo_official.png"} 
                 alt="युवाक्षर लोगो" 
-                className="h-[48px] w-auto object-contain mb-3" 
+                className="h-[48px] w-auto object-contain mb-3 dark:brightness-110 dark:drop-shadow-[0_2px_8px_rgba(255,255,255,0.25)] transition-all" 
+                style={{ width: 'auto' }}
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = "/yuvakshar_logo_official.png";
                 }} 
-                width={400} 
-                height={400} 
+                width={192} 
+                height={48} 
               />
               <p className="text-slate-600 dark:text-slate-400 font-serif text-sm">
                 लेखन, चिंतन और परिवर्तन

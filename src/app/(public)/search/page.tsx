@@ -91,6 +91,7 @@ function SearchPageContent() {
       case 'author': return <User className="w-5 h-5 text-amber-500" />;
       case 'category': return <Folder className="w-5 h-5 text-blue-500" />;
       case 'tag': return <Tag className="w-5 h-5 text-teal-500" />;
+      case 'qna_question': return <MessageSquare className="w-5 h-5 text-orange-500" />;
       default: return <SearchIcon className="w-5 h-5 text-slate-500" />;
     }
   };
@@ -105,6 +106,7 @@ function SearchPageContent() {
       case 'author': return 'लेखक';
       case 'category': return 'श्रेणी';
       case 'tag': return 'टैग';
+      case 'qna_question': return 'प्रश्नोत्तर';
       default: return 'अन्य';
     }
   };

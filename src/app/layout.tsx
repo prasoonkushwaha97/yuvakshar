@@ -89,18 +89,26 @@ export async function generateMetadata(): Promise<Metadata> {
     description: "युवाक्षर पर पढ़ें लेख, समाचार, विश्लेषण, संस्कृति, समाज और समसामयिक विषयों पर प्रामाणिक एवं विश्वसनीय हिंदी सामग्री।",
     keywords: "युवाक्षर, Hindi पत्रिका, Youth Expression Hub, Hindi Articles, Career Hub, Career guidance, AI learning, Indian current affairs, Nation building",
     authors: [{ name: "युवाक्षर संपादकीय कक्ष" }],
+    applicationName: "युवाक्षर",
+    appleWebApp: {
+      title: "युवाक्षर",
+      capable: true,
+      statusBarStyle: "default",
+    },
     manifest: manifestUrl,
     alternates: {
-      canonical: "https://yuvakshar.tech",
+      canonical: "https://yuvakshar.tech/",
     },
     icons: {
       icon: [
+        { url: "/favicon.png", sizes: "192x192", type: "image/png" },
+        { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
         { url: `${iconBaseUrl}?size=16&v=${version}`, sizes: "16x16", type: "image/png" },
         { url: `${iconBaseUrl}?size=32&v=${version}`, sizes: "32x32", type: "image/png" },
         { url: `${iconBaseUrl}?size=48&v=${version}`, sizes: "48x48", type: "image/png" },
         { url: `${iconBaseUrl}?size=96&v=${version}`, sizes: "96x96", type: "image/png" },
       ],
-      shortcut: `${iconBaseUrl}?size=32&v=${version}`,
+      shortcut: "/favicon.png",
       apple: [
         { url: `${iconBaseUrl}?size=180&v=${version}`, sizes: "180x180", type: "image/png" },
         { url: `${iconBaseUrl}?size=152&v=${version}`, sizes: "152x152", type: "image/png" },
@@ -109,13 +117,13 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: "युवाक्षर | लेख, समाचार, विश्लेषण, संस्कृति और समाज",
       description: "युवाक्षर पर पढ़ें लेख, समाचार, विश्लेषण, संस्कृति, समाज और समसामयिक विषयों पर प्रामाणिक एवं विश्वसनीय हिंदी सामग्री।",
-      url: "https://yuvakshar.tech",
+      url: "https://yuvakshar.tech/",
       siteName: "युवाक्षर",
       locale: "hi_IN",
       type: "website",
       images: [
         {
-          url: `${iconBaseUrl}?size=512&v=${version}`,
+          url: "https://yuvakshar.tech/favicon.png",
           width: 512,
           height: 512,
           alt: "युवाक्षर",
@@ -126,7 +134,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: "युवाक्षर | लेख, समाचार, विश्लेषण, संस्कृति और समाज",
       description: "युवाक्षर पर पढ़ें लेख, समाचार, विश्लेषण, संस्कृति, समाज और समसामयिक विषयों पर प्रामाणिक एवं विश्वसनीय हिंदी सामग्री।",
-      images: [`${iconBaseUrl}?size=512&v=${version}`],
+      images: ["https://yuvakshar.tech/favicon.png"],
     },
   };
 }
@@ -195,21 +203,13 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify([
-              {
-                "@context": "https://schema.org",
-                "@type": "Organization",
-                "name": "युवाक्षर",
-                "url": "https://yuvakshar.tech",
-                "logo": "https://yuvakshar.tech/yuvakshar_logo_official.png"
-              },
-              {
-                "@context": "https://schema.org",
-                "@type": "WebSite",
-                "name": "युवाक्षर",
-                "url": "https://yuvakshar.tech"
-              }
-            ])
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "युवाक्षर",
+              "url": "https://yuvakshar.tech",
+              "logo": "https://yuvakshar.tech/favicon.png"
+            })
           }}
         />
       </head>

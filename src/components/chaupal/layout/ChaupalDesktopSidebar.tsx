@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, MessageSquare, Users, Bell, PlusCircle } from "lucide-react";
+import { Home, MessageSquare, Users, Bell, HelpCircle, PlusCircle } from "lucide-react";
 import { CH_ANIMATIONS, CH_COLORS, CH_RADIUS } from "../shared/design";
 import { useCms } from "@/store/CmsContext";
 import { openCreateSheet } from "@/components/layout/GlobalCreateSheet";
@@ -13,6 +13,7 @@ export default function ChaupalDesktopSidebar() {
 
   const links = [
     { name: "चौपाल", href: "/community", icon: Home },
+    { name: "प्रश्नोत्तर", href: "/community/qna", icon: HelpCircle },
     { name: "चर्चा मंच", href: "/community/discussion", icon: MessageSquare },
     { name: "समूह", href: "/community/groups", icon: Users },
     { name: "सूचनाएं", href: "/community/notifications", icon: Bell },

@@ -17,10 +17,10 @@ export const metadata: Metadata = {
     canonical: 'https://yuvakshar.com/partners',
   },
   openGraph: {
-    title: 'हमारे सहयोगी | Yuvakshar Partners',
+    title: 'हमारे सहयोगी | युवाक्षर',
     description: 'युवाक्षर के सहयोगी संस्थानों और संगठनों के बारे में जानें।',
-    url: 'https://yuvakshar.com/partners',
-    siteName: 'Yuvakshar',
+    url: 'https://yuvakshar.tech/partners',
+    siteName: 'युवाक्षर',
     locale: 'hi_IN',
     type: 'website',
   },

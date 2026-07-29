@@ -14,6 +14,7 @@ import {
   BookOpen, 
   MessageSquare,
   Image as ImageIcon,
+  Sparkles,
   Users,
   Bell,
   Settings
@@ -35,6 +36,7 @@ export default function AdminSidebar() {
     { name: "Chaupaal", href: "/admin/community", icon: MessageSquare, requiredPermission: "manage_users" as const },
     { name: "Users", href: "/admin/users", icon: Users, requiredPermission: "manage_users" as const },
     { name: "Media Library", href: "/admin/media", icon: ImageIcon, requiredPermission: "create_article" as const },
+    { name: "Banner Gallery", href: "/admin/media/banners", icon: Sparkles, requiredPermission: "manage_settings" as const },
     { name: "Notifications", href: "/admin/notifications", icon: Bell, requiredPermission: "review_article" as const },
     { name: "Settings", href: "/admin/cms/settings", icon: Settings, requiredPermission: "manage_settings" as const }
   ];

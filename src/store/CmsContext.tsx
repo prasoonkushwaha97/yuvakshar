@@ -2233,9 +2233,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
   const updateUserProfile = async (data: Partial<Profile>) => {
     if (!currentUser) return;
 
-    console.log("LOGGING: CmsContext profile state before update:", currentUser);
-    console.log("LOGGING: Payload sent to update:", data);
-
     let updatedUser = { ...currentUser, ...data };
     
     // Ensure canonical name is kept synchronized in memory
@@ -2246,15 +2243,11 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
     if (isSupabaseConfigured()) {
       try {
         const res = await updateUserAccount(data);
-        console.log("LOGGING: Database response data:", res.user);
-        console.log("LOGGING: Database response success:", res.success);
-        
         if (res.success && res.user) {
           updatedUser = res.user;
-          console.log("LOGGING: Returned profile object:", updatedUser);
         }
       } catch (err) {
-        console.error("LOGGING: Database response error:", err);
+        console.error("Database update error:", err);
       }
     } else {
       // Fallback for local development
@@ -2267,8 +2260,6 @@ const sendPasswordReset = async (email: string): Promise<boolean> => {
         }
       }
     }
-
-    console.log("LOGGING: CmsContext profile state after update:", updatedUser);
 
     setCurrentUser(updatedUser);
     const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);

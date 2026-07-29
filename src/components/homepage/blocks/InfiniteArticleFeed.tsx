@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useRef, useEffect, ReactNode } from "react";
+import Link from "next/link";
 import ArticleCardMedium from "@/components/homepage/cards/ArticleCardMedium";
 import { FeedCardSkeleton } from "@/components/homepage/shared/Skeleton";
 import SectionTitle from "@/components/homepage/shared/SectionTitle";
 import { useInfiniteArticleFeed } from "@/hooks/useInfiniteArticleFeed";
 import { Article } from "@/store/types";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, CheckCircle2, Compass } from "lucide-react";
 
 const BATCH_SIZE = 12;
 
@@ -104,17 +105,35 @@ export default function InfiniteArticleFeed({
 
       {/* End of Feed */}
       {!hasMore && visibleArticles.length > 0 && (
-        <div className="flex flex-col items-center justify-center py-16 space-y-5">
-          <p className="text-base font-serif font-bold text-stone-500 dark:text-stone-400 text-center">
-            आप सभी प्रकाशित लेख पढ़ चुके हैं।
-          </p>
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="group flex items-center space-x-2 px-5 py-2.5 rounded-full border border-stone-300 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:border-[#f97316] hover:text-[#f97316] transition-all duration-300 text-sm font-bold font-sans cursor-pointer"
-          >
-            <ArrowUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform duration-300" />
-            <span>ऊपर जाएँ</span>
-          </button>
+        <div className="flex flex-col items-center justify-center py-12 px-4 space-y-4 bg-stone-50/50 dark:bg-zinc-900/30 border border-stone-200/50 dark:border-zinc-800/50 rounded-2xl my-10 text-center font-sans">
+          <div className="w-12 h-12 rounded-full bg-[#F97316]/10 text-[#F97316] flex items-center justify-center border border-[#F97316]/20">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+          <div className="space-y-1 max-w-md">
+            <h3 className="text-base sm:text-lg font-serif font-extrabold text-slate-900 dark:text-zinc-100">
+              आप सभी प्रकाशित लेख पढ़ चुके हैं।
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed">
+              नवीनतम विचारों और ताज़ा आलेखों के लिए पुनः आएं अथवा हमारी अन्य श्रेणियों को खोजें।
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="group flex items-center gap-2 px-4 py-2 rounded-full border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-200 hover:border-[#F97316] hover:text-[#F97316] dark:hover:border-[#F97316] dark:hover:text-[#F97316] transition-all duration-200 text-xs font-bold cursor-pointer"
+            >
+              <ArrowUp className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform duration-200" />
+              <span>ऊपर जाएँ</span>
+            </button>
+
+            <Link
+              href="/categories"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#F97316] hover:bg-[#EA580C] text-white transition-all duration-200 text-xs font-bold shadow-sm shadow-orange-500/20 active:scale-95"
+            >
+              <Compass className="w-3.5 h-3.5" />
+              <span>श्रेणियाँ देखें</span>
+            </Link>
+          </div>
         </div>
       )}
     </section>

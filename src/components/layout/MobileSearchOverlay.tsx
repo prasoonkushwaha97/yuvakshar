@@ -75,7 +75,50 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
     if (debouncedQuery.trim().length >= 2) {
       setIsSearching(true);
       globalSearch(debouncedQuery).then((res) => {
-        setResults(res);
+        let combined = [...res];
+
+        if (cmsUsers && cmsUsers.length > 0) {
+          const rawQ = debouncedQuery.trim().toLowerCase().replace(/^@/, '');
+          const compactQ = rawQ.replace(/[\s\-_\.@]/g, '');
+
+          cmsUsers.forEach((u: any) => {
+            const name = (u.name || '').toLowerCase();
+            const username = (u.username || u.slug || '').toLowerCase();
+            const compactName = name.replace(/[\s\-_\.@]/g, '');
+            const compactUsername = username.replace(/[\s\-_\.@]/g, '');
+
+            const isMatch =
+              name.includes(rawQ) ||
+              username.includes(rawQ) ||
+              compactName.includes(compactQ) ||
+              compactUsername.includes(compactQ);
+
+            if (isMatch) {
+              const profileId = `profile-${u.id}`;
+              const alreadyFound = combined.some(r => r.id === profileId || r.url.endsWith(`/${username}`));
+              if (!alreadyFound) {
+                combined.unshift({
+                  id: profileId,
+                  type: "author",
+                  title: u.name || username || "लेखक",
+                  subtitle: `@${username}`,
+                  thumbnail: u.avatar_url,
+                  url: `/u/${username}`,
+                  score: 180,
+                  meta: {
+                    username,
+                    slug: username,
+                    role: u.role,
+                    is_verified: u.is_verified
+                  }
+                });
+              }
+            }
+          });
+        }
+
+        combined.sort((a, b) => b.score - a.score);
+        setResults(combined);
         setIsSearching(false);
       }).catch((err) => {
         console.error(err);
@@ -84,7 +127,7 @@ export default function MobileSearchOverlay({ open, onClose }: MobileSearchOverl
     } else {
       setResults([]);
     }
-  }, [debouncedQuery]);
+  }, [debouncedQuery, cmsUsers]);
 
   const handleSelectResult = (url: string, term?: string) => {
     if (term) {

@@ -28,15 +28,25 @@ const configError = getSupabaseConfigError();
 if (configError) {
   throw new Error(`CRITICAL: Supabase initialization failed. ${configError}`);
 }
-console.log("SUPABASE_URL_EXISTS", !!process.env.NEXT_PUBLIC_SUPABASE_URL);
-console.log("SUPABASE_KEY_EXISTS", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 
 export const supabase: SupabaseClient = createBrowserClient(
   supabaseUrl,
-  supabaseAnonKey
+  supabaseAnonKey,
+  {
+    global: {
+      fetch: (url, options) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+        return fetch(url, {
+          ...options,
+          signal: options?.signal || controller.signal,
+        }).finally(() => clearTimeout(timeoutId));
+      },
+    },
+  }
 );
 
 /**
@@ -46,12 +56,10 @@ export const checkConnectionHealth = async (): Promise<boolean> => {
   try {
     const { error } = await supabase.from("site_settings").select("key").limit(1);
     if (error) {
-      console.warn("Supabase health check returned error:", error.message);
       return false;
     }
     return true;
   } catch (err) {
-    console.error("Supabase health check caught exception:", err);
     return false;
   }
 };
@@ -63,19 +71,12 @@ import { STORAGE_CONFIG } from "@/config/storage.config";
  */
 export const checkStorageHealth = async (): Promise<boolean> => {
   try {
-    const { data: buckets, error } = await supabase.storage.listBuckets();
+    const { error } = await supabase.storage.from(STORAGE_CONFIG.BUCKET_NAME).list("", { limit: 1 });
     if (error) {
-      console.warn("Supabase storage health check returned error:", error.message);
-      return false;
-    }
-    const bucketExists = buckets?.some(b => b.name === STORAGE_CONFIG.BUCKET_NAME);
-    if (!bucketExists) {
-      console.warn(`[Storage Warning] Bucket "${STORAGE_CONFIG.BUCKET_NAME}" does not exist.`);
       return false;
     }
     return true;
   } catch (err) {
-    console.error("Supabase storage health check caught exception:", err);
     return false;
   }
 };

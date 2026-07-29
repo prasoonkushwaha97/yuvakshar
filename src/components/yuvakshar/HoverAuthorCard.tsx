@@ -93,7 +93,7 @@ export default function HoverAuthorCard({ author, children }: HoverAuthorCardPro
       {/* Cover Banner */}
       <div className="h-[80px] bg-gradient-to-r from-primary/80 to-blue-600/80 w-full relative shrink-0">
         {author.cover_url && (
-          <Image src={author.cover_url} alt="Cover" className="w-full h-full object-cover" fill unoptimized />
+          <Image src={author.cover_url} alt="Cover" className="w-full h-full object-cover" fill sizes="320px" unoptimized />
         )}
       </div>
 

@@ -35,7 +35,7 @@ export default function MetaInfo({
   const initialUser = authorProfile || { name: author };
 
   return (
-    <div className={`flex flex-wrap items-center justify-between gap-3 text-xs text-slate-550 dark:text-slate-400 font-sans w-full ${className}`}>
+    <div className={`flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-300 font-sans w-full ${className}`}>
       {/* Left: Author & Date Block */}
       <div className="flex items-center space-x-2">
         <UserIdentity 
@@ -43,10 +43,10 @@ export default function MetaInfo({
           variant="inline"
           showAvatar={true}
           showBadge={true}
-          className="text-slate-700 dark:text-slate-350"
+          className="text-slate-800 dark:text-slate-200 font-medium"
         />
-        <span className="text-slate-300 dark:text-slate-700">•</span>
-        <span>{cleanDate}</span>
+        <span className="text-slate-400 dark:text-slate-600">•</span>
+        <span className="text-slate-500 dark:text-slate-400">{cleanDate}</span>
       </div>
 
       {/* Right: Actions */}

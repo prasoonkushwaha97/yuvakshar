@@ -233,6 +233,23 @@ export default function Home() {
   return (
     <div className="w-full min-h-screen bg-[#FAFAF9] dark:bg-[#1C1917] text-[#292524] dark:text-[#E7E5E4] pb-2 font-sans overflow-x-hidden transition-colors duration-300">
       
+      {/* Official Google Site Name JSON-LD WebSite Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "url": "https://yuvakshar.tech",
+            "name": "युवाक्षर",
+            "alternateName": [
+              "Yuvakshar",
+              "Yuvakshar Tech"
+            ]
+          })
+        }}
+      />
+      
       {/* Unified Homepage Layout Pipeline (Strict Ordering) */}
       
       {/* CMS Driven Layout Pipeline */}

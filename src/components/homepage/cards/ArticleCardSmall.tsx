@@ -28,26 +28,26 @@ export default function ArticleCardSmall({
   const cleanDate = formatDisplayDate(article.date);
 
   return (
-    <div className={`group flex gap-4 py-4 border-b border-gray-100/70 dark:border-gray-850/70 last:border-0 ${className}`}>
+    <div className={`group flex gap-3.5 p-2 rounded-xl bg-transparent hover:bg-stone-50 dark:hover:bg-zinc-900/50 border-b border-slate-100/80 dark:border-zinc-800/60 last:border-b-0 transition-all duration-200 ${className}`}>
       {indexNumber !== undefined && (
-        <span className="text-lg font-black text-gray-300 dark:text-gray-700 font-sans w-6 text-right shrink-0 select-none">
+        <span className="text-lg font-black text-slate-400 dark:text-zinc-600 font-sans w-6 text-right shrink-0 select-none">
           {indexNumber}
         </span>
       )}
 
       {showThumbnail && (
-        <Link href={getArticleUrl(article)} className="block relative w-16 h-16 shrink-0 overflow-hidden bg-gray-55 dark:bg-gray-900 rounded-xl border border-gray-150/60 dark:border-gray-850/60">
-          <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" fill />
+        <Link href={getArticleUrl(article)} className="block relative w-16 h-16 shrink-0 overflow-hidden bg-slate-100 dark:bg-zinc-900 rounded-lg">
+          <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" fill sizes="64px" />
         </Link>
       )}
 
       <div className="flex-grow min-w-0">
-        <div className="flex items-center text-[9px] uppercase tracking-wider font-extrabold text-[#f97316] mb-1">
+        <div className="flex items-center text-[10px] uppercase tracking-wider font-extrabold text-[#F97316] mb-1">
           <span>{article.category}</span>
         </div>
 
-        <Link href={getArticleUrl(article)} className="block group-hover:text-[#f97316] transition-colors duration-250">
-          <h4 className="font-bold font-serif text-[13.5px] leading-snug text-gray-900 dark:text-gray-200 line-clamp-2">
+        <Link href={getArticleUrl(article)} className="block min-h-0">
+          <h4 className="font-bold font-serif text-[14px] leading-snug text-slate-900 dark:text-zinc-100 group-hover:text-[#F97316] dark:group-hover:text-[#F97316] line-clamp-2 transition-colors duration-200">
             {title}
           </h4>
         </Link>

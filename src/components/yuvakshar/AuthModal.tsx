@@ -192,7 +192,7 @@ export default function AuthModal() {
           <div className="p-8 sm:p-10 flex flex-col space-y-8">
             <div className="text-center space-y-2 mt-2">
               <div className="flex justify-center mb-6">
-                <Image src="/yuvakshar_logo_official.png" alt="युवाक्षर" className="h-[45px] object-contain drop-shadow-sm"  width={400} height={400} />
+                <Image src="/yuvakshar_logo_official.png" alt="युवाक्षर" className="h-[45px] w-auto object-contain drop-shadow-sm" width={180} height={45} style={{ width: 'auto' }} />
               </div>
               <h2 className="font-serif text-2xl font-bold text-slate-900 dark:text-white">
                 {authMode === "login" ? "पुनः स्वागत है" : "खाता बनाएँ"}

@@ -79,6 +79,8 @@ export interface Profile {
   provisional_password?: boolean;
   force_password_change?: boolean;
   state?: string;
+  city?: string;
+  country?: string;
   district?: string;
   qualification?: string;
   experience?: string;
@@ -101,6 +103,9 @@ export interface Profile {
   
   // Author Ecosystem 2.0 extensions
   slug?: string;
+  // Profile Banner Management extensions
+  custom_banner_url?: string;
+  selected_gallery_banner_id?: string;
   cover_url?: string;
   website?: string;
   designation?: string;
@@ -406,5 +411,16 @@ export interface PrivateMessage {
   reactions?: Record<string, string[]>;
   pinned?: boolean;
   archived_by?: string[];
+}
+
+export interface BannerGalleryItem {
+  id: string;
+  title: string;
+  category: string;
+  image_url: string;
+  status: "active" | "disabled";
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
 }
 

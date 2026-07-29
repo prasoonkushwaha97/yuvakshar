@@ -4,228 +4,400 @@ import { createClient } from "../supabaseServer";
 
 export interface SearchResult {
   id: string;
-  type: "article" | "magazine" | "chaupal_post" | "chaupal_discussion" | "chaupal_group" | "author" | "category" | "tag";
+  type:
+    | "article"
+    | "magazine"
+    | "chaupal_post"
+    | "chaupal_discussion"
+    | "chaupal_group"
+    | "author"
+    | "category"
+    | "tag"
+    | "qna_question";
   title: string;
   subtitle?: string;
   thumbnail?: string;
   url: string;
   author?: string;
   date?: string;
-  score: number; // Internal ranking
-  meta?: any; // Additional data
+  score: number; // Internal ranking score
+  meta?: any; // Additional metadata
+}
+
+/**
+ * Score a profile candidate against the search query.
+ */
+function scoreProfileMatch(profile: any, rawQuery: string): number {
+  if (!profile || !rawQuery) return 0;
+
+  const cleanQ = rawQuery.trim().toLowerCase().replace(/^@/, "");
+  if (!cleanQ) return 0;
+
+  const compactQ = cleanQ.replace(/[\s\-_\.@]/g, "");
+
+  const name = (profile.name || "").toLowerCase();
+  const username = (profile.username || "").toLowerCase();
+  const slug = (profile.slug || "").toLowerCase();
+
+  const compactName = name.replace(/[\s\-_\.@]/g, "");
+  const compactUsername = username.replace(/[\s\-_\.@]/g, "");
+  const compactSlug = slug.replace(/[\s\-_\.@]/g, "");
+
+  let score = 0;
+
+  // 1. Exact username / slug match (highest priority)
+  if (
+    username === cleanQ ||
+    slug === cleanQ ||
+    compactUsername === compactQ ||
+    compactSlug === compactQ
+  ) {
+    score = Math.max(score, 200);
+  }
+
+  // 2. Exact display name match
+  if (name === cleanQ || compactName === compactQ) {
+    score = Math.max(score, 180);
+  }
+
+  // 3. Prefix match
+  if (
+    username.startsWith(cleanQ) ||
+    slug.startsWith(cleanQ) ||
+    name.startsWith(cleanQ) ||
+    compactUsername.startsWith(compactQ) ||
+    compactName.startsWith(compactQ)
+  ) {
+    score = Math.max(score, 140);
+  }
+
+  // 4. Multi-word token match (e.g. searching "Pratishtha Kushwaha")
+  const tokens = cleanQ.split(/\s+/).filter(Boolean);
+  if (tokens.length > 1) {
+    const allTokensMatch = tokens.every(
+      (t) => name.includes(t) || username.includes(t) || slug.includes(t)
+    );
+    if (allTokensMatch) {
+      score = Math.max(score, 120);
+    }
+  }
+
+  // 5. Space-insensitive / Substring match
+  if (
+    name.includes(cleanQ) ||
+    username.includes(cleanQ) ||
+    slug.includes(cleanQ) ||
+    compactName.includes(compactQ) ||
+    compactUsername.includes(compactQ) ||
+    compactSlug.includes(compactQ)
+  ) {
+    score = Math.max(score, 90);
+  }
+
+  return score;
 }
 
 export async function globalSearch(query: string): Promise<SearchResult[]> {
   if (!query || query.trim().length < 2) return [];
 
   const supabase = await createClient();
-  const q = query.trim().toLowerCase();
-  const likeQuery = `%${q}%`;
-  
-  // To avoid hitting all tables if query is very short
+  const rawQ = query.trim();
+  const cleanQ = rawQ.toLowerCase().replace(/^@/, "");
+  const compactQ = cleanQ.replace(/[\s\-_\.@]/g, "");
+
   const results: SearchResult[] = [];
+  const seenIds = new Set<string>();
 
   try {
-    // 1. Articles Search
-    const { data: articles } = await supabase
-      .from('articles')
-      .select('id, title, english_title, slug, summary, status, updated_at, categories(slug), profiles!articles_author_id_fkey(name)')
-      .eq('status', 'Published')
-      .or(`title.ilike.${likeQuery},english_title.ilike.${likeQuery},summary.ilike.${likeQuery}`)
-      .limit(10);
+    // -------------------------------------------------------------
+    // 1. Authors / Profiles Search (Primary Audit Target)
+    // -------------------------------------------------------------
+    try {
+      const likeClean = `%${cleanQ}%`;
+      const likeCompact = `%${compactQ}%`;
 
-    if (articles) {
-      articles.forEach((a: any) => {
-        let score = 0;
-        if (a.title && a.title.toLowerCase().includes(q)) score += 10;
-        if (a.english_title && a.english_title.toLowerCase().includes(q)) score += 8;
-        if (a.summary && a.summary.toLowerCase().includes(q)) score += 5;
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name, username, slug, bio, avatar_url, role, is_verified, status")
+        .neq("status", "suspended")
+        .neq("status", "deleted")
+        .or(
+          `name.ilike.${likeClean},username.ilike.${likeClean},slug.ilike.${likeClean},name.ilike.${likeCompact},username.ilike.${likeCompact},slug.ilike.${likeCompact}`
+        )
+        .limit(30);
 
-        const categorySlug = Array.isArray(a.categories) ? a.categories[0]?.slug : a.categories?.slug;
-        
-        results.push({
-          id: `article-${a.id}`,
-          type: "article",
-          title: a.title || a.english_title,
-          subtitle: a.summary,
-          url: `/articles/${a.slug}`,
-          date: a.updated_at,
-          author: a.profiles?.name || undefined,
-          score,
-          meta: { categorySlug }
-        });
-      });
-    }
+      let candidateProfiles = profiles || [];
 
-    // 2. Magazines Search
-    const { data: magazines } = await supabase
-      .from('magazines')
-      .select('id, issue, month, year, cover_url')
-      .or(`issue.ilike.${likeQuery},month.ilike.${likeQuery}`)
-      .limit(5);
-    
-    if (magazines) {
-      magazines.forEach((m: any) => {
-        let score = 0;
-        if (m.issue && m.issue.toLowerCase().includes(q)) score += 10;
-        if (m.month && m.month.toLowerCase().includes(q)) score += 5;
+      // Fallback: If DB OR query returned few items, fetch top profiles to evaluate in-memory with flexible matcher
+      if (candidateProfiles.length < 5) {
+        const { data: allProfiles } = await supabase
+          .from("profiles")
+          .select("id, name, username, slug, bio, avatar_url, role, is_verified, status")
+          .neq("status", "suspended")
+          .neq("status", "deleted")
+          .limit(100);
 
-        results.push({
-          id: `magazine-${m.id}`,
-          type: "magazine",
-          title: `${m.month} ${m.year}`,
-          subtitle: `अंक: ${m.issue}`,
-          thumbnail: m.cover_url,
-          url: `/magazine/${m.issue || m.id}`,
-          score
-        });
-      });
-    }
+        if (allProfiles) {
+          const profileMap = new Map<string, any>();
+          candidateProfiles.forEach((p: any) => profileMap.set(p.id, p));
+          allProfiles.forEach((p: any) => profileMap.set(p.id, p));
+          candidateProfiles = Array.from(profileMap.values());
+        }
+      }
 
-    // 3. Authors/Profiles Search
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, name, slug, bio, avatar_url, role, is_verified, status')
-      .neq('status', 'suspended')
-      .neq('status', 'deleted')
-      .or(`name.ilike.${likeQuery},slug.ilike.${likeQuery}`)
-      .limit(20);
+      candidateProfiles.forEach((p: any) => {
+        const score = scoreProfileMatch(p, rawQ);
+        const uniqueId = `profile-${p.id}`;
 
-    if (profiles) {
-      const profileResults: SearchResult[] = [];
-      profiles.forEach((p: any) => {
-        let score = 0;
-        const nameLower = p.name ? p.name.toLowerCase() : "";
-        const slugLower = p.slug ? p.slug.toLowerCase() : "";
-        const normalizedSlug = slugLower.replace(/[-_]/g, "");
-        const queryNormalized = q.replace(/[-_]/g, "");
-
-        if (slugLower === q || normalizedSlug === queryNormalized) score += 100;
-        else if (nameLower === q) score += 90;
-        else if (slugLower.startsWith(q) || normalizedSlug.startsWith(queryNormalized)) score += 80;
-        else if (nameLower.startsWith(q)) score += 70;
-        else if (slugLower.includes(q) || normalizedSlug.includes(queryNormalized)) score += 60;
-        else if (nameLower.includes(q)) score += 50;
-
-        if (score > 0) {
-          profileResults.push({
-            id: `profile-${p.id}`,
+        if (score > 0 && !seenIds.has(uniqueId)) {
+          seenIds.add(uniqueId);
+          results.push({
+            id: uniqueId,
             type: "author",
-            title: p.name || "User",
-            subtitle: p.bio,
+            title: p.name || p.username || "लेखक",
+            subtitle: p.username ? `@${p.username}` : p.bio,
             thumbnail: p.avatar_url,
-            url: `/u/${p.slug || p.id}`,
+            url: `/u/${p.username || p.slug || p.id}`,
             score,
             meta: {
-              username: p.slug,
-              slug: p.slug,
+              username: p.username || p.slug,
+              slug: p.slug || p.username,
               role: p.role,
-              is_verified: p.is_verified
-            }
+              is_verified: p.is_verified,
+            },
           });
         }
       });
-      
-      // Take top 10 profiles
-      profileResults.sort((a, b) => b.score - a.score);
-      results.push(...profileResults.slice(0, 10));
+    } catch (err) {
+      console.error("Profile search error:", err);
     }
 
-    // 4. Chaupal Posts
+    // -------------------------------------------------------------
+    // 2. Articles Search
+    // -------------------------------------------------------------
     try {
-      const { data, error } = await supabase
-        .from('chaupal_posts')
-        .select('id, content, profiles(name, username, avatar_url), created_at')
-        .ilike('content', likeQuery)
+      const likeClean = `%${cleanQ}%`;
+      const { data: articles } = await supabase
+        .from("articles")
+        .select(
+          "id, title, english_title, slug, summary, status, updated_at, categories(slug), profiles!articles_author_id_fkey(name)"
+        )
+        .eq("status", "Published")
+        .or(`title.ilike.${likeClean},english_title.ilike.${likeClean},summary.ilike.${likeClean}`)
+        .limit(15);
+
+      if (articles) {
+        articles.forEach((a: any) => {
+          let score = 0;
+          const titleLower = (a.title || "").toLowerCase();
+          const engLower = (a.english_title || "").toLowerCase();
+
+          if (titleLower === cleanQ || engLower === cleanQ) score += 150;
+          else if (titleLower.startsWith(cleanQ) || engLower.startsWith(cleanQ)) score += 120;
+          else if (titleLower.includes(cleanQ) || engLower.includes(cleanQ)) score += 80;
+          else score += 40;
+
+          const categorySlug = Array.isArray(a.categories)
+            ? a.categories[0]?.slug
+            : a.categories?.slug;
+
+          const uniqueId = `article-${a.id}`;
+          if (!seenIds.has(uniqueId)) {
+            seenIds.add(uniqueId);
+            results.push({
+              id: uniqueId,
+              type: "article",
+              title: a.title || a.english_title,
+              subtitle: a.summary,
+              url: `/articles/${a.slug}`,
+              date: a.updated_at,
+              author: a.profiles?.name || undefined,
+              score,
+              meta: { categorySlug },
+            });
+          }
+        });
+      }
+    } catch (err) {
+      console.error("Article search error:", err);
+    }
+
+    // -------------------------------------------------------------
+    // 3. Magazines Search
+    // -------------------------------------------------------------
+    try {
+      const likeClean = `%${cleanQ}%`;
+      const { data: magazines } = await supabase
+        .from("magazines")
+        .select("id, issue, month, year, cover_url")
+        .or(`issue.ilike.${likeClean},month.ilike.${likeClean}`)
         .limit(5);
-      if (!error && data) {
-        data.forEach((post: any) => {
+
+      if (magazines) {
+        magazines.forEach((m: any) => {
+          let score = 50;
+          if (m.issue && m.issue.toLowerCase().includes(cleanQ)) score += 50;
+
+          const uniqueId = `magazine-${m.id}`;
+          if (!seenIds.has(uniqueId)) {
+            seenIds.add(uniqueId);
+            results.push({
+              id: uniqueId,
+              type: "magazine",
+              title: `${m.month} ${m.year}`,
+              subtitle: `अंक: ${m.issue}`,
+              thumbnail: m.cover_url,
+              url: `/magazine/${m.issue || m.id}`,
+              score,
+            });
+          }
+        });
+      }
+    } catch (err) {
+      console.error("Magazine search error:", err);
+    }
+
+    // -------------------------------------------------------------
+    // 4. Chaupal Posts Search
+    // -------------------------------------------------------------
+    try {
+      const likeClean = `%${cleanQ}%`;
+      const { data: posts } = await supabase
+        .from("chaupal_posts")
+        .select("id, content, profiles(name, username, avatar_url), created_at")
+        .ilike("content", likeClean)
+        .limit(5);
+
+      if (posts) {
+        posts.forEach((post: any) => {
           const profile = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles;
-          results.push({
-            id: `chaupal-${post.id}`,
-            type: "chaupal_post",
-            title: post.content ? (post.content.length > 80 ? post.content.substring(0, 80) + "..." : post.content) : "Post",
-            author: profile?.name || "User",
-            thumbnail: profile?.avatar_url,
-            url: `/community/post/${post.id}`,
-            date: post.created_at,
-            score: 5
-          });
+          const uniqueId = `chaupal-${post.id}`;
+          if (!seenIds.has(uniqueId)) {
+            seenIds.add(uniqueId);
+            results.push({
+              id: uniqueId,
+              type: "chaupal_post",
+              title: post.content
+                ? post.content.length > 80
+                  ? post.content.substring(0, 80) + "..."
+                  : post.content
+                : "चौपाल चर्चा",
+              author: profile?.name || "उपयोगकर्ता",
+              thumbnail: profile?.avatar_url,
+              url: `/community/post/${post.id}`,
+              date: post.created_at,
+              score: 40,
+            });
+          }
         });
       }
-    } catch (e) {
-      // ignore
+    } catch (err) {
+      console.error("Chaupal post search error:", err);
     }
 
+    // -------------------------------------------------------------
     // 5. Chaupal Groups & Discussions
+    // -------------------------------------------------------------
     try {
-      const { data, error } = await supabase
-        .from('chaupal_rooms')
-        .select('id, title, description, type, created_at')
-        .or(`title.ilike.${likeQuery},description.ilike.${likeQuery}`)
+      const likeClean = `%${cleanQ}%`;
+      const { data: rooms } = await supabase
+        .from("chaupal_rooms")
+        .select("id, title, description, type, created_at")
+        .or(`title.ilike.${likeClean},description.ilike.${likeClean}`)
         .limit(5);
-      if (!error && data) {
-        data.forEach((room: any) => {
-          const isGroup = room.type === 'group';
-          results.push({
-            id: `room-${room.id}`,
-            type: isGroup ? "chaupal_group" : "chaupal_discussion",
-            title: room.title,
-            subtitle: room.description,
-            url: isGroup ? `/community/groups/${room.id}` : `/community/discussion/${room.id}`,
-            date: room.created_at,
-            score: 6
-          });
+
+      if (rooms) {
+        rooms.forEach((room: any) => {
+          const isGroup = room.type === "group";
+          const uniqueId = `room-${room.id}`;
+          if (!seenIds.has(uniqueId)) {
+            seenIds.add(uniqueId);
+            results.push({
+              id: uniqueId,
+              type: isGroup ? "chaupal_group" : "chaupal_discussion",
+              title: room.title,
+              subtitle: room.description,
+              url: isGroup ? `/community/groups/${room.id}` : `/community/discussion/${room.id}`,
+              date: room.created_at,
+              score: 50,
+            });
+          }
         });
       }
-    } catch (e) {}
+    } catch (err) {
+      console.error("Chaupal room search error:", err);
+    }
 
-
-
-    // 7. Categories
+    // -------------------------------------------------------------
+    // 6. Categories Search
+    // -------------------------------------------------------------
     try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('id, name, slug, description')
-        .or(`name.ilike.${likeQuery},description.ilike.${likeQuery}`)
-        .limit(3);
-      if (!error && data) {
-        data.forEach((c: any) => {
-          results.push({
-            id: `category-${c.id}`,
-            type: "category",
-            title: c.name,
-            subtitle: c.description,
-            url: `/category/${c.slug}`,
-            score: 8
-          });
+      const likeClean = `%${cleanQ}%`;
+      const { data: categories } = await supabase
+        .from("categories")
+        .select("id, name, slug, description")
+        .or(`name.ilike.${likeClean},description.ilike.${likeClean},slug.ilike.${likeClean}`)
+        .limit(5);
+
+      if (categories) {
+        categories.forEach((c: any) => {
+          let score = 60;
+          if (c.name.toLowerCase() === cleanQ || c.slug.toLowerCase() === cleanQ) score += 60;
+
+          const uniqueId = `category-${c.id}`;
+          if (!seenIds.has(uniqueId)) {
+            seenIds.add(uniqueId);
+            results.push({
+              id: uniqueId,
+              type: "category",
+              title: c.name,
+              subtitle: c.description,
+              url: `/category/${c.slug}`,
+              score,
+            });
+          }
         });
       }
-    } catch (e) {}
+    } catch (err) {
+      console.error("Category search error:", err);
+    }
 
-    // 8. Tags
+    // -------------------------------------------------------------
+    // 7. Tags Search
+    // -------------------------------------------------------------
     try {
-      const { data, error } = await supabase
-        .from('tags')
-        .select('id, name, slug')
-        .ilike('name', likeQuery)
-        .limit(3);
-      if (!error && data) {
-        data.forEach((t: any) => {
-          results.push({
-            id: `tag-${t.id}`,
-            type: "tag",
-            title: t.name,
-            url: `/category/${t.slug}`, // Using /category/ as fallback if /tag/ doesn't exist natively. Change to /tags/slug if needed
-            score: 8
-          });
+      const likeClean = `%${cleanQ}%`;
+      const { data: tags } = await supabase
+        .from("tags")
+        .select("id, name, slug")
+        .or(`name.ilike.${likeClean},slug.ilike.${likeClean}`)
+        .limit(5);
+
+      if (tags) {
+        tags.forEach((t: any) => {
+          let score = 55;
+          if (t.name.toLowerCase() === cleanQ || t.slug.toLowerCase() === cleanQ) score += 55;
+
+          const uniqueId = `tag-${t.id}`;
+          if (!seenIds.has(uniqueId)) {
+            seenIds.add(uniqueId);
+            results.push({
+              id: uniqueId,
+              type: "tag",
+              title: t.name,
+              url: `/category/${t.slug}`,
+              score,
+            });
+          }
         });
       }
-    } catch (e) {}
+    } catch (err) {
+      console.error("Tag search error:", err);
+    }
 
-    // Sort by score descending
+    // Sort all combined results by score descending
     results.sort((a, b) => b.score - a.score);
-    
+
     return results;
   } catch (error) {
     console.error("Global search error:", error);

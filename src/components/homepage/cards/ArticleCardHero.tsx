@@ -20,10 +20,10 @@ export default function ArticleCardHero({ article }: ArticleCardHeroProps) {
   const imageUrl = article.coverImage || article.cover_image || article.image || "/images/placeholder-news.jpg";
 
   return (
-    <div className="group flex flex-col w-full h-full bg-white dark:bg-[#0A0A0A] rounded-none sm:rounded-lg overflow-hidden border-b sm:border border-gray-150 dark:border-gray-850 shadow-none sm:shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_25px_-5px_rgba(0,0,0,0.08)] transition-all duration-500">
+    <div className="group flex flex-col w-full h-full bg-white dark:bg-zinc-900/40 rounded-2xl overflow-hidden border border-slate-200/60 dark:border-zinc-800/50 hover:border-slate-300 dark:hover:border-zinc-700/60 hover:shadow-md transition-all duration-300">
       {/* 1. Cover Image */}
-      <Link href={getArticleUrl(article)} className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-100 dark:bg-gray-900 border-b border-gray-150 dark:border-gray-850 shrink-0">
-        <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out" loading="eager" fill />
+      <Link href={getArticleUrl(article)} className="block relative aspect-[16/10] w-full overflow-hidden bg-slate-100 dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800/50 shrink-0">
+        <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out" loading="eager" fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px" />
         <div className="absolute top-4 left-4 z-10">
           <CategoryBadge category={article.category || "समाचार"} />
         </div>
@@ -31,14 +31,14 @@ export default function ArticleCardHero({ article }: ArticleCardHeroProps) {
       </Link>
 
       {/* 2. Text Content */}
-      <div className="flex-1 flex flex-col p-6">
-        <Link href={getArticleUrl(article)} className="block group-hover:text-[#f97316] transition-colors duration-300">
-          <h1 className="text-2xl md:text-3xl font-black font-serif leading-[1.25] text-gray-900 dark:text-gray-150 mb-3 tracking-tight">
+      <div className="flex-1 flex flex-col p-6 sm:p-7">
+        <Link href={getArticleUrl(article)} className="block group-hover:text-[#F97316] transition-colors duration-300">
+          <h1 className="text-2xl md:text-3xl font-black font-serif leading-[1.25] text-slate-900 dark:text-zinc-100 group-hover:text-[#F97316] dark:group-hover:text-[#F97316] mb-3 tracking-tight">
             {title}
           </h1>
         </Link>
 
-        <p className="text-gray-655 dark:text-gray-400 text-sm md:text-base leading-relaxed mb-6 font-serif line-clamp-3">
+        <p className="text-slate-600 dark:text-zinc-300 text-sm md:text-base leading-relaxed mb-6 font-serif line-clamp-3">
           {summary}
         </p>
 

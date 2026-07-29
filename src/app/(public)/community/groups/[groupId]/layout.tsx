@@ -7,9 +7,9 @@ import ChaupalPageHeader from "@/components/chaupal/layout/ChaupalPageHeader";
 import UserIdentity from "@/components/shared/UserIdentity";
 import { CH_CLASS, CH_COLORS, CH_ANIMATIONS } from "@/components/chaupal/shared/design";
 
-export default function GroupLayout({ children, params }: { children: React.ReactNode, params: Promise<{ groupId: string }> }) {
+export default function GroupLayout({ children, params }: { children: React.ReactNode, params: any }) {
   const pathname = usePathname();
-  const resolvedParams = React.use(params);
+  const resolvedParams: any = React.use(params);
   
   const tabs = [
     { name: "फ़ीड", href: `/community/groups/${resolvedParams.groupId}` },

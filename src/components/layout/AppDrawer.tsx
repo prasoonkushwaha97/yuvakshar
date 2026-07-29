@@ -100,9 +100,10 @@ export default function AppDrawer({ isOpen, onClose, mode, onLogout, categories 
                 <Image
                   src="/yuvakshar_logo_official.png"
                   alt="युवाक्षर"
-                  width={120}
-                  height={30}
+                  width={128}
+                  height={32}
                   className="h-[32px] w-auto object-contain"
+                  style={{ width: 'auto' }}
                   priority
                 />
               </Link>
