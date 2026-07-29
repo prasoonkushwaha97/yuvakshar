@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { notifyBrandingUpdated, notifyLogoChanged, notifySeoUpdated } from '@/lib/notificationService';
 
 export async function getSiteSettings() {
   const supabase = await createClient();
@@ -27,7 +28,17 @@ export async function updateSiteSetting(key: string, value: any, is_public: bool
     console.error(`Error updating setting ${key}:`, error);
     return { success: false, error: error.message };
   }
-  
+
+  // Notify on branding-related keys
+  const lk = key.toLowerCase();
+  if (lk.includes('logo')) {
+    notifyLogoChanged().catch(() => {});
+  } else if (lk.includes('seo') || lk.includes('meta')) {
+    notifySeoUpdated().catch(() => {});
+  } else if (lk.includes('brand') || lk.includes('color') || lk.includes('theme') || lk.includes('favicon')) {
+    notifyBrandingUpdated().catch(() => {});
+  }
+
   revalidatePath('/', 'layout');
   return { success: true };
 }

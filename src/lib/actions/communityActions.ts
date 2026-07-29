@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { hasAnyRole } from "@/lib/rbacService";
 import { logGovernanceAction } from "./governanceAuditActions";
 import { createNotification } from "./notificationActions";
+import { notifyChaupalReport } from "@/lib/notificationService";
 import crypto from "crypto";
 
 /**

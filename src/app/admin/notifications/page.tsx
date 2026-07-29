@@ -2,10 +2,14 @@ import React from "react";
 import { getAdminNotifications } from "@/lib/actions/notificationActions";
 import NotificationsManager from "@/components/founder/notifications/NotificationsManager";
 import { redirect } from "next/navigation";
-import { hasPermission } from "@/domains/users/permissions";
 import { getCurrentUser, getCurrentUserRoles } from "@/lib/rbacService";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "सूचनाएँ – Yuvakshar Admin",
+  description: "CMS सूचना केंद्र — सभी महत्वपूर्ण गतिविधियों की जानकारी एक स्थान पर।",
+};
 
 export default async function NotificationsPage() {
   const user = await getCurrentUser();
@@ -15,17 +19,25 @@ export default async function NotificationsPage() {
   }
 
   const roles = await getCurrentUserRoles();
-  const roleName = roles.length > 0 ? roles[0].name : "Reader";
+  const roleSlug = roles.length > 0 ? roles[0].slug : "editor";
 
-  if (!hasPermission(roleName, "review_article")) {
-    redirect("/admin"); // Redirect if not authorized
+  // Allow founder, admin, editor
+  if (!["founder", "admin", "editor"].includes(roleSlug)) {
+    redirect("/admin");
   }
 
-  const { data: notifications, error } = await getAdminNotifications();
+  const { data: notifications, count } = await getAdminNotifications({
+    limit: 20,
+    sort: "newest",
+  });
 
   return (
-    <div className="min-h-screen bg-[#FDFCF7] dark:bg-[#0B0F19]">
-      <NotificationsManager initialNotifications={notifications || []} />
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <NotificationsManager
+        initialNotifications={notifications || []}
+        userRole={roleSlug}
+        totalCount={count ?? 0}
+      />
     </div>
   );
 }

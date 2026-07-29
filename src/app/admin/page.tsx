@@ -1,7 +1,8 @@
 import React from "react";
-import { Users, FileText, MessageSquare, BookOpen, AlertTriangle, Clock, CheckCircle, PenTool, FolderTree, Settings, Edit3, XCircle, Archive, Star, UserPlus, Mail, ChevronRight, Sparkles, ExternalLink, Bell } from "lucide-react";
+import { Users, FileText, MessageSquare, BookOpen, AlertTriangle, Clock, CheckCircle, PenTool, FolderTree, Settings, Edit3, XCircle, Archive, Star, UserPlus, Mail, ChevronRight, Sparkles, ExternalLink, Bell, ArrowRight } from "lucide-react";
 import { dashboardAnalyticsService } from "@/lib/dashboardAnalyticsService";
 import { getContactStats } from "@/lib/actions/contactActions";
+import { getRecentNotifications } from "@/lib/actions/notificationActions";
 import Link from "next/link";
 
 export const dynamic = 'force-dynamic';
@@ -32,6 +33,7 @@ export default async function AdminDashboardPage() {
   const data = await dashboardAnalyticsService.getDashboardStats();
   const contactRes = await getContactStats();
   const contactStats = contactRes.stats;
+  const recentNotifications = await getRecentNotifications(5);
 
   const { greeting, subtitle } = getHindiGreeting("संपादक");
 
@@ -188,6 +190,60 @@ export default async function AdminDashboardPage() {
           );
         })}
       </div>
+
+      {/* RECENT NOTIFICATIONS WIDGET */}
+      {recentNotifications.length > 0 && (
+        <div className="bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
+                <Bell className="w-4 h-4" />
+              </div>
+              <h2 className="font-bold text-slate-900 dark:text-white text-base">हाल की सूचनाएँ</h2>
+            </div>
+            <Link
+              href="/admin/notifications"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+            >
+              सभी देखें <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
+            {recentNotifications.map((notif) => {
+              const priorityColors: Record<string, string> = {
+                critical: "bg-red-500",
+                high: "bg-orange-500",
+                medium: "bg-yellow-500",
+                low: "bg-slate-400",
+              };
+              const typeEmoji: Record<string, string> = {
+                success: "🟢",
+                info:    "🔵",
+                warning: "🟡",
+                error:   "🔴",
+              };
+              return (
+                <Link
+                  key={notif.id}
+                  href={notif.action_url ?? "/admin/notifications"}
+                  className="flex items-start gap-3 px-6 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors"
+                >
+                  <span className="text-base mt-0.5 shrink-0">{typeEmoji[notif.type] ?? "🔵"}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm truncate ${
+                      !notif.is_read ? "font-bold text-slate-900 dark:text-white" : "font-medium text-slate-700 dark:text-slate-300"
+                    }`}>{notif.title}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{notif.description}</p>
+                  </div>
+                  <span className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${
+                    notif.is_read ? "bg-transparent" : (priorityColors[notif.priority] ?? "bg-slate-400")
+                  }`} />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
     </>
   );

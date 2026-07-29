@@ -7,6 +7,17 @@ import { logGovernanceAction } from "./governanceAuditActions";
 import { Article, ArticleStatus } from "@/types/content";
 import { mapDbProfileToProfile } from "@/lib/repositoryService";
 import { STORAGE_CONFIG } from "@/config/storage.config";
+import {
+  notifyArticlePublished,
+  notifyArticleSubmitted,
+  notifyArticleSentForReview,
+  notifyArticleRejected,
+  notifyRevisionRequested,
+  notifyArticleArchived,
+  notifyArticleUnpublished,
+  notifyArticleFeatured,
+  notifyArticleUpdated,
+} from "@/lib/notificationService";
 
 export async function getArticles(
   filters?: { status?: string, category_id?: string, author_id?: string, search?: string },
@@ -215,6 +226,11 @@ export async function updateArticle(id: string, data: Partial<Article>) {
   if (error) throw new Error(error.message);
 
   await logGovernanceAction("update", "article", id, { fields_updated: Object.keys(updateData), new_status: data.status });
+
+  // Notify: article updated
+  const titleForNotif = data.title_hi || data.title_en || id;
+  notifyArticleUpdated(id, titleForNotif).catch(() => {});
+
   revalidatePath("/admin/articles");
   revalidatePath("/admin");
   revalidatePath(`/admin/articles/${id}`);
@@ -235,6 +251,13 @@ export async function toggleFeaturedArticle(id: string, is_featured: boolean) {
   if (error) throw new Error(error.message);
 
   await logGovernanceAction("update", "article", id, { fields_updated: ['featured'], new_featured_status: is_featured });
+
+  // Notify: article featured/unfeatured
+  if (is_featured) {
+    const { data: art } = await supabase.from("articles").select("title").eq("id", id).single();
+    notifyArticleFeatured(id, art?.title ?? id).catch(() => {});
+  }
+
   revalidatePath("/admin/articles");
   revalidatePath("/admin");
   revalidatePath("/");
@@ -436,6 +459,40 @@ export async function updateArticleStatus(id: string, status: ArticleStatus | st
   if (error) throw new Error(error.message);
 
   await logGovernanceAction("status_change", "article", id, { new_status: status });
+
+  // Fetch article title for notification
+  const { data: artRow } = await supabase.from("articles").select("title").eq("id", id).single();
+  const articleTitle = artRow?.title ?? id;
+
+  // Emit notification based on new status
+  switch (status as string) {
+    case ArticleStatus.Published:
+      notifyArticlePublished(id, articleTitle).catch(() => {});
+      break;
+    case ArticleStatus.Submitted:
+      notifyArticleSubmitted(id, articleTitle).catch(() => {});
+      break;
+    case ArticleStatus.UnderReview:
+      notifyArticleSentForReview(id, articleTitle).catch(() => {});
+      break;
+    case ArticleStatus.Rejected:
+      notifyArticleRejected(id, articleTitle).catch(() => {});
+      break;
+    case ArticleStatus.RevisionRequested:
+      notifyRevisionRequested(id, articleTitle).catch(() => {});
+      break;
+    case ArticleStatus.Archived:
+      notifyArticleArchived(id, articleTitle).catch(() => {});
+      break;
+    case ArticleStatus.Draft:
+      if (current_status === ArticleStatus.Published) {
+        notifyArticleUnpublished(id, articleTitle).catch(() => {});
+      }
+      break;
+    default:
+      break;
+  }
+
   revalidatePath("/admin/articles");
   revalidatePath("/admin");
   revalidatePath(`/admin/articles/${id}`);

@@ -3,6 +3,12 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { hasAnyRole } from "@/lib/rbacService";
 import { createClient } from "@/utils/supabase/server";
+import {
+  notifyUserPromotedEditor,
+  notifyUserPromotedAdmin,
+  notifyUserSuspended,
+  notifyUserRestored,
+} from "@/lib/notificationService";
 
 export type AdminUserRecord = {
   id: string;
@@ -143,6 +149,10 @@ export async function promoteUserToEditor(userId: string): Promise<{ success: bo
     throw new Error("Database update affected zero rows.");
   }
 
+  // Notify: user promoted to editor
+  const promotedName = result.data[0]?.name ?? userId;
+  notifyUserPromotedEditor(userId, promotedName).catch(() => {});
+
   return { success: true };
 }
 
@@ -175,6 +185,10 @@ export async function promoteUserToAdmin(userId: string): Promise<{ success: boo
   if (!result.data || result.data.length === 0) {
     throw new Error("Database update affected zero rows.");
   }
+
+  // Notify: user promoted to admin
+  const adminName = result.data[0]?.name ?? userId;
+  notifyUserPromotedAdmin(userId, adminName).catch(() => {});
 
   return { success: true };
 }
@@ -276,6 +290,11 @@ export async function suspendUser(userId: string): Promise<{ success: boolean; e
   if (error) return { success: false, error: 'Failed to suspend user' };
 
   await supabaseAdmin.from('profiles').update({ status: 'suspended' }).eq('id', userId);
+
+  // Notify: user suspended
+  const { data: suspProfile } = await supabaseAdmin.from('profiles').select('name').eq('id', userId).single();
+  notifyUserSuspended(userId, suspProfile?.name ?? userId).catch(() => {});
+
   return { success: true };
 }
 
@@ -287,6 +306,11 @@ export async function activateUser(userId: string): Promise<{ success: boolean; 
   if (error) return { success: false, error: 'Failed to activate user' };
 
   await supabaseAdmin.from('profiles').update({ status: 'active' }).eq('id', userId);
+
+  // Notify: user restored
+  const { data: restProfile } = await supabaseAdmin.from('profiles').select('name').eq('id', userId).single();
+  notifyUserRestored(userId, restProfile?.name ?? userId).catch(() => {});
+
   return { success: true };
 }
 

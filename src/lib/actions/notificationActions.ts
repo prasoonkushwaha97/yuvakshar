@@ -4,7 +4,9 @@ import { createClient } from "@/utils/supabase/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { revalidatePath } from "next/cache";
 
-export type NotificationType = "success" | "info" | "warning" | "error";
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type NotificationType     = "success" | "info" | "warning" | "error";
 export type NotificationCategory = "articles" | "magazine" | "community" | "contact" | "users" | "system" | "banners" | "settings";
 export type NotificationPriority = "low" | "medium" | "high" | "critical";
 
@@ -26,8 +28,15 @@ export type NotificationRecord = {
   read_at?: string | null;
 };
 
+/** Alias for backward compat */
+export type Notification = NotificationRecord;
+
+// ─── Queries ──────────────────────────────────────────────────────────────────
+
 /**
- * Fetch Admin Notifications with filters, search, and sorting
+ * Fetch notifications visible to the logged-in staff member.
+ * Always uses supabaseAdmin so RLS does not block (RLS is applied at Supabase level).
+ * Supports: filter, category, priority, search, sort, limit, offset (pagination).
  */
 export async function getAdminNotifications(options?: {
   filter?: "all" | "unread" | "read";
@@ -35,14 +44,23 @@ export async function getAdminNotifications(options?: {
   priority?: string;
   search?: string;
   limit?: number;
+  offset?: number;
   sort?: "newest" | "oldest";
 }) {
   try {
-    const supabase = await createClient();
-
-    let query = supabase
+    let query = supabaseAdmin
       .from("notifications")
-      .select("*");
+      .select("*", { count: "exact" });
+
+    // Priority ordering: critical first, then newest
+    if (options?.sort === "oldest") {
+      query = query.order("created_at", { ascending: true });
+    } else {
+      // Sort critical → high → medium → low, then by date desc
+      query = query
+        .order("priority", { ascending: false })
+        .order("created_at", { ascending: false });
+    }
 
     if (options?.filter === "unread") {
       query = query.eq("is_read", false);
@@ -63,196 +81,156 @@ export async function getAdminNotifications(options?: {
       query = query.or(`title.ilike.${term},description.ilike.${term}`);
     }
 
-    const isAscending = options?.sort === "oldest";
-    query = query.order("created_at", { ascending: isAscending });
+    const limit = options?.limit ?? 20;
+    const offset = options?.offset ?? 0;
+    query = query.range(offset, offset + limit - 1);
 
-    if (options?.limit) {
-      query = query.limit(options.limit);
+    const { data, error, count } = await query;
+
+    if (error) {
+      console.error("Error fetching notifications:", error);
+      return { success: false, data: [] as NotificationRecord[], count: 0, error: error.message };
     }
 
-    let { data, error } = await query;
-
-    if ((!data || data.length === 0) && !error) {
-      let adminQuery = supabaseAdmin
-        .from("notifications")
-        .select("*");
-
-      if (options?.filter === "unread") {
-        adminQuery = adminQuery.eq("is_read", false);
-      } else if (options?.filter === "read") {
-        adminQuery = adminQuery.eq("is_read", true);
-      }
-
-      if (options?.category && options.category !== "all") {
-        adminQuery = adminQuery.eq("category", options.category);
-      }
-
-      if (options?.priority && options.priority !== "all") {
-        adminQuery = adminQuery.eq("priority", options.priority);
-      }
-
-      if (options?.search && options.search.trim()) {
-        const term = `%${options.search.trim()}%`;
-        adminQuery = adminQuery.or(`title.ilike.${term},description.ilike.${term}`);
-      }
-
-      adminQuery = adminQuery.order("created_at", { ascending: isAscending });
-
-      if (options?.limit) {
-        adminQuery = adminQuery.limit(options.limit);
-      }
-
-      const adminRes = await adminQuery;
-      if (adminRes.data && adminRes.data.length > 0) {
-        data = adminRes.data;
-      }
-    }
-
-    return { success: true, data: (data as NotificationRecord[]) || [], error: null };
+    return {
+      success: true,
+      data: (data as NotificationRecord[]) ?? [],
+      count: count ?? 0,
+      error: null,
+    };
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "सूचनाएँ प्राप्त करने में त्रुटि।";
-    console.error("Error in getAdminNotifications:", err);
-    return { success: false, data: [] as NotificationRecord[], error: errorMessage };
+    const msg = err instanceof Error ? err.message : "सूचनाएँ प्राप्त करने में त्रुटि।";
+    console.error("Exception in getAdminNotifications:", err);
+    return { success: false, data: [] as NotificationRecord[], count: 0, error: msg };
   }
 }
 
 /**
- * Fetch Unread Notification Count
+ * Latest N notifications for the dashboard widget (no filter)
+ */
+export async function getRecentNotifications(limit = 5): Promise<NotificationRecord[]> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("notifications")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) return [];
+    return (data as NotificationRecord[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Unread notification count (for sidebar badge)
  */
 export async function getUnreadNotificationCount(): Promise<number> {
   try {
-    const supabase = await createClient();
-    let { count, error } = await supabase
+    const { count, error } = await supabaseAdmin
       .from("notifications")
       .select("id", { count: "exact", head: true })
       .eq("is_read", false);
 
-    if (error || count === null || count === 0) {
-      const adminRes = await supabaseAdmin
-        .from("notifications")
-        .select("id", { count: "exact", head: true })
-        .eq("is_read", false);
-      if (adminRes.count !== null) {
-        count = adminRes.count;
-      }
-    }
-
-    return count || 0;
+    if (error) return 0;
+    return count ?? 0;
   } catch {
     return 0;
   }
 }
 
-/**
- * Mark a single notification as read
- */
+// ─── Mutations ────────────────────────────────────────────────────────────────
+
+/** Mark a single notification as read */
 export async function markNotificationAsRead(id: string) {
   try {
-    const supabase = await createClient();
-    let { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("notifications")
       .update({ is_read: true, read_at: new Date().toISOString() })
       .eq("id", id);
 
     if (error) {
-      await supabaseAdmin
-        .from("notifications")
-        .update({ is_read: true, read_at: new Date().toISOString() })
-        .eq("id", id);
+      console.error("markNotificationAsRead error:", error);
+      return { success: false, error: error.message };
     }
 
     revalidatePath("/admin/notifications");
     revalidatePath("/admin");
     return { success: true };
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "त्रुटि हुई।";
-    return { success: false, error: errorMessage };
+    return { success: false, error: err instanceof Error ? err.message : "त्रुटि हुई।" };
   }
 }
 
-/**
- * Mark all notifications as read
- */
+/** Mark all unread notifications as read */
 export async function markAllNotificationsAsRead() {
   try {
-    const supabase = await createClient();
-    let { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("notifications")
       .update({ is_read: true, read_at: new Date().toISOString() })
       .eq("is_read", false);
 
     if (error) {
-      await supabaseAdmin
-        .from("notifications")
-        .update({ is_read: true, read_at: new Date().toISOString() })
-        .eq("is_read", false);
+      console.error("markAllNotificationsAsRead error:", error);
+      return { success: false, error: error.message };
     }
 
     revalidatePath("/admin/notifications");
     revalidatePath("/admin");
     return { success: true };
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "त्रुटि हुई।";
-    return { success: false, error: errorMessage };
+    return { success: false, error: err instanceof Error ? err.message : "त्रुटि हुई।" };
   }
 }
 
-/**
- * Delete a notification
- */
+/** Delete a single notification */
 export async function deleteNotification(id: string) {
   try {
-    const supabase = await createClient();
-    let { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("notifications")
       .delete()
       .eq("id", id);
 
     if (error) {
-      await supabaseAdmin
-        .from("notifications")
-        .delete()
-        .eq("id", id);
+      console.error("deleteNotification error:", error);
+      return { success: false, error: error.message };
     }
 
     revalidatePath("/admin/notifications");
     revalidatePath("/admin");
     return { success: true };
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "त्रुटि हुई।";
-    return { success: false, error: errorMessage };
+    return { success: false, error: err instanceof Error ? err.message : "त्रुटि हुई।" };
   }
 }
 
-/**
- * Clear all read notifications
- */
+/** Delete all read notifications */
 export async function clearReadNotifications() {
   try {
-    const supabase = await createClient();
-    let { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("notifications")
       .delete()
       .eq("is_read", true);
 
     if (error) {
-      await supabaseAdmin
-        .from("notifications")
-        .delete()
-        .eq("is_read", true);
+      console.error("clearReadNotifications error:", error);
+      return { success: false, error: error.message };
     }
 
     revalidatePath("/admin/notifications");
     revalidatePath("/admin");
     return { success: true };
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "त्रुटि हुई।";
-    return { success: false, error: errorMessage };
+    return { success: false, error: err instanceof Error ? err.message : "त्रुटि हुई।" };
   }
 }
 
+// ─── Core Emitter ─────────────────────────────────────────────────────────────
+
 /**
- * Central Auto Notification Event Emitter
+ * Central notification creator — always uses supabaseAdmin to bypass RLS on insert.
+ * Called by notificationService.ts typed helpers.
  */
 export async function createSystemNotification(payload: {
   title: string;
@@ -268,32 +246,24 @@ export async function createSystemNotification(payload: {
   created_by?: string;
 }) {
   try {
-    const supabase = await createClient();
     const notificationData = {
-      title: payload.title,
+      title:       payload.title,
       description: payload.description,
-      type: payload.type || "info",
-      category: payload.category || "system",
-      priority: payload.priority || "medium",
-      target_role: payload.target_role || "all",
-      target_user: payload.target_user || null,
-      entity_type: payload.entity_type || null,
-      entity_id: payload.entity_id || null,
-      action_url: payload.action_url || null,
-      created_by: payload.created_by || null,
-      is_read: false,
+      type:        payload.type        ?? "info",
+      category:    payload.category    ?? "system",
+      priority:    payload.priority    ?? "medium",
+      target_role: payload.target_role ?? "all",
+      target_user: payload.target_user ?? null,
+      entity_type: payload.entity_type ?? null,
+      entity_id:   payload.entity_id   ?? null,
+      action_url:  payload.action_url  ?? null,
+      created_by:  payload.created_by  ?? null,
+      is_read:     false,
     };
 
-    let { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("notifications")
       .insert(notificationData);
-
-    if (error) {
-      const adminRes = await supabaseAdmin
-        .from("notifications")
-        .insert(notificationData);
-      error = adminRes.error;
-    }
 
     if (error) {
       console.error("Error creating notification:", error);
@@ -304,27 +274,28 @@ export async function createSystemNotification(payload: {
     revalidatePath("/admin");
     return { success: true };
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "सूचना बनाने में त्रुटि।";
+    const msg = err instanceof Error ? err.message : "सूचना बनाने में त्रुटि।";
     console.error("Exception in createSystemNotification:", err);
-    return { success: false, error: errorMessage };
+    return { success: false, error: msg };
   }
 }
 
-// Backward compatibility wrappers
+// ─── Backward Compatibility Wrappers ─────────────────────────────────────────
+
 export async function createNotification(
   recipient_id: string,
   type: string,
   title: string,
   message: string,
-  priority: any = "medium",
-  category: any = "system"
+  priority: NotificationPriority = "medium",
+  category: NotificationCategory = "system"
 ) {
   return createSystemNotification({
     title,
     description: message,
-    type: type as any,
-    category: category as any,
-    priority: priority as any,
+    type: type as NotificationType,
+    category,
+    priority,
     target_user: recipient_id,
   });
 }
@@ -339,7 +310,7 @@ export async function createInternalNotification(
   return createSystemNotification({
     title,
     description: message,
-    type: eventType as any,
+    type: eventType as NotificationType,
     target_user: userId,
     action_url: linkUrl,
   });

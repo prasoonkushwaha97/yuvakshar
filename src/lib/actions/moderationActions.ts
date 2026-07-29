@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { hasAnyRole } from "@/lib/rbacService";
 import { logGovernanceAction } from "./governanceAuditActions";
 import { createNotification } from "./notificationActions";
+import { notifyChaupalReportResolved, notifyChaupalPostRemoved } from "@/lib/notificationService";
 
 export async function getOpenReports() {
   const isAuthorized = await hasAnyRole(['founder', 'admin']);
@@ -66,6 +67,13 @@ export async function moderateReport(
     reportId,
     { target_type: report.target_type, target_id: report.target_id, notes }
   );
+
+  // Notify: fire CMS notification based on action
+  if (action === 'dismiss' || action === 'escalate') {
+    notifyChaupalReportResolved(reportId).catch(() => {});
+  } else if (action === 'hide') {
+    notifyChaupalPostRemoved(report.target_id ?? reportId).catch(() => {});
+  }
 
   return true;
 }

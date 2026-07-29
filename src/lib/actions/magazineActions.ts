@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { logGovernanceAction } from "./governanceAuditActions";
 import { hasPermission } from "@/lib/rbacService";
 import { revalidatePath } from "next/cache";
+import { notifyMagazineCreated, notifyMagazinePublished, notifyMagazineArchived } from "@/lib/notificationService";
 
 export async function createMagazineIssue(data: { title: string, slug: string, volume: number, issue_number: number }) {
   const { data: authData } = await supabase.auth.getUser().catch(() => ({ data: { user: null }, error: { message: 'Auth network error' } }));
@@ -21,6 +22,7 @@ export async function createMagazineIssue(data: { title: string, slug: string, v
   if (error) throw error;
 
   await logGovernanceAction("CREATE_MAGAZINE_ISSUE", "magazine_issues", issue.id, { title: issue.title });
+  notifyMagazineCreated(issue.id, issue.title).catch(() => {});
   revalidatePath('/admin/magazine');
   
   return issue;
@@ -91,6 +93,17 @@ export async function updateIssueStatus(issue_id: string, status: string) {
   if (error) throw error;
 
   await logGovernanceAction("UPDATE_MAGAZINE_STATUS", "magazine_issues", issue_id, { status });
+
+  // Fetch issue title for notification
+  const { data: issueRow } = await supabase.from('magazine_issues').select('title').eq('id', issue_id).single();
+  const issueTitle = issueRow?.title ?? issue_id;
+
+  if (status === 'published') {
+    notifyMagazinePublished(issue_id, issueTitle).catch(() => {});
+  } else if (status === 'archived') {
+    notifyMagazineArchived(issue_id, issueTitle).catch(() => {});
+  }
+
   revalidatePath('/admin/magazine');
   revalidatePath(`/admin/magazine/builder/${issue_id}`);
   

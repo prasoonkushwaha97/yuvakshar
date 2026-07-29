@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { revalidatePath } from "next/cache";
+import { notifyContactMessage, notifyContactMessageHighPriority } from "@/lib/notificationService";
 
 export interface ContactMessagePayload {
   type?: string;
@@ -101,6 +102,14 @@ export async function createContactMessage(payload: ContactMessagePayload) {
       revalidatePath("/admin");
     } catch {
       // Ignored outside Next.js request lifecycle
+    }
+
+    // Notify admins about new contact message (fire and forget)
+    const isUrgent = (cleanCategory || "").toLowerCase().includes("urgent");
+    if (isUrgent) {
+      notifyContactMessageHighPriority("", insertPayload.name).catch(() => {});
+    } else {
+      notifyContactMessage("", insertPayload.name, insertPayload.subject).catch(() => {});
     }
 
     return { success: true };

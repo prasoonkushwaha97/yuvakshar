@@ -22,21 +22,31 @@ import {
 } from "lucide-react";
 import Avatar from "@/components/shared/Avatar";
 import { getContactStats } from "@/lib/actions/contactActions";
+import { getUnreadNotificationCount } from "@/lib/actions/notificationActions";
 
 export default function AdminSidebar() {
   const pathname = usePathname();
   const { currentUser } = useCms();
   const [newMessagesCount, setNewMessagesCount] = React.useState<number>(0);
+  const [unreadNotifCount, setUnreadNotifCount] = React.useState<number>(0);
   
-  // Fetch unread contact message badge count
+  // Fetch contact badge + notification badge
   React.useEffect(() => {
-    async function loadStats() {
-      const res = await getContactStats();
-      if (res.success && res.stats.newCount > 0) {
-        setNewMessagesCount(res.stats.newCount);
+    async function loadBadges() {
+      const [contactRes, notifCount] = await Promise.all([
+        getContactStats(),
+        getUnreadNotificationCount(),
+      ]);
+      if (contactRes.success && contactRes.stats.newCount > 0) {
+        setNewMessagesCount(contactRes.stats.newCount);
       }
+      setUnreadNotifCount(notifCount);
     }
-    loadStats();
+    loadBadges();
+
+    // Refresh every 60 seconds
+    const interval = setInterval(loadBadges, 60_000);
+    return () => clearInterval(interval);
   }, []);
   
   // Note: we fetch the resolved role directly or default to Reader
@@ -51,7 +61,7 @@ export default function AdminSidebar() {
     { name: "संपर्क संदेश", href: "/admin/contact-messages", icon: Mail, requiredPermission: "manage_contact_messages" as const, badge: newMessagesCount },
     { name: "उपयोगकर्ता", href: "/admin/users", icon: Users, requiredPermission: "manage_users" as const },
     { name: "बैनर गैलरी", href: "/admin/media/banners", icon: Sparkles, requiredPermission: "manage_settings" as const },
-    { name: "सूचनाएँ", href: "/admin/notifications", icon: Bell, requiredPermission: "review_article" as const },
+    { name: "सूचनाएँ", href: "/admin/notifications", icon: Bell, requiredPermission: "review_article" as const, badge: unreadNotifCount, badgeColor: "amber" },
     { name: "सेटिंग्स", href: "/admin/cms/settings", icon: Settings, requiredPermission: "manage_settings" as const }
   ];
 
@@ -83,7 +93,11 @@ export default function AdminSidebar() {
               <Icon className="w-5 h-5 shrink-0" />
               <span className="flex-1 truncate">{item.name}</span>
               {!!item.badge && item.badge > 0 && (
-                <span className="px-2 py-0.5 text-xs font-bold bg-orange-500 text-white rounded-full animate-pulse">
+                <span className={`px-2 py-0.5 text-xs font-bold rounded-full animate-pulse ${
+                  (item as any).badgeColor === "amber"
+                    ? "bg-amber-500 text-white"
+                    : "bg-orange-500 text-white"
+                }`}>
                   {item.badge}
                 </span>
               )}
