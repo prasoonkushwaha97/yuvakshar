@@ -185,48 +185,95 @@ function HomeContent() {
   const sportsCatIds = sportsCatArticles.map((a: any) => a.id);
   const finalExcludesBeforeEditorial = [...afterEnvExcludes, ...sportsCatIds];
 
-  // --- LAYOUT ENGINE ---
+  // --- LAYOUT ENGINE NORMALIZATION & REGISTRY ---
+  const extractNormalizedType = (section: any): string => {
+    let raw = section?.section_type || section?.type || section?.section || "";
+    if (!raw && section?.id) {
+      const idStr = String(section.id);
+      raw = idStr.replace(/^sec[-_]?/i, "").replace(/[-_]?\d+$/g, "");
+    }
+    return String(raw)
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "")
+      .trim();
+  };
+
   const activeDbSections = previewSections 
     ? previewSections.filter((sec: any) => sec.is_visible !== false)
     : Array.isArray(homepageSections)
       ? homepageSections.filter((sec: any) => sec.is_visible !== false && sec.visible !== false && sec.active !== false)
       : [];
 
-  const hasDbConfig = activeDbSections.length > 0;
-
   const renderDbSection = (section: any) => {
-    const type = (section.section_type || section.type || "").toLowerCase().replace(/_/, "").trim();
-    const catName = section.category_name || section.category || "";
+    const normalizedType = extractNormalizedType(section);
+    const catName = section.category_name || section.category || section.title || "";
     const artLimit = section.article_count || section.limit || 4;
 
-    switch (type) {
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[Homepage Engine] Section Loaded -> ID: "${section.id}", Type: "${section.type || section.section_type}", Normalized: "${normalizedType}", Visible: ${section.is_visible !== false}`);
+    }
+
+    switch (normalizedType) {
       case "hero":
         return <Hero />;
       case "topstories":
+      case "topstory":
+      case "top":
         return <TopStories />;
+      case "editorial":
       case "editorialpicks":
+      case "editorialpick":
+      case "editorpick":
+      case "editorpicks":
+      case "editorspick":
+      case "editorspicks":
         return <EditorialPicks excludeIds={finalExcludesBeforeEditorial} />;
       case "latestnews":
+      case "latestnew":
+      case "latest":
         return <LatestNews excludeIds={excludeIdsForLatest} />;
-      case "breakingticker":
-        return null;
-      case "trending":
-        return null;
-      case "opinion":
-        return null;
       case "magazine":
+      case "magazines":
         return <Magazine />;
-      case "community":
-        return null;
-      case "popular":
-        return null;
       case "categoryblock":
+      case "category":
         if (!catName || catName.trim() === "") return null;
         return <CategoryBlock categoryName={catName} limit={artLimit} excludeIds={excludeIdsForCategories} />;
+      case "breakingticker":
+      case "trending":
+      case "opinion":
+      case "community":
+      case "popular":
       case "authors":
+      case "videos":
+      case "video":
+        // Recognised section types that are planned but not yet implemented.
+        // Return null silently — no warning, no broken UI.
         return null;
-      default:
+      default: {
+        // Fallback fuzzy matchers for safe resilience
+        if (normalizedType.includes("editorial") || normalizedType.includes("editor")) {
+          return <EditorialPicks excludeIds={finalExcludesBeforeEditorial} />;
+        }
+        if (normalizedType.includes("hero")) {
+          return <Hero />;
+        }
+        if (normalizedType.includes("latest")) {
+          return <LatestNews excludeIds={excludeIdsForLatest} />;
+        }
+        if (normalizedType.includes("magazine")) {
+          return <Magazine />;
+        }
+        if (normalizedType.includes("category")) {
+          return <CategoryBlock categoryName={catName || "विविध"} limit={artLimit} excludeIds={excludeIdsForCategories} />;
+        }
+
+        // Log to console only — never render debug UI to the page.
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(`[Homepage Engine] Skipping unknown section -> ID: "${section.id}", Type: "${section.type || section.section_type}", Normalized: "${normalizedType}". Reason: No component registered for this type.`);
+        }
         return null;
+      }
     }
   };
 
@@ -254,24 +301,11 @@ function HomeContent() {
       
       {/* CMS Driven Layout Pipeline */}
       {activeDbSections.length > 0 ? (
-        activeDbSections.map((section: any, idx: number) => {
-          const type = (section.section_type || section.type || "").toLowerCase().replace(/_/, "").trim();
-          const isHero = type === "hero";
-          console.log({
-            id: section.id,
-            type: section.type,
-            title: section.title,
-            enabled: section.is_visible,
-            articleCount: articles?.length ?? 0
-          });
-          console.log("Rendering " + type);
-
-          return (
-            <SectionErrorBoundary key={section.id || idx}>
-              {renderDbSection(section)}
-            </SectionErrorBoundary>
-          );
-        })
+        activeDbSections.map((section: any, idx: number) => (
+          <SectionErrorBoundary key={section.id || idx}>
+            {renderDbSection(section)}
+          </SectionErrorBoundary>
+        ))
       ) : (
         <>
           <SectionErrorBoundary><Hero /></SectionErrorBoundary>

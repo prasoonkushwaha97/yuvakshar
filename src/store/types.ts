@@ -24,6 +24,10 @@ export interface Article {
   readTime: string;
   tags: string[];
   trending?: boolean;
+  is_editor_pick?: boolean;
+  editor_pick_order?: number;
+  editor_pick_at?: string | null;
+  editor_pick_by?: string | null;
   status?: string;
   section?: string;
   [key: string]: any;

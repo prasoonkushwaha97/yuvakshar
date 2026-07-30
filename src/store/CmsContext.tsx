@@ -6,6 +6,7 @@ import { validateUsername, generateFallbackUsername } from "@/utils/username";
 
 import { Article } from "./types";
 export type { Article };
+import { getArticleImage } from "@/utils/imageHelper";
 import { QuizQuestion, ArticleQuiz, preseededQuizzes, generateFallbackQuestions } from "@/lib/defaultQuizzes";
 import { callOpenAi, callGemini } from "@/lib/aiService";
 import { generatefallbackAiResponse } from "@/lib/fallbackAiResponse";
@@ -1064,11 +1065,15 @@ export function CmsProvider({
       const loadedArticles = dbArticles && dbArticles.length > 0 ? dbArticles : [];
       
       const mappedArticles = loadedArticles.map((art: any) => ({
+        ...art,
         id: art.id,
         title: art.title,
+        title_hi: art.title,
         englishTitle: art.english_title || "",
+        title_en: art.english_title || "",
         slug: art.slug,
         summary: art.summary || "",
+        summary_hi: art.summary || "",
         content: art.content || "",
         category: art.categories?.name || "विविध",
         category_id: art.category_id,
@@ -1076,12 +1081,18 @@ export function CmsProvider({
         author: art.profiles?.name || "युवाक्षर संपादक",
         author_id: art.author_id,
         authorRole: "लेखक",
+        profiles: art.profiles ? mapDbProfileToProfile(art.profiles) : null,
         authorProfile: art.profiles ? mapDbProfileToProfile(art.profiles) : undefined,
-        cover_image: art.cover_image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
+        cover_image: getArticleImage(art.cover_image || art.coverImage),
+        coverImage: getArticleImage(art.cover_image || art.coverImage),
         date: art.published_at || art.created_at,
         readTime: art.read_time || "३ मिनट पठन",
         tags: art.tags || [],
         isFeatured: art.featured || false,
+        is_editor_pick: art.is_editor_pick || false,
+        editor_pick_order: art.editor_pick_order ?? 0,
+        editor_pick_at: art.editor_pick_at || null,
+        editor_pick_by: art.editor_pick_by || null,
         status: art.status || "Draft",
         views: art.views || 0,
         likes: art.likes || 0

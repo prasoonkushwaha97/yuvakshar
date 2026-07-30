@@ -9,6 +9,8 @@ import imageCompression from "browser-image-compression";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
 
+import { getArticleImage, handleImageError } from "@/utils/imageHelper";
+
 interface ArticleFeaturedImageUploaderProps {
   value: string;
   onChange: (url: string) => void;
@@ -122,7 +124,7 @@ export default function ArticleFeaturedImageUploader({
           </div>
         ) : value ? (
           <>
-            <Image src={value} alt="Featured Image" fill className="object-cover" sizes="(max-width: 768px) 100vw, 800px" unoptimized />
+            <Image src={getArticleImage(value)} alt="Featured Image" fill onError={handleImageError} className="object-cover" sizes="(max-width: 768px) 100vw, 800px" unoptimized />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
               <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="px-3 py-1.5 bg-white text-slate-900 rounded-lg text-sm font-bold shadow-lg flex items-center gap-2 hover:bg-slate-100">
                 <RefreshCw className="w-4 h-4" /> Replace

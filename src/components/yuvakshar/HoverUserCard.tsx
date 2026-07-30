@@ -24,12 +24,17 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<Profile | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
+    setIsMobile(window.innerWidth < 1024);
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Load user data when hovered/opened to keep it lightweight
@@ -150,7 +155,7 @@ export default function HoverUserCard({ userId, children }: HoverUserCardProps) 
       onTouchCancel={handleTouchEnd}
       ref={cardRef}
     >
-      <div className={window.innerWidth < 1024 && !isOpen ? "active:opacity-60 transition-opacity" : ""}>
+      <div className={isMobile && !isOpen ? "active:opacity-60 transition-opacity" : ""}>
         {children}
       </div>
 

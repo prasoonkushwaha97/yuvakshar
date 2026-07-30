@@ -7,6 +7,7 @@ import { stripMarkdown } from "@/lib/markdown";
 import MetaInfo from "../shared/MetaInfo";
 import { formatDisplayDate } from "@/utils/date";
 import { getArticleUrl } from "@/utils/routes";
+import { getArticleImage, handleImageError } from "@/utils/imageHelper";
 
 interface ArticleCardMediumProps {
   article: any;
@@ -17,7 +18,7 @@ export default function ArticleCardMedium({ article, showImage = true }: Article
   if (!article) return null;
 
   const title = stripMarkdown(article.title || article.title_hi || "");
-  const imageUrl = article.coverImage || article.cover_image || article.image || "/images/placeholder-news.jpg";
+  const imageUrl = getArticleImage(article);
   const cleanDate = formatDisplayDate(article.date);
 
   return (
@@ -25,7 +26,7 @@ export default function ArticleCardMedium({ article, showImage = true }: Article
       
       {showImage && (
         <Link href={getArticleUrl(article)} className="block relative w-full aspect-[16/10] mb-3 shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-900">
-          <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.025] transition-transform duration-500 ease-out" loading="lazy" fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 400px" unoptimized={imageUrl.includes('supabase')} />
+          <Image src={imageUrl} alt={title} onError={handleImageError} className="w-full h-full object-cover group-hover:scale-[1.025] transition-transform duration-500 ease-out" loading="lazy" fill unoptimized sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 400px" />
         </Link>
       )}
 

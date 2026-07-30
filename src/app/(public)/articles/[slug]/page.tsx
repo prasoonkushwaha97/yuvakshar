@@ -13,6 +13,7 @@ import CommentSection from "@/components/articles/CommentSection";
 import ArticleContent from "@/components/articles/ArticleContent";
 import RelatedArticles from "@/components/articles/RelatedArticles";
 import { getRelatedArticlesForInfiniteScroll } from "@/lib/actions/articleActions";
+import { getArticleImage } from "@/utils/imageHelper";
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
@@ -39,7 +40,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
     const titleStr = stripMarkdown(article.title_hi || article.title_en || "युवाक्षर लेख");
     const summaryStr = stripMarkdown(article.summary_hi || article.summary_en || "युवाक्षर का एक विचारणीय आलेख।");
-    const ogImg = article.cover_image || "/yuvakshar_logo_official.png";
+    const ogImg = getArticleImage(article);
 
     return {
       title: `${titleStr} | युवाक्षर`,

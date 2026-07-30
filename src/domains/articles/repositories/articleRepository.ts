@@ -1,6 +1,7 @@
 import { supabase } from "../../../lib/supabaseClient";
-import { Article } from "../../../store/types"; // using the central types for now to avoid refactoring hundreds of UI files
+import { Article } from "../../../store/types";
 import { mapDbProfileToProfile } from "../../../lib/repositoryService";
+import { getArticleImage } from "../../../utils/imageHelper";
 
 export interface IArticleRepository {
   getArticles(): Promise<Article[]>;
@@ -71,7 +72,8 @@ export class SupabaseArticleRepository implements IArticleRepository {
       date: row.created_at, // mapped to UI date
       status: row.status as any,
       featured: row.featured,
-      coverImage: row.cover_image,
+      coverImage: getArticleImage(row.cover_image || row.coverImage),
+      cover_image: getArticleImage(row.cover_image || row.coverImage),
       views: row.views,
       likes: row.likes,
       readTime: row.read_time,
@@ -92,7 +94,7 @@ export class SupabaseArticleRepository implements IArticleRepository {
       content: article.content,
       // Note: category_id needs resolution from Category name to ID in a real app
       author_id: article.authorId,
-      cover_image: article.coverImage,
+      cover_image: article.cover_image || article.coverImage || null,
       featured: article.featured,
       status: article.status,
       views: article.views,

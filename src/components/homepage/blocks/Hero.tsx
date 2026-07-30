@@ -11,6 +11,7 @@ import { getArticleUrl, resolveAuthorFromUsers } from "@/utils/routes";
 import AuthorLink from "@/components/shared/AuthorLink";
 import Avatar from "@/components/shared/Avatar";
 import SectionContainer from "../layout/SectionContainer";
+import { getArticleImage, handleImageError } from "@/utils/imageHelper";
 
 export default function Hero() {
   const { articles, users } = useCms();
@@ -83,7 +84,7 @@ export default function Hero() {
               transition={{ duration: 0.55, ease: "easeInOut" }}
               className="absolute inset-0 w-full h-full"
             >
-              <Image src={currentArticle.cover_image || "/images/placeholder-news.jpg"} alt={currentArticle.title} className="w-full h-full object-cover object-center brightness-[0.85] contrast-100 hover:scale-105 transition-transform duration-[10000ms] ease-out" loading="eager" fill unoptimized />
+              <Image src={getArticleImage(currentArticle)} alt={currentArticle.title} onError={handleImageError} className="w-full h-full object-cover object-center brightness-[0.85] contrast-100 hover:scale-105 transition-transform duration-[10000ms] ease-out" loading="eager" fill unoptimized />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 via-40% to-transparent/10" />
             </motion.div>
           </AnimatePresence>
@@ -167,7 +168,7 @@ export default function Hero() {
         <div className="lg:col-span-4 flex flex-col justify-between gap-4 h-full">
           {editorialStack.map(({ title: sectionTitle, article }) => {
             const title = stripMarkdown(article.title || article.title_hi || "");
-            const imageUrl = article.cover_image || "/images/placeholder-news.jpg";
+            const imageUrl = getArticleImage(article);
 
             return (
               <div 
@@ -179,7 +180,7 @@ export default function Hero() {
                   href={getArticleUrl(article)}
                   className="block relative w-20 h-20 shrink-0 overflow-hidden bg-gray-55 dark:bg-gray-900 rounded-2xl border border-gray-150/60 dark:border-gray-850/60"
                 >
-                  <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" loading="lazy" fill unoptimized />
+                  <Image src={imageUrl} alt={title} onError={handleImageError} className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" loading="lazy" fill unoptimized />
                 </Link>
 
                 {/* Details */}

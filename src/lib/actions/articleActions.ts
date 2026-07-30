@@ -1,11 +1,13 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { hasAnyRole } from "@/lib/rbacService";
 import { revalidatePath } from "next/cache";
 import { logGovernanceAction } from "./governanceAuditActions";
 import { Article, ArticleStatus } from "@/types/content";
 import { mapDbProfileToProfile } from "@/lib/repositoryService";
+import { getArticleImage } from "@/utils/imageHelper";
 import { STORAGE_CONFIG } from "@/config/storage.config";
 import {
   notifyArticlePublished,
@@ -63,12 +65,17 @@ export async function getArticles(
 
   const mappedData = (data as any[]).map((art: any) => ({
     ...art,
-    profiles: art.profiles ? mapDbProfileToProfile(art.profiles) : null,
+    cover_image: getArticleImage(art.cover_image || art.coverImage),
+    coverImage: getArticleImage(art.cover_image || art.coverImage),
     title_hi: art.title,
     title_en: art.english_title || "",
     summary_hi: art.summary || "",
     summary_en: art.summary || "",
     is_featured: art.featured || false,
+    is_editor_pick: art.is_editor_pick || false,
+    editor_pick_order: art.editor_pick_order ?? 0,
+    editor_pick_at: art.editor_pick_at || null,
+    editor_pick_by: art.editor_pick_by || null,
     status: art.status as ArticleStatus || ArticleStatus.Draft,
     view_count: art.views || 0,
     like_count: art.likes || 0,
@@ -85,32 +92,58 @@ export async function getArticles(
 
 export async function getArticleById(id: string) {
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("articles")
-      .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)")
-      .eq("id", id)
-      .maybeSingle();
+    let data: any = null;
+    let error: any = null;
+
+    try {
+      const supabase = await createClient();
+      const res = await supabase
+        .from("articles")
+        .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
+        .eq("id", id)
+        .maybeSingle();
+      data = res.data;
+      error = res.error;
+    } catch (e) {
+      console.warn("createClient error in getArticleById, using fallback:", e);
+    }
+
+    if (!data) {
+      // Fallback to supabaseAdmin
+      const resAdmin = await supabaseAdmin
+        .from("articles")
+        .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
+        .eq("id", id)
+        .maybeSingle();
+      data = resAdmin.data;
+      error = resAdmin.error;
+    }
 
     if (error) {
       console.error("Error fetching article by id in getArticleById action:", error);
       return null;
     }
-    
+
     if (!data) {
-      console.error(`No article found for ID: ${id}`);
+      console.error(`[getArticleById] No article found for ID: ${id}`);
       return null;
     }
-    
+
     const art = data as any;
     return {
       ...art,
+      cover_image: getArticleImage(art.cover_image || art.coverImage),
+      coverImage: getArticleImage(art.cover_image || art.coverImage),
       profiles: art.profiles ? mapDbProfileToProfile(art.profiles) : null,
       title_hi: art.title,
       title_en: art.english_title || "",
       summary_hi: art.summary || "",
       summary_en: art.summary || "",
       is_featured: art.featured || false,
+      is_editor_pick: art.is_editor_pick || false,
+      editor_pick_order: art.editor_pick_order ?? 0,
+      editor_pick_at: art.editor_pick_at || null,
+      editor_pick_by: art.editor_pick_by || null,
       status: art.status as ArticleStatus || ArticleStatus.Draft,
       view_count: art.views || 0,
       like_count: art.likes || 0,
@@ -129,12 +162,43 @@ export async function getArticleById(id: string) {
 
 export async function getArticleBySlug(slug: string) {
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("articles")
-      .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)")
-      .eq("slug", slug)
-      .maybeSingle();
+    let data: any = null;
+    let error: any = null;
+
+    try {
+      const supabase = await createClient();
+      const res = await supabase
+        .from("articles")
+        .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
+        .eq("slug", slug)
+        .maybeSingle();
+      data = res.data;
+      error = res.error;
+    } catch (e) {
+      console.warn("createClient error in getArticleBySlug, using fallback:", e);
+    }
+
+    // Fallback 1: Query with supabaseAdmin by slug
+    if (!data) {
+      const resAdmin = await supabaseAdmin
+        .from("articles")
+        .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
+        .eq("slug", slug)
+        .maybeSingle();
+      data = resAdmin.data;
+      error = resAdmin.error;
+    }
+
+    // Fallback 2: Case insensitive slug match
+    if (!data) {
+      const resIlike = await supabaseAdmin
+        .from("articles")
+        .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
+        .ilike("slug", slug)
+        .maybeSingle();
+      data = resIlike.data;
+      error = resIlike.error;
+    }
 
     if (error) {
       console.error("Error fetching article by slug in getArticleBySlug action:", error);
@@ -142,19 +206,25 @@ export async function getArticleBySlug(slug: string) {
     }
 
     if (!data) {
-      console.error(`No article found for slug: ${slug}`);
+      console.error(`[getArticleBySlug] No article found for slug: "${slug}"`);
       return null;
     }
 
     const art = data as any;
     return {
       ...art,
+      cover_image: getArticleImage(art.cover_image || art.coverImage),
+      coverImage: getArticleImage(art.cover_image || art.coverImage),
       profiles: art.profiles ? mapDbProfileToProfile(art.profiles) : null,
       title_hi: art.title,
       title_en: art.english_title || "",
       summary_hi: art.summary || "",
       summary_en: art.summary || "",
       is_featured: art.featured || false,
+      is_editor_pick: art.is_editor_pick || false,
+      editor_pick_order: art.editor_pick_order ?? 0,
+      editor_pick_at: art.editor_pick_at || null,
+      editor_pick_by: art.editor_pick_by || null,
       status: art.status as ArticleStatus || ArticleStatus.Draft,
       view_count: art.views || 0,
       like_count: art.likes || 0,
@@ -511,6 +581,8 @@ function mapArticleToDb(data: Partial<Article>): any {
   if (data.author_id !== undefined) dbData.author_id = data.author_id;
   if (data.status !== undefined) dbData.status = data.status;
   if (data.is_featured !== undefined) dbData.featured = data.is_featured;
+  if (data.is_editor_pick !== undefined) dbData.is_editor_pick = data.is_editor_pick;
+  if (data.editor_pick_order !== undefined) dbData.editor_pick_order = data.editor_pick_order;
   if (data.view_count !== undefined) dbData.views = data.view_count;
   if (data.like_count !== undefined) dbData.likes = data.like_count;
   if (data.read_time !== undefined) dbData.read_time = data.read_time;
@@ -536,7 +608,7 @@ export async function getRelatedArticlesForInfiniteScroll(
     // or just rely on supabase to give us some matches.
     let query = supabase
       .from("articles")
-      .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)")
+      .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
       .eq("status", ArticleStatus.Published)
       .not("id", "in", `(${excludeIds.join(',')})`)
       .order("created_at", { ascending: false })
@@ -547,7 +619,7 @@ export async function getRelatedArticlesForInfiniteScroll(
        // Let's just fetch the exact category first.
          const { data: catData, error: catError } = await supabase
            .from("articles")
-           .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)")
+           .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
            .eq("status", ArticleStatus.Published)
            .eq("category_id", categoryId)
            .not("id", "in", `(${excludeIds.join(',')})`)
@@ -560,7 +632,7 @@ export async function getRelatedArticlesForInfiniteScroll(
            const newExcludes = [...excludeIds, ...results.map(r => r.id)];
              const { data: fallbackData } = await supabase
                .from("articles")
-               .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, social_links)")
+               .select("*, categories(id, name, slug), profiles(id, name, avatar_url, social_links)")
                .eq("status", ArticleStatus.Published)
                .not("id", "in", `(${newExcludes.join(',')})`)
                .order("created_at", { ascending: false })
@@ -640,3 +712,156 @@ export async function getAuthorsForSelect() {
     return [];
   }
 }
+
+export async function toggleEditorialPick(id: string, is_editor_pick: boolean, order?: number) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
+  if (!isAuthorized) {
+    console.error("[toggleEditorialPick] Authorization failed for article ID:", id);
+    throw new Error("Unauthorized action.");
+  }
+
+  const updateData: any = {
+    is_editor_pick,
+  };
+
+  if (is_editor_pick && order !== undefined) {
+    updateData.editor_pick_order = order;
+  }
+
+  console.log("[toggleEditorialPick] Article ID:", id);
+  console.log("[toggleEditorialPick] Payload:", JSON.stringify(updateData));
+
+  const { data, error } = await supabaseAdmin
+    .from("articles")
+    .update(updateData)
+    .eq("id", id)
+    .select();
+
+  console.log("[toggleEditorialPick] Update Result:", data);
+
+  if (error) {
+    console.error("[toggleEditorialPick] Supabase Error:", error);
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/admin/articles");
+  revalidatePath("/admin/articles/editorial-picks");
+  revalidatePath("/admin");
+  revalidatePath("/");
+  return { success: true, data };
+}
+
+export async function bulkUpdateEditorialPicks(ids: string[], is_editor_pick: boolean) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
+  if (!isAuthorized) {
+    console.error("[bulkUpdateEditorialPicks] Authorization failed for IDs:", ids);
+    throw new Error("Unauthorized action.");
+  }
+
+  if (!ids || ids.length === 0) return { success: true };
+
+  const updateData: any = {
+    is_editor_pick,
+  };
+
+  console.log("[bulkUpdateEditorialPicks] Article IDs:", ids);
+  console.log("[bulkUpdateEditorialPicks] Payload:", JSON.stringify(updateData));
+
+  const { data, error } = await supabaseAdmin
+    .from("articles")
+    .update(updateData)
+    .in("id", ids)
+    .select();
+
+  console.log("[bulkUpdateEditorialPicks] Update Result:", data);
+
+  if (error) {
+    console.error("[bulkUpdateEditorialPicks] Supabase Error:", error);
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/admin/articles");
+  revalidatePath("/admin/articles/editorial-picks");
+  revalidatePath("/admin");
+  revalidatePath("/");
+  return { success: true, data };
+}
+
+export async function updateEditorialPickOrders(items: { id: string; editor_pick_order: number }[]) {
+  const isAuthorized = await hasAnyRole(['founder', 'admin', 'editor']);
+  if (!isAuthorized) {
+    console.error("[updateEditorialPickOrders] Authorization failed");
+    throw new Error("Unauthorized action.");
+  }
+
+  if (!items || items.length === 0) return { success: true };
+
+  console.log("[updateEditorialPickOrders] Items:", JSON.stringify(items));
+
+  for (const item of items) {
+    const payload = { editor_pick_order: item.editor_pick_order };
+    console.log("[updateEditorialPickOrders] Article ID:", item.id, "Payload:", payload);
+    const { data, error } = await supabaseAdmin
+      .from("articles")
+      .update(payload)
+      .eq("id", item.id)
+      .select();
+
+    console.log("[updateEditorialPickOrders] Update Result:", data);
+
+    if (error) {
+      console.error("[updateEditorialPickOrders] Supabase Error for ID", item.id, ":", error);
+      throw new Error(error.message);
+    }
+  }
+
+  revalidatePath("/admin/articles");
+  revalidatePath("/admin/articles/editorial-picks");
+  revalidatePath("/admin");
+  revalidatePath("/");
+  return { success: true };
+}
+
+export async function getEditorialPicks(limit = 8) {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("articles")
+      .select("*, categories(id, name, slug), profiles!articles_author_id_fkey(id, name, avatar_url, username)")
+      .eq("is_editor_pick", true)
+      .order("editor_pick_order", { ascending: true })
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error("[getEditorialPicks] Supabase Error:", error);
+      return [];
+    }
+
+    return (data || []).map((art: any) => ({
+      ...art,
+      cover_image: getArticleImage(art.cover_image || art.coverImage),
+      coverImage: getArticleImage(art.cover_image || art.coverImage),
+      profiles: art.profiles ? mapDbProfileToProfile(art.profiles) : null,
+      title_hi: art.title,
+      title_en: art.english_title || "",
+      summary_hi: art.summary || "",
+      summary_en: art.summary || "",
+      is_featured: art.featured || false,
+      is_editor_pick: art.is_editor_pick || false,
+      editor_pick_order: art.editor_pick_order ?? 0,
+      status: art.status as ArticleStatus || ArticleStatus.Draft,
+      view_count: art.views || 0,
+      like_count: art.likes || 0,
+      categories: art.categories ? {
+        id: art.categories.id,
+        name_hi: art.categories.name,
+        slug: art.categories.slug,
+        color: "#EA580C"
+      } : null
+    })) as Article[];
+  } catch (err) {
+    console.error("[getEditorialPicks] Exception:", err);
+    return [];
+  }
+}
+

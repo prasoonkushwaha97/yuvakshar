@@ -17,6 +17,7 @@ import { useCms } from "@/store/CmsContext";
 import GlassCard from "@/components/yuvakshar/GlassCard";
 import { stripMarkdown } from "@/lib/markdown";
 import { getArticleUrl } from "@/utils/routes";
+import { getArticleImage, handleImageError } from "@/utils/imageHelper";
 
 const categorySlugMap: Record<string, string> = {
   "news": "समाचार",
@@ -177,8 +178,9 @@ function CategoryDetailPageContent() {
                   {/* Image cover */}
                   <Link href={getArticleUrl(art)} className="block relative h-[220px] w-full overflow-hidden">
                     <Image 
-                      src={art.cover_image} 
+                      src={getArticleImage(art)} 
                       alt={art.title}
+                      onError={handleImageError}
                       fill
                       className="object-cover hover:scale-105 transition-transform duration-500 brightness-95"
                     />

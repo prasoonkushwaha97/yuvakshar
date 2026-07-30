@@ -10,6 +10,7 @@ import { hasPermission } from "@/domains/users/permissions";
 import { 
   LayoutDashboard, 
   FileText, 
+  Award,
   FolderTree,
   BookOpen, 
   MessageSquare,
@@ -55,6 +56,7 @@ export default function AdminSidebar() {
   const navItems = [
     { name: "डैशबोर्ड", href: "/admin", icon: LayoutDashboard, requiredPermission: null },
     { name: "लेख", href: "/admin/articles", icon: FileText, requiredPermission: "create_article" as const },
+    { name: "संपादकीय चयन", href: "/admin/articles/editorial-picks", icon: Award, requiredPermission: "create_article" as const },
     { name: "श्रेणियाँ", href: "/admin/categories", icon: FolderTree, requiredPermission: "manage_settings" as const },
     { name: "पत्रिका", href: "/admin/magazine", icon: BookOpen, requiredPermission: "publish_article" as const },
     { name: "चौपाल", href: "/admin/community", icon: MessageSquare, requiredPermission: "manage_users" as const },

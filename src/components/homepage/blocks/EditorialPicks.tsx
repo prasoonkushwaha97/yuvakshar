@@ -10,6 +10,7 @@ import { Award } from "lucide-react";
 import SectionContainer from "../layout/SectionContainer";
 import { getArticleUrl } from "@/utils/routes";
 import MetaInfo from "../shared/MetaInfo";
+import { getArticleImage, handleImageError } from "@/utils/imageHelper";
 
 interface EditorialPicksProps {
   excludeIds?: string[];
@@ -27,18 +28,27 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
 
   if (published.length === 0) return null;
 
-  // Filter out any articles rendered in Hero or TopStories/LatestNews/Categories
-  const remaining = published.filter((a: any) => !excludeIds.includes(a.id));
+  // Editorial Picks filter: only articles where is_editor_pick = true
+  let allPicks = published.filter(
+    (a: any) => a.is_editor_pick === true || a.isEditorPick === true
+  );
 
-  // Editorial Picks filter
-  let picks = remaining.filter((a: any) => a.editors_pick || a.recommended);
+  if (allPicks.length === 0) return null;
+
+  // Deduplication: filter out excludeIds if available, fallback to allPicks if empty
+  let picks = excludeIds.length > 0
+    ? allPicks.filter((a: any) => !excludeIds.includes(a.id))
+    : allPicks;
+
   if (picks.length === 0) {
-    picks = remaining.slice(0, 4); // fallback slice to avoid duplicates
-  } else {
-    picks = picks.slice(0, 4);
+    picks = allPicks;
   }
 
-  if (picks.length === 0) return null;
+  // Sort by editor_pick_order ASC
+  picks.sort((a: any, b: any) => (a.editor_pick_order ?? 0) - (b.editor_pick_order ?? 0));
+
+  // Max 8 articles
+  picks = picks.slice(0, 8);
 
   return (
     <SectionContainer bgClassName="bg-[#FAFAF9] dark:bg-[#1C1917]">
@@ -58,9 +68,7 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
         {picks.map((art: any) => {
           const title = stripMarkdown(art.title || art.title_hi || "");
           const summary = stripMarkdown(art.summary || art.summary_hi || art.content || "");
-          const imageUrl = art.coverImage || art.cover_image || art.image || "/images/placeholder-news.jpg";
-
-
+          const imageUrl = getArticleImage(art);
 
           return (
             <div 
@@ -72,7 +80,7 @@ export default function EditorialPicks({ excludeIds = [] }: EditorialPicksProps)
                 href={getArticleUrl(art)} 
                 className="block relative aspect-[16/10] w-full overflow-hidden bg-stone-100 dark:bg-stone-900 mb-3 shrink-0"
               >
-                <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700 ease-out" loading="lazy" fill />
+                <Image src={imageUrl} alt={title} onError={handleImageError} className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700 ease-out" loading="lazy" fill unoptimized />
                 <div className="absolute top-2.5 left-2.5 z-10">
                   <span className="bg-white/90 dark:bg-black/90 text-stone-800 dark:text-stone-300 text-[10px] font-sans font-medium uppercase tracking-widest px-2 py-0.5 rounded-sm">
                     {art.category || "संपादकीय"}

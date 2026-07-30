@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useTransition, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { updateArticleStatus, deleteArticle, bulkDeleteArticles, toggleFeaturedArticle, bulkUpdateArticleStatus, duplicateArticle, updateArticle } from "@/lib/actions/articleActions";
+import { updateArticleStatus, deleteArticle, bulkDeleteArticles, toggleFeaturedArticle, bulkUpdateArticleStatus, duplicateArticle, updateArticle, toggleEditorialPick, bulkUpdateEditorialPicks } from "@/lib/actions/articleActions";
 import { getAdminUsersList } from "@/lib/actions/userManagementActions";
 import { Search, Plus, Edit2, Trash2, FileText, CheckCircle, Clock, Eye, MoreHorizontal, MessageSquare, Star, ChevronLeft, ChevronRight, X, Calendar, UserPlus, Copy, UploadCloud, Archive } from "lucide-react";
 import { toast } from "sonner";
@@ -177,6 +177,39 @@ export default function ArticleManager({
     });
   };
 
+  const handleToggleEditorialPick = async (e: React.MouseEvent, id: string, currentStatus: boolean) => {
+    e.stopPropagation();
+    // Optimistic update
+    setArticles(articles.map(a => a.id === id ? { ...a, is_editor_pick: !currentStatus } : a));
+    startTransition(async () => {
+      try {
+        await toggleEditorialPick(id, !currentStatus);
+        toast.success(!currentStatus ? "Added to Editorial Picks (संपादकीय चयन)" : "Removed from Editorial Picks");
+        router.refresh();
+      } catch (err) {
+        setArticles(articles.map(a => a.id === id ? { ...a, is_editor_pick: currentStatus } : a));
+        toast.error("Failed to update Editorial Pick status");
+      }
+    });
+  };
+
+  const handleBulkEditorialPick = async (add: boolean) => {
+    if (selectedIds.size === 0) return;
+    const actionText = add ? "Add to Editorial Picks" : "Remove from Editorial Picks";
+    if (!confirm(`Are you sure you want to ${actionText} for ${selectedIds.size} articles?`)) return;
+
+    startTransition(async () => {
+      try {
+        await bulkUpdateEditorialPicks(Array.from(selectedIds), add);
+        setSelectedIds(new Set());
+        toast.success(`Successfully updated ${selectedIds.size} articles`);
+        router.refresh();
+      } catch (err) {
+        toast.error("Failed to update Editorial Picks");
+      }
+    });
+  };
+
   const tabs = [
     { id: "all", label: "All Articles", count: stats?.total || 0 },
     { id: ArticleStatus.Draft, label: "Drafts", count: stats?.drafts || 0 },
@@ -215,13 +248,22 @@ export default function ArticleManager({
           <h1 className="text-3xl font-serif font-bold text-slate-900 dark:text-white tracking-tight">Articles</h1>
           <p className="text-slate-500 mt-1">Manage your publication's content and featured news.</p>
         </div>
-        <Link 
-          href="/admin/articles/new" 
-          className="bg-primary text-white px-5 py-2.5 rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          <span>New Article</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/articles/editorial-picks"
+            className="bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20 px-4 py-2.5 rounded-lg font-medium hover:bg-amber-500/20 transition-colors shadow-sm flex items-center gap-2"
+          >
+            <Star className="w-4 h-4 fill-amber-500" />
+            <span>Editorial Picks (संपादकीय चयन)</span>
+          </Link>
+          <Link 
+            href="/admin/articles/new" 
+            className="bg-primary text-white px-5 py-2.5 rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            <span>New Article</span>
+          </Link>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -276,8 +318,15 @@ export default function ArticleManager({
         </div>
 
         {selectedIds.size > 0 && (
-          <div className="flex items-center gap-3 px-4 py-1 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20">
+          <div className="flex flex-wrap items-center gap-3 px-4 py-1.5 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20">
             <span className="text-sm font-medium text-primary">{selectedIds.size} selected</span>
+            <div className="w-px h-4 bg-primary/20"></div>
+            <button onClick={() => handleBulkEditorialPick(true)} className="text-sm font-medium text-amber-600 dark:text-amber-400 hover:text-amber-700 transition-colors flex items-center gap-1">
+              <Star className="w-4 h-4 fill-amber-500" /> Add to Editorial Picks
+            </button>
+            <button onClick={() => handleBulkEditorialPick(false)} className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-1">
+              ⭐ Remove Editorial Pick
+            </button>
             <div className="w-px h-4 bg-primary/20"></div>
             <button onClick={() => handleBulkUpdateStatus(ArticleStatus.Published)} className="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 transition-colors flex items-center gap-1">
               <UploadCloud className="w-4 h-4" /> Publish
@@ -328,9 +377,16 @@ export default function ArticleManager({
                       />
                     </td>
                     <td className="px-4 py-4 max-w-[240px]">
-                      <span className="font-bold text-slate-900 dark:text-white hover:text-primary transition-colors block truncate">
-                        {article.title_hi}
-                      </span>
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className="font-bold text-slate-900 dark:text-white hover:text-primary transition-colors truncate">
+                          {article.title_hi}
+                        </span>
+                        {article.is_editor_pick && (
+                          <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 border border-amber-500/30">
+                            ⭐ Pick
+                          </span>
+                        )}
+                      </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
                         {article.categories ? (
                           <button onClick={(e) => { e.stopPropagation(); updateUrlParams({ category_id: article.categories!.id }); }} className="flex items-center gap-1 hover:text-primary transition-colors">
@@ -403,6 +459,11 @@ export default function ArticleManager({
                                 });
                               }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center">
                                 <Copy className="w-4 h-4 mr-2 text-slate-400" /> Duplicate
+                              </button>
+                              <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+                              <button onClick={(e) => { setActiveMenu(null); handleToggleEditorialPick(e, article.id, !!article.is_editor_pick); }} className="w-full text-left px-4 py-2 text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 flex items-center">
+                                <Star className={`w-4 h-4 mr-2 ${article.is_editor_pick ? 'fill-current' : ''}`} />
+                                {article.is_editor_pick ? "⭐ Remove from Editorial Picks" : "⭐ Add to Editorial Picks"}
                               </button>
                               <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
                               <button onClick={() => { setSelectedArticleId(article.id); setAssignModalOpen(true); setActiveMenu(null); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center">

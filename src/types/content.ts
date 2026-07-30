@@ -75,6 +75,11 @@ export interface Article {
   section: string;
   is_featured: boolean;
   is_highlighted: boolean;
+  is_editor_pick?: boolean;
+  editor_pick_order?: number;
+  editor_pick_at?: string | null;
+  editor_pick_by?: string | null;
+  editor_pick_by_profile?: { id: string; name: string; username?: string; avatar_url?: string } | null;
   requires_eic_approval: boolean;
   published_at?: string | null;
   scheduled_publish_at?: string | null;
@@ -91,6 +96,8 @@ export interface Article {
   meta_keywords?: string;
   language: string;
   read_time?: string;
+  category?: string;
+  author?: string;
   
   // Relations
   categories?: {

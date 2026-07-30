@@ -10,6 +10,7 @@ import { ArrowRight, ChevronRight } from "lucide-react";
 import SectionContainer from "../layout/SectionContainer";
 import { getArticleUrl } from "@/utils/routes";
 import MetaInfo from "../shared/MetaInfo";
+import { getArticleImage, handleImageError } from "@/utils/imageHelper";
 
 export default function TopStories() {
   const { locale } = useLanguage();
@@ -52,9 +53,7 @@ export default function TopStories() {
         {topStories.map((art: any) => {
           const title = stripMarkdown(art.title || art.title_hi || "");
           const summary = stripMarkdown(art.summary || art.summary_hi || art.content || "");
-          const imageUrl = art.coverImage || art.cover_image || art.image || "/images/placeholder-news.jpg";
-
-
+          const imageUrl = getArticleImage(art);
 
           return (
             <div 
@@ -66,7 +65,7 @@ export default function TopStories() {
                 href={getArticleUrl(art)} 
                 className="block relative aspect-[16/10] w-full overflow-hidden bg-gray-100 dark:bg-gray-900 border-b border-gray-150 dark:border-gray-850 shrink-0"
               >
-                <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700 ease-out" loading="lazy" fill />
+                <Image src={imageUrl} alt={title} onError={handleImageError} className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700 ease-out" loading="lazy" fill unoptimized />
                 <div className="absolute top-3 left-3 z-10">
                   <span className="bg-[#f97316] text-white text-[9px] font-sans font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
                     {art.category || "समाचार"}

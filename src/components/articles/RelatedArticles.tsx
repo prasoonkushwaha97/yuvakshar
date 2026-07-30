@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -5,6 +7,7 @@ import { Article } from '@/types/content';
 import { stripMarkdown } from '@/lib/markdown';
 import { format } from 'date-fns';
 import { hi } from 'date-fns/locale';
+import { getArticleImage, handleImageError } from "@/utils/imageHelper";
 
 export default function RelatedArticles({ articles }: { articles: Article[] }) {
   if (!articles || articles.length === 0) return null;
@@ -19,14 +22,14 @@ export default function RelatedArticles({ articles }: { articles: Article[] }) {
         {articles.slice(0, 8).map(article => (
           <Link key={article.id} href={`/articles/${article.slug}`} className="group flex flex-col h-full">
             <div className="relative aspect-[3/2] overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900 mb-4 border border-slate-100 dark:border-slate-800">
-              {article.cover_image && (
-                <Image 
-                  src={article.cover_image} 
-                  alt={article.title_hi || "Article"} 
-                  fill 
-                  className="object-cover group-hover:scale-105 transition-transform duration-500" 
-                />
-              )}
+              <Image 
+                src={getArticleImage(article)} 
+                alt={article.title_hi || "Article"} 
+                fill 
+                unoptimized
+                onError={handleImageError}
+                className="object-cover group-hover:scale-105 transition-transform duration-500" 
+              />
             </div>
             
             {article.categories && (

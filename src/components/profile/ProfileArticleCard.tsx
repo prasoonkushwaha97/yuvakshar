@@ -3,13 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { Bookmark, MoreHorizontal } from "lucide-react";
 import { getArticleUrl } from "@/utils/routes";
+import { getArticleImage, handleImageError } from "@/utils/imageHelper";
 
 interface ProfileArticleCardProps {
   article: any;
 }
 
 export default function ProfileArticleCard({ article }: ProfileArticleCardProps) {
-  const coverImage = article.cover_image || article.coverImage || article.featured_image || article.image || "/images/placeholder-news.jpg";
+  const coverImage = getArticleImage(article);
 
   return (
     <div className="group flex flex-col sm:flex-row gap-6 sm:gap-8 py-8 border-b border-slate-100 dark:border-slate-800/60 last:border-0 hover:bg-slate-50/50 dark:hover:bg-[#0F172A]/30 transition-colors rounded-2xl sm:-mx-6 sm:px-6">
@@ -20,9 +21,10 @@ export default function ProfileArticleCard({ article }: ProfileArticleCardProps)
           src={coverImage} 
           alt={article.title || "Article"} 
           fill 
+          unoptimized
+          onError={handleImageError}
           className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
           sizes="(max-width: 640px) 100vw, 280px"
-          unoptimized={coverImage.includes('supabase')}
         />
       </Link>
 

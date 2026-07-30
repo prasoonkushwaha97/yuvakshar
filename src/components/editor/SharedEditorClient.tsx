@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { ArrowLeft, Save, Settings, Check, Clock, Globe, Calendar, Image as ImageIcon, Tag, User, Hash, Lock, CheckCircle, Activity, Link as LinkIcon, Bold, Italic, Underline, Strikethrough, Highlighter, AlignLeft, AlignCenter, AlignRight, List, ListOrdered, CheckSquare, Quote, Minus, Code, Terminal, Table, ImagePlus, Images, Type, MousePointer2, Play, Share2, Share, Music, Video, FileText as FileTextIcon, FileCode, Smile, Undo, Redo, Maximize, Focus, SlidersHorizontal, X } from "lucide-react";
+import { ArrowLeft, Save, Settings, Check, Clock, Globe, Calendar, Image as ImageIcon, Tag, User, Hash, Lock, CheckCircle, Activity, Link as LinkIcon, Bold, Italic, Underline, Strikethrough, Highlighter, AlignLeft, AlignCenter, AlignRight, List, ListOrdered, CheckSquare, Quote, Minus, Code, Terminal, Table, ImagePlus, Images, Type, MousePointer2, Play, Share2, Share, Music, Video, FileText as FileTextIcon, FileCode, Smile, Undo, Redo, Maximize, Focus, SlidersHorizontal, X, Award } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { createArticle, updateArticle, updateArticleStatus } from "@/lib/actions/articleActions";
@@ -58,6 +58,12 @@ export default function EditorClient({
   const [seoTitle, setSeoTitle] = useState(article?.meta_title || "");
   const [seoDesc, setSeoDesc] = useState(article?.meta_description || "");
   const [visibility, setVisibility] = useState(article?.access_level || "public");
+  
+  // Editorial Pick State
+  const [isEditorPick, setIsEditorPick] = useState<boolean>(article?.is_editor_pick || false);
+  const [editorPickOrder, setEditorPickOrder] = useState<number>(article?.editor_pick_order ?? 0);
+  const [editorPickAt, setEditorPickAt] = useState<string | null>(article?.editor_pick_at || null);
+  const [editorPickBy, setEditorPickBy] = useState<string | null>(article?.editor_pick_by || null);
 
   const [categoriesList, setCategoriesList] = useState<Category[]>([]);
   const [authorsList, setAuthorsList] = useState<{id: string, name: string, display_name?: string, username: string}[]>([]);
@@ -127,7 +133,19 @@ export default function EditorClient({
     try {
       if (isEditorialRole) {
         if (isNew) {
-          await createArticle({ title_hi: title, summary_hi: subtitle, content: content, status: saveStatus as any, cover_image: coverImage, author_id: author, category_id: category });
+          await createArticle({ 
+            title_hi: title, 
+            summary_hi: subtitle, 
+            content: content, 
+            status: saveStatus as any, 
+            cover_image: coverImage, 
+            author_id: author, 
+            category_id: category,
+            is_editor_pick: isEditorPick,
+            editor_pick_order: editorPickOrder,
+            editor_pick_at: isEditorPick ? (editorPickAt || new Date().toISOString()) : null,
+            editor_pick_by: isEditorPick ? editorPickBy : null
+          });
           toast.success("Draft created successfully. Redirecting...");
           router.push("/admin/articles");
         } else {
@@ -143,6 +161,10 @@ export default function EditorClient({
               tags: tags,
               author_id: author,
               category_id: category,
+              is_editor_pick: isEditorPick,
+              editor_pick_order: editorPickOrder,
+              editor_pick_at: isEditorPick ? (editorPickAt || new Date().toISOString()) : null,
+              editor_pick_by: isEditorPick ? editorPickBy : null,
               status: saveStatus as any
           });
           toast.success("Changes saved successfully");
@@ -447,6 +469,53 @@ export default function EditorClient({
                     )}
                 </div>
             </div>
+
+            {/* Editorial Pick Section */}
+            {isEditorialRole && (
+              <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                  <Award className="w-3.5 h-3.5 text-amber-500" /> संपादकीय चयन
+                </h3>
+                
+                <div className="space-y-3 bg-amber-500/5 p-3 rounded-xl border border-amber-500/20">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-900 dark:text-white">
+                    <input
+                      type="checkbox"
+                      checked={isEditorPick}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setIsEditorPick(checked);
+                        if (checked && !editorPickAt) {
+                          setEditorPickAt(new Date().toISOString());
+                        }
+                      }}
+                      className="w-4 h-4 text-amber-600 rounded border-slate-300 focus:ring-amber-500"
+                    />
+                    ✓ Show in Editorial Picks
+                  </label>
+
+                  {isEditorPick && (
+                    <div className="space-y-3 pt-2">
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 mb-1 block">Order (क्रम)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={editorPickOrder}
+                          onChange={(e) => setEditorPickOrder(parseInt(e.target.value) || 0)}
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white outline-none focus:border-amber-500"
+                        />
+                      </div>
+                      
+                      <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1 pt-2 border-t border-amber-500/10">
+                        <div><span className="font-semibold">Selection Date:</span> {editorPickAt ? new Date(editorPickAt).toLocaleDateString("hi-IN", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : "आज"}</div>
+                        <div><span className="font-semibold">Selected By:</span> {article?.profiles?.name || article?.author || "वर्तमान संपादक"}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* SEO & Meta */}
             {isEditorialRole && (

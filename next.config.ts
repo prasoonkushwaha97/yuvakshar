@@ -4,13 +4,21 @@ import path from "path";
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(__dirname),
   images: {
+    // Supabase storage URLs resolve to IPv6-mapped private IPs in this environment,
+    // causing Next.js image optimization to reject them. Bypass the proxy so the
+    // browser fetches images directly from their original URLs.
+    unoptimized: true,
     remotePatterns: [
-      { protocol: "https", hostname: "fbvffiotmlxypxmtlrsz.supabase.co" }, // Supabase Storage
-      { protocol: "https", hostname: "api.dicebear.com" }, // Dummy avatars
-      { protocol: "https", hostname: "images.unsplash.com" }, // External placeholders
-      { protocol: "https", hostname: "lh3.googleusercontent.com" }, // Google avatars
-      { protocol: "https", hostname: "avatars.githubusercontent.com" }, // GitHub avatars
-      { protocol: "https", hostname: "img.youtube.com" } // YouTube thumbnails
+      { protocol: "https", hostname: "fbvffiotmlxypxmtlrsz.supabase.co" },
+      { protocol: "https", hostname: "*.supabase.co" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "*.unsplash.com" },
+      { protocol: "https", hostname: "api.dicebear.com" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "avatars.githubusercontent.com" },
+      { protocol: "https", hostname: "img.youtube.com" },
+      { protocol: "https", hostname: "**" },
+      { protocol: "http", hostname: "**" }
     ],
   },
   async redirects() {

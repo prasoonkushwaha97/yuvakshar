@@ -7,6 +7,7 @@ import { stripMarkdown } from "@/lib/markdown";
 import MetaInfo from "../shared/MetaInfo";
 import { formatDisplayDate } from "@/utils/date";
 import { getArticleUrl } from "@/utils/routes";
+import { getArticleImage, handleImageError } from "@/utils/imageHelper";
 
 interface ArticleCardSmallProps {
   article: any;
@@ -24,7 +25,7 @@ export default function ArticleCardSmall({
   if (!article) return null;
 
   const title = stripMarkdown(article.title || article.title_hi || "");
-  const imageUrl = article.coverImage || article.cover_image || article.image || "/images/placeholder-news.jpg";
+  const imageUrl = getArticleImage(article);
   const cleanDate = formatDisplayDate(article.date);
 
   return (
@@ -37,7 +38,7 @@ export default function ArticleCardSmall({
 
       {showThumbnail && (
         <Link href={getArticleUrl(article)} className="block relative w-16 h-16 shrink-0 overflow-hidden bg-slate-100 dark:bg-zinc-900 rounded-lg">
-          <Image src={imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-[1.025] transition-transform duration-500 ease-out" loading="lazy" fill sizes="64px" />
+          <Image src={imageUrl} alt={title} onError={handleImageError} className="w-full h-full object-cover group-hover:scale-[1.025] transition-transform duration-500 ease-out" loading="lazy" fill unoptimized sizes="64px" />
         </Link>
       )}
 

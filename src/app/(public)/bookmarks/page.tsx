@@ -7,6 +7,7 @@ import MetaInfo from "@/components/homepage/shared/MetaInfo";
 import Image from "next/image";
 import Link from "next/link";
 import { getArticleUrl } from "@/utils/routes";
+import { getArticleImage, handleImageError } from "@/utils/imageHelper";
 
 export default function BookmarksPage() {
   const { currentUser, articles, toggleBookmark } = useCms();
@@ -97,16 +98,14 @@ export default function BookmarksPage() {
                   </button>
 
                   <Link href={getArticleUrl(article)} className="flex flex-col flex-1">
-                    {article.cover_image && (
-                      <div className="h-40 w-full overflow-hidden relative">
-                        <Image src={article.cover_image} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                        {article.category && (
-                          <span className="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">
-                            {article.category}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    <div className="h-40 w-full overflow-hidden relative">
+                      <Image src={getArticleImage(article)} alt={article.title} onError={handleImageError} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                      {article.category && (
+                        <span className="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">
+                          {article.category}
+                        </span>
+                      )}
+                    </div>
                     <div className="p-5 flex flex-col flex-1">
                       <h3 className="font-serif font-bold text-base mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                         {article.title}

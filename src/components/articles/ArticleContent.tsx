@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
 import { stripMarkdown } from "@/lib/markdown";
@@ -6,6 +8,7 @@ import MetaInfo from "@/components/homepage/shared/MetaInfo";
 import ArticleActions from "@/components/articles/ArticleActions";
 import CommentSection from "@/components/articles/CommentSection";
 import { Article } from "@/types/content";
+import { getArticleImage, handleImageError } from "@/utils/imageHelper";
 
 interface ArticleContentProps {
   article: Article;
@@ -14,6 +17,7 @@ interface ArticleContentProps {
 
 export default function ArticleContent({ article, isPreview = false }: ArticleContentProps) {
   const title = stripMarkdown(article?.title_hi || "");
+  const coverImage = getArticleImage(article);
 
   return (
     <div className="w-full max-w-[720px] mx-auto pt-8 md:pt-12 px-4 md:px-0">
@@ -53,18 +57,17 @@ export default function ArticleContent({ article, isPreview = false }: ArticleCo
         </div>
 
         {/* Cover Image — Full bleed relative to text container */}
-        {article?.cover_image && (
-          <div className="relative overflow-hidden mb-10 md:mb-12 aspect-[16/9] bg-gray-100 dark:bg-gray-900 -mx-4 md:mx-0">
-            <Image 
-              src={article.cover_image} 
-              alt={title}
-              fill
-              priority
-              unoptimized
-              className="object-cover"
-            />
-          </div>
-        )}
+        <div className="relative overflow-hidden mb-10 md:mb-12 aspect-[16/9] bg-gray-100 dark:bg-gray-900 -mx-4 md:mx-0">
+          <Image 
+            src={coverImage} 
+            alt={title}
+            onError={handleImageError}
+            fill
+            priority
+            unoptimized
+            className="object-cover"
+          />
+        </div>
 
         {/* Main Content Body */}
         <div className="font-serif leading-[1.7] md:leading-[1.8] text-[18px] md:text-[20px] text-gray-800 dark:text-gray-200">
